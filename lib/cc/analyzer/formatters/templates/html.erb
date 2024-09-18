@@ -127,6 +127,7 @@
           disableInView();
           var category = $('#category-filter').val();
           var engine = $('#engine-filter').val();
+          var severity = $('#severity-filter').val();
           var list = document.getElementById('smells');
           list.className = '';
 
@@ -145,6 +146,12 @@
           else {
             list.classList.add('filter-engine-all');
           }
+          if (severity !== '') {
+            list.classList.add('filter-severity-' + severity);
+          }
+          else {
+            list.classList.add('filter-severity-all');
+          }
 
           if (list.offsetHeight) {
             $('#filtered-out-message').hide();
@@ -157,7 +164,7 @@
           }
         }
 
-        $('#category-filter, #engine-filter').on('change', applyFilters);
+        $('#category-filter, #engine-filter, #severity-filter').on('change', applyFilters);
         applyFilters();
 
         $('summary').on('click', function() {
@@ -176,20 +183,17 @@
       <%- issues.engines.each do |engine| -%>
       .filter-engine-<%= param engine %> > li,
       <%- end -%>
+      <%- issues.severities.each do |severity| -%>
+      .filter-severity-<%= param severity %> > li,
+      <%- end -%>
       .filter-none > li {
         display: none;
       }
 
-      <%- issues.engines.each do |engine| -%>
-      .filter-category-all.filter-engine-<%= param engine%> > li[data-engine="<%= param engine %>"],
+      <%- (['all'] + issues.categories).product(['all'] + issues.engines, ['all'] + issues.severities).each do |category, engine, severity| -%>
+      .filter-category-<%= param category %>.filter-engine-<%= param engine%>.filter-severity-<%= param severity%> > li<%- if category != 'all' -%>[data-categories~="<%= param category %>"]<%- end -%><%- if engine != 'all' -%>[data-engine="<%= param engine %>"]<%- end -%><%- if severity != 'all' -%>[data-severity="<%= param severity %>"]<%- end -%>,
       <%- end -%>
-      <%- issues.categories.each do |category| -%>
-      .filter-category-<%= param category %>.filter-engine-all > li[data-categories~="<%= param category %>"],
-      <%- end -%>
-      <%- (['all'] + issues.categories).product(['all'] + issues.engines).each do |category, engine| -%>
-      .filter-category-<%= param category %>.filter-engine-<%= param engine%> > li[data-categories~="<%= param category %>"][data-engine="<%= param engine %>"],
-      <%- end -%>
-      .filter-category-all.filter-engine-all > li {
+      .filter-block > li {
         display: block;
       }
     </style>
@@ -605,12 +609,20 @@
               <option value="<%= param engine %>"><%= engine %></option>
               <%- end -%>
             </select>
+            <label for="severity-filter">Severity</label>
+            <select id="severity-filter">
+              <option value="">All Severities</option>
+              <%- issues.severities.each do |severity| -%>
+              <option value="<%= param severity %>"><%= severity.capitalize %></option>
+              <%- end -%>
+            </select>
           </div>
           <ul id="smells">
             <%- issues.each do |issue| -%>
             <li
               data-categories="<%= params issue.categories %>"
-              data-engine="<%= param issue.engine_name %>">
+              data-engine="<%= param issue.engine_name %>"
+              data-severity="<%= param issue.severity %>">
               <h2><%= h issue.description %></h2>
               <div class="badges">
                 <%- issue.categories.each do |category| -%>

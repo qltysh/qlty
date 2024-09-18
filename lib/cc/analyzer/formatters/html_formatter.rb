@@ -362,6 +362,10 @@ module CC
             collection.map(&:engine_name).uniq.compact.sort
           end
 
+          def severities
+            collection.map(&:severity).uniq.sort_by{ |severity| SEVERITY_ORDER.fetch(severity, -1) }.reverse
+          end
+
           private
 
           attr_reader :collection, :filesystem
