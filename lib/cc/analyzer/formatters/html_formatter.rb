@@ -320,13 +320,21 @@ module CC
         end
 
         class IssueCollection
+          SEVERITY_ORDER = {
+            "info" => 0,
+            "minor" => 1,
+            "major" => 2,
+            "critical" => 3,
+            "blocker" => 4
+          }.freeze
+
           def initialize(filesystem)
             @collection = []
             @filesystem = filesystem
           end
 
           def each(&block)
-            collection.each(&block)
+            collection.sort_by{ |issue| SEVERITY_ORDER.fetch(issue.severity, -1) }.reverse.each(&block)
           end
 
           def <<(issue)
