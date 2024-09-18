@@ -297,6 +297,14 @@ module CC
             data["engine_name"]
           end
 
+          def check_name
+            data["check_name"].split(".").last
+          end
+
+          def severity
+            data["severity"]
+          end
+
           private
 
           attr_reader :data, :filesystem

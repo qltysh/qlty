@@ -504,6 +504,31 @@
         padding-top: 0;
       }
 
+      .badges {
+        display: block;
+      }
+
+      .category-badge,
+      .rule-badge,
+      .severity-badge {
+        height: 32px;
+        line-height: 32px;
+        padding: 0 12px;
+        border: 0;
+        border-radius: 16px;
+        background-color: #dedede;
+        display: inline-block;
+        color: rgba(0,0,0,.87);
+        margin: 0;
+        font-size: 0;
+        white-space: nowrap;
+      }
+      .text-badge {
+        font-size: 12px;
+        vertical-align: middle;
+        display: inline-block;
+      }
+
       .found-in {
         font-size: 12px;
         line-height: 20px;
@@ -587,6 +612,19 @@
               data-categories="<%= params issue.categories %>"
               data-engine="<%= param issue.engine_name %>">
               <h2><%= h issue.description %></h2>
+              <div class="badges">
+                <%- issue.categories.each do |category| -%>
+                <span class="category-badge">
+                  <span class="text-badge">Category: <%= category %></span>
+                </span>
+                <%- end -%>
+                <span class="rule-badge">
+                  <span class="text-badge">Rule: <%= issue.engine_name %>:<%= issue.check_name %></span>
+                </span>
+                <span class="severity-badge">
+                  <span class="text-badge">Severity: <%= issue.severity %></span>
+                </span>
+              </div>
               <div class="code">
                 <pre class="line-numbers <%= issue.source.syntaxes.map {|l| "language-#{l}" }.join ' ' %>"
                      data-line="<%= issue.location %>"
