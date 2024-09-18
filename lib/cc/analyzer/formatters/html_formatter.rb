@@ -245,6 +245,8 @@ module CC
 
         class Issue
           MARKDOWN_CONFIG = { autolink: true, fenced_code_blocks: true, no_intra_emphasis: true, tables: true }.freeze
+          DEFAULT_SEVERITY = IssueValidations::SeverityValidation::MINOR
+          DEPRECATED_SEVERITY = IssueValidations::SeverityValidation::NORMAL
 
           def initialize(data, filesystem)
             @data = data
@@ -302,7 +304,12 @@ module CC
           end
 
           def severity
-            data["severity"]
+            severity = data.fetch("severity", DEFAULT_SEVERITY)
+            if severity == DEPRECATED_SEVERITY
+              DEFAULT_SEVERITY
+            else
+              severity
+            end
           end
 
           private
@@ -321,11 +328,11 @@ module CC
 
         class IssueCollection
           SEVERITY_ORDER = {
-            "info" => 0,
-            "minor" => 1,
-            "major" => 2,
-            "critical" => 3,
-            "blocker" => 4
+            IssueValidations::SeverityValidation::INFO => 0,
+            IssueValidations::SeverityValidation::MINOR => 1,
+            IssueValidations::SeverityValidation::MAJOR => 2,
+            IssueValidations::SeverityValidation::CRITICAL => 3,
+            IssueValidations::SeverityValidation::BLOCKER => 4
           }.freeze
 
           def initialize(filesystem)
