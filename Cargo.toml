@@ -6,11 +6,7 @@ documentation = "https://docs.qlty.sh"
 homepage = "https://qlty.sh"
 repository = "https://github.com/qltysh/qlty"
 keywords = ["linter", "quality", "static-analysis", "testing", "code-coverage"]
-categories = [
-    "development-tools::static-analysis",
-    "development-tools::testing",
-    "development-tools::code-coverage",
-]
+categories = ["development-tools", "development-tools::testing"]
 license-file = "LICENSE.md"
 edition = "2021"
 include = ["/*.md"]
