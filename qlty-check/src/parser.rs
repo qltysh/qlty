@@ -26,6 +26,7 @@ pub mod taplo;
 pub mod trivy_sarif;
 pub mod trufflehog;
 pub mod tsc;
+pub mod golangci_lint;
 
 pub trait Parser {
     fn parse(&self, plugin_name: &str, output: &str) -> Result<Vec<Issue>>;

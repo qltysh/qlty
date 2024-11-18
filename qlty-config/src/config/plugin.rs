@@ -492,6 +492,8 @@ pub enum OutputFormat {
     Coffeelint,
     #[serde(rename = "ruff")]
     Ruff,
+    #[serde(rename = "golangci_lint")]
+    GolangciLint,
 }
 
 impl std::fmt::Display for OutputFormat {
@@ -522,6 +524,7 @@ impl std::fmt::Display for OutputFormat {
             OutputFormat::Tsc => write!(f, "tsc"),
             OutputFormat::Coffeelint => write!(f, "coffeelint"),
             OutputFormat::Ruff => write!(f, "ruff"),
+            OutputFormat::GolangciLint => write!(f, "golangci_lint"),
         }
     }
 }

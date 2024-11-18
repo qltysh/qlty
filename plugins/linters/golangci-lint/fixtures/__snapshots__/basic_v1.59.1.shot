@@ -5,12 +5,10 @@ exports[`linter=golangci-lint fixture=basic version=1.59.1 1`] = `
   "issues": [
     {
       "category": "CATEGORY_LINT",
-      "level": "LEVEL_HIGH",
+      "level": "LEVEL_MEDIUM",
       "location": {
         "path": "basic.in.go",
         "range": {
-          "endColumn": 12,
-          "endLine": 8,
           "startColumn": 12,
           "startLine": 8,
         },
@@ -32,12 +30,10 @@ func main() {
     },
     {
       "category": "CATEGORY_LINT",
-      "level": "LEVEL_HIGH",
+      "level": "LEVEL_MEDIUM",
       "location": {
         "path": "basic.in.go",
         "range": {
-          "endColumn": 34,
-          "endLine": 6,
           "startColumn": 34,
           "startLine": 6,
         },
@@ -55,6 +51,36 @@ import "time"
 func main() {
 	time.Parse("asdf", "")
 }",
+      "suggestions": [
+        {
+          "patch": "--- original
++++ modified
+@@ -3,7 +3,7 @@
+ import "time"
+
+ // ✋✋✋✋
+-// this is the main function 🏃
++// this is the main function 🏃.
+ func main() {
+ 	time.Parse("asdf", "")
+ }
+",
+          "replacements": [
+            {
+              "data": "// this is the main function 🏃.",
+              "location": {
+                "path": "basic.in.go",
+                "range": {
+                  "endColumn": 34,
+                  "endLine": 6,
+                  "startLine": 6,
+                },
+              },
+            },
+          ],
+          "source": "SUGGESTION_SOURCE_TOOL",
+        },
+      ],
       "tool": "golangci-lint",
     },
   ],

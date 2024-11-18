@@ -5,6 +5,7 @@ use crate::parser::bandit::Bandit;
 use crate::parser::clippy::Clippy;
 use crate::parser::coffeelint::Coffeelint;
 use crate::parser::eslint::Eslint;
+use crate::parser::golangci_lint::GolangciLint;
 use crate::parser::hadolint::Hadolint;
 use crate::parser::knip::Knip;
 use crate::parser::markdownlint::Markdownlint;
@@ -428,6 +429,7 @@ impl Driver {
             OutputFormat::Radarlint => Box::new(Radarlint {}),
             OutputFormat::Coffeelint => Box::new(Coffeelint {}),
             OutputFormat::Ruff => Box::new(Ruff {}),
+            OutputFormat::GolangciLint => Box::new(GolangciLint {}),
 
             OutputFormat::Sarif => {
                 let level = match self.output_level {

@@ -5,12 +5,10 @@ exports[`linter=golangci-lint fixture=unused_func version=1.61.0 1`] = `
   "issues": [
     {
       "category": "CATEGORY_LINT",
-      "level": "LEVEL_HIGH",
+      "level": "LEVEL_MEDIUM",
       "location": {
         "path": "unused_func.in.go",
         "range": {
-          "endColumn": 6,
-          "endLine": 5,
           "startColumn": 6,
           "startLine": 5,
         },

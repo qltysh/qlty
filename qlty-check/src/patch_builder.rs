@@ -122,7 +122,12 @@ fn calculate_byte_offset(content: &str, line: usize, column: usize) -> Option<us
 
     if line > 0 && line <= lines.len() {
         let line_str = lines[line - 1]; // Convert 1-based line to 0-based index
-        let index = column - 1; // Convert 1-based column to 0-based index
+        let index = if column > 0 {
+            column - 1 // Convert 1-based column to 0-based index
+        } else {
+            0 // If column is 0/missing, use the start of the line
+        };
+
         let byte_offset = if let Some((byte_index, _)) = line_str.char_indices().nth(index) {
             // Calculate the absolute byte offset from the start of the content
             content
@@ -180,7 +185,7 @@ fn replace_in_range(
 mod test {
     use super::*;
     use crate::{
-        parser::{clippy::Clippy, shellcheck::Shellcheck, Parser},
+        parser::{clippy::Clippy, golangci_lint::GolangciLint, shellcheck::Shellcheck, Parser},
         source_reader::SourceReaderFs,
     };
     use std::path::PathBuf;
@@ -539,5 +544,70 @@ mod test {
                       endLine: 4
                       endColumn: 33
         "#)
+    }
+
+    #[test]
+    fn parse_line_replacements_golangci() {
+        let input = include_str!("../tests/fixtures/planner/patch_builder/parse.04.output.txt");
+        let patch_builder = new_from_cache([(
+            "/tmp/src/main.go".into(),
+            include_str!("../tests/fixtures/planner/patch_builder/parse.04.input.go").into(),
+        )]);
+
+        let issues = GolangciLint {}.parse("golangci-lint", input).ok().unwrap();
+        let issues = transformed_issues(issues, &patch_builder);
+        insta::assert_yaml_snapshot!(issues, @r###"
+        - tool: golangci-lint
+          ruleKey: errcheck
+          message: "Error return value of `time.Parse` is not checked"
+          level: LEVEL_MEDIUM
+          category: CATEGORY_LINT
+          location:
+            path: /tmp/src/main.go
+            range:
+              startLine: 12
+              startColumn: 12
+        - tool: golangci-lint
+          ruleKey: godot
+          message: Comment should end in a period
+          level: LEVEL_MEDIUM
+          category: CATEGORY_LINT
+          location:
+            path: /tmp/src/main.go
+            range:
+              startLine: 7
+              startColumn: 34
+          suggestions:
+            - patch: "--- original\n+++ modified\n@@ -4,7 +4,7 @@\n import \"fmt\"\n\n // ✋✋✋✋\n-// this is the main function 🏃\n+// this is the main function 🏃.\n func main() {\n \t// This is a comment\n \tfmt.Println(\"Heloo World!\") // Intentional typo: \"Heloo\" instead of \"Hello\"\n"
+              source: SUGGESTION_SOURCE_TOOL
+              replacements:
+                - data: // this is the main function 🏃.
+                  location:
+                    path: /tmp/src/main.go
+                    range:
+                      startLine: 7
+                      endLine: 7
+                      endColumn: 34
+        - tool: golangci-lint
+          ruleKey: goimports
+          message: "File is not `goimports`-ed"
+          level: LEVEL_MEDIUM
+          category: CATEGORY_LINT
+          location:
+            path: /tmp/src/main.go
+            range:
+              startLine: 3
+          suggestions:
+            - patch: "--- original\n+++ modified\n@@ -1,7 +1,9 @@\n package main\n\n-import \"time\"\n-import \"fmt\"\n+import (\n+\t\"fmt\"\n+\t\"time\"\n+)\n\n // ✋✋✋✋\n // this is the main function 🏃\n"
+              source: SUGGESTION_SOURCE_TOOL
+              replacements:
+                - data: "import (\n\t\"fmt\"\n\t\"time\"\n)"
+                  location:
+                    path: /tmp/src/main.go
+                    range:
+                      startLine: 3
+                      endLine: 4
+                      endColumn: 13
+        "###);
     }
 }
