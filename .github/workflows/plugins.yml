@@ -1,4 +1,4 @@
-name: 🚦 Plugin Tests
+name: Plugins
 on:
   workflow_dispatch:
   push:

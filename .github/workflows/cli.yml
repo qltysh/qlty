@@ -1,4 +1,4 @@
-name: 🚦 CLI Tests
+name: CLI
 on:
   workflow_dispatch:
   push:
