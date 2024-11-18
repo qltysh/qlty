@@ -24,14 +24,14 @@ jobs:
           [macos-latest-xlarge, ubuntu-latest-16-cores, windows-latest-16-cores]
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     defaults:
       run:
         shell: bash
 
     steps:
-      - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.12.1
-
       - name: Checkout repo
         uses: actions/checkout@v4
 

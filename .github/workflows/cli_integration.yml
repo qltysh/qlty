@@ -26,6 +26,9 @@ jobs:
   build:
     name: Build Release CLI
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - name: Checkout cloud
         uses: actions/checkout@v4
@@ -51,6 +54,9 @@ jobs:
     name: ${{ matrix.container }}
     runs-on: ubuntu-latest
     needs: build
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
