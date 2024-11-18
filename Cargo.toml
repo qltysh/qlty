@@ -106,7 +106,7 @@ time = { version = "0.3.36", features = [
     "formatting",
     "parsing",
 ] }
-toml = "0.8.2"
+toml = "0.8.19"
 toml_edit = "0.22.21"
 tracing = "0.1.40"
 tracing-appender = "0.2.3"
