@@ -1,4 +1,4 @@
-name: Integration Tests
+name: Integration Tests (Ruby)
 on:
   workflow_dispatch:
   push:
@@ -48,7 +48,7 @@ jobs:
           path: target/release/qlty
 
   test_ruby_binary_install:
-    name: "🧪 Test: Ruby Binary Install"
+    name: ${{ matrix.container }}
     runs-on: ubuntu-latest
     needs: build
     strategy:
