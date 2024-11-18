@@ -24,24 +24,24 @@ env:
 
 jobs:
   build:
-    name: 🏗️ Build Release CLI
+    name: Build Release CLI
     runs-on: ubuntu-latest
     steps:
-      - name: ⬇️ Checkout cloud
+      - name: Checkout cloud
         uses: actions/checkout@v4
 
-      - name: 🦀 Install Rust toolchain
+      - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
 
-      - name: 🫙 Cache Rust
+      - name: Cache Rust
         uses: Swatinem/rust-cache@v2
 
-      - name: 🏗️ Build Release CLI
+      - name: Build Release CLI
         run: cargo build --release
 
-      - name: 📦 Archive CLI
+      - name: Archive CLI
         uses: actions/upload-artifact@v4
         with:
           name: qlty
@@ -97,13 +97,13 @@ jobs:
           git add .
           git commit -m "Initial commit"
 
-      - name: 📦 Download CLI
+      - name: Download CLI
         uses: actions/download-artifact@v4
         with:
           name: qlty
           path: ${{ github.workspace }}/bin
 
-      - name: "🚦 Run Test"
+      - name: Run Test
         run: |
           export PATH=$GITHUB_WORKSPACE/bin:$PATH
           chmod +x $GITHUB_WORKSPACE/bin/qlty

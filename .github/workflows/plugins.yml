@@ -22,54 +22,53 @@ jobs:
       matrix:
         os:
           [macos-latest-xlarge, ubuntu-latest-16-cores, windows-latest-16-cores]
-    name: Plugins test on ${{ matrix.os }}
+    name: "Plugins test: ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
     defaults:
       run:
         shell: bash
 
     steps:
-      - name: 🛑 Cancel Previous Runs
+      - name: Cancel Previous Runs
         uses: styfle/cancel-workflow-action@0.12.1
 
-      - name: ⬇️ Checkout repo
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: 📦 Use Node.js
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           cache: "npm"
           cache-dependency-path: plugins/package-lock.json
 
-      # Generate Cache key for Linux/macOS
-      - name: 🔒 Set CACHE_MONTH on Linux/macOS
+      - name: Generate cache key
         run: echo "CACHE_MONTH=$(date +'%Y-%m')" >> $GITHUB_ENV
 
-      - name: 💾 Cache qlty tools
+      - name: Cache qlty tools
         uses: actions/cache@v3
         with:
           path: ~/.qlty
           key: ${{ runner.os }}-qlty-${{ env.CACHE_MONTH }}
 
-      - name: 📦 Setup PHP with PECL extension
+      - name: Setup PHP with PECL extension
         uses: shivammathur/setup-php@v2
         if: matrix.os == 'macos-latest-xlarge'
 
-      - name: 📦 Setup Ruby
+      - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.3.0
         if: matrix.os == 'windows-latest-16-cores'
 
-      - name: 🦀 Install Rust toolchain
+      - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
 
-      - name: 🫙 Cache Rust
+      - name: Cache Rust
         uses: Swatinem/rust-cache@v2
 
-      - name: ⚙️ cargo build
+      - name: cargo build
         run: cargo build
         env:
           RUST_BACKTRACE: 1
@@ -77,7 +76,7 @@ jobs:
       - name: Move qlty into PATH
         run: echo "${{ github.workspace }}/target/debug" >> $GITHUB_PATH
 
-      - name: 🔍 Check qlty version
+      - name: Check qlty version
         run: qlty --version
 
       # Login to the GitHub Container Registry to reduce trivy rate limiting errors
