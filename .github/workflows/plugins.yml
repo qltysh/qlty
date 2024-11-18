@@ -22,7 +22,7 @@ jobs:
       matrix:
         os:
           [macos-latest-xlarge, ubuntu-latest-16-cores, windows-latest-16-cores]
-    name: "Plugins test: ${{ matrix.os }}"
+    name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     defaults:
       run:

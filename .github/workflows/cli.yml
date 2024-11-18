@@ -21,7 +21,7 @@ jobs:
       matrix:
         os:
           [ubuntu-latest-16-cores, macos-latest-xlarge, windows-latest-16-cores]
-    name: "Unit Test: ${{ matrix.os }}"
+    name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
     steps:
