@@ -150,7 +150,4 @@ version = "0.53.0"
 name = "trufflehog"
 
 [[plugin]]
-name = "vale"
-
-[[plugin]]
 name = "yamllint"
