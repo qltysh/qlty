@@ -5,10 +5,11 @@ description = "Code quality toolkit"
 documentation = "https://docs.qlty.sh"
 homepage = "https://qlty.sh"
 repository = "https://github.com/qltysh/qlty"
-keywords = ["TODO"]
-categories = ["TODO"]
-license = "FSL-1.1-GPL-3.0"
+keywords = ["linter", "quality", "static-analysis", "testing", "code-coverage"]
+categories = ["development-tools", "development-tools::testing"]
+license-file = "LICENSE.md"
 edition = "2021"
+include = ["/*.md"]
 
 [workspace]
 resolver = "2"
@@ -63,16 +64,16 @@ pathdiff = "0.2.2"
 pbjson = "0.7.0"
 pbjson-types = "0.7.0"
 prost = "0.13.3"
-qlty-analysis = { path = "qlty-analysis" }
-qlty-check = { path = "qlty-check" }
-qlty-cloud = { path = "qlty-cloud" }
-qlty-config = { path = "qlty-config" }
-qlty-coverage = { path = "qlty-coverage" }
-qlty-llm = { path = "qlty-llm" }
-qlty-skills = { path = "qlty-skills" }
-qlty-smells = { path = "qlty-smells" }
-qlty-test-utilities = { path = "qlty-test-utilities" }
-qlty-types = { path = "qlty-types" }
+qlty-analysis = { version = "0.440.0", path = "qlty-analysis" }
+qlty-check = { version = "0.440.0", path = "qlty-check" }
+qlty-cloud = { version = "0.440.0", path = "qlty-cloud" }
+qlty-config = { version = "0.440.0", path = "qlty-config" }
+qlty-coverage = { version = "0.440.0", path = "qlty-coverage" }
+qlty-llm = { version = "0.440.0", path = "qlty-llm" }
+qlty-skills = { version = "0.440.0", path = "qlty-skills" }
+qlty-smells = { version = "0.440.0", path = "qlty-smells" }
+qlty-test-utilities = { version = "0.440.0", path = "qlty-test-utilities" }
+qlty-types = { version = "0.440.0", path = "qlty-types" }
 rand = "0.8.5"
 rayon = "1.10.0"
 regex = "1.11.0"
