@@ -40,10 +40,22 @@ pub struct Init {
     /// a path to a local directory(name=directory).
     #[arg(long, value_parser = SourceSpec::new)]
     pub source: Option<SourceSpec>,
+
+    /// Warning: this option has been deprecated!
+    /// Enable plugin prefix detection.
+    #[arg(long)]
+    pub with_prefixes: bool,
 }
 
 impl Init {
     pub fn execute(&self, args: &Arguments) -> Result<CommandSuccess, CommandError> {
+        if self.with_prefixes {
+            eprintln!(
+                "{} The --with-prefixes option has been deprecated and is no longer needed.",
+                style("⚠").yellow()
+            );
+        }
+
         if !args.no_upgrade_check {
             QltyRelease::upgrade_check().ok();
         }
@@ -120,7 +132,7 @@ impl Init {
         println!("  {}", style("2. Get help and give feedback").bold());
         println!(
             "     {}",
-            style("Our developers are on Discord: https://qlty.sh/discord").dim()
+            style("Our developers are on Discord: https://discord.gg/DMKEqEJnhD").dim()
         );
         println!();
     }
