@@ -24,10 +24,10 @@ dotenv-linter = "X.Y.Z"
 
 ## Links
 
--   [Dotenv-linter on GitHub](https://github.com/dotenv-linter/dotenv-linter)
--   [Dotenv-linter plugin definition](https://github.com/qltyai/plugins/tree/main/linters/dotenv-linter)
--   [Dotenv-linter releases](https://github.com/dotenv-linter/dotenv-linter/releases)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [Dotenv-linter on GitHub](https://github.com/dotenv-linter/dotenv-linter)
+- [Dotenv-linter plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/dotenv-linter)
+- [Dotenv-linter releases](https://github.com/dotenv-linter/dotenv-linter/releases)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

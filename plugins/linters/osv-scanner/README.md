@@ -28,16 +28,16 @@ Osv-scanner will be automatically enabled by `qlty init` if a `osv-scanner.toml`
 
 ## Configuration files
 
--   [`osv-scanner.toml`](https://google.github.io/osv-scanner/configuration/#configure-osv-scanner)
+- [`osv-scanner.toml`](https://google.github.io/osv-scanner/configuration/#configure-osv-scanner)
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Osv-scanner.
 
 ## Links
 
--   [Osv-scanner on GitHub](https://github.com/google/osv-scanner)
--   [Osv-scanner plugin definition](https://github.com/qltyai/plugins/tree/main/linters/osv-scanner)
--   [Osv-scanner releases](https://github.com/google/osv-scanner/releases)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [Osv-scanner on GitHub](https://github.com/google/osv-scanner)
+- [Osv-scanner plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/osv-scanner)
+- [Osv-scanner releases](https://github.com/google/osv-scanner/releases)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

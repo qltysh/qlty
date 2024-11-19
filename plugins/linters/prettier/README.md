@@ -28,16 +28,16 @@ Prettier will be automatically enabled by `qlty init` if a `.prettier.yaml` conf
 
 ## Configuration files
 
--   [`.prettierrc`](https://prettier.io/docs/en/configuration)
+- [`.prettierrc`](https://prettier.io/docs/en/configuration)
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Prettier.
 
 ## Links
 
--   [Prettier on GitHub](https://github.com/prettier/prettier)
--   [Prettier plugin definition](https://github.com/qltyai/plugins/tree/main/linters/prettier)
--   [Prettier releases](https://github.com/prettier/prettier/releases)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [Prettier on GitHub](https://github.com/prettier/prettier)
+- [Prettier plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/prettier)
+- [Prettier releases](https://github.com/prettier/prettier/releases)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

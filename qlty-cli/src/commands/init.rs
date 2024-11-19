@@ -125,7 +125,7 @@ impl Init {
         println!("  {}", style("2. Get help and give feedback").bold());
         println!(
             "     {}",
-            style("Our developers are on Discord: https://discord.gg/DMKEqEJnhD").dim()
+            style("Our developers are on Discord: https://qlty.sh/discord").dim()
         );
         println!();
     }

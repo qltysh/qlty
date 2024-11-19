@@ -24,10 +24,10 @@ google-java-format = "X.Y.Z"
 
 ## Links
 
--   [Google-java-format on GitHub](https://github.com/google/google-java-format)
--   [Google-java-format plugin definition](https://github.com/qltyai/plugins/tree/main/linters/google-java-format)
--   [Google-java-format releases](https://github.com/google/google-java-format/releases)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [Google-java-format on GitHub](https://github.com/google/google-java-format)
+- [Google-java-format plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/google-java-format)
+- [Google-java-format releases](https://github.com/google/google-java-format/releases)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

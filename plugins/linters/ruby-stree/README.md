@@ -23,16 +23,16 @@ ruby-stree will be automatically enabled by `qlty init` if a `.streerc` configur
 
 ## Configuration files
 
--   [`.streerc`](https://github.com/ruby-syntax-tree/syntax_tree?tab=readme-ov-file#configuration)
+- [`.streerc`](https://github.com/ruby-syntax-tree/syntax_tree?tab=readme-ov-file#configuration)
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running ruby-stree.
 
 ## Links
 
--   [syntax_tree on GitHub](https://github.com/ruby-syntax-tree/syntax_tree)
--   [ruby-stree plugin definition](https://github.com/qltyai/plugins/tree/main/linters/ruby-stree)
--   [syntax_tree releases](https://github.com/ruby-syntax-tree/syntax_tree/tags)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [syntax_tree on GitHub](https://github.com/ruby-syntax-tree/syntax_tree)
+- [ruby-stree plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/ruby-stree)
+- [syntax_tree releases](https://github.com/ruby-syntax-tree/syntax_tree/tags)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

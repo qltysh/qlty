@@ -28,16 +28,16 @@ Semgrep will be automatically enabled by `qlty init` if a `.semgrep.yaml` config
 
 ## Configuration files
 
--   [`.semgrep.yaml`](https://semgrep.dev/docs/writing-rules/overview/)
+- [`.semgrep.yaml`](https://semgrep.dev/docs/writing-rules/overview/)
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Semgrep.
 
 ## Links
 
--   [Semgrep on GitHub](https://github.com/semgrep/semgrep)
--   [Semgrep plugin definition](https://github.com/qltyai/plugins/tree/main/linters/semgrep)
--   [Semgrep releases](https://github.com/semgrep/semgrep/releases)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [Semgrep on GitHub](https://github.com/semgrep/semgrep)
+- [Semgrep plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/semgrep)
+- [Semgrep releases](https://github.com/semgrep/semgrep/releases)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

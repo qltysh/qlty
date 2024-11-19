@@ -28,16 +28,16 @@ Standardrb will be automatically enabled by `qlty init` if a `.standard.yml` con
 
 ## Configuration files
 
--   [`.standard.yml`](https://github.com/standardrb/standard?tab=readme-ov-file#yaml-options)
+- [`.standard.yml`](https://github.com/standardrb/standard?tab=readme-ov-file#yaml-options)
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Standardrb.
 
 ## Links
 
--   [Standardrb on GitHub](https://github.com/standardrb/standard)
--   [Standardrb plugin definition](https://github.com/qltyai/plugins/tree/main/linters/standardrb)
--   [Standardrb releases](https://github.com/standardrb/standard/releases)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [Standardrb on GitHub](https://github.com/standardrb/standard)
+- [Standardrb plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/standardrb)
+- [Standardrb releases](https://github.com/standardrb/standard/releases)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

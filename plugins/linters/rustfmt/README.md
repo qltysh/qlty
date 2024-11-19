@@ -28,16 +28,16 @@ Rustfmt will be automatically enabled by `qlty init` if a `.rustfmt.toml` config
 
 ## Configuration files
 
--   [`.rustfmt.toml`](https://github.com/rust-lang/rustfmt?tab=readme-ov-file#configuring-rustfmt)
+- [`.rustfmt.toml`](https://github.com/rust-lang/rustfmt?tab=readme-ov-file#configuring-rustfmt)
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Rustfmt.
 
 ## Links
 
--   [Rustfmt on GitHub](https://github.com/rust-lang/rustfmt)
--   [Rustfmt plugin definition](https://github.com/qltyai/plugins/tree/main/linters/rustfmt)
--   [Rustfmt releases](https://github.com/rust-lang/rustfmt/releases)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [Rustfmt on GitHub](https://github.com/rust-lang/rustfmt)
+- [Rustfmt plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/rustfmt)
+- [Rustfmt releases](https://github.com/rust-lang/rustfmt/releases)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

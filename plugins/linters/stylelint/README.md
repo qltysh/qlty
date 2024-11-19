@@ -28,16 +28,16 @@ Stylelint will be automatically enabled by `qlty init` if a `.stylelintrc` confi
 
 ## Configuration files
 
--   [`.stylelintrc`](https://github.com/stylelint/stylelint/blob/main/docs/user-guide/configure.md)
+- [`.stylelintrc`](https://github.com/stylelint/stylelint/blob/main/docs/user-guide/configure.md)
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Stylelint.
 
 ## Links
 
--   [Stylelint on GitHub](https://github.com/stylelint/stylelint)
--   [Stylelint plugin definition](https://github.com/qltyai/plugins/tree/main/linters/stylelint)
--   [Stylelint releases](https://github.com/stylelint/stylelint/releases)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [Stylelint on GitHub](https://github.com/stylelint/stylelint)
+- [Stylelint plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/stylelint)
+- [Stylelint releases](https://github.com/stylelint/stylelint/releases)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

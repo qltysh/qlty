@@ -28,16 +28,16 @@ Sqlfluff will be automatically enabled by `qlty init` if a `.sqlfluff` configura
 
 ## Configuration files
 
--   [`.sqlfluff`](https://docs.sqlfluff.com/en/stable/configuration.html#configuration-files)
+- [`.sqlfluff`](https://docs.sqlfluff.com/en/stable/configuration.html#configuration-files)
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Sqlfluff.
 
 ## Links
 
--   [Sqlfluff on GitHub](https://github.com/sqlfluff/sqlfluff)
--   [Sqlfluff plugin definition](https://github.com/qltyai/plugins/tree/main/linters/sqlfluff)
--   [Sqlfluff releases](https://github.com/sqlfluff/sqlfluff/releases)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [Sqlfluff on GitHub](https://github.com/sqlfluff/sqlfluff)
+- [Sqlfluff plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/sqlfluff)
+- [Sqlfluff releases](https://github.com/sqlfluff/sqlfluff/releases)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

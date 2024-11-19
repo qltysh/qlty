@@ -24,10 +24,10 @@ trufflehog = "X.Y.Z"
 
 ## Links
 
--   [TruffleHog on GitHub](https://github.com/trufflesecurity/trufflehog)
--   [TruffleHog plugin definition](https://github.com/qltyai/plugins/tree/main/linters/trufflehog)
--   [TruffleHog releases](https://github.com/trufflesecurity/trufflehog/releases)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [TruffleHog on GitHub](https://github.com/trufflesecurity/trufflehog)
+- [TruffleHog plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/trufflehog)
+- [TruffleHog releases](https://github.com/trufflesecurity/trufflehog/releases)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

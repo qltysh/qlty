@@ -28,16 +28,16 @@ Gitleaks will be automatically enabled by `qlty init` if a `.gitleaks.toml` conf
 
 ## Configuration files
 
--   [`.gitleaks.toml`](https://github.com/gitleaks/gitleaks/tree/master?tab=readme-ov-file#configuration)
+- [`.gitleaks.toml`](https://github.com/gitleaks/gitleaks/tree/master?tab=readme-ov-file#configuration)
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Gitleaks.
 
 ## Links
 
--   [Gitleaks on GitHub](https://github.com/gitleaks/gitleaks)
--   [Gitleaks plugin definition](https://github.com/qltyai/plugins/tree/main/linters/gitleaks)
--   [Gitleaks releases](https://github.com/gitleaks/gitleaks/releases)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [Gitleaks on GitHub](https://github.com/gitleaks/gitleaks)
+- [Gitleaks plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/gitleaks)
+- [Gitleaks releases](https://github.com/gitleaks/gitleaks/releases)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

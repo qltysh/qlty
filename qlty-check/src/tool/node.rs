@@ -158,7 +158,7 @@ impl Tool for NodePackage {
 
     fn package_install(&self, _task: &ProgressTask, name: &str, version: &str) -> Result<()> {
         // Create `node_modules` directory as a bandaid for:
-        // https://github.com/qltyai/qlty/issues/1588
+        // https://github.com/qltysh/cloud/issues/1588
         let node_modules_path = std::path::PathBuf::from(&self.directory()).join("node_modules");
         std::fs::create_dir_all(&node_modules_path)?;
 

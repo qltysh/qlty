@@ -99,7 +99,11 @@ Contributions require agreeing to our [Contributor License Agreement](https://gi
 
 ## License
 
-Qlty CLI is licensed under the Functional Source License (FSL). More details are available in LICENSE.md.
+Qlty CLI is licensed under a version of the Functional Source License (FSL). Qlty CLI is free to use, modify, and distribute in accordance with the FSL.
+
+This codebase transitions into Open Source via a Delayed Open Source Publication (DOSP). More details are available in LICENSE.md.
+
+Licenses for code incorporated into Qlty CLI can be found in the docs/licenses folder.
 
 ## Acknowledgments
 

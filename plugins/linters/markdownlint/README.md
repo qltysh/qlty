@@ -28,16 +28,16 @@ Markdownlint will be automatically enabled by `qlty init` if a `.markdownlint.js
 
 ## Configuration files
 
--   [`.markdownlint.json`](https://github.com/DavidAnson/markdownlint?tab=readme-ov-file#config)
+- [`.markdownlint.json`](https://github.com/DavidAnson/markdownlint?tab=readme-ov-file#config)
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Markdownlint.
 
 ## Links
 
--   [Markdownlint on GitHub](https://github.com/davidanson/markdownlint)
--   [Markdownlint plugin definition](https://github.com/qltyai/plugins/tree/main/linters/markdownlint)
--   [Markdownlint releases](https://github.com/DavidAnson/markdownlint/blob/main/CHANGELOG.md)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [Markdownlint on GitHub](https://github.com/davidanson/markdownlint)
+- [Markdownlint plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/markdownlint)
+- [Markdownlint releases](https://github.com/DavidAnson/markdownlint/blob/main/CHANGELOG.md)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

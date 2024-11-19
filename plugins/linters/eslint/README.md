@@ -28,16 +28,16 @@ ESLint will be automatically enabled by `qlty init` if a `.eslintrc` configurati
 
 ## Configuration files
 
--   [`.eslintrc`](https://eslint.org/docs/latest/use/configure/configuration-files)
+- [`.eslintrc`](https://eslint.org/docs/latest/use/configure/configuration-files)
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running ESLint.
 
 ## Links
 
--   [ESLint on GitHub](https://github.com/eslint/eslint)
--   [ESLint plugin definition](https://github.com/qltyai/plugins/tree/main/linters/eslint)
--   [ESLint releases](https://github.com/eslint/eslint/releases)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [ESLint on GitHub](https://github.com/eslint/eslint)
+- [ESLint plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/eslint)
+- [ESLint releases](https://github.com/eslint/eslint/releases)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 
