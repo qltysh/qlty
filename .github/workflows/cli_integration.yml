@@ -27,7 +27,7 @@ jobs:
     name: Build Release CLI
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ github.job }}
       cancel-in-progress: true
     steps:
       - name: Checkout cloud
