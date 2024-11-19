@@ -201,12 +201,16 @@ impl GitSource {
             })?
         };
 
-        origin.fetch(branches, None, None).with_context(|| {
-            format!(
-                "Failed to fetch branch {:?} from remote origin {}",
-                branches, self.origin
-            )
-        })
+        if branches.is_empty() {
+            Ok(())
+        } else {
+            origin.fetch(branches, None, None).with_context(|| {
+                format!(
+                    "Failed to fetch branches {:?} from remote origin {}",
+                    branches, self.origin
+                )
+            })
+        }
     }
 
     fn global_origin_path(&self) -> Result<PathBuf> {
