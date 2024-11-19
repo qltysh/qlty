@@ -43,7 +43,7 @@ pub struct Init {
 
     /// Warning: this option has been deprecated!
     /// Enable plugin prefix detection.
-    #[arg(long)]
+    #[arg(hide = true, long)]
     pub with_prefixes: bool,
 }
 
