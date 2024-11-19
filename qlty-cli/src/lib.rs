@@ -42,7 +42,7 @@ pub fn run_command_line() {
     let arguments = Arguments::parse();
     debug!("Arguments: {:?}", arguments);
 
-    let telemetry = Telemetry::new(&command, start_time, repository_path.clone(), None);
+    let telemetry = Telemetry::new(&command, start_time, repository_path.clone());
     setup_panic_hook(telemetry.clone());
 
     let result = arguments.execute();

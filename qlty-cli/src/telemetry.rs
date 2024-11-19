@@ -30,7 +30,6 @@ const DETACHED_PROCESS: u32 = 0x00000008;
 
 #[derive(Clone)]
 pub struct Telemetry {
-    user_id: Option<String>,
     command: String,
     pub start_time: Instant,
     repository_path: Option<PathBuf>,
@@ -45,14 +44,8 @@ pub enum TelemetryLevel {
 }
 
 impl Telemetry {
-    pub fn new(
-        command: &str,
-        start_time: Instant,
-        repository_path: Option<PathBuf>,
-        user_id: Option<String>,
-    ) -> Self {
+    pub fn new(command: &str, start_time: Instant, repository_path: Option<PathBuf>) -> Self {
         Telemetry {
-            user_id,
             command: command.to_owned(),
             start_time,
             repository_path: repository_path.clone(),
@@ -136,7 +129,7 @@ impl Telemetry {
         let message_id = Uuid::new_v4().to_string();
 
         let track = Track {
-            user: segment_user(self.user_id.clone(), anonymous_id()?),
+            user: segment_user(None, anonymous_id()?),
             event: event.to_owned(),
             properties,
             context: Some(segment_context()),
@@ -145,7 +138,7 @@ impl Telemetry {
                 .iter()
                 .cloned()
                 .collect(),
-            ..Default::default()
+            integrations: None,
         };
 
         let batch = Batch {

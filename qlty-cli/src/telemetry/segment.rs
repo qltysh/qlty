@@ -171,15 +171,7 @@ pub enum User {
     },
 }
 
-impl Default for User {
-    fn default() -> Self {
-        User::AnonymousId {
-            anonymous_id: "".to_owned(),
-        }
-    }
-}
-
-#[derive(PartialEq, Eq, Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(PartialEq, Eq, Debug, Clone, Serialize, Deserialize)]
 pub struct Track {
     /// The user associated with this message.
     #[serde(flatten)]

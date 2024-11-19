@@ -65,6 +65,14 @@ Review a summary of code quality metrics:
 qlty metrics --all --max-depth=2 --sort complexity --limit 10
 ```
 
+## Plugins
+
+Qlty CLI is powered by a set of 40+ plugins for static analysis tools like linters, auto-formatters, and security scanners. Plugin definitions can be found in the [`plugins/linters` directory](https://github.com/qltysh/qlty/tree/main/plugins/linters).
+
+Creating a plugin can be as easy as writing a small plugin definition TOML file. If the tool has a custom output format (instead of a standard like [SARIF](https://sarifweb.azurewebsites.net/)), then writing a simple output parser in Rust is also needed.
+
+We also happily accept requests for new plugins via [GitHub issues](https://github.com/qltysh/qlty/issues/new/choose).
+
 ## Configuration
 
 Qlty CLI is configured using a `.qlty/qlty.toml` file in your Git repository. You can generate a default configuration with `qlty init` and then customize it.

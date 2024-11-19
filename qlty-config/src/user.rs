@@ -10,8 +10,6 @@ use crate::Library;
 pub struct UserData {
     pub version: String,
 
-    pub anonymous_id: String,
-
     pub openai_api_key: Option<String>,
 
     #[serde_as(as = "TimestampSeconds<i64>")]
@@ -22,7 +20,6 @@ impl Default for UserData {
     fn default() -> Self {
         Self {
             version: "0".to_string(),
-            anonymous_id: uuid::Uuid::new_v4().to_string(),
             openai_api_key: None,
             version_checked_at: SystemTime::UNIX_EPOCH,
         }
