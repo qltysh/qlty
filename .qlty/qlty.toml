@@ -39,6 +39,7 @@ exclude_patterns = [
     "**/testdata/**",
     "**/vendor/**",
     "**/assets/**",
+    "**/linters/**",
 ]
 
 test_patterns = [
@@ -66,35 +67,7 @@ name = "bandit"
 version = "1.7.9"
 
 [[plugin]]
-name = "brakeman"
-
-[[plugin]]
-name = "checkov"
-
-[[plugin]]
 name = "clippy"
-
-[[plugin]]
-name = "coffeelint"
-
-[[plugin]]
-name = "dotenv-linter"
-
-[[plugin]]
-name = "eslint"
-version = "9.7.0"
-
-[[plugin]]
-name = "flake8"
-
-[[plugin]]
-name = "gofmt"
-
-[[plugin]]
-name = "golangci-lint"
-
-[[plugin]]
-name = "hadolint"
 
 [[plugin]]
 name = "markdownlint"
@@ -104,29 +77,10 @@ version = "0.41.0"
 name = "osv-scanner"
 
 [[plugin]]
-name = "php-codesniffer"
-
-[[plugin]]
-name = "phpstan"
-
-[[plugin]]
 name = "prettier"
 
 [[plugin]]
-name = "radarlint"
-
-[[plugin]]
 name = "ripgrep"
-
-[[plugin]]
-name = "rubocop"
-
-[[plugin]]
-name = "ruff"
-version = "0.5.3"
-
-# [[plugin]]
-# name = "semgrep"
 
 [[plugin]]
 name = "shellcheck"
@@ -135,16 +89,8 @@ name = "shellcheck"
 name = "shfmt"
 
 [[plugin]]
-name = "standardrb"
-
-[[plugin]]
 name = "stylelint"
 version = "14.6.1"
-
-[[plugin]]
-name = "trivy"
-drivers = ["fs-vuln", "config"]
-version = "0.53.0"
 
 [[plugin]]
 name = "trufflehog"
