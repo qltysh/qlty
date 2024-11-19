@@ -32,7 +32,9 @@ struct GolangciLintIssue {
 #[derive(Debug, Deserialize, Clone)]
 struct GolangciLintReplacement {
     #[serde(rename = "NewLines")]
-    new_lines: Vec<String>,
+    new_lines: Option<Vec<String>>,
+    #[serde(rename = "NeedOnlyDelete")]
+    need_only_delete: bool,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -104,10 +106,18 @@ fn build_suggestions(
     let mut suggestions = vec![];
 
     if let Some(replacement) = &golangcilint_issue.replacement {
-        let replacement_text = replacement.new_lines.join("\n");
+        let replacement_text = if let Some(new_lines) = &replacement.new_lines {
+            new_lines.join("\n")
+        } else {
+            "".to_string()
+        };
 
         let (start_line, end_line) = if let Some(line_range) = &golangcilint_issue.line_range {
-            (line_range.from, line_range.to)
+            if replacement.need_only_delete {
+                (line_range.from, line_range.to + 1)
+            } else {
+                (line_range.from, line_range.to)
+            }
         } else {
             (golangcilint_issue.pos.line, golangcilint_issue.pos.line)
         };
@@ -153,8 +163,8 @@ mod test {
                 "Replacement": null,
                 "Pos": {
                     "Filename": "basic.in.go",
-                    "Offset": 217,
-                    "Line": 12,
+                    "Offset": 218,
+                    "Line": 13,
                     "Column": 12
                 },
                 "ExpectNoLint": false,
@@ -191,6 +201,26 @@ mod test {
                 },
                 "LineRange": { "From": 3, "To": 4 },
                 "Pos": { "Filename": "basic.in.go", "Offset": 0, "Line": 3, "Column": 0 },
+                "ExpectNoLint": false,
+                "ExpectedNoLintLinter": ""
+                },
+                {
+                "FromLinter": "whitespace",
+                "Text": "unnecessary leading newline",
+                "Severity": "",
+                "SourceLines": [""],
+                "Replacement": {
+                    "NeedOnlyDelete": true,
+                    "NewLines": null,
+                    "Inline": null
+                },
+                "LineRange": { "From": 9, "To": 9 },
+                "Pos": {
+                    "Filename": "basic.in.go",
+                    "Offset": 105,
+                    "Line": 8,
+                    "Column": 14
+                },
                 "ExpectNoLint": false,
                 "ExpectedNoLintLinter": ""
                 }
@@ -331,7 +361,7 @@ mod test {
           location:
             path: basic.in.go
             range:
-              startLine: 12
+              startLine: 13
               startColumn: 12
         - tool: golangcilint
           ruleKey: godot
@@ -372,6 +402,25 @@ mod test {
                       startLine: 3
                       endLine: 4
                       endColumn: 13
+        - tool: golangcilint
+          ruleKey: whitespace
+          message: unnecessary leading newline
+          level: LEVEL_MEDIUM
+          category: CATEGORY_LINT
+          location:
+            path: basic.in.go
+            range:
+              startLine: 8
+              startColumn: 14
+          suggestions:
+            - source: SUGGESTION_SOURCE_TOOL
+              replacements:
+                - location:
+                    path: basic.in.go
+                    range:
+                      startLine: 9
+                      endLine: 10
+                      endColumn: 1
         "###);
     }
 }
