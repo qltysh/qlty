@@ -28,16 +28,16 @@ Shellcheck will be automatically enabled by `qlty init` if a `shellcheckrc` conf
 
 ## Configuration files
 
--   `shellcheckrc`
+- `shellcheckrc`
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Shellcheck.
 
 ## Links
 
--   [Shellcheck on GitHub](https://github.com/koalaman/shellcheck)
--   [Shellcheck plugin definition](https://github.com/qltyai/plugins/tree/main/linters/shellcheck)
--   [Shellcheck releases](https://github.com/koalaman/shellcheck/releases)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [Shellcheck on GitHub](https://github.com/koalaman/shellcheck)
+- [Shellcheck plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/shellcheck)
+- [Shellcheck releases](https://github.com/koalaman/shellcheck/releases)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

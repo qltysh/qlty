@@ -28,16 +28,16 @@ Rubocop will be automatically enabled by `qlty init` if a `.rubocop.yml` configu
 
 ## Configuration files
 
--   [`.rubocop.yml`](https://docs.rubocop.org/rubocop/1.63/configuration.html)
+- [`.rubocop.yml`](https://docs.rubocop.org/rubocop/1.63/configuration.html)
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Rubocop.
 
 ## Links
 
--   [Rubocop on GitHub](https://github.com/rubocop/rubocop)
--   [Rubocop plugin definition](https://github.com/qltyai/plugins/tree/main/linters/rubocop)
--   [Rubocop releases](https://github.com/rubocop/rubocop/releases)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [Rubocop on GitHub](https://github.com/rubocop/rubocop)
+- [Rubocop plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/rubocop)
+- [Rubocop releases](https://github.com/rubocop/rubocop/releases)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

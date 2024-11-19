@@ -44,13 +44,13 @@ mod test {
     #[test]
     fn normalized_equality() {
         assert_eq!(
-            normalize_git_url("https://github.com/qltyai/qlty.git"),
-            normalize_git_url("git@github.com:qltyai/qlty.git")
+            normalize_git_url("https://github.com/qltysh/qlty.git"),
+            normalize_git_url("git@github.com:qltysh/qlty.git")
         );
 
         assert_eq!(
-            normalize_git_url("http://github.com/qltyai/qlty"),
-            normalize_git_url("https://github.com/qltyai/qlty.git")
+            normalize_git_url("http://github.com/qltysh/qlty"),
+            normalize_git_url("https://github.com/qltysh/qlty.git")
         );
     }
 }

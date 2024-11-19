@@ -24,10 +24,10 @@ black = "X.Y.Z"
 
 ## Links
 
--   [Black on GitHub](https://github.com/psf/black)
--   [Black plugin definition](https://github.com/qltyai/plugins/tree/main/linters/black)
--   [Black releases](https://github.com/psf/black/releases)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [Black on GitHub](https://github.com/psf/black)
+- [Black plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/black)
+- [Black releases](https://github.com/psf/black/releases)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

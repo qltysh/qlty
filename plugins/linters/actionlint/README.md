@@ -28,16 +28,16 @@ Actionlint will be automatically enabled by `qlty init` if a `.github/actionlint
 
 ## Configuration files
 
--   [`.github/actionlint.yaml`](https://github.com/rhysd/actionlint/blob/main/docs/config.md#configuration-file)
+- [`.github/actionlint.yaml`](https://github.com/rhysd/actionlint/blob/main/docs/config.md#configuration-file)
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Actionlint.
 
 ## Links
 
--   [Actionlint on GitHub](https://github.com/rhysd/actionlint)
--   [Actionlint plugin definition](https://github.com/qltyai/plugins/tree/main/linters/actionlint)
--   [Actionlint releases](https://github.com/rhysd/actionlint/releases)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [Actionlint on GitHub](https://github.com/rhysd/actionlint)
+- [Actionlint plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/actionlint)
+- [Actionlint releases](https://github.com/rhysd/actionlint/releases)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

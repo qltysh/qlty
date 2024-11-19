@@ -29,16 +29,16 @@ Flake8 will be automatically enabled by `qlty init` if a `.flake8` configuration
 
 ## Configuration files
 
--   [`.flake8`](https://flake8.pycqa.org/en/latest/user/configuration.html#configuration-locations)
+- [`.flake8`](https://flake8.pycqa.org/en/latest/user/configuration.html#configuration-locations)
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Flake8.
 
 ## Links
 
--   [Flake8 on GitHub](https://github.com/pycqa/flake8)
--   [Flake8 plugin definition](https://github.com/qltyai/plugins/tree/main/linters/flake8)
--   [Flake8 releases](https://flake8.pycqa.org/en/latest/release-notes/index.html)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [Flake8 on GitHub](https://github.com/pycqa/flake8)
+- [Flake8 plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/flake8)
+- [Flake8 releases](https://flake8.pycqa.org/en/latest/release-notes/index.html)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

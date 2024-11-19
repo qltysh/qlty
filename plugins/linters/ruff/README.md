@@ -28,16 +28,16 @@ Ruff will be automatically enabled by `qlty init` if a `ruff.toml` configuration
 
 ## Configuration files
 
--   [`ruff.toml`](https://github.com/astral-sh/ruff?tab=readme-ov-file#configuration)
+- [`ruff.toml`](https://github.com/astral-sh/ruff?tab=readme-ov-file#configuration)
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Ruff.
 
 ## Links
 
--   [Ruff on GitHub](https://github.com/astral-sh/ruff)
--   [Ruff plugin definition](https://github.com/qltyai/plugins/tree/main/linters/ruff)
--   [Ruff releases](https://github.com/astral-sh/ruff/releases)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [Ruff on GitHub](https://github.com/astral-sh/ruff)
+- [Ruff plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/ruff)
+- [Ruff releases](https://github.com/astral-sh/ruff/releases)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

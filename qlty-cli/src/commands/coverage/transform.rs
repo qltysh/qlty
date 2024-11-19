@@ -89,11 +89,7 @@ impl Transform {
 
     fn print_initial_messages(&self) {
         eprintln_unless!(self.quiet, "qlty {}", LONG_VERSION.as_str());
-        eprintln_unless!(
-            self.quiet,
-            "{}",
-            style("https://qlty.sh/docs/coverage").dim()
-        );
+        eprintln_unless!(self.quiet, "{}", style("https://qlty.sh/d/coverage").dim());
         eprintln_unless!(self.quiet, "");
     }
 

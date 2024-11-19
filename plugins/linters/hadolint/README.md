@@ -28,16 +28,16 @@ Hadolint will be automatically enabled by `qlty init` if a `.hadolint.yaml` conf
 
 ## Configuration files
 
--   [`.hadolint.yaml`](https://github.com/hadolint/hadolint?tab=readme-ov-file#configure)
+- [`.hadolint.yaml`](https://github.com/hadolint/hadolint?tab=readme-ov-file#configure)
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Hadolint.
 
 ## Links
 
--   [Hadolint on GitHub](https://github.com/hadolint/hadolint)
--   [Hadolint plugin definition](https://github.com/qltyai/plugins/tree/main/linters/hadolint)
--   [Hadolint releases](https://github.com/hadolint/hadolint/releases)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [Hadolint on GitHub](https://github.com/hadolint/hadolint)
+- [Hadolint plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/hadolint)
+- [Hadolint releases](https://github.com/hadolint/hadolint/releases)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 

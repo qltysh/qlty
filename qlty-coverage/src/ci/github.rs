@@ -164,13 +164,13 @@ mod test {
             "GITHUB_SERVER_URL".to_string(),
             "https://github.com".to_string(),
         );
-        env.insert("GITHUB_REPOSITORY".to_string(), "qltyai/qlty".to_string());
+        env.insert("GITHUB_REPOSITORY".to_string(), "qltysh/qlty".to_string());
 
         let ci = GitHub {
             env: Box::new(HashMapEnv::new(env)),
         };
-        assert_eq!(&ci.repository_name(), "qltyai/qlty");
-        assert_eq!(&ci.repository_url(), "https://github.com/qltyai/qlty");
+        assert_eq!(&ci.repository_name(), "qltysh/qlty");
+        assert_eq!(&ci.repository_url(), "https://github.com/qltysh/qlty");
     }
 
     #[test]
@@ -199,7 +199,7 @@ mod test {
             "GITHUB_SERVER_URL".to_string(),
             "https://github.com".to_string(),
         );
-        env.insert("GITHUB_REPOSITORY".to_string(), "qltyai/qlty".to_string());
+        env.insert("GITHUB_REPOSITORY".to_string(), "qltysh/qlty".to_string());
         env.insert("GITHUB_REF_TYPE".to_string(), "branch".to_string());
         env.insert(
             "GITHUB_HEAD_REF".to_string(),
@@ -216,7 +216,7 @@ mod test {
         };
         assert_eq!(&ci.branch(), "feature-branch-1");
         assert_eq!(&ci.pull_number(), "42");
-        assert_eq!(&ci.pull_url(), "https://github.com/qltyai/qlty/pull/42");
+        assert_eq!(&ci.pull_url(), "https://github.com/qltysh/qlty/pull/42");
         assert_eq!(&ci.commit_sha(), "77948d72a8b5ea21bb335e8e674bad99413da7a2");
     }
 
@@ -240,7 +240,7 @@ mod test {
             "GITHUB_SERVER_URL".to_string(),
             "https://github.com".to_string(),
         );
-        env.insert("GITHUB_REPOSITORY".to_string(), "qltyai/qlty".to_string());
+        env.insert("GITHUB_REPOSITORY".to_string(), "qltysh/qlty".to_string());
         env.insert("GITHUB_RUN_ID".to_string(), "42".to_string());
         env.insert("GITHUB_RUN_ATTEMPT".to_string(), "3".to_string());
 
@@ -250,7 +250,7 @@ mod test {
         assert_eq!(&ci.build_id(), "42:3");
         assert_eq!(
             &ci.build_url(),
-            "https://github.com/qltyai/qlty/actions/runs/42:3"
+            "https://github.com/qltysh/qlty/actions/runs/42:3"
         );
     }
 }

@@ -28,16 +28,16 @@ Bandit will be automatically enabled when python files are present.
 
 ## Configuration files
 
--   [`.bandit`](https://bandit.readthedocs.io/en/latest/config.html)
+- [`.bandit`](https://bandit.readthedocs.io/en/latest/config.html)
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Bandit.
 
 ## Links
 
--   [Bandit on GitHub](https://github.com/pycqa/bandit)
--   [Bandit plugin definition](https://github.com/qltyai/plugins/tree/main/linters/bandit)
--   [Bandit releases](https://github.com/pycqa/bandit/releases)
--   [Qlty's open source plugin definitions](https://github.com/qltyai/plugins)
+- [Bandit on GitHub](https://github.com/pycqa/bandit)
+- [Bandit plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/bandit)
+- [Bandit releases](https://github.com/pycqa/bandit/releases)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
 
 ## License
 
