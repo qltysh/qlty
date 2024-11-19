@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.container }}
       cancel-in-progress: true
     strategy:
       fail-fast: false
