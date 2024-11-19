@@ -128,7 +128,6 @@ impl Scanner {
                         package_filters,
                         plugin_initializer,
                         path_osstr,
-                        self.settings.with_prefixes,
                     );
                 }
 
@@ -355,7 +354,6 @@ impl Scanner {
         package_filters: Vec<String>,
         plugin_initializer: &PluginInitializer,
         path: &str,
-        with_prefixes: bool,
     ) {
         if let Some(plugin_to_activate) =
             plugins_to_activate.get_mut(&plugin_initializer.plugin_name)
@@ -365,21 +363,12 @@ impl Scanner {
                 .extend(package_filters.clone());
 
             if let Some(package_file) = &plugin_to_activate.package_file {
-                if with_prefixes {
-                    plugin_to_activate.package_file = Self::process_plugin_package_file_prefix(
-                        package_file,
-                        &mut plugin_to_activate.prefixes,
-                    );
+                plugin_to_activate.package_file = Self::process_plugin_package_file_prefix(
+                    package_file,
+                    &mut plugin_to_activate.prefixes,
+                );
 
-                    Self::process_plugin_package_file_prefix(
-                        path,
-                        &mut plugin_to_activate.prefixes,
-                    );
-                } else if PathBuf::from(path).components().count()
-                    < PathBuf::from(package_file).components().count()
-                {
-                    plugin_to_activate.package_file = Some(path.to_owned());
-                }
+                Self::process_plugin_package_file_prefix(path, &mut plugin_to_activate.prefixes);
             } else {
                 plugin_to_activate.package_file = Some(path.to_owned());
             }
@@ -501,7 +490,6 @@ config_files = ["config.toml"]
             skip_plugins: false,
             skip_default_source: true,
             source: Some(source_spec.clone()),
-            with_prefixes: false,
         };
 
         (
@@ -629,62 +617,6 @@ config_files = ["config.toml"]
     }
 
     #[test]
-    fn test_insert_package_filters_and_package_file_simple() {
-        let mut plugins_to_activate = HashMap::new();
-        let plugin_initializer = PluginInitializer {
-            plugin_name: "test".to_string(),
-            package_file_candidate: None,
-            package_file_candidate_filters: vec![],
-            driver_initializers: vec![],
-        };
-
-        let path = "deep/package.json";
-
-        Scanner::insert_package_filters_and_package_file(
-            &mut plugins_to_activate,
-            vec!["test".to_string()],
-            &plugin_initializer,
-            path,
-            false,
-        );
-
-        assert_eq!(plugins_to_activate.len(), 1);
-        assert_eq!(
-            plugins_to_activate.get("test").unwrap().package_file,
-            Some(path.to_string())
-        );
-        assert_eq!(
-            plugins_to_activate.get("test").unwrap().package_filters,
-            vec!["test".to_string()]
-        );
-
-        let path = "package.json";
-
-        Scanner::insert_package_filters_and_package_file(
-            &mut plugins_to_activate,
-            vec!["test2".to_string()],
-            &plugin_initializer,
-            path,
-            false,
-        );
-
-        assert_eq!(plugins_to_activate.len(), 1);
-        assert_eq!(
-            plugins_to_activate.get("test").unwrap().package_file,
-            Some(path.to_string())
-        );
-        assert_eq!(
-            plugins_to_activate.get("test").unwrap().package_filters,
-            vec!["test".to_string(), "test2".to_string()]
-        );
-
-        assert_eq!(
-            plugins_to_activate.get("test").unwrap().prefixes,
-            HashSet::new()
-        );
-    }
-
-    #[test]
     fn test_insert_package_filters_and_package_file_with_prefixes() {
         let mut plugins_to_activate = HashMap::new();
         let plugin_initializer = PluginInitializer {
@@ -701,7 +633,6 @@ config_files = ["config.toml"]
             vec!["test".to_string()],
             &plugin_initializer,
             path,
-            false,
         );
 
         assert_eq!(plugins_to_activate.len(), 1);
@@ -726,7 +657,6 @@ config_files = ["config.toml"]
             vec!["test2".to_string()],
             &plugin_initializer,
             path,
-            true,
         );
 
         assert_eq!(plugins_to_activate.len(), 1);

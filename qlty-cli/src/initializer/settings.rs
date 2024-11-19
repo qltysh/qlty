@@ -7,5 +7,4 @@ pub struct Settings {
     pub skip_plugins: bool,
     pub skip_default_source: bool,
     pub source: Option<SourceSpec>,
-    pub with_prefixes: bool,
 }

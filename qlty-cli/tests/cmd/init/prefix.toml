@@ -1,2 +1,2 @@
 bin.name = "qlty"
-args = ["init", "--dry-run", "--skip-default-source", "--source", "local=../plugins", "--no-upgrade-check", "--with-prefixes"]
+args = ["init", "--dry-run", "--skip-default-source", "--source", "local=../plugins", "--no-upgrade-check"]

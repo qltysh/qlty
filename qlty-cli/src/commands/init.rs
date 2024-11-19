@@ -40,10 +40,6 @@ pub struct Init {
     /// a path to a local directory(name=directory).
     #[arg(long, value_parser = SourceSpec::new)]
     pub source: Option<SourceSpec>,
-
-    /// Enable plugin prefix detection.
-    #[arg(long)]
-    pub with_prefixes: bool,
 }
 
 impl Init {
@@ -77,7 +73,6 @@ impl Init {
                 skip_plugins: self.skip_plugins,
                 skip_default_source: self.skip_default_source,
                 source: self.source.clone(),
-                with_prefixes: self.with_prefixes,
             })?;
 
             initializer.prepare()?;
