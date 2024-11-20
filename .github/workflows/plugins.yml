@@ -4,7 +4,17 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "plugins/**"
+      - "qlty-*/**"
+      - "Cargo.*"
+      - ".github/workflows/plugins.yml"
   pull_request:
+    paths:
+      - "plugins/**"
+      - "qlty-*/**"
+      - "Cargo.*"
+      - ".github/workflows/plugins.yml"
 
 permissions:
   actions: write
