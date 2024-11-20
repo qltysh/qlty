@@ -70,6 +70,11 @@ version = "1.7.9"
 name = "clippy"
 
 [[plugin]]
+name = "eslint"
+version = "8.57.0"
+package_file = ".qlty/configs/package.json"
+
+[[plugin]]
 name = "markdownlint"
 version = "0.41.0"
 
