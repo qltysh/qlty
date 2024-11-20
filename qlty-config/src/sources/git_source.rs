@@ -1,7 +1,7 @@
 use super::{source::SourceFetch, Source};
 use crate::Library;
 use anyhow::{Context, Result};
-use git2::{Repository, ResetType};
+use git2::{Remote, Repository, ResetType};
 use std::path::{Path, PathBuf};
 use tracing::{debug, info};
 
@@ -201,11 +201,23 @@ impl GitSource {
             })?
         };
 
+        self.fetch(&mut origin, branches)
+    }
+
+    fn fetch(&self, origin: &mut Remote, branches: &[&str]) -> Result<()> {
+        // Per libgit2, passing an empty array of refspecs fetches base refspecs
         origin.fetch(branches, None, None).with_context(|| {
-            format!(
-                "Failed to fetch branch {:?} from remote origin {}",
-                branches, self.origin
-            )
+            if branches.is_empty() {
+                format!(
+                    "Failed to fetch base refspecs from remote origin {}",
+                    self.origin
+                )
+            } else {
+                format!(
+                    "Failed to fetch branches {:?} from remote origin {}",
+                    branches, self.origin
+                )
+            }
         })
     }
 
