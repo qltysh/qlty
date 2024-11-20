@@ -1,7 +1,7 @@
 use self::sanitize::sanitize_command;
 use crate::arguments::is_subcommand;
 use crate::telemetry::git::repository_identifier;
-use crate::telemetry::segment::{segment_context, segment_user, Batch, BatchMessage, Track};
+use crate::telemetry::segment::{segment_context, segment_user, Track};
 use crate::{errors::CommandError, success::CommandSuccess};
 use ::sentry::integrations::panic::message_from_panic_info;
 use anyhow::Result;
@@ -72,7 +72,7 @@ impl Telemetry {
             properties["Issues Count"] = json!(issues_count);
         }
 
-        self.track_segment_event("Command Run", properties)
+        self.track("Command Run", properties)
     }
 
     pub fn track_command_error(&self, command_error: &CommandError) -> Result<()> {
@@ -86,10 +86,10 @@ impl Telemetry {
         properties["Exit Code"] = json!(command_error.exit_code());
         properties["Error"] = json!(format!("{}", command_error));
 
-        self.track_segment_event("Command Error", properties)
+        self.track("Command Error", properties)
     }
 
-    pub fn track_panic(&self, panic_info: &std::panic::PanicInfo<'_>) -> Result<()> {
+    pub fn panic(&self, panic_info: &std::panic::PanicInfo<'_>) -> Result<()> {
         if self.level == TelemetryLevel::Off {
             return Ok(());
         }
@@ -118,10 +118,10 @@ impl Telemetry {
             }
         }
 
-        self.background_send_to_sentry(event)
+        self.background_panic(event)
     }
 
-    fn track_segment_event(&self, event: &str, properties: serde_json::Value) -> Result<()> {
+    fn track(&self, event: &str, properties: serde_json::Value) -> Result<()> {
         debug!(
             "Tracking event to Segment (foreground): {}: {:?}",
             event, properties
@@ -141,19 +141,14 @@ impl Telemetry {
             integrations: None,
         };
 
-        let batch = Batch {
-            batch: vec![BatchMessage::Track(track)],
-            ..Default::default()
-        };
-
-        self.background_send_to_segment(&message_id, batch)
+        self.background_track(&message_id, track)
     }
 
-    fn background_send_to_segment(&self, message_id: &str, batch: Batch) -> Result<()> {
+    fn background_track(&self, message_id: &str, event: Track) -> Result<()> {
         const COMMAND: &str = "telemetry";
-        const COMMAND_ARG: &str = "--segment-payload";
+        const COMMAND_ARG: &str = "--track";
 
-        let payload = serde_json::to_string(&batch)?;
+        let payload = serde_json::to_string(&event)?;
         let filename = format!("qlty-segment-event-{}.json", message_id);
         let tempfile_path = std::env::temp_dir().join(filename);
 
@@ -200,9 +195,9 @@ impl Telemetry {
         Ok(())
     }
 
-    fn background_send_to_sentry(&self, event: ::sentry::protocol::Event) -> Result<()> {
+    fn background_panic(&self, event: ::sentry::protocol::Event) -> Result<()> {
         const COMMAND: &str = "telemetry";
-        const COMMAND_ARG: &str = "--sentry-payload";
+        const COMMAND_ARG: &str = "--panic";
 
         let payload = serde_json::to_string(&event)?;
         let filename = format!("qlty-sentry-event-{}.json", event.event_id);

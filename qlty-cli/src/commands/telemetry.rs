@@ -1,5 +1,5 @@
 use crate::{
-    telemetry::{segment::Batch, SegmentClient},
+    telemetry::{segment::Track, SegmentClient},
     Arguments, CommandError, CommandSuccess,
 };
 use anyhow::{anyhow, Result};
@@ -14,27 +14,27 @@ const SENTRY_DSN: Option<&str> = option_env!("SENTRY_DSN");
 #[derive(Args, Debug)]
 pub struct Telemetry {
     #[arg(long)]
-    pub segment_payload: Option<PathBuf>,
+    pub track: Option<PathBuf>,
 
     #[arg(long)]
-    pub sentry_payload: Option<PathBuf>,
+    pub panic: Option<PathBuf>,
 }
 
 impl Telemetry {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
-        if self.segment_payload.is_some() {
-            return self.send_payload_to_segment();
+        if self.track.is_some() {
+            return self.send_track();
         }
 
-        if self.sentry_payload.is_some() {
-            return self.send_payload_to_sentry();
+        if self.panic.is_some() {
+            return self.send_panic();
         }
 
         CommandSuccess::ok()
     }
 
-    fn send_payload_to_segment(&self) -> Result<CommandSuccess, CommandError> {
-        let payload_path = self.segment_payload.clone().unwrap();
+    fn send_track(&self) -> Result<CommandSuccess, CommandError> {
+        let payload_path = self.track.clone().unwrap();
         let current = std::env::current_dir().expect("current dir");
         let repository_path = Workspace::closest_git_repository_path(&current);
 
@@ -47,13 +47,13 @@ impl Telemetry {
         })?;
 
         let client = SegmentClient::new(repository_path.clone())?;
-        let batch: Batch = serde_json::from_str(&payload).unwrap();
-        client.send_batch(batch)?;
+        let event: Track = serde_json::from_str(&payload).unwrap();
+        client.send_track(event)?;
 
         CommandSuccess::ok()
     }
 
-    fn send_payload_to_sentry(&self) -> Result<CommandSuccess, CommandError> {
+    fn send_panic(&self) -> Result<CommandSuccess, CommandError> {
         let dsn = SENTRY_DSN.unwrap_or_default();
         if dsn.is_empty() {
             // ignore telemetry if no DSN is set
@@ -61,7 +61,7 @@ impl Telemetry {
             return CommandSuccess::ok();
         }
 
-        let payload_path = self.sentry_payload.clone().unwrap();
+        let payload_path = self.panic.clone().unwrap();
         let payload = std::fs::read_to_string(&payload_path).map_err(|err| {
             anyhow!(
                 "Unable to read telemetry payload file: {} ({:?})",
