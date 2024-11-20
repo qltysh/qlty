@@ -23,7 +23,11 @@ type Target = {
   linterVersions: any[];
 };
 
-export const getVersionsForTarget = (dirname: string, linterName: string, prefix: string) => {
+export const getVersionsForTarget = (
+  dirname: string,
+  linterName: string,
+  prefix: string,
+) => {
   let matchExists = false;
   const snapshotsDir = path.resolve(dirname, FIXTURES_DIR, SNAPSHOTS_DIR);
 
@@ -45,10 +49,18 @@ export const getVersionsForTarget = (dirname: string, linterName: string, prefix
 
   const uniqueVersionsList = Array.from(new Set(versionsList)).sort();
 
-  if (OPTIONS.linterVersion == "KnownGoodVersion" || OPTIONS.testAgainstKnownGoodVersion) {
+  if (
+    OPTIONS.linterVersion == "KnownGoodVersion" ||
+    OPTIONS.testAgainstKnownGoodVersion
+  ) {
     const knownGoodVersion = getKnownGoodVersion(dirname, linterName);
 
-    console.log("Running test for ", linterName, " with known good version: ", knownGoodVersion);
+    console.log(
+      "Running test for ",
+      linterName,
+      " with known good version: ",
+      knownGoodVersion,
+    );
 
     return [knownGoodVersion];
   } else if (OPTIONS.linterVersion) {
@@ -67,13 +79,17 @@ export const getVersionsForTarget = (dirname: string, linterName: string, prefix
 };
 
 export const getKnownGoodVersion = (dirname: string, linterName: string) => {
-  const plugin_file = fs.readFileSync(path.resolve(dirname, "plugin.toml"), "utf8");
+  const plugin_file = fs.readFileSync(
+    path.resolve(dirname, "plugin.toml"),
+    "utf8",
+  );
 
   const plugin_toml = toml.parse(plugin_file);
   return plugin_toml.plugins.definitions[linterName].known_good_version;
 };
 
-const getSnapshotRegex = (prefix: string) => `${prefix}(_v(?<version>[^_]+))?.shot`;
+const getSnapshotRegex = (prefix: string) =>
+  `${prefix}(_v(?<version>[^_]+))?.shot`;
 
 const detectTargets = (linterName: string, dirname: string): Target[] => {
   const testDataDir = path.resolve(dirname, FIXTURES_DIR);
@@ -90,7 +106,11 @@ const detectTargets = (linterName: string, dirname: string): Target[] => {
       if (foundIn && prefix) {
         if (prefix) {
           const input = dir_content;
-          const linterVersions = getVersionsForTarget(dirname, linterName, prefix);
+          const linterVersions = getVersionsForTarget(
+            dirname,
+            linterName,
+            prefix,
+          );
           accumulator.set(prefix, { prefix, input, linterVersions });
         }
       }
@@ -109,7 +129,9 @@ export const runLinterTest = (
   const targets = detectTargets(linterName, dirname);
 
   // Skip tests for Windows for now
-  const suiteFn = SKIP_LINTERS[process.platform]?.includes(linterName) ? describe.skip : describe;
+  const suiteFn = SKIP_LINTERS[process.platform]?.includes(linterName)
+    ? describe.skip
+    : describe;
 
   suiteFn(`linter=${linterName}`, () => {
     targets.forEach(({ prefix, input, linterVersions }) => {
@@ -136,10 +158,17 @@ export const runLinterTest = (
               Debug(`${namespace}:stderr`)(testRunResult.runResult.stderr);
 
               const files = await FastGlob(
-                `${driver.sandboxPath}/.qlty/out/invocations/*.yaml`.replaceAll("\\", "/"),
+                `${driver.sandboxPath}/.qlty/out/invocations/*.yaml`.replaceAll(
+                  "\\",
+                  "/",
+                ),
               );
               for (const file of files) {
-                const invocationId = path.basename(file).split(".")[0].split("-").reverse()[0];
+                const invocationId = path
+                  .basename(file)
+                  .split(".")[0]
+                  .split("-")
+                  .reverse()[0];
                 const logNamespace = `${namespace}:invoke:${invocationId}`;
                 if (process.env.CI) {
                   Debug.enable(logNamespace);
@@ -158,7 +187,10 @@ export const runLinterTest = (
 
             assertFunction(testRunResult, snapshotPath);
 
-            if (!testResults[expect.getState().currentTestName!] || process.env.ALWAYS_LOG) {
+            if (
+              !testResults[expect.getState().currentTestName!] ||
+              process.env.ALWAYS_LOG
+            ) {
               await logOutput();
             }
           });

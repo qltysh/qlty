@@ -1,26 +1,26 @@
 {
-    "compilerOptions": {
-        "target": "es2021",
-        "module": "commonjs",
-        "moduleResolution": "Node",
-        "lib": ["es2021", "dom"],
-        "jsx": "preserve",
-        "sourceMap": true,
-        "outDir": "out",
-        "strict": true,
-        "baseUrl": ".",
-        "paths": {
-            "*": ["*"]
-        },
-        "esModuleInterop": true,
-        "experimentalDecorators": true,
-        "emitDecoratorMetadata": true,
-        "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true,
-        "traceResolution": false
+  "compilerOptions": {
+    "target": "es2021",
+    "module": "commonjs",
+    "moduleResolution": "Node",
+    "lib": ["es2021", "dom"],
+    "jsx": "preserve",
+    "sourceMap": true,
+    "outDir": "out",
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "*": ["*"]
     },
-    "ts-node": {
-        "require": ["tsconfig-paths/register"]
-    },
-    "exclude": ["node_modules"]
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "traceResolution": false
+  },
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  },
+  "exclude": ["node_modules"]
 }

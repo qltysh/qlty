@@ -10,6 +10,6 @@ class Foo {
   doSomething(baz: string, bar: string): string {
     this.bar = bar;
     this.baz = baz;
-    return (this.bar + this.baz);
+    return this.bar + this.baz;
   }
 }

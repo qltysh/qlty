@@ -1,5 +1,5 @@
 function foo() {
-  ["dog", "cat", "bear"].map(animal => {
+  ["dog", "cat", "bear"].map((animal) => {
     console.log(animal);
   });
 }

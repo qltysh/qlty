@@ -3,7 +3,9 @@ import fetch from "node-fetch";
 const GITHUB_API_VERSION = "2022-11-28";
 const VERSION_REGEX = /(\d+\.\d+\.\d+)/;
 
-export async function fetchLatestVersionFromGithub(githubRepo: string): Promise<string> {
+export async function fetchLatestVersionFromGithub(
+  githubRepo: string,
+): Promise<string> {
   const url = `https://api.github.com/repos/${githubRepo}/releases/latest`;
 
   const response = await fetch(url, {

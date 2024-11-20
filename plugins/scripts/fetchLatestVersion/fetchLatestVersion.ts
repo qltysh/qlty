@@ -13,10 +13,14 @@ const getLatestVersionForRuntime = async (
   try {
     switch (runtime) {
       case "java": {
-        return fetchLatestVersionForRunnableArchive(linterDef.runnable_archive_url);
+        return fetchLatestVersionForRunnableArchive(
+          linterDef.runnable_archive_url,
+        );
       }
       case "php": {
-        return fetchLatestVersionForRunnableArchive(linterDef.runnable_archive_url);
+        return fetchLatestVersionForRunnableArchive(
+          linterDef.runnable_archive_url,
+        );
       }
       case "ruby": {
         return fetchLatestVersionForRuby(linterDef.package);
@@ -32,7 +36,9 @@ const getLatestVersionForRuntime = async (
       }
     }
   } catch (error) {
-    throw new Error(`Failed to fetch latest version for ${runtime}/${linter}: ${error}`);
+    throw new Error(
+      `Failed to fetch latest version for ${runtime}/${linter}: ${error}`,
+    );
   }
 };
 
@@ -41,12 +47,18 @@ export const fetchLatestVersion = async (linter: string): Promise<string> => {
 
   const releases = linterDef.plugins.definitions[linter].releases;
   if (releases && releases.length > 0) {
-    return fetchLatestVersionFromGithub(linterDef.plugins.releases[releases[0]].github);
+    return fetchLatestVersionFromGithub(
+      linterDef.plugins.releases[releases[0]].github,
+    );
   }
 
   const runtime = linterDef.plugins.definitions[linter].runtime;
   if (runtime) {
-    return getLatestVersionForRuntime(linter, runtime, linterDef.plugins.definitions[linter]);
+    return getLatestVersionForRuntime(
+      linter,
+      runtime,
+      linterDef.plugins.definitions[linter],
+    );
   }
 
   throw new Error(`Failed to fetch latest version for ${linter}`);

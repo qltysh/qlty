@@ -1,3 +1,3 @@
 function foo() {
-  return true || false && true && false || true;
+  return true || (false && true && false) || true;
 }

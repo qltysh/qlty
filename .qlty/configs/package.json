@@ -1,8 +1,8 @@
 {
-    "dependencies": {
-        "eslint-plugin-import": "2.29.1",
-        "eslint-plugin-unused-imports": "^4",
-        "typescript": "5.4.2",
-        "typescript-eslint": "8.15.0"
-    }
+  "dependencies": {
+    "eslint-plugin-import": "2.29.1",
+    "eslint-plugin-unused-imports": "^4",
+    "typescript": "5.4.2",
+    "typescript-eslint": "8.15.0"
+  }
 }

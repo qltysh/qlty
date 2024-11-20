@@ -6,7 +6,12 @@ export const testResults: { [k: string]: boolean } = {};
 
 expect.extend({
   toMatchSpecificSnapshot(received: any, snapshotPath: string, ...rest: any[]) {
-    const result = (toMatchSpecificSnapshot as any).call(this, received, snapshotPath, ...rest);
+    const result = (toMatchSpecificSnapshot as any).call(
+      this,
+      received,
+      snapshotPath,
+      ...rest,
+    );
     if (this.currentTestName) {
       testResults[this.currentTestName] = result.pass;
     }
@@ -16,7 +21,9 @@ expect.extend({
 
 export const linterCheckTest = (linterName: string, dirname: string) =>
   runLinterTest(linterName, dirname, (testRunResult, snapshotPath) => {
-    expect(testRunResult.deterministicResults()).toMatchSpecificSnapshot(snapshotPath);
+    expect(testRunResult.deterministicResults()).toMatchSpecificSnapshot(
+      snapshotPath,
+    );
   });
 
 export const linterStructureTest = (linterName: string, dirname: string) =>
@@ -32,5 +39,7 @@ export const linterStructureTest = (linterName: string, dirname: string) =>
       },
     });
 
-    expect(testRunResult.runResult.outputJson).toMatchSpecificSnapshot(snapshotPath);
+    expect(testRunResult.runResult.outputJson).toMatchSpecificSnapshot(
+      snapshotPath,
+    );
   });

@@ -1,3 +1,4 @@
 function baz() {
-  if (foo && bar) {}
+  if (foo && bar) {
+  }
 }

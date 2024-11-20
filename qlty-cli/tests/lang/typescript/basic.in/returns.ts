@@ -1,24 +1,23 @@
-function f0(): void {
-}
+function f0(): void {}
 
 function f1(): void {
-    return;
+  return;
 }
 
 function f2(): void {
-    return;
-    return;
+  return;
+  return;
 }
 
 function f3(): void {
-    return;
-    return;
-    return;
+  return;
+  return;
+  return;
 }
 
 function f4(): void {
-    return;
-    return;
-    return;
-    return;
+  return;
+  return;
+  return;
+  return;
 }
