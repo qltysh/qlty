@@ -14,7 +14,7 @@
     "jest-specific-snapshot": "^8.0.0",
     "simple-git": "^3.19.1",
     "toml": "^3.0.0",
-    "ts-jest": "^29.1.1",
+    "ts-jest": "^29.2.5",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.1.6"
