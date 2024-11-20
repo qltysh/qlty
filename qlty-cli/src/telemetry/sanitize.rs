@@ -5,6 +5,22 @@ use regex::Regex;
 
 const ALLOWED_ARG_STRINGS: [&str; 4] = ["true", "false", "yes", "no"];
 const ALLOWED_ARG_PATTERNS: [&str; 2] = [r"^(\d+\.\d+\.\d+)$", r"^(\d+\.?\d*)$"];
+const ALLOWED_PATH_SEGMENTS: [&str; 14] = [
+    "bin",
+    "home",
+    "homebrew",
+    "local",
+    "Program Files",
+    "qlty",
+    "run",
+    "sbin",
+    "shims",
+    "System",
+    "user",
+    "Users",
+    "usr",
+    "var",
+];
 
 lazy_static! {
     static ref ALLOWED_ARG_REGEXES: Vec<Regex> = ALLOWED_ARG_PATTERNS
@@ -15,12 +31,11 @@ lazy_static! {
 
 pub fn sanitize_command(command: &str) -> (String, String, String) {
     let args: Vec<_> = command.split(' ').collect();
+    let program = sanitize_program(args[0]);
 
     if args.len() < 2 {
-        return (args[0].to_owned(), "".to_owned(), "".to_owned());
+        return (program, "".to_owned(), "".to_owned());
     }
-
-    let program = args[0].to_owned();
 
     let subcommand = subcommand(command);
     let subcommand_parts = subcommand.split(' ').collect::<Vec<&str>>();
@@ -32,6 +47,54 @@ pub fn sanitize_command(command: &str) -> (String, String, String) {
     }
 
     (program, subcommand, sanitized_args.join(" "))
+}
+
+fn sanitize_program(program: &str) -> String {
+    if program.contains('\\') {
+        sanitize_program_windows(program)
+    } else {
+        sanitize_program_linux(program)
+    }
+}
+
+fn sanitize_program_linux(program: &str) -> String {
+    let parts: Vec<&str> = program.split('/').collect();
+
+    let sanitized_parts = parts
+        .into_iter()
+        .map(|part| {
+            if part.is_empty() {
+                "".to_owned()
+            } else if ALLOWED_PATH_SEGMENTS.contains(&part) {
+                part.to_owned()
+            } else {
+                "VALUE".to_owned()
+            }
+        })
+        .collect::<Vec<String>>();
+
+    sanitized_parts.join("/")
+}
+
+fn sanitize_program_windows(program: &str) -> String {
+    let parts: Vec<&str> = program.split('\\').collect();
+
+    let sanitized_parts = parts
+        .into_iter()
+        .map(|part| {
+            if part.is_empty() {
+                "".to_owned()
+            } else if part.len() == 2 && part.ends_with(':') {
+                part.to_owned()
+            } else if ALLOWED_PATH_SEGMENTS.contains(&part) {
+                part.to_owned()
+            } else {
+                "VALUE".to_owned()
+            }
+        })
+        .collect::<Vec<String>>();
+
+    sanitized_parts.join("\\")
 }
 
 fn subcommand(command: &str) -> String {
@@ -77,6 +140,45 @@ fn sanitize_arg(arg: &str) -> String {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn sanitize_program_linux() {
+        assert_eq!(
+            sanitize_command("/Users/example/bin/qlty"),
+            (
+                "/Users/VALUE/bin/qlty".to_owned(),
+                "".to_owned(),
+                "".to_owned()
+            )
+        );
+
+        assert_eq!(
+            sanitize_command("/home/example/bin/qlty"),
+            (
+                "/home/VALUE/bin/qlty".to_owned(),
+                "".to_owned(),
+                "".to_owned()
+            )
+        );
+    }
+
+    #[test]
+    fn sanitize_program_windows() {
+        assert_eq!(
+            sanitize_command("C:\\bin\\qlty"),
+            ("C:\\bin\\qlty".to_owned(), "".to_owned(), "".to_owned())
+        );
+
+        assert_eq!(
+            sanitize_command("\\\\bin\\qlty"),
+            ("\\\\bin\\qlty".to_owned(), "".to_owned(), "".to_owned())
+        );
+
+        assert_eq!(
+            sanitize_command("\\qlty"),
+            ("\\qlty".to_owned(), "".to_owned(), "".to_owned())
+        );
+    }
 
     #[test]
     fn sanitize_cmd_path() {
