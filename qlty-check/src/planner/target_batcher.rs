@@ -5,7 +5,7 @@ use qlty_config::{
     config::{DriverBatchBy, DriverDef},
     Library,
 };
-use tracing::warn;
+use tracing::{debug, warn};
 
 use super::{
     config_files::PluginConfigFile, invocation_directory::InvocationDirectoryPlanner,
@@ -148,12 +148,21 @@ impl TargetBatcher {
         let mut sorted_configs = self.plugin_configs.clone();
 
         // If a config is in .qlty/configs directory
-        // Plan as if it is in the root of the workspace
+        // Batch as if it is in the root of the workspace
         // It is going to be moved there by the executor
+        // After batching is resolved revert the path back to the original to ensure cache hits
+        let mut original_path_map = HashMap::new();
         let library = Library::new(&self.workspace_root)?;
         let workspace_config_path = library.configs_dir();
         for config in &mut sorted_configs {
             if config.path.parent() == Some(&workspace_config_path) {
+                let new_path = self.workspace_root.join(config.path.file_name().unwrap());
+                original_path_map.insert(new_path.clone(), config.path.clone());
+                debug!(
+                    "Changing config file path from {:?} to {:?}",
+                    config.path, new_path
+                );
+
                 config.path = self.workspace_root.join(config.path.file_name().unwrap());
             }
         }
@@ -192,10 +201,19 @@ impl TargetBatcher {
 
         for (config_file, targets) in config_targets_map {
             for targets in targets.chunks(self.compute_chunk_size()) {
+                // Revert the path back to the original
+                let config_file_path = original_path_map
+                    .get(&config_file.path)
+                    .unwrap_or(&config_file.path);
+                let config_file = PluginConfigFile {
+                    path: config_file_path.clone(),
+                    contents: config_file.contents.clone(),
+                };
+
                 driver_target_batches.push(DriverTargetBatch {
                     targets: targets.to_vec(),
                     invocation_directory: None,
-                    config_file: Some(config_file.clone()),
+                    config_file: Some(config_file),
                 });
             }
         }
@@ -412,7 +430,9 @@ mod test {
         assert_eq!(batches[0].targets.len(), 2);
         assert_eq!(
             batches[0].config_file,
-            Some(plugin_config_file("/User/test/project_root/config1"))
+            Some(plugin_config_file(
+                "/User/test/project_root/.qlty/configs/config1"
+            ))
         );
     }
 
