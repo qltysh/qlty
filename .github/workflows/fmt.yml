@@ -1,0 +1,28 @@
+name: fmt
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - uses: qltysh/qlty-action/fmt@main
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: qlty fmt --all
+          branch: ${{ github.head_ref }}
+          commit_user_name: qltysh[bot]
+          commit_user_email: 168846912+qltysh[bot]@users.noreply.github.com
+          commit_author: qltysh[bot] <168846912+qltysh[bot]@users.noreply.github.com>
