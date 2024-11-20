@@ -14,6 +14,14 @@ pub struct Workspace {
 }
 
 impl Workspace {
+    pub fn require_initialized() -> Result<Self> {
+        Self::assert_within_initialized_project()?;
+
+        Ok(Self {
+            root: Self::assert_within_git_directory()?,
+        })
+    }
+
     pub fn new() -> Result<Self> {
         Ok(Self {
             root: Self::assert_within_git_directory()?,
@@ -95,6 +103,10 @@ impl Workspace {
         }
 
         Ok(git_repository.unwrap())
+    }
+    pub fn assert_within_initialized_project() -> Result<PathBuf> {
+        // TODO
+        Self::assert_within_git_directory()
     }
 
     pub fn assert_within_git_directory() -> Result<PathBuf> {
