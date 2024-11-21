@@ -13,11 +13,10 @@ description = "A static analyzer for web projects"
 suggested = "config"
 
 [plugins.definitions.biome.drivers.lint]
-script = "biome check --reporter=github ${target}"
+script = "biome check --reporter=json ${target}"
 success_codes = [0, 1]
 output = "stdout"
-output_format = "regex"
-output_regex = "::(?P<severity>[^ ]+) title=(?P<code>[^,]+),file=(?P<path>[^,]+),line=(?P<line>\\d+),endLine=(?P<end_line>\\d+),col=(?P<col>\\d+),endColumn=(?P<end_col>\\d+)::(?P<message>.+)"
+output_format = "biome"
 batch = true
 cache_results = true
 suggested = "config"

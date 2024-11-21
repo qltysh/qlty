@@ -3,9 +3,11 @@ use qlty_types::analysis::v1::Issue;
 
 pub mod actionlint;
 pub mod bandit;
+pub mod biome;
 pub mod clippy;
 pub mod coffeelint;
 pub mod eslint;
+pub mod golangci_lint;
 pub mod hadolint;
 pub mod knip;
 pub mod markdownlint;
@@ -26,7 +28,6 @@ pub mod taplo;
 pub mod trivy_sarif;
 pub mod trufflehog;
 pub mod tsc;
-pub mod golangci_lint;
 
 pub trait Parser {
     fn parse(&self, plugin_name: &str, output: &str) -> Result<Vec<Issue>>;

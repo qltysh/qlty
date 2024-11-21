@@ -506,6 +506,8 @@ pub enum OutputFormat {
     Ruff,
     #[serde(rename = "golangci_lint")]
     GolangciLint,
+    #[serde(rename = "biome")]
+    Biome,
 }
 
 impl std::fmt::Display for OutputFormat {
@@ -537,6 +539,7 @@ impl std::fmt::Display for OutputFormat {
             OutputFormat::Coffeelint => write!(f, "coffeelint"),
             OutputFormat::Ruff => write!(f, "ruff"),
             OutputFormat::GolangciLint => write!(f, "golangci_lint"),
+            OutputFormat::Biome => write!(f, "biome"),
         }
     }
 }

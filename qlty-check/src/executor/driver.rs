@@ -2,6 +2,7 @@ use super::compute_invocation_script;
 use super::invocation_result::FileResult;
 use crate::parser::actionlint::Actionlint;
 use crate::parser::bandit::Bandit;
+use crate::parser::biome::Biome;
 use crate::parser::clippy::Clippy;
 use crate::parser::coffeelint::Coffeelint;
 use crate::parser::eslint::Eslint;
@@ -378,9 +379,7 @@ impl Driver {
         path = path
             .strip_prefix(&format!(
                 "{}/",
-                target_root
-                    .strip_prefix("/private/")
-                    .unwrap_or(target_root)
+                target_root.strip_prefix("/private/").unwrap_or(target_root)
             ))
             .unwrap_or(&path)
             .into();
@@ -430,11 +429,14 @@ impl Driver {
             OutputFormat::Coffeelint => Box::new(Coffeelint {}),
             OutputFormat::Ruff => Box::new(Ruff {}),
             OutputFormat::GolangciLint => Box::new(GolangciLint {}),
+            OutputFormat::Biome => Box::new(Biome {}),
 
             OutputFormat::Sarif => {
                 let level = self.output_level.map(|output_level| output_level.into());
 
-                let category = self.output_category.map(|output_category| output_category.into());
+                let category = self
+                    .output_category
+                    .map(|output_category| output_category.into());
 
                 Box::new(Sarif::new(level, category))
             }
@@ -442,7 +444,9 @@ impl Driver {
             OutputFormat::Regex => {
                 let level = self.output_level.map(|output_level| output_level.into());
 
-                let category = self.output_category.map(|output_category| output_category.into());
+                let category = self
+                    .output_category
+                    .map(|output_category| output_category.into());
 
                 let regex = &self
                     .output_regex
