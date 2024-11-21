@@ -4,7 +4,17 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "plugins/**"
+      - "qlty-*/**"
+      - "Cargo.*"
+      - ".github/workflows/plugins.yml"
   pull_request:
+    paths:
+      - "plugins/**"
+      - "qlty-*/**"
+      - "Cargo.*"
+      - ".github/workflows/plugins.yml"
 
 permissions:
   actions: write
@@ -45,7 +55,7 @@ jobs:
         run: echo "CACHE_MONTH=$(date +'%Y-%m')" >> $GITHUB_ENV
 
       - name: Cache qlty tools
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.qlty
           key: ${{ runner.os }}-qlty-${{ env.CACHE_MONTH }}

@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::Args;
 use console::style;
 use indicatif::HumanBytes;
-use qlty_config::Workspace;
+use qlty_config::{QltyConfig, Workspace};
 use qlty_coverage::eprintln_unless;
 use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
@@ -77,9 +77,6 @@ impl Publish {
     pub fn execute(&self, _args: &crate::Arguments) -> Result<CommandSuccess, CommandError> {
         self.print_initial_messages();
 
-        let workspace = Workspace::new()?;
-        workspace.fetch_sources()?;
-
         let token = match self.load_auth_token() {
             Ok(token) => token,
             Err(err) => {
@@ -90,7 +87,7 @@ impl Publish {
 
         eprintln_unless!(self.quiet, "  Retrieving CI metadata...");
         let plan = Planner::new(
-            &workspace.config()?,
+            &Self::load_config(),
             &Settings {
                 override_build_id: self.override_build_id.clone(),
                 override_commit_sha: self.override_commit_sha.clone(),
@@ -215,6 +212,18 @@ impl Publish {
             print_report_as_json(report)
         } else {
             print_report_as_text(report)
+        }
+    }
+
+    fn load_config() -> QltyConfig {
+        if let Ok(workspace) = Workspace::new() {
+            if let Ok(cfg) = workspace.config() {
+                cfg
+            } else {
+                QltyConfig::default()
+            }
+        } else {
+            QltyConfig::default()
         }
     }
 }

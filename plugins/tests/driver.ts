@@ -62,13 +62,19 @@ export class QltyDriver {
     this.fixturesDir = path.resolve(this.pluginDir, FIXTURES_DIR);
     this.linterName = linterName;
     this.linterVersion = linterVersion;
-    this.sandboxPath = fs.realpathSync(fs.mkdtempSync(path.resolve(TMPDIR, TEMP_PREFIX)));
+    this.sandboxPath = fs.realpathSync(
+      fs.mkdtempSync(path.resolve(TMPDIR, TEMP_PREFIX)),
+    );
     this.debug = Debug(`qlty:${linterName}`);
   }
 
   async setUp(input: string) {
     fs.mkdirSync(path.resolve(this.sandboxPath, TEMP_SUBDIR));
-    this.debug("Created sandbox %s from %s", this.sandboxPath, this.fixturesDir);
+    this.debug(
+      "Created sandbox %s from %s",
+      this.sandboxPath,
+      this.fixturesDir,
+    );
 
     const input_path = path.join(this.fixturesDir, input);
 
@@ -89,7 +95,10 @@ export class QltyDriver {
       fs.mkdirSync(path.resolve(this.sandboxPath, ".qlty"), {});
     }
 
-    fs.writeFileSync(path.resolve(this.sandboxPath, ".gitignore"), this.getGitIgnoreContents());
+    fs.writeFileSync(
+      path.resolve(this.sandboxPath, ".gitignore"),
+      this.getGitIgnoreContents(),
+    );
 
     const gitDriver = git.simpleGit(this.sandboxPath);
     await gitDriver
@@ -110,9 +119,13 @@ export class QltyDriver {
     }
     fs.appendFileSync(qltyTomlPath, this.qltyTomlSource());
     if (!qltyTomlExists) {
-      const linterVersion = OPTIONS.linterVersion ? OPTIONS.linterVersion : this.linterVersion;
+      const linterVersion = OPTIONS.linterVersion
+        ? OPTIONS.linterVersion
+        : this.linterVersion;
 
-      await this.runQltyCmd(`plugins enable ${this.linterName}=${linterVersion}`);
+      await this.runQltyCmd(
+        `plugins enable ${this.linterName}=${linterVersion}`,
+      );
     }
   }
 
@@ -129,12 +142,17 @@ export class QltyDriver {
     return fs
       .readdirSync(this.fixturesDir)
       .sort()
-      .filter((target) => !target.includes(SNAPSHOTS_DIR) && !target.startsWith("."));
+      .filter(
+        (target) => !target.includes(SNAPSHOTS_DIR) && !target.startsWith("."),
+      );
   }
 
   snapshotPath(prefix: string): string {
     if (OPTIONS.testAgainstKnownGoodVersion) {
-      const knownGoodVersion = getKnownGoodVersion(this.pluginDir, this.linterName);
+      const knownGoodVersion = getKnownGoodVersion(
+        this.pluginDir,
+        this.linterName,
+      );
       const knownGoodSnapshot = path.resolve(
         this.fixturesDir,
         SNAPSHOTS_DIR,
@@ -201,7 +219,10 @@ export class QltyDriver {
     return await execFilePromise(...this.buildExecArgs(args, execOptions));
   }
 
-  buildExecArgs(args: string[], execOptions?: ExecOptions): [string, string[], ExecOptions] {
+  buildExecArgs(
+    args: string[],
+    execOptions?: ExecOptions,
+  ): [string, string[], ExecOptions] {
     return [
       "qlty",
       args.filter((arg) => arg.length > 0),
@@ -213,7 +234,12 @@ export class QltyDriver {
     ];
   }
 
-  parseRunResult(runResult: { stdout: string; stderr: string; exitCode: number; outputJson: any }) {
+  parseRunResult(runResult: {
+    stdout: string;
+    stderr: string;
+    exitCode: number;
+    outputJson: any;
+  }) {
     return {
       success: [0].includes(runResult.exitCode),
       runResult,

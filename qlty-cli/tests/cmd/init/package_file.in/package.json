@@ -1,8 +1,8 @@
 {
-    "dependencies": {
-        "package-file-plugin": "1.0.0",
-        "package-file-plugin-dependency": "1.0.0",
-        "package-file-no-dep": "1.0.0",
-        "multiple-package-filter-candidates": "1.0.0"
-    }
+  "dependencies": {
+    "package-file-plugin": "1.0.0",
+    "package-file-plugin-dependency": "1.0.0",
+    "package-file-no-dep": "1.0.0",
+    "multiple-package-filter-candidates": "1.0.0"
+  }
 }

@@ -3,23 +3,23 @@
 class KlassA {
   constructor() {}
 
-  foo(): any  {
-    return this.aaa
+  foo(): any {
+    return this.aaa;
   }
 
-  bar(): any  {
-    return this.bbb
+  bar(): any {
+    return this.bbb;
   }
 }
 
 class KlassB {
   constructor() {}
 
-  foo(): any  {
-    return this.baz
+  foo(): any {
+    return this.baz;
   }
 
-  bar(): any  {
-    return this.baz
+  bar(): any {
+    return this.baz;
   }
 }

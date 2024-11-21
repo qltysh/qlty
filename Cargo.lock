@@ -2189,9 +2189,10 @@ dependencies = [
 
 [[package]]
 name = "qlty"
-version = "0.444.0"
+version = "0.448.0"
 dependencies = [
  "anyhow",
+ "base64 0.22.1",
  "bytesize",
  "cap",
  "chrono",
@@ -2254,7 +2255,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-analysis"
-version = "0.444.0"
+version = "0.448.0"
 dependencies = [
  "anyhow",
  "config",
@@ -2294,7 +2295,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-check"
-version = "0.444.0"
+version = "0.448.0"
 dependencies = [
  "anyhow",
  "ar",
@@ -2343,7 +2344,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-cloud"
-version = "0.444.0"
+version = "0.448.0"
 dependencies = [
  "anyhow",
  "dialoguer",
@@ -2361,7 +2362,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-config"
-version = "0.444.0"
+version = "0.448.0"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -2389,7 +2390,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-coverage"
-version = "0.444.0"
+version = "0.448.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -2416,15 +2417,15 @@ dependencies = [
 
 [[package]]
 name = "qlty-llm"
-version = "0.444.0"
+version = "0.448.0"
 
 [[package]]
 name = "qlty-skills"
-version = "0.444.0"
+version = "0.448.0"
 
 [[package]]
 name = "qlty-smells"
-version = "0.444.0"
+version = "0.448.0"
 dependencies = [
  "anyhow",
  "bencher",
@@ -2444,7 +2445,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-test-utilities"
-version = "0.444.0"
+version = "0.448.0"
 dependencies = [
  "git2",
  "tempfile",
@@ -2452,7 +2453,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-types"
-version = "0.444.0"
+version = "0.448.0"
 dependencies = [
  "clap",
  "pbjson",

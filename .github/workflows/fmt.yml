@@ -1,0 +1,34 @@
+name: fmt
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: qltysh/qlty-action/fmt@main
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: qlty fmt --all
+          branch: fmt
+          create_branch: true
+          commit_user_name: qltysh[bot]
+          commit_user_email: 168846912+qltysh[bot]@users.noreply.github.com
+          commit_author: qltysh[bot] <168846912+qltysh[bot]@users.noreply.github.com>
+
+      - name: Create PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create --fill --body "Automated PR for qlty fmt --all" --base main --head fmt

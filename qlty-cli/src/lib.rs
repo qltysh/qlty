@@ -134,7 +134,7 @@ fn setup_panic_hook(telemetry: Telemetry) {
 
     let next = panic::take_hook();
     panic::set_hook(Box::new(move |info| {
-        telemetry.track_panic(info).ok();
+        telemetry.panic(info).ok();
         next(info);
     }));
 }

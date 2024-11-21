@@ -4,11 +4,11 @@ class KlassA {
   constructor() {}
 
   foo() {
-    return this.aaa
+    return this.aaa;
   }
 
   bar() {
-    return this.bbb
+    return this.bbb;
   }
 }
 
@@ -16,10 +16,10 @@ class KlassB {
   constructor() {}
 
   foo() {
-    return this.baz
+    return this.baz;
   }
 
   bar() {
-    return this.baz
+    return this.baz;
   }
 }

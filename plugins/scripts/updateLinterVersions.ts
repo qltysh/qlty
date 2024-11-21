@@ -71,7 +71,10 @@ const updateLinterTomlVersions = (
   let linterToml = fs.readFileSync(tomlPath, "utf8");
 
   // Preserve the formatting and comments in the file
-  linterToml = linterToml.replace(/(latest_version\s*=\s*)".*"/, `$1"${latestLinterVersion}"`);
+  linterToml = linterToml.replace(
+    /(latest_version\s*=\s*)".*"/,
+    `$1"${latestLinterVersion}"`,
+  );
 
   if (updateKnownGoodVersion) {
     linterToml = linterToml.replace(
@@ -103,7 +106,9 @@ async function main(): Promise<void> {
       try {
         latestLinterVersion = await fetchLatestVersion(linter);
       } catch (error) {
-        console.error(`Failed to get the latest version for ${linter}. Skipping...`);
+        console.error(
+          `Failed to get the latest version for ${linter}. Skipping...`,
+        );
         console.error(error);
         failedLinter.set(linter, error as string);
         continue; // Move to the next linter

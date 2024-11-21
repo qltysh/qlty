@@ -42,10 +42,10 @@ pub enum Commands {
     /// Print current version
     Config(config::Arguments),
 
-    /// View, transform and publish code coverage
+    /// View, transform, and publish code coverage
     Coverage(coverage::Arguments),
 
-    /// Open the Qlty dashboard
+    /// Open the Qlty Cloud dashboard
     Dashboard(Dashboard),
 
     /// Remove qlty from the repository

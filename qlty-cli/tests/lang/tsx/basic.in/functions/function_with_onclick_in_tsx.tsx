@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface ToggleOption {
   toggleType: string;
@@ -25,7 +25,7 @@ function ToggleButtons(props: Props) {
         return (
           <button
             key={key}
-            className={`data-toggle__btn ${props.active === externalKey ? 'active' : ''}`}
+            className={`data-toggle__btn ${props.active === externalKey ? "active" : ""}`}
             type="button"
             disabled={disabled}
             onClick={() => props.onChange(externalKey)}

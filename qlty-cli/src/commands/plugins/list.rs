@@ -50,6 +50,8 @@ impl List {
         }
 
         println!();
+        println!("Learn more: {}", style("https://qlty.sh/d/plugins").bold());
+        println!();
         println!(
             "Run {} to enable plugins",
             style("qlty plugins enable [plugin]").cyan().bold()

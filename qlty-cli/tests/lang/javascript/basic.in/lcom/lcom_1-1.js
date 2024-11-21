@@ -4,6 +4,6 @@ class Klass {
   constructor() {}
 
   foo() {
-    return this.baz()
+    return this.baz();
   }
 }

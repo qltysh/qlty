@@ -52,12 +52,12 @@ NOTE: It will add snapshots in .shot files, but will not validate with older sna
 
 ### Some gachas and solutions
 
--   You can use the logs in `.qlty` folder to ensure plugin is installing correctly. Make sure the runtime version and plugin version are correctly defined in `.qlty/qlty.toml` in case of installation issues.
+- You can use the logs in `.qlty` folder to ensure plugin is installing correctly. Make sure the runtime version and plugin version are correctly defined in `.qlty/qlty.toml` in case of installation issues.
 
--   If the logs show error during invocation, most likely the `plugin.toml` file for the plugin has the issue.
+- If the logs show error during invocation, most likely the `plugin.toml` file for the plugin has the issue.
 
--   You can check the output from invocation in the `sandbox/tmp/invocation-FINGERPRINT.txt` file and verify the raw output from the plugin against your test case.
+- You can check the output from invocation in the `sandbox/tmp/invocation-FINGERPRINT.txt` file and verify the raw output from the plugin against your test case.
 
--   If the output in invocations txt file is correct and something is still broken, you may want to check the CLI and parser of the plugin's output.
+- If the output in invocations txt file is correct and something is still broken, you may want to check the CLI and parser of the plugin's output.
 
--   Some plugins such as `Trivy` download their own specific databases independent of their versions which can cause conflict in local tests (which may be using an older db) and github action tests (which doesn't cache them).
+- Some plugins such as `Trivy` download their own specific databases independent of their versions which can cause conflict in local tests (which may be using an older db) and github action tests (which doesn't cache them).

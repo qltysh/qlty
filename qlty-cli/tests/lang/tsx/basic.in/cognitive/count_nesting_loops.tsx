@@ -1,11 +1,11 @@
 while (foo) {
   if (bar) {
-      baz();
+    baz();
   }
 }
 
 for (let foo of bar) {
   if (bar) {
-      baz();
+    baz();
   }
 }

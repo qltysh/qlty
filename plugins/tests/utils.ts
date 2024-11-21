@@ -1,4 +1,8 @@
-export type LinterVersion = "KnownGoodVersion" | "Latest" | "Snapshots" | string;
+export type LinterVersion =
+  | "KnownGoodVersion"
+  | "Latest"
+  | "Snapshots"
+  | string;
 
 export interface EnvOptions {
   /** Version of linters to enable and test against. */
@@ -19,9 +23,13 @@ const parseLinterVersion = (value: string): LinterVersion | undefined => {
 };
 
 export const OPTIONS: EnvOptions = {
-  linterVersion: parseLinterVersion(process.env.QLTY_PLUGINS_LINTER_VERSION ?? ""),
+  linterVersion: parseLinterVersion(
+    process.env.QLTY_PLUGINS_LINTER_VERSION ?? "",
+  ),
   sandboxDebug: Boolean(process.env.QLTY_PLUGINS_SANDBOX_DEBUG),
-  testAgainstKnownGoodVersion: Boolean(process.env.QLTY_PLUGINS_TEST_AGAINST_KNOWN_GOOD_VERSION),
+  testAgainstKnownGoodVersion: Boolean(
+    process.env.QLTY_PLUGINS_TEST_AGAINST_KNOWN_GOOD_VERSION,
+  ),
 };
 
 const extractStructure = (obj: any): Record<string, unknown> => {

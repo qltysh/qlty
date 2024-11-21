@@ -40,6 +40,7 @@ exclude_patterns = [
     "**/vendor/**",
     "**/assets/**",
     "**/linters/**",
+    "**/fixtures/**",
 ]
 
 test_patterns = [
@@ -68,6 +69,11 @@ version = "1.7.9"
 
 [[plugin]]
 name = "clippy"
+
+[[plugin]]
+name = "eslint"
+version = "8.57.0"
+package_file = ".qlty/configs/package.json"
 
 [[plugin]]
 name = "markdownlint"

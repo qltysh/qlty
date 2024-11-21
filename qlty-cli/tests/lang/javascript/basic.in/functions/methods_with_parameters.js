@@ -7,6 +7,6 @@ class Foo {
   doSomething(baz, bar) {
     this.bar = bar;
     this.baz = baz;
-    return (this.bar + this.baz);
+    return this.bar + this.baz;
   }
 }
