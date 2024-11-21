@@ -48,19 +48,19 @@ pub enum Commands {
     /// Open the Qlty Cloud dashboard
     Dashboard(Dashboard),
 
-    /// Remove qlty from the repository
+    /// Remove Qlty from the repository
     Deinit(Deinit),
 
-    /// Open the Qlty Discord server
+    /// Join our Discord server
     Discord(Discord),
 
-    /// Open the Qlty documentation website
+    /// Open the docs website
     Docs(Docs),
 
     /// Auto-format
     Fmt(Fmt),
 
-    /// Set up qlty in the repository
+    /// Set up Qlty in the repository
     Init(Init),
 
     /// Install linters and formatters
@@ -96,7 +96,7 @@ pub enum Commands {
     #[command(hide = true)]
     Telemetry(Telemetry),
 
-    /// Upgrade qlty to the latest version
+    /// Upgrade Qlty to the latest version
     Upgrade(Upgrade),
 
     #[command(hide = true)]
