@@ -38,7 +38,7 @@ impl Tool for Java {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing Java v{}", self.version().unwrap()));
-        self.download().install(&self.directory(), &self.name())?;
+        self.download().install(self.directory(), self.name())?;
         Ok(())
     }
 
@@ -66,7 +66,7 @@ impl Tool for Java {
 impl Java {
     fn download(&self) -> Download {
         let major_version = self.version.split('.').next().unwrap();
-        let url_version = self.version.replace("+", "_");
+        let url_version = self.version.replace('+', "_");
 
         Download::new(
             &DownloadDef {
@@ -153,7 +153,7 @@ impl Tool for JavaPackage {
     }
 
     fn install(&self, _task: &ProgressTask) -> Result<()> {
-        self.download().install(&self.directory(), &self.name())?;
+        self.download().install(self.directory(), self.name())?;
         Ok(())
     }
 

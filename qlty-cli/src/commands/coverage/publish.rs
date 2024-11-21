@@ -96,7 +96,7 @@ impl Publish {
                 add_prefix: self.transform_add_prefix.clone(),
                 strip_prefix: self.transform_strip_prefix.clone(),
                 tag: self.tag.clone(),
-                report_format: self.report_format.clone(),
+                report_format: self.report_format,
                 paths: self.paths.clone(),
             },
         )
@@ -202,7 +202,7 @@ impl Publish {
         match &self.token {
             Some(token) => Ok(token.to_owned()),
             None => std::env::var("QLTY_COVERAGE_TOKEN").map_err(|_| {
-                return anyhow::Error::msg("QLTY_COVERAGE_TOKEN environment variable is required.");
+                anyhow::Error::msg("QLTY_COVERAGE_TOKEN environment variable is required.")
             }),
         }
     }

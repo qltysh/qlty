@@ -46,14 +46,14 @@ pub trait Source: SourceFetch {
         for path in self.paths_glob()?.iter() {
             trace!("Loading plugin config from {}", path.display());
 
-            let contents = std::fs::read_to_string(&path)
+            let contents = std::fs::read_to_string(path)
                 .with_context(|| format!("Could not read {}", path.display()))?;
 
             let contents_toml = contents
                 .parse::<toml::Value>()
                 .with_context(|| format!("Could not parse {}", path.display()))?;
 
-            Builder::validate_toml(&path, contents_toml.clone())
+            Builder::validate_toml(path, contents_toml.clone())
                 .with_context(|| SOURCE_PARSE_ERROR)?;
             toml = TomlMerge::merge(toml, contents_toml).unwrap();
         }

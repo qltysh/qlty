@@ -45,7 +45,7 @@ impl InvocationResult {
         output: &Output,
         duration: f64,
     ) -> Result<Self> {
-        let exec_result = ExecResult::from_process_output(&output);
+        let exec_result = ExecResult::from_process_output(output);
 
         let now = Utc::now();
         let start_time = now - chrono::Duration::seconds(duration as i64);

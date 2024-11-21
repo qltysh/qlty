@@ -64,7 +64,7 @@ impl Fmt {
         formatter.write_to(&mut std::io::stdout())?;
 
         if !self.no_error && report.has_errors() {
-            return Err(CommandError::Lint);
+            Err(CommandError::Lint)
         } else {
             Ok(CommandSuccess {
                 trigger: Some(self.trigger),

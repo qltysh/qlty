@@ -145,7 +145,7 @@ impl Arguments {
     }
 
     fn print_default_output(&self) {
-        eprintln!("{}", "This is qlty, the Qlty CLI.");
+        eprintln!("This is qlty, the Qlty CLI.");
         eprintln!();
         eprintln!(
             "{} {} [COMMAND]",

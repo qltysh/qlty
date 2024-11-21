@@ -162,7 +162,7 @@ impl<'a> Visitor for NamedReferences<'a> {
     fn visit_call(&mut self, cursor: &mut TreeCursor) {
         let (receiver, name) = self.call_identifiers(&cursor.node());
 
-        if receiver.as_deref() == self.language().self_keyword().as_deref() {
+        if receiver.as_deref() == self.language().self_keyword() {
             self.group.functions.insert(name);
         }
 

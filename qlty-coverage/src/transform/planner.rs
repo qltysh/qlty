@@ -29,7 +29,7 @@ impl Planner {
 
     fn compute_report_file(&self) -> Result<ReportFile> {
         let (path, format) =
-            extract_path_and_format(&self.settings.path, self.settings.report_format.clone())?;
+            extract_path_and_format(&self.settings.path, self.settings.report_format)?;
 
         Ok(ReportFile {
             path: path_to_string(path),
@@ -44,7 +44,7 @@ impl Planner {
         if let Some(prefix) = self.settings.strip_prefix.clone() {
             transformers.push(Box::new(StripPrefix::new(prefix)));
         } else {
-            transformers.push(Box::new(StripPrefix::default()));
+            transformers.push(Box::<StripPrefix>::default());
         }
 
         transformers.push(Box::new(StripDotSlashPrefix));

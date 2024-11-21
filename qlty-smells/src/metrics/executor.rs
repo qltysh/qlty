@@ -63,7 +63,7 @@ impl Executor {
 
         Stats {
             kind: ComponentType::File.into(),
-            name: name,
+            name,
             fully_qualified_name: path_to_string(&source_file.path),
             path: path_to_string(&source_file.path),
             language: language_enum_from_name(source_file.language().name()).into(),
@@ -180,7 +180,7 @@ impl Executor {
 
             stats.push(Stats {
                 kind: ComponentType::Function.into(),
-                name: name,
+                name,
                 fully_qualified_name: full_name,
                 path: path_to_string(&source_file.path),
                 language: language_enum_from_name(source_file.language().name()).into(),

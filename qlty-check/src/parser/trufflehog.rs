@@ -40,14 +40,10 @@ impl Parser for Trufflehog {
             let parsed_data: Output =
                 serde_json::from_str(trufflehog_source.trim()).expect("Error parsing JSON data");
 
-            let range = if let Some(line) = parsed_data.source_metadata.data.filesystem.line {
-                Some(Range {
+            let range = parsed_data.source_metadata.data.filesystem.line.map(|line| Range {
                     start_line: line + 1,
                     ..Default::default()
-                })
-            } else {
-                None
-            };
+                });
 
             let issue = Issue {
                 tool: "trufflehog".into(),

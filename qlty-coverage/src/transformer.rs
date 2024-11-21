@@ -79,7 +79,7 @@ impl Transformer for AppendMetadata {
         file_coverage.tag = self.metadata.tag.clone();
         file_coverage.branch = self.metadata.branch.clone();
         file_coverage.commit_sha = Some(self.metadata.commit_sha.clone());
-        file_coverage.uploaded_at = self.metadata.uploaded_at.clone();
+        file_coverage.uploaded_at = self.metadata.uploaded_at;
 
         if self.metadata.pull_request_number != String::default() {
             file_coverage.pull_request_number = Some(self.metadata.pull_request_number.clone());
@@ -103,7 +103,7 @@ impl IgnorePaths {
         let mut builder = GlobSetBuilder::new();
 
         for glob in paths {
-            builder.add(Glob::new(&glob)?);
+            builder.add(Glob::new(glob)?);
         }
 
         Ok(Self {
@@ -170,7 +170,7 @@ impl Default for StripPrefix {
 
 impl StripPrefix {
     pub fn new(prefix: String) -> Self {
-        Self { prefix: prefix }
+        Self { prefix }
     }
 }
 

@@ -1,7 +1,9 @@
 use crate::git::DiffMode;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Default)]
 pub enum TargetMode {
+    #[default]
     All,
     Sample(usize),
     Paths(usize),
@@ -9,11 +11,7 @@ pub enum TargetMode {
     HeadDiff,
 }
 
-impl Default for TargetMode {
-    fn default() -> Self {
-        TargetMode::All
-    }
-}
+
 
 impl TargetMode {
     pub fn diff_mode(&self) -> DiffMode {

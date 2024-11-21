@@ -59,7 +59,7 @@ impl Transform {
         }
 
         let settings = Settings {
-            report_format: self.report_format.clone(),
+            report_format: self.report_format,
             add_prefix: self.add_prefix.clone(),
             strip_prefix: self.strip_prefix.clone(),
             path: self.path.clone(),

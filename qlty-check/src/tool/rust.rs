@@ -35,7 +35,7 @@ impl Tool for Rust {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing Rust v{}", self.version().unwrap()));
-        self.download().install(&self.directory(), &self.name())?;
+        self.download().install(self.directory(), self.name())?;
         Ok(())
     }
 

@@ -40,10 +40,10 @@ fn infer_upstream(workspace: &Workspace) -> Result<Option<String>> {
 }
 
 fn default_upstream(repo: &Repository) -> Result<Option<String>> {
-    let known_default_branches = vec!["main", "master", "develop"];
+    let known_default_branches = ["main", "master", "develop"];
 
     for branch_name in known_default_branches.iter() {
-        if repo.find_branch(&branch_name, git2::BranchType::Local).is_ok() {
+        if repo.find_branch(branch_name, git2::BranchType::Local).is_ok() {
             debug!("Found {} branch. Using as upstream.", branch_name);
             return Ok(Some(branch_name.to_string()));
         }

@@ -105,7 +105,7 @@ impl Regex {
         if issue.tool == "yamllint" {
             issue.documentation_url = format!(
                 "https://yamllint.readthedocs.io/en/stable/rules.html#module-yamllint.rules.{}",
-                issue.rule_key.replace("-", "_")
+                issue.rule_key.replace('-', "_")
             );
         }
     }

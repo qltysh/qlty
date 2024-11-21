@@ -53,7 +53,7 @@ impl Planner {
         };
 
         metadata.uploaded_at = Some(Timestamp {
-            seconds: now.unix_timestamp() as i64,
+            seconds: now.unix_timestamp(),
             nanos: now.nanosecond() as i32,
         });
         metadata.tag = self.settings.tag.clone();
@@ -105,7 +105,7 @@ impl Planner {
 
         for path in paths {
             let (path, format) =
-                extract_path_and_format(&path, self.settings.report_format.clone())?;
+                extract_path_and_format(&path, self.settings.report_format)?;
 
             report_files.push(ReportFile {
                 path: path.to_string_lossy().into_owned(),
@@ -128,14 +128,14 @@ impl Planner {
         if let Some(prefix) = self.settings.strip_prefix.clone() {
             transformers.push(Box::new(StripPrefix::new(prefix)));
         } else {
-            transformers.push(Box::new(StripPrefix::default()));
+            transformers.push(Box::<StripPrefix>::default());
         }
 
         transformers.push(Box::new(StripDotSlashPrefix));
 
         if self.config.coverage.ignores.is_some() {
             transformers.push(Box::new(IgnorePaths::new(
-                &self.config.coverage.ignores.as_ref().unwrap(),
+                self.config.coverage.ignores.as_ref().unwrap(),
             )?));
         }
 

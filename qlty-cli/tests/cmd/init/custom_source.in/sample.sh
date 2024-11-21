@@ -1,2 +1,2 @@
 #!/bin/sh
-echo $foo
+echo "$foo"

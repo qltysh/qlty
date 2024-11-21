@@ -7,7 +7,7 @@ use tree_sitter::{Tree, TreeCursor};
 
 use super::issue_for;
 
-pub const CHECK_NAME: &'static str = "boolean-logic";
+pub const CHECK_NAME: &str = "boolean-logic";
 
 const BASE_EFFORT_MINUTES: u32 = 10;
 const EFFORT_MINUTES_PER_VALUE_DELTA: u32 = 12;

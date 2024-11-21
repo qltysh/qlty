@@ -177,7 +177,7 @@ impl Build {
         }
 
         if !self.no_error && report.metadata.result == AnalysisResult::Error as i32 {
-            return Err(CommandError::Lint);
+            Err(CommandError::Lint)
         } else {
             CommandSuccess::ok()
         }
@@ -226,7 +226,7 @@ impl Build {
         let mut executor = qlty_smells::metrics::Executor::new(&plan);
         let results = executor.execute();
         let mut processor = qlty_smells::metrics::Processor::new(results);
-        Ok(processor.compute()?)
+        processor.compute()
     }
 
     fn run_check(&self, workspace: &Workspace) -> Result<Report> {

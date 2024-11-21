@@ -54,7 +54,7 @@ impl Processor {
                     ..Default::default()
                 };
 
-                self.add(directory_stat, &file_stat);
+                self.add(directory_stat, file_stat);
             }
         }
     }

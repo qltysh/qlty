@@ -19,7 +19,7 @@ export async function fetchLatestVersionFromGithub(
     throw new Error(`GitHub API request failed with status ${response.status}`);
   }
 
-  const data: any = await response.json();
+  const data = (await response.json()) as { tag_name: string };
 
   const tag = data.tag_name as string;
   if (!tag) {

@@ -42,5 +42,5 @@ pub fn autofix(
     _staging_area: &StagingArea,
     _steps: Option<&mut Steps>,
 ) -> Result<Results> {
-    return Ok(results.clone());
+    Ok(results.clone())
 }

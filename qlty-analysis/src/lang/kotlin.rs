@@ -281,7 +281,7 @@ impl Language for Kotlin {
     }
 
     fn sanitize_parameter_name(&self, parameter_name: String) -> Option<String> {
-        Some(String::from(parameter_name.split(":").next().unwrap()))
+        Some(String::from(parameter_name.split(':').next().unwrap()))
     }
 
     fn function_name_node<'a>(&'a self, node: &'a Node) -> Node<'a> {

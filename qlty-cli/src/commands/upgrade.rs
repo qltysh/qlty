@@ -51,7 +51,7 @@ impl Upgrade {
 
         let release_spec = match &self.version {
             Some(version) => {
-                if version.starts_with("v") {
+                if version.starts_with('v') {
                     ReleaseSpec::Tag(version[1..].to_owned())
                 } else {
                     ReleaseSpec::Tag(version.to_owned())
@@ -129,8 +129,8 @@ impl Upgrade {
         zip_bytes: &[u8],
     ) -> Result<()> {
         let filename = PathBuf::from(filename);
-        let tempfile = tempdir.join(&filename);
-        std::fs::write(&tempfile, zip_bytes).context("Unable to write to temporary file")?;
+        let tempfile = tempdir.join(filename);
+        std::fs::write(tempfile, zip_bytes).context("Unable to write to temporary file")?;
         Ok(())
     }
 
@@ -181,7 +181,7 @@ impl Upgrade {
         let output = String::from_utf8_lossy(&output.stdout);
         let output = output.trim();
 
-        if !output.contains(&expected_version) {
+        if !output.contains(expected_version) {
             bail!(
                 "Expected output of qlty --version to include {}, but it was {:?}",
                 expected_version,
@@ -208,7 +208,7 @@ impl Upgrade {
 
                 let status = Command::new("sudo")
                     .arg("mv")
-                    .arg(&temporary_executable)
+                    .arg(temporary_executable)
                     .arg(&target_executable)
                     .status()
                     .expect("Failed to run sudo command.");
@@ -229,13 +229,13 @@ impl Upgrade {
                     );
                 }
             } else {
-                return Err(error).with_context(|| {
+                Err(error).with_context(|| {
                     format!(
                         "Unable to rename {} to {}",
                         temporary_executable.display(),
                         target_executable.display()
                     )
-                });
+                })
             }
         } else {
             info!(

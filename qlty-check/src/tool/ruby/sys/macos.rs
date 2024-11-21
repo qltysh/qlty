@@ -50,7 +50,7 @@ impl PlatformRuby for RubyMacos {
                     join_path_string!(tool.directory(), "bin", "ruby").as_str(),
                 ],
             )
-            .dir(&tool.directory())
+            .dir(tool.directory())
             .full_env(tool.env());
 
         debug!("Running: {:?}", cmd);

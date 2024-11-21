@@ -98,7 +98,7 @@ impl Executor {
             .invocations
             .iter()
             .for_each(|invocation: &InvocationPlan| {
-                if let Some(_) = &invocation.driver.prepare_script {
+                if invocation.driver.prepare_script.is_some() {
                     // Prevent multiple prepare scripts for the same driver and plugin and
                     // store invocation plan to run the prepare script later
                     prepare_scripts.insert(invocation.invocation_label(), invocation);
@@ -107,7 +107,7 @@ impl Executor {
 
         for (key, invocation) in prepare_scripts {
             let task = self.progress.task(&key, "Running prepare script...");
-            invocation.driver.run_prepare_script(&invocation, &task)?;
+            invocation.driver.run_prepare_script(invocation, &task)?;
             task.clear();
         }
 
@@ -263,7 +263,7 @@ impl Executor {
 
         for config_file in &repository_config_files {
             if let Err(err) = load_config_file_from_repository(
-                &config_file,
+                config_file,
                 &self.plan.workspace,
                 &self.plan.staging_area.destination_directory,
             ) {

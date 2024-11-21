@@ -1,2 +1,2 @@
 #!/bin/sh
-echo $bar
+echo "$bar"

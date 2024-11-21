@@ -87,7 +87,6 @@ pub trait PlatformRuby {
     fn rewrite_binstubs(&self, tool: &dyn Tool) -> Result<()> {
         let bin_dir = join_path_string!(tool.directory(), "bin");
         for entry in read_dir(&bin_dir)?
-            .into_iter()
             .flatten()
             .filter(|entry| entry.path().is_file() && entry.file_name() != "ruby")
         {

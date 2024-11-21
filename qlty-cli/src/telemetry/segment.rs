@@ -44,7 +44,7 @@ impl SegmentClient {
         let http_basic_authorization = format!(
             "Basic {}",
             base64::engine::general_purpose::STANDARD
-                .encode(&format!("{}:", WRITE_KEY.unwrap_or_default()))
+                .encode(format!("{}:", WRITE_KEY.unwrap_or_default()))
         );
 
         debug!(

@@ -30,6 +30,12 @@ struct Line {
 
 pub struct Jacoco {}
 
+impl Default for Jacoco {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Jacoco {
     pub fn new() -> Self {
         Self {}

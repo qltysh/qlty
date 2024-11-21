@@ -136,7 +136,7 @@ impl Download {
 
     fn install_gz(&self, directory: &Path, tool_name: &str) -> Result<()> {
         let binary_name = self.binary_name().unwrap_or(tool_name.to_string());
-        let binary_path = directory.join(&binary_name);
+        let binary_path = directory.join(binary_name);
 
         info!(
             "Downloading (gz) {} to {}",
@@ -351,7 +351,7 @@ impl Tool for DownloadTool {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing {}", self.name()));
-        self.download.install(&self.directory(), &self.name())?;
+        self.download.install(self.directory(), self.name())?;
         Ok(())
     }
 

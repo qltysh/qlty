@@ -76,7 +76,7 @@ pub fn sources_list_from_settings(
     specs: &[SourceSpec],
 ) -> Result<SourcesList> {
     Builder::sources_list_from_qlty_toml(
-        &Renderer::new(&specs, &[]).render()?,
+        &Renderer::new(specs, &[]).render()?,
         &settings.workspace.library()?,
     )
 }

@@ -210,8 +210,8 @@ impl Metrics {
 
     fn print_text(&self, mode: MetricsMode, report: &Report) -> Result<()> {
         match mode {
-            MetricsMode::Files => print_tabular_report(self, &report),
-            MetricsMode::Functions => print_functions_report(&report),
+            MetricsMode::Files => print_tabular_report(self, report),
+            MetricsMode::Functions => print_functions_report(report),
         }
     }
 }

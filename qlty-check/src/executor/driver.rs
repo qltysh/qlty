@@ -380,7 +380,7 @@ impl Driver {
                 "{}/",
                 target_root
                     .strip_prefix("/private/")
-                    .unwrap_or(&target_root)
+                    .unwrap_or(target_root)
             ))
             .unwrap_or(&path)
             .into();
@@ -406,7 +406,7 @@ impl Driver {
 
     fn parser(&self) -> Box<dyn Parser> {
         let parser: Box<dyn Parser> = match self.output_format {
-            OutputFormat::Eslint => Box::new(Eslint::default()),
+            OutputFormat::Eslint => Box::<Eslint>::default(),
             OutputFormat::Hadolint => Box::new(Hadolint {}),
             OutputFormat::Markdownlint => Box::new(Markdownlint {}),
             OutputFormat::Mypy => Box::new(Mypy {}),
@@ -422,7 +422,7 @@ impl Driver {
             OutputFormat::Trufflehog => Box::new(Trufflehog {}),
             OutputFormat::Tsc => Box::new(Tsc {}),
             OutputFormat::Bandit => Box::new(Bandit {}),
-            OutputFormat::Clippy => Box::new(Clippy::default()),
+            OutputFormat::Clippy => Box::<Clippy>::default(),
             OutputFormat::Ripgrep => Box::new(Ripgrep {}),
             OutputFormat::Phpstan => Box::new(Phpstan {}),
             OutputFormat::PhpCodesniffer => Box::new(PhpCodesniffer {}),
@@ -432,29 +432,17 @@ impl Driver {
             OutputFormat::GolangciLint => Box::new(GolangciLint {}),
 
             OutputFormat::Sarif => {
-                let level = match self.output_level {
-                    Some(output_level) => Some(output_level.into()),
-                    None => None,
-                };
+                let level = self.output_level.map(|output_level| output_level.into());
 
-                let category = match self.output_category {
-                    Some(output_category) => Some(output_category.into()),
-                    None => None,
-                };
+                let category = self.output_category.map(|output_category| output_category.into());
 
                 Box::new(Sarif::new(level, category))
             }
 
             OutputFormat::Regex => {
-                let level = match self.output_level {
-                    Some(output_level) => Some(output_level.into()),
-                    None => None,
-                };
+                let level = self.output_level.map(|output_level| output_level.into());
 
-                let category = match self.output_category {
-                    Some(output_category) => Some(output_category.into()),
-                    None => None,
-                };
+                let category = self.output_category.map(|output_category| output_category.into());
 
                 let regex = &self
                     .output_regex

@@ -26,7 +26,7 @@ impl Login {
                 CommandSuccess::ok()
             }
             Err(e) => {
-                return CommandError::err(&format!("Failed to authenticate: {}", e));
+                CommandError::err(&format!("Failed to authenticate: {}", e))
             }
         }
     }

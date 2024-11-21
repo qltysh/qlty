@@ -69,7 +69,7 @@ fn configure_plugins(planner: &Planner) -> Result<Vec<ActivePlugin>> {
         }
 
         let name = &enabled_plugin.name;
-        let plugin = configure_plugin(planner, name, &enabled_plugin)?;
+        let plugin = configure_plugin(planner, name, enabled_plugin)?;
         enabled_plugins.push(ActivePlugin {
             name: name.to_string(),
             plugin,
@@ -181,7 +181,7 @@ fn configure_plugin(
             }
         }
 
-        Ok(plugin_def.into())
+        Ok(plugin_def)
     } else {
         bail!("Unknown plugin {}", name)
     }

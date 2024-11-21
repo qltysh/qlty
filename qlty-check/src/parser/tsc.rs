@@ -27,14 +27,14 @@ impl Parser for Tsc {
             let check_string = parts[1];
             let message = parts[2];
 
-            let location_parts: Vec<&str> = location_string.splitn(2, "(").collect();
+            let location_parts: Vec<&str> = location_string.splitn(2, '(').collect();
             if location_parts.len() != 2 {
                 trace!("Location does not have 2 parts splitting on (: {}", line);
                 continue;
             }
 
             let path = location_parts[0];
-            let location_parts: Vec<&str> = location_parts[1].splitn(2, ",").collect();
+            let location_parts: Vec<&str> = location_parts[1].splitn(2, ',').collect();
 
             if location_parts.len() != 2 {
                 trace!("Location does not have 2 parts splitting on ,: {}", line);
@@ -42,9 +42,9 @@ impl Parser for Tsc {
             }
 
             let line = location_parts[0].parse::<i32>()?;
-            let column = location_parts[1].replace(")", "").parse::<i32>()?;
+            let column = location_parts[1].replace(')', "").parse::<i32>()?;
 
-            let check_parts: Vec<&str> = check_string.splitn(2, " ").collect();
+            let check_parts: Vec<&str> = check_string.splitn(2, ' ').collect();
             if check_parts.len() != 2 {
                 trace!("Check does not have 2 parts splitting on ' ': {}", line);
                 continue;

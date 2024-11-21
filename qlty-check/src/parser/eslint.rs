@@ -165,7 +165,7 @@ fn category(rule_key: &str) -> Category {
 }
 
 fn generate_document_url(rule_key: String) -> String {
-    let rule_config: Vec<&str> = rule_key.split("/").collect();
+    let rule_config: Vec<&str> = rule_key.split('/').collect();
 
     match rule_config.as_slice() {
         [_] => {

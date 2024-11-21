@@ -12,7 +12,7 @@ pub struct GitHub {
 impl Default for GitHub {
     fn default() -> Self {
         Self {
-            env: Box::new(SystemEnv::default()),
+            env: Box::<SystemEnv>::default(),
         }
     }
 }
@@ -35,12 +35,10 @@ impl CI for GitHub {
             Some(ref_type) => {
                 if ref_type == "tag" {
                     "".to_string()
+                } else if let Some(ref_name) = self.env.var("GITHUB_REF_NAME") {
+                    ref_name
                 } else {
-                    if let Some(ref_name) = self.env.var("GITHUB_REF_NAME") {
-                        ref_name
-                    } else {
-                        self.env.var("GITHUB_HEAD_REF").unwrap_or_default()
-                    }
+                    self.env.var("GITHUB_HEAD_REF").unwrap_or_default()
                 }
             }
             None => "".to_string(),

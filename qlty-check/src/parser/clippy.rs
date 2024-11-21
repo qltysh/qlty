@@ -40,8 +40,7 @@ impl ClippyIssue {
                 .split(' ')
                 .last()
                 .unwrap()
-                .replace('(', "")
-                .replace(')', "");
+                .replace(['(', ')'], "");
             if let Ok(url) = Url::parse(&package_id) {
                 self.package_name = url.path_segments().unwrap().last().unwrap().to_string();
             }
@@ -136,7 +135,7 @@ impl Parser for Clippy {
 
             let message = clippy_issue.message.as_ref().unwrap();
             let code = message.code.clone();
-            let suggestion = self.build_suggestion(&message, &clippy_issue);
+            let suggestion = self.build_suggestion(message, &clippy_issue);
 
             let issue = Issue {
                 tool: "clippy".into(),
@@ -182,8 +181,7 @@ impl Clippy {
             .children
             .iter()
             .filter(|child| child.level == "help")
-            .map(|child| self.collect_replacements(&child, issue))
-            .flatten()
+            .flat_map(|child| self.collect_replacements(child, issue))
             .collect();
 
         if replacements.is_empty() {

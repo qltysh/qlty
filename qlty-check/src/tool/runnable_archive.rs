@@ -8,7 +8,7 @@ pub trait RunnableArchive: Tool {
 
         Download::new(
             &DownloadDef {
-                strip_components: plugin.strip_components.clone().unwrap_or(0),
+                strip_components: plugin.strip_components.unwrap_or(0),
                 systems: vec![System {
                     url: plugin.runnable_archive_url.clone().unwrap(),
                     cpu: system_arch(),

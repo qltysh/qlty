@@ -267,7 +267,7 @@ impl Parser for Sarif {
                     rule_key,
                     message: result.message.text.clone(),
                     category: self.category.unwrap_or(Category::Lint).into(),
-                    level: self.get_level(&result, &rule_info).into(),
+                    level: self.get_level(result, &rule_info).into(),
                     location,
                     ..Default::default()
                 };

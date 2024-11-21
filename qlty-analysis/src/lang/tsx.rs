@@ -38,8 +38,8 @@ impl Default for TSX {
 
         Self {
             common,
-            field_query: field_query,
-            class_query: class_query,
+            field_query,
+            class_query,
             function_declaration_query,
         }
     }

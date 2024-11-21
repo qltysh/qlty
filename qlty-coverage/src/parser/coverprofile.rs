@@ -6,6 +6,12 @@ use std::collections::BTreeMap;
 
 pub struct Coverprofile {}
 
+impl Default for Coverprofile {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Coverprofile {
     pub fn new() -> Self {
         Self {}
@@ -49,17 +55,17 @@ impl Parser for Coverprofile {
         // becuase the results are not sorted by line number, we need to keep track of the line numbers
         let mut line_count_map: BTreeMap<i64, i64> = BTreeMap::new();
 
-        text.split("\n").skip(1).for_each(|line| {
+        text.split('\n').skip(1).for_each(|line| {
             if line.is_empty() {
                 return;
             }
 
-            let tokens: Vec<_> = line.split(":").collect();
+            let tokens: Vec<_> = line.split(':').collect();
             let file_name = tokens[0];
             let line_info = tokens[1];
 
             if current_file_name != file_name {
-                if current_file_name != "" {
+                if !current_file_name.is_empty() {
                     self.push_line_hits(&line_count_map, current_file_name, &mut file_coverages);
                     line_count_map = BTreeMap::new();
                 }

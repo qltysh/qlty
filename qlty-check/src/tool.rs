@@ -38,7 +38,7 @@ const MAX_TOOL_INSTALL_ATTEMPTS: u32 = 3;
 #[cfg(unix)]
 const BASE_SHELL_PATH: &[&str] = &["/usr/local/bin", "/usr/bin", "/bin", "/usr/sbin", "/sbin"];
 #[cfg(windows)]
-const BASE_SHELL_PATH: &'static [&str] = &[
+const BASE_SHELL_PATH: &[&str] = &[
     r"%SYSTEMROOT%\System32",
     r"%SYSTEMROOT%",
     r"%SYSTEMROOT%\System32\Wbem",
@@ -47,7 +47,7 @@ const BASE_SHELL_PATH: &'static [&str] = &[
 #[cfg(unix)]
 const SYSTEM_ENV_KEYS: &[&str] = &["HOME"];
 #[cfg(windows)]
-const SYSTEM_ENV_KEYS: &'static [&str] = &[
+const SYSTEM_ENV_KEYS: &[&str] = &[
     "SYSTEMROOT",
     "SYSTEMDRIVE",
     "WINDIR",
@@ -135,7 +135,7 @@ pub trait Tool: Debug + Sync + Send {
             }
 
             if let Some(package_file) = plugin.package_file {
-                sha.update(std::fs::read_to_string(&package_file)?);
+                sha.update(std::fs::read_to_string(package_file)?);
             }
 
             for filter in &plugin.package_filters {
@@ -312,7 +312,7 @@ pub trait Tool: Debug + Sync + Send {
 
     fn run_command(&self, cmd: Expression) -> Result<()> {
         let cmd = cmd
-            .dir(&self.directory())
+            .dir(self.directory())
             .full_env(self.env())
             .stderr_to_stdout()
             .stdout_file(self.install_log_file()?);
@@ -491,7 +491,7 @@ pub trait Tool: Debug + Sync + Send {
                 for path in &env.list {
                     paths.extend(
                         split_paths(&self.interpolate_variables(path))
-                            .map(|p| path_to_native_string(p))
+                            .map(path_to_native_string)
                             .collect::<Vec<_>>(),
                     );
                 }
@@ -499,7 +499,7 @@ pub trait Tool: Debug + Sync + Send {
                 if !env.value.is_empty() {
                     paths.extend(
                         split_paths(&self.interpolate_variables(&env.value))
-                            .map(|p| path_to_native_string(p))
+                            .map(path_to_native_string)
                             .collect::<Vec<_>>(),
                     );
                 }

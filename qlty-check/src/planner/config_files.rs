@@ -70,7 +70,7 @@ pub fn ignore_globset(ignore: &Vec<Ignore>) -> Result<GlobSet> {
 }
 
 pub fn plugin_configs(planner: &Planner) -> Result<HashMap<String, Vec<PluginConfigFile>>> {
-    let plugins = enabled_plugins(&planner)?;
+    let plugins = enabled_plugins(planner)?;
     let mut plugins_configs = vec![];
 
     for active_plugin in &plugins {

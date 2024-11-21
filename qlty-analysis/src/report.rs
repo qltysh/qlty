@@ -92,7 +92,7 @@ impl Report {
             invocation.project_id = self.metadata.project_id.clone();
             invocation.reference = self.metadata.reference.clone();
             invocation.build_id = self.metadata.build_id.clone();
-            invocation.build_timestamp = self.metadata.start_time.clone();
+            invocation.build_timestamp = self.metadata.start_time;
             invocation.commit_sha = self.metadata.revision_oid.clone();
         });
 
@@ -101,14 +101,14 @@ impl Report {
             message.project_id = self.metadata.project_id.clone();
             message.reference = self.metadata.reference.clone();
             message.build_id = self.metadata.build_id.clone();
-            message.build_timestamp = self.metadata.start_time.clone();
+            message.build_timestamp = self.metadata.start_time;
             message.commit_sha = self.metadata.revision_oid.clone();
         });
 
         self.issues.par_iter_mut().for_each(|issue| {
             issue.workspace_id = self.metadata.workspace_id.clone();
             issue.project_id = self.metadata.project_id.clone();
-            issue.analyzed_at = Some(self.metadata.start_time.clone().unwrap());
+            issue.analyzed_at = Some(self.metadata.start_time.unwrap());
             issue.pull_request_number = self.metadata.pull_request_number.clone();
             issue.tracked_branch_id = self.metadata.tracked_branch_id.clone();
 
@@ -120,7 +120,7 @@ impl Report {
         self.stats.par_iter_mut().for_each(|stats| {
             stats.workspace_id = self.metadata.workspace_id.clone();
             stats.project_id = self.metadata.project_id.clone();
-            stats.analyzed_at = Some(self.metadata.start_time.clone().unwrap());
+            stats.analyzed_at = Some(self.metadata.start_time.unwrap());
             stats.pull_request_number = self.metadata.pull_request_number.clone();
             stats.tracked_branch_id = self.metadata.tracked_branch_id.clone();
 
@@ -136,7 +136,7 @@ impl Report {
             .filter(|issue| issue.tool == "qlty" && issue.driver == "duplication")
             .fold(HashMap::new(), |mut acc, issue| {
                 let structural_hash = issue.get_property_string("structural_hash");
-                let issues = acc.entry(structural_hash).or_insert(vec![]);
+                let issues = acc.entry(structural_hash).or_default();
                 issues.push(issue.clone());
                 acc
             })

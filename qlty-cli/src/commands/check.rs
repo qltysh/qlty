@@ -138,7 +138,7 @@ impl Check {
         self.write_stderr(&report)?;
 
         if !self.no_error && !self.skip_errored_plugins && report.has_errors() {
-            return Err(CommandError::Lint);
+            Err(CommandError::Lint)
         } else {
             Ok(CommandSuccess {
                 trigger: Some(self.trigger),
@@ -234,10 +234,10 @@ impl Check {
 
     fn write_stderr(&self, report: &Report) -> Result<()> {
         if self.print_errors {
-            let formatter = ErrorsFormatter::new(&report);
+            let formatter = ErrorsFormatter::new(report);
             formatter.write_to(&mut std::io::stderr())?;
         }
 
-        return Ok(());
+        Ok(())
     }
 }

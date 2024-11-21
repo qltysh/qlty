@@ -73,8 +73,8 @@ impl Upload {
             .with_context(|| format!("Unable to find project ID in response body: {:?}", response))
             .context("Failed to extract project ID from response")?;
 
-        report.set_upload_id(&id);
-        report.set_project_id(&project_id);
+        report.set_upload_id(id);
+        report.set_project_id(project_id);
 
         Ok(Self {
             id: id.to_string(),
@@ -89,19 +89,19 @@ impl Upload {
         self.upload_data(
             &self.file_coverages_url,
             "application/gzip",
-            export.read_file(&PathBuf::from("file_coverages.json.gz"))?,
+            export.read_file(PathBuf::from("file_coverages.json.gz"))?,
         )?;
 
         self.upload_data(
             &self.report_files_url,
             "application/gzip",
-            export.read_file(&PathBuf::from("report_files.json.gz"))?,
+            export.read_file(PathBuf::from("report_files.json.gz"))?,
         )?;
 
         self.upload_data(
             &self.metadata_url,
             "application/json",
-            export.read_file(&PathBuf::from("metadata.json"))?,
+            export.read_file(PathBuf::from("metadata.json"))?,
         )?;
 
         Ok(())

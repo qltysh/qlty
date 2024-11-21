@@ -8,7 +8,7 @@ use tree_sitter::Tree;
 
 use super::issue_for;
 
-pub const CHECK_NAME: &'static str = "function-complexity";
+pub const CHECK_NAME: &str = "function-complexity";
 
 const BASE_EFFORT_MINUTES: u32 = 10;
 const EFFORT_MINUTES_PER_VALUE_DELTA: u32 = 5;
@@ -48,10 +48,10 @@ pub fn check(threshold: usize, source_file: Arc<File>, tree: &Tree) -> Vec<Issue
 
             issues.push(Issue {
                 rule_key: CHECK_NAME.to_string(),
-                message: message,
+                message,
                 level: Level::Medium.into(),
                 value: count as u32,
-                value_delta: value_delta,
+                value_delta,
                 effort_minutes: calculate_effort_minutes(
                     value_delta,
                     BASE_EFFORT_MINUTES,

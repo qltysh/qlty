@@ -5,7 +5,7 @@ use indicatif::ProgressBar;
 use itertools::Itertools;
 use qlty_analysis::version::QLTY_VERSION;
 use serde::Deserialize;
-use serde_xml_rs;
+
 use std::time::SystemTime;
 
 const USER_AGENT_PREFIX: &str = "qlty";
@@ -29,10 +29,9 @@ impl QltyRelease {
         if let Some(new_version) = Self::check_upgrade_needed()? {
             println!();
             println!(
-                "{} {} {}",
+                "{} {} of qlty is available!",
                 console::style("A new version").bold(),
-                console::style(&new_version).cyan().bold(),
-                "of qlty is available!"
+                console::style(&new_version).cyan().bold()
             );
 
             if Self::ask_for_upgrade_confirmation()? {
@@ -92,7 +91,7 @@ impl QltyRelease {
 
     pub fn load(spec: ReleaseSpec) -> Result<Self> {
         let url = "http://qlty-releases.s3.amazonaws.com/?list-type=2&prefix=qlty/&delimiter=/";
-        let response = ureq::get(&url)
+        let response = ureq::get(url)
             .set(
                 "User-Agent",
                 &format!("{}/{}", USER_AGENT_PREFIX, QLTY_VERSION),
@@ -116,8 +115,8 @@ impl QltyRelease {
                         let version = release
                             .prefix
                             .trim_start_matches("qlty/v")
-                            .trim_end_matches("/");
-                        semver::Version::parse(&version).ok()
+                            .trim_end_matches('/');
+                        semver::Version::parse(version).ok()
                     })
                     .sorted()
                     .collect::<Vec<_>>();
@@ -199,7 +198,7 @@ impl QltyRelease {
     pub fn download_with_progress(response: ureq::Response) -> Result<Vec<u8>> {
         let content_length = response
             .header("Content-Length")
-            .ok_or(format!("Failed to get content length"))
+            .ok_or("Failed to get content length".to_string())
             .unwrap();
 
         let content_length_u64 = content_length

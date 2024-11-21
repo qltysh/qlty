@@ -71,8 +71,8 @@ fn generate_document_url(rule_key: String) -> String {
         .to_string()
         .replace(
         "${rule}",
-        &rule_key
-            .split(" ")
+        rule_key
+            .split(' ')
             .next()
             .unwrap_or_else(|| &rule_key)
     )

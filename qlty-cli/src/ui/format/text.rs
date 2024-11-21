@@ -18,7 +18,7 @@ impl<'a> TextFormatter {
     pub fn new(report: &Report, verbose: usize) -> Box<dyn Formatter> {
         Box::new(Self {
             report: report.clone(),
-            verbose: verbose,
+            verbose,
         })
     }
 }

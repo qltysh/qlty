@@ -237,7 +237,7 @@ impl DriverPlanner {
                 verb: self.verb,
                 settings: self.settings.clone(),
                 tool: self.tool.clone(),
-                runtime: self.plugin.runtime.clone(),
+                runtime: self.plugin.runtime,
                 runtime_version: self.runtime_version.clone(),
                 plugin_name: self.plugin_name.to_owned(),
                 plugin: self.plugin.to_owned(),

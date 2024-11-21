@@ -219,19 +219,19 @@ impl Executor {
                     rule_key: rule_key.to_string(),
                     category: Category::Duplication.into(),
                     language: language_enum_from_name(node.source_file.language().name()).into(),
-                    location: location,
+                    location,
                     snippet: node.snippet(),
                     snippet_with_context: node.snippet_with_context(),
                     level: Level::Medium.into(),
                     message: message.to_string(),
                     value: lines_count,
-                    value_delta: value_delta,
+                    value_delta,
                     effort_minutes: calculate_effort_minutes(
                         value_delta,
                         BASE_EFFORT_MINUTES,
                         EFFORT_MINUTES_PER_VALUE_DELTA,
                     ),
-                    other_locations: other_locations,
+                    other_locations,
                     mode: language_plan.issue_mode as i32,
                     ..Default::default()
                 };

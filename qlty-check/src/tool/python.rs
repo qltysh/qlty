@@ -47,7 +47,7 @@ impl Tool for Python {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing Python v{}", self.version().unwrap()));
-        self.download().install(&self.directory(), &self.name())?;
+        self.download().install(self.directory(), self.name())?;
         Ok(())
     }
 

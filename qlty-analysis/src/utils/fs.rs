@@ -27,8 +27,7 @@ pub fn path_to_string<'path>(path: impl AsRef<Path>) -> String {
 
 pub fn path_to_native_string(path: impl AsRef<Path>) -> String {
     path_to_string(path)
-        .replace('\\', MAIN_SEPARATOR_STR)
-        .replace('/', MAIN_SEPARATOR_STR)
+        .replace(['\\', '/'], MAIN_SEPARATOR_STR)
 }
 
 mod test {

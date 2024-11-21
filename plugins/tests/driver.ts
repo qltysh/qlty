@@ -172,7 +172,7 @@ export class QltyDriver {
     let output = { stdout: "", stderr: "" };
     let exitCode = 0;
     try {
-      let env = {
+      const env = {
         ...executionEnv(this.sandboxPath ?? ""),
         QLTY_LOG_STDERR: "1",
         QLTY_LOG: process.env.QLTY_LOG ?? "debug",
@@ -192,7 +192,9 @@ export class QltyDriver {
     let outputJson = [];
     try {
       outputJson = JSON.parse(output.stdout);
-    } catch {}
+    } catch {
+      /* empty */
+    }
 
     return this.parseRunResult({
       exitCode,

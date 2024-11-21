@@ -12,19 +12,17 @@ pub fn extract_path_and_format(
     path: &str,
     base_format: Option<Formats>,
 ) -> Result<(PathBuf, Formats)> {
-    if path.contains(":") {
-        match path.split_once(":") {
+    if path.contains(':') {
+        match path.split_once(':') {
             Some((format, p)) => Ok((PathBuf::from(p), Formats::from_str(format)?)),
             None => Err(anyhow::anyhow!(
                 "Expected ':' in the path to split format and path."
             )),
         }
+    } else if base_format.is_some() {
+        return Ok((PathBuf::from(path), base_format.unwrap()));
     } else {
-        if base_format.is_some() {
-            return Ok((PathBuf::from(path), base_format.unwrap()));
-        } else {
-            let format = Formats::try_from(path.as_ref())?;
-            return Ok((PathBuf::from(path), format));
-        }
+        let format = Formats::try_from(path.as_ref())?;
+        return Ok((PathBuf::from(path), format));
     }
 }

@@ -67,13 +67,13 @@ impl Parser for Cobertura {
                     for line in lines {
                         lines_by_filename
                             .entry(class.filename.clone())
-                            .or_insert_with(Vec::new)
+                            .or_default()
                             .push(line.clone());
                     }
                 } else {
                     lines_by_filename
                         .entry(class.filename.clone())
-                        .or_insert_with(Vec::new);
+                        .or_default();
                 }
             }
         }

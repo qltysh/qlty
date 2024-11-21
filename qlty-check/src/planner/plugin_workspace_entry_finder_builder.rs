@@ -74,7 +74,7 @@ impl PluginWorkspaceEntryFinderBuilder {
             .file_types
             .iter()
             .filter_map(|(name, file_type)| {
-                if language_names.contains(&name) {
+                if language_names.contains(name) {
                     Some(file_type.clone())
                 } else {
                     None

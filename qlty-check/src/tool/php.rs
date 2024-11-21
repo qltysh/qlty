@@ -134,7 +134,7 @@ impl Tool for PhpPackage {
     }
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
-        self.download().install(&self.directory(), &self.name())?;
+        self.download().install(self.directory(), self.name())?;
         self.package_file_install(task)?;
 
         Ok(())

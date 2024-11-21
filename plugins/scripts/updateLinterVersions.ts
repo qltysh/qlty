@@ -1,4 +1,4 @@
-import { execSync, ExecException } from "child_process";
+import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
 import toml from "toml";
@@ -174,4 +174,4 @@ async function main(): Promise<void> {
   }
 }
 
-main();
+void main();

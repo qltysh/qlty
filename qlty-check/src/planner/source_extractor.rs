@@ -75,7 +75,7 @@ impl SourceExtractor {
             let end_line = range.end_line as usize;
 
             // add lines.len() != 0 to handle empty files
-            if lines.len() != 0 {
+            if !lines.is_empty() {
                 if start_line != 0 && end_line != 0 {
                     let start_index = start_line.saturating_sub(before).max(1) - 1;
                     let end_index = (end_line - 1 + after).min(lines.len() - 1);

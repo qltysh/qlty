@@ -250,14 +250,12 @@ impl GitHubRelease {
     }
 
     fn allowed_content_types(&self) -> Vec<String> {
-        vec![
-            "application/octet-stream",
+        ["application/octet-stream",
             "application/gzip",
             "application/x-ms-dos-executable",
             "application/x-gtar",
             "application/x-xz",
-            "application/zip",
-        ]
+            "application/zip"]
         .iter()
         .map(|s| s.to_string())
         .collect::<Vec<_>>()
@@ -302,7 +300,7 @@ impl Tool for GitHubReleaseTool {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing {}", self.name()));
-        self.download()?.install(&self.directory(), &self.name())?;
+        self.download()?.install(self.directory(), self.name())?;
         Ok(())
     }
 
@@ -389,7 +387,7 @@ impl GitHubReleaseTool {
                 "User-Agent",
                 &format!("{}/{}", USER_AGENT_PREFIX, env!("CARGO_PKG_VERSION")),
             )
-            .set("X-GitHub-Api-Version", &GITHUB_API_VERSION)
+            .set("X-GitHub-Api-Version", GITHUB_API_VERSION)
             .call()?
             .into_json::<serde_json::Value>()?;
 

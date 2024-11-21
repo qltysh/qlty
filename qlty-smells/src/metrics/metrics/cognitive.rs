@@ -149,7 +149,7 @@ impl Visitor for CognitiveComplexity<'_> {
     fn visit_block(&mut self, cursor: &mut TreeCursor) {
         let node = cursor.node();
 
-        if node.is_if_statement_alternative(&self.language()) {
+        if node.is_if_statement_alternative(self.language()) {
             self.visit_else(cursor);
         } else {
             self.process_children(cursor);
@@ -178,7 +178,7 @@ impl<'a> CognitiveComplexity<'a> {
             .language()
             .call_identifiers(self.source_file, node);
 
-        receiver.as_deref() == self.language().self_keyword().as_deref()
+        receiver.as_deref() == self.language().self_keyword()
             && !self.functions.is_empty()
             && function_name == *self.functions.last().unwrap()
     }

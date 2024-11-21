@@ -28,7 +28,7 @@ impl PackageJson {
         package_file: &Option<String>,
     ) -> Result<()> {
         let user_file_contents =
-            std::fs::read_to_string(&self.plugin.package_file.as_deref().unwrap_or_default())?;
+            std::fs::read_to_string(self.plugin.package_file.as_deref().unwrap_or_default())?;
         let mut user_json = serde_json::from_str::<Value>(&user_file_contents)?;
         let staged_file = PathBuf::from(self.directory()).join("package.json");
         let mut data_json = Value::Object(serde_json::Map::new());

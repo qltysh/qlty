@@ -7,7 +7,7 @@ use tree_sitter::{Tree, TreeCursor};
 
 use super::issue_for;
 
-pub const CHECK_NAME: &'static str = "nested-control-flow";
+pub const CHECK_NAME: &str = "nested-control-flow";
 
 const BASE_EFFORT_MINUTES: u32 = 15;
 const EFFORT_MINUTES_PER_VALUE_DELTA: u32 = 10;
@@ -43,7 +43,7 @@ impl Processor {
 
             self.issues.push(Issue {
                 rule_key: CHECK_NAME.to_string(),
-                message: message,
+                message,
                 level: Level::Medium.into(),
                 value: self.level as u32,
                 value_delta: 0,
@@ -74,7 +74,7 @@ impl Visitor for Processor {
             .language()
             .else_nodes()
             .contains(&parent_kind)
-            || node.is_if_statement_alternative(&self.language())
+            || node.is_if_statement_alternative(self.language())
         {
             self.process_children(cursor);
         } else {

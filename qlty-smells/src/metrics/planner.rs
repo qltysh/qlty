@@ -28,7 +28,7 @@ impl Planner {
 
         if self.settings.exclude_tests {
             for (language_name, language_settings) in &self.config.language {
-                let language = lang::from_str(&language_name).unwrap();
+                let language = lang::from_str(language_name).unwrap();
 
                 let builder = NodeFilterBuilder::for_patterns(
                     language,
