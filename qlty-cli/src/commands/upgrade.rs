@@ -88,7 +88,7 @@ impl Upgrade {
             self.install(&executable_path)?;
         }
 
-        SourceUpgrade::new().run()?;
+        SourceUpgrade::new().run().ok();
 
         self.install_completions().ok();
         self.print_result(&timer, &release);
