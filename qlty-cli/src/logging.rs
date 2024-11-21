@@ -225,14 +225,17 @@ pub fn logs_dir(repository_path: Option<PathBuf>) -> Option<PathBuf> {
 fn env_filter() -> EnvFilter {
     let args = std::env::args().collect::<Vec<String>>();
 
-    if args.contains(&"--debug".to_string()) {
+    if let Ok(log_env) = std::env::var("QLTY_LOG") {
+        EnvFilter::builder()
+            .with_default_directive(default_log_level().into())
+            .parse_lossy(log_env)
+    } else if args.contains(&"--debug".to_string()) {
         EnvFilter::builder()
             .with_default_directive(default_log_level().into())
             .parse_lossy("qlty=debug")
     } else {
         EnvFilter::builder()
             .with_default_directive(default_log_level().into())
-            .with_env_var("QLTY_LOG")
             .from_env_lossy()
     }
 }
