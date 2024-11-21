@@ -8,7 +8,6 @@ use qlty_analysis::version::QLTY_VERSION;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use serde_json::{Map, Value};
-use std::path::PathBuf;
 use time::OffsetDateTime;
 use tracing::debug;
 
@@ -16,13 +15,11 @@ const WRITE_KEY: Option<&str> = option_env!("CIO_WRITE_KEY");
 const TRACK_URL: &str = "https://cdp.customer.io/v1/track";
 
 #[derive(Clone)]
-pub struct AnalyticsClient {
-    repository_path: Option<PathBuf>,
-}
+pub struct AnalyticsClient;
 
 impl AnalyticsClient {
-    pub fn new(repository_path: Option<PathBuf>) -> Result<Self> {
-        Ok(Self { repository_path })
+    pub fn new() -> Result<Self> {
+        Ok(Self {})
     }
 
     pub fn send_track(&self, track: Track) -> Result<()> {

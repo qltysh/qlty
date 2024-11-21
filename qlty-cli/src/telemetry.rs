@@ -1,7 +1,7 @@
 use self::sanitize::sanitize_command;
 use crate::arguments::is_subcommand;
+use crate::telemetry::analytics::{event_context, event_user, Track};
 use crate::telemetry::git::repository_identifier;
-use crate::telemetry::segment::{event_context, event_user, Track};
 use crate::{errors::CommandError, success::CommandSuccess};
 use ::sentry::integrations::panic::message_from_panic_info;
 use anyhow::Result;
@@ -16,12 +16,12 @@ use time::OffsetDateTime;
 use tracing::{debug, warn};
 use uuid::Uuid;
 
+pub mod analytics;
 mod git;
 mod locale;
 mod sanitize;
-pub mod segment;
 
-pub use segment::SegmentClient;
+pub use analytics::AnalyticsClient;
 
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
@@ -122,10 +122,7 @@ impl Telemetry {
     }
 
     fn track(&self, event: &str, properties: serde_json::Value) -> Result<()> {
-        debug!(
-            "Tracking event to Segment (foreground): {}: {:?}",
-            event, properties
-        );
+        debug!("Tracking event (foreground): {}: {:?}", event, properties);
         let message_id = Uuid::new_v4().to_string();
 
         let track = Track {
@@ -149,7 +146,7 @@ impl Telemetry {
         const COMMAND_ARG: &str = "--track";
 
         let payload = serde_json::to_string(&event)?;
-        let filename = format!("qlty-segment-event-{}.json", message_id);
+        let filename = format!("qlty-event-{}.json", message_id);
         let tempfile_path = std::env::temp_dir().join(filename);
 
         std::fs::write(&tempfile_path, payload)?;

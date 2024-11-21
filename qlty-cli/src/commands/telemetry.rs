@@ -1,11 +1,10 @@
 use crate::{
-    telemetry::{segment::Track, SegmentClient},
+    telemetry::{analytics::Track, AnalyticsClient},
     Arguments, CommandError, CommandSuccess,
 };
 use anyhow::{anyhow, Result};
 use clap::Args;
 use qlty_analysis::version::BUILD_PROFILE;
-use qlty_config::Workspace;
 use std::path::PathBuf;
 use tracing::{debug, info};
 
@@ -35,9 +34,6 @@ impl Telemetry {
 
     fn send_track(&self) -> Result<CommandSuccess, CommandError> {
         let payload_path = self.track.clone().unwrap();
-        let current = std::env::current_dir().expect("current dir");
-        let repository_path = Workspace::closest_git_repository_path(&current);
-
         let payload = std::fs::read_to_string(&payload_path).map_err(|err| {
             anyhow!(
                 "Unable to read telemetry payload file: {} ({:?})",
@@ -46,7 +42,7 @@ impl Telemetry {
             )
         })?;
 
-        let client = SegmentClient::new(repository_path.clone())?;
+        let client = AnalyticsClient::new()?;
         let event: Track = serde_json::from_str(&payload).unwrap();
         client.send_track(event)?;
 
