@@ -107,6 +107,7 @@ struct InvocationCacheKey {
 impl InvocationCacheKey {
     fn build(&self) -> HashDigest {
         let mut digest = HashDigest::new();
+
         if let Some(runtime) = &self.plugin.runtime {
             digest.add("plugin.runtime", &runtime.to_string());
         }
@@ -143,7 +144,7 @@ impl InvocationCacheKey {
             digest.add("plugin.download_type", download_type);
         }
 
-        for environment in &self.plugin.environment {
+        for environment in self.plugin.environment.iter().sorted() {
             if environment.list.is_empty() {
                 digest.add(
                     &format!("plugin.environment.{}", environment.name),
@@ -189,10 +190,12 @@ impl InvocationCacheKey {
                 &serde_yaml::to_string(output_category).unwrap(),
             );
         }
+
         digest.add(
             "plugin.driver.driver_type",
             &serde_yaml::to_string(&driver.driver_type).unwrap(),
         );
+
         digest.add("plugin.driver.batch", &driver.batch.to_string());
 
         digest.add("plugin.driver.max_batch", &driver.max_batch.to_string());
@@ -211,6 +214,7 @@ impl InvocationCacheKey {
             "plugin.driver.target",
             &serde_yaml::to_string(&driver.target).unwrap(),
         );
+
         digest.add(
             "plugin.driver.invocation_directory_def",
             &serde_yaml::to_string(&driver.invocation_directory_def).unwrap(),
@@ -239,11 +243,11 @@ impl InvocationCacheKey {
         digest.add("tool", &self.tool.directory());
         digest.add("driver_name", &self.driver_name);
 
-        for config in self.configs.clone().iter() {
+        for config in self.configs.clone().iter().sorted() {
             digest.add(&config.path.to_string_lossy(), &config.contents);
         }
 
-        for (path, contents) in &self.affects_cache {
+        for (path, contents) in self.affects_cache.iter().sorted() {
             digest.add(&path.to_string_lossy(), contents);
         }
 
@@ -261,7 +265,7 @@ impl IssuesCacheKey {
     ) -> Self {
         let mut cache_busters = HashMap::new();
 
-        for affect_cache in affects_cache.iter() {
+        for affect_cache in affects_cache.iter().sorted() {
             let path = PathBuf::from(affect_cache);
             let contents = std::fs::read_to_string(&path).unwrap_or("".to_string());
             cache_busters.insert(path, contents);
@@ -282,8 +286,10 @@ impl IssuesCacheKey {
 
     pub fn finalize(&mut self, target: &Target) {
         self.digest.add("target_path", &target.path_string());
+
         self.digest
             .add("target_contents_size", &target.contents_size.to_string());
+
         self.digest.add(
             "target_content_modified",
             &target

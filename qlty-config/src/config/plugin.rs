@@ -389,7 +389,21 @@ impl std::fmt::Display for PackageFileCandidate {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Default)]
+#[derive(
+    Debug,
+    Serialize,
+    Deserialize,
+    PartialEq,
+    Clone,
+    Default,
+    Debug,
+    Serialize,
+    Deserialize,
+    Clone,
+    Default,
+    PartialEq,
+    Eq,
+)]
 pub struct PluginEnvironment {
     #[serde(default)]
     pub name: String,
@@ -399,6 +413,18 @@ pub struct PluginEnvironment {
 
     #[serde(default)]
     pub value: String,
+}
+
+impl Ord for PluginEnvironment {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.name.cmp(&other.name)
+    }
+}
+
+impl PartialOrd for PluginEnvironment {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Hash, Default)]

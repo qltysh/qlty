@@ -16,6 +16,18 @@ pub struct PluginConfigFile {
     pub contents: String,
 }
 
+impl Ord for PluginConfigFile {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.path.cmp(&other.path)
+    }
+}
+
+impl PartialOrd for PluginConfigFile {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 impl PluginConfigFile {
     pub fn from_path(path: &Path) -> Result<Self> {
         let contents = fs::read_to_string(path)
