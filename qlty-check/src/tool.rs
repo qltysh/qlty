@@ -208,7 +208,15 @@ pub trait Tool: Debug + Sync + Send {
                         self.version(),
                         e
                     );
-                    Err(e)
+
+                    Err(e).with_context(|| {
+                        format!(
+                            "Error installing {}@{}.\n\n    See more: {}",
+                            self.name(),
+                            self.version().unwrap_or_default(),
+                            self.install_log_path()
+                        )
+                    })
                 }
             }
         }
