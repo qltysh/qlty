@@ -389,21 +389,7 @@ impl std::fmt::Display for PackageFileCandidate {
     }
 }
 
-#[derive(
-    Debug,
-    Serialize,
-    Deserialize,
-    PartialEq,
-    Clone,
-    Default,
-    Debug,
-    Serialize,
-    Deserialize,
-    Clone,
-    Default,
-    PartialEq,
-    Eq,
-)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Default, Eq)]
 pub struct PluginEnvironment {
     #[serde(default)]
     pub name: String,
