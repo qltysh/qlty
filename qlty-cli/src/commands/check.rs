@@ -109,7 +109,7 @@ impl Check {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
         self.validate_options()?;
 
-        let workspace = Workspace::new()?;
+        let workspace = Workspace::require_initialized()?;
         workspace.fetch_sources()?;
 
         let mut steps = Steps::new(self.no_progress, 1);

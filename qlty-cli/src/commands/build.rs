@@ -56,7 +56,7 @@ pub struct Build {
 
 impl Build {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
-        let workspace = Workspace::new()?;
+        let workspace = Workspace::require_initialized()?;
         workspace.fetch_sources()?;
 
         let config = workspace.config()?;

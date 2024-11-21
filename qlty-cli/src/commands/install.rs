@@ -26,7 +26,7 @@ pub struct Install {
 
 impl Install {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
-        let workspace = Workspace::new()?;
+        let workspace = Workspace::require_initialized()?;
         workspace.fetch_sources()?;
 
         let plan = Planner::new(

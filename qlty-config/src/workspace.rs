@@ -90,14 +90,14 @@ impl Workspace {
 
         if git_repository.is_none() {
             return Err(anyhow!(
-                "qlty must be initialized in a git repository. Current directory is not part of a git repository: {}",
+                "This must be run at the root of a Git repository. Current directory is not within a repository: {}",
                 current.display()
             ));
         }
 
         if git_repository.as_ref().unwrap() != &current {
             return Err(anyhow!(
-                "qlty must be initialized at the root of a git repository. Current directory is not at the root: {}",
+                "This must be run at the root of a Git repository. Current directory is not the repository root: {}",
                 current.display()
             ));
         }
@@ -105,8 +105,25 @@ impl Workspace {
         Ok(git_repository.unwrap())
     }
     pub fn assert_within_initialized_project() -> Result<PathBuf> {
-        // TODO
-        Self::assert_within_git_directory()
+        let current = Self::current_dir();
+        let git_repository = Self::closest_git_repository_path(&current);
+
+        if git_repository.is_none() {
+            return Err(anyhow!(
+                "This must be run within a Git repository with Qlty set up."
+            ));
+        } else {
+            let git_repository = git_repository.unwrap();
+            let workspace = Self::for_root(&git_repository)?;
+
+            if !workspace.config_exists()? {
+                return Err(anyhow!(
+                    "Qlty must be set up in this repository. Try: qlty init"
+                ));
+            }
+
+            Ok(git_repository)
+        }
     }
 
     pub fn assert_within_git_directory() -> Result<PathBuf> {
@@ -114,9 +131,7 @@ impl Workspace {
         let git_repository = Self::closest_git_repository_path(&current);
 
         if git_repository.is_none() {
-            return Err(anyhow!(
-                "This subcommand must be run within a Git repository."
-            ));
+            return Err(anyhow!("This must be run within a Git repository."));
         }
 
         Ok(git_repository.unwrap())

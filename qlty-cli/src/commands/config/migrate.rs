@@ -14,7 +14,7 @@ pub struct Migrate {
 
 impl Migrate {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
-        let workspace = Workspace::new()?;
+        let workspace = Workspace::require_initialized()?;
 
         if !workspace.config_exists()? {
             return Err(CommandError::Unknown {

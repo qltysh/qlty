@@ -49,7 +49,7 @@ pub struct Fmt {
 
 impl Fmt {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
-        let workspace = Workspace::new()?;
+        let workspace = Workspace::require_initialized()?;
         workspace.fetch_sources()?;
 
         let settings = self.build_settings()?;
