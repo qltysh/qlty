@@ -1,7 +1,7 @@
 use self::sanitize::sanitize_command;
 use crate::arguments::is_subcommand;
 use crate::telemetry::git::repository_identifier;
-use crate::telemetry::segment::{segment_context, segment_user, Track};
+use crate::telemetry::segment::{event_context, event_user, Track};
 use crate::{errors::CommandError, success::CommandSuccess};
 use ::sentry::integrations::panic::message_from_panic_info;
 use anyhow::Result;
@@ -129,10 +129,10 @@ impl Telemetry {
         let message_id = Uuid::new_v4().to_string();
 
         let track = Track {
-            user: segment_user(None, anonymous_id()?),
+            user: event_user(None, anonymous_id()?),
             event: event.to_owned(),
             properties,
-            context: Some(segment_context()),
+            context: Some(event_context()),
             timestamp: Some(OffsetDateTime::now_utc()),
             extra: [("messageId".to_owned(), json!(message_id))]
                 .iter()
