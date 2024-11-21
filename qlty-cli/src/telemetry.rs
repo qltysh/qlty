@@ -13,7 +13,7 @@ use serde_json::json;
 use std::path::PathBuf;
 use std::time::Instant;
 use time::OffsetDateTime;
-use tracing::{debug, warn};
+use tracing::{debug, trace, warn};
 use uuid::Uuid;
 
 pub mod analytics;
@@ -122,7 +122,7 @@ impl Telemetry {
     }
 
     fn track(&self, event: &str, properties: serde_json::Value) -> Result<()> {
-        debug!("Tracking event (foreground): {}: {:?}", event, properties);
+        trace!("Tracking event (foreground): {}: {:?}", event, properties);
         let message_id = Uuid::new_v4().to_string();
 
         let track = Track {
@@ -151,7 +151,7 @@ impl Telemetry {
 
         std::fs::write(&tempfile_path, payload)?;
         debug!(
-            "Executing: {} {} {} {}",
+            "Tracking event: {} {} {} {}",
             std::env::current_exe()
                 .expect("Could not determine current executable path")
                 .display(),
@@ -202,7 +202,7 @@ impl Telemetry {
 
         std::fs::write(&tempfile_path, payload)?;
         debug!(
-            "Executing: {} {} {} {}",
+            "Tracking panic: {} {} {} {}",
             std::env::current_exe()
                 .expect("Could not determine current executable path")
                 .display(),
@@ -268,7 +268,7 @@ impl Telemetry {
             TelemetryLevel::Off
         } else {
             if is_subcommand("telemetry") {
-                debug!("Telemetry disabled for telemetry subcommand");
+                debug!("Telemetry disabled for telemetry subcommand to avoid infinite loop");
                 return TelemetryLevel::Off;
             }
 

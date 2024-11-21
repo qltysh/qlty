@@ -38,14 +38,16 @@ impl AnalyticsClient {
                 .encode(format!("{}:", WRITE_KEY.unwrap_or_default()))
         );
 
+        let data = serde_json::to_value(message)?;
+
         debug!(
-            "POST {} with Authorization: {}: {:?}",
-            TRACK_URL, http_basic_authorization, message
+            "POST {} with Authorization: {}: {}",
+            TRACK_URL, http_basic_authorization, data
         );
 
         ureq::post(TRACK_URL)
             .set("Authorization", &http_basic_authorization)
-            .send_json(serde_json::to_value(message)?)
+            .send_json(data)
             .map(|_| ())
             .with_context(|| "Failed to send telemetry event")
     }
