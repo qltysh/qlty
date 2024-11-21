@@ -88,7 +88,7 @@ impl QltyRelease {
 
     fn load_version(tag: String) -> Result<Self> {
         Ok(Self {
-            version: tag.strip_prefix("v").unwrap_or(&tag).to_string(),
+            version: tag.strip_prefix('v').unwrap_or(&tag).to_string(),
         })
     }
 
@@ -116,7 +116,7 @@ impl QltyRelease {
 
         let version = result
             .announcement_tag
-            .strip_prefix("v")
+            .strip_prefix('v')
             .unwrap_or(&result.announcement_tag)
             .to_string();
         Ok(Self { version })
