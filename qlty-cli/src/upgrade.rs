@@ -1,8 +1,6 @@
 use anyhow::{bail, Context, Result};
 use dialoguer::{theme::ColorfulTheme, Confirm};
 use duct::cmd;
-use indicatif::ProgressBar;
-use itertools::Itertools;
 use qlty_analysis::version::QLTY_VERSION;
 use serde::Deserialize;
 
@@ -11,17 +9,13 @@ use std::time::SystemTime;
 const USER_AGENT_PREFIX: &str = "qlty";
 const VERSION_CHECK_INTERVAL: u64 = 24 * 60 * 60; // 24 hours
 
+const DEFAULT_MANIFEST_LOCATION_URL: &str =
+    "http://qlty-releases.s3.amazonaws.com/qlty/latest/dist-manifest.json";
+const DEFAULT_INSTALL_URL: &str = "https://qlty.sh";
+
 #[derive(Debug, Clone)]
 pub struct QltyRelease {
     pub version: String,
-    pub size: u64,
-    pub filename: String,
-    pub download_url: String,
-}
-
-pub enum ReleaseSpec {
-    Latest,
-    Tag(String),
 }
 
 impl QltyRelease {
@@ -85,49 +79,25 @@ impl QltyRelease {
         Ok(None)
     }
 
-    fn load_latest() -> Result<Self> {
-        Self::load(ReleaseSpec::Latest)
+    pub fn load(tag: &Option<String>) -> Result<Self> {
+        match tag {
+            Some(tag) => Self::load_version(tag.clone()),
+            None => Self::load_latest(),
+        }
     }
 
-    pub fn load(spec: ReleaseSpec) -> Result<Self> {
-        let url = "http://qlty-releases.s3.amazonaws.com/?list-type=2&prefix=qlty/&delimiter=/";
-        let response = ureq::get(url)
-            .set(
-                "User-Agent",
-                &format!("{}/{}", USER_AGENT_PREFIX, QLTY_VERSION),
-            )
-            .call()
-            .with_context(|| format!("Unable to get URL: {}", &url))?;
+    fn load_version(tag: String) -> Result<Self> {
+        Ok(Self {
+            version: tag.strip_prefix("v").unwrap_or(&tag).to_string(),
+        })
+    }
 
-        if response.status() != 200 {
-            bail!("GET {} returned {} status", &url, response.status());
-        }
-
-        let result: ListBucketResult = serde_xml_rs::from_str(&response.into_string()?)
-            .with_context(|| "Failed to parse XML")?;
-
-        let version = match spec {
-            ReleaseSpec::Latest => {
-                let semvers = result
-                    .releases
-                    .iter()
-                    .filter_map(|release| {
-                        let version = release
-                            .prefix
-                            .trim_start_matches("qlty/v")
-                            .trim_end_matches('/');
-                        semver::Version::parse(version).ok()
-                    })
-                    .sorted()
-                    .collect::<Vec<_>>();
-
-                semvers.last().unwrap().to_string()
-            }
-            ReleaseSpec::Tag(tag) => tag,
+    fn load_latest() -> Result<Self> {
+        let url = if let Ok(override_url) = std::env::var("QLTY_UPDATE_MANIFEST_URL") {
+            override_url
+        } else {
+            DEFAULT_MANIFEST_LOCATION_URL.to_string()
         };
-
-        let url =
-            format!("http://qlty-releases.s3.amazonaws.com/?list-type=2&prefix=qlty/v{version}/&delimiter=/");
 
         let response = ureq::get(&url)
             .set(
@@ -141,17 +111,15 @@ impl QltyRelease {
             bail!("GET {} returned {} status", &url, response.status());
         }
 
-        let result: ListBucketResult = serde_xml_rs::from_str(&response.into_string()?)
-            .with_context(|| "Failed to parse XML")?;
+        let result: DistManifest = serde_json::from_str(&response.into_string()?)
+            .with_context(|| "Failed to parse JSON")?;
 
-        let (filename, download_url, size) = Self::find_asset(&result, &version)?;
-
-        Ok(Self {
-            version,
-            download_url,
-            size,
-            filename,
-        })
+        let version = result
+            .announcement_tag
+            .strip_prefix("v")
+            .unwrap_or(&result.announcement_tag)
+            .to_string();
+        Ok(Self { version })
     }
 
     pub fn semver(&self) -> Result<semver::Version> {
@@ -163,155 +131,33 @@ impl QltyRelease {
         })
     }
 
-    pub fn download(&self) -> Result<Vec<u8>> {
-        let response = ureq::get(&self.download_url)
-            .set(
-                "User-Agent",
-                &format!("{}/{}", USER_AGENT_PREFIX, QLTY_VERSION),
+    pub fn run_upgrade_command(&self) -> Result<()> {
+        self.upgrade_command()
+            .env("VERSION", &self.version)
+            .run()
+            .map(|_| ())
+            .map_err(Into::into)
+    }
+
+    fn upgrade_command(&self) -> duct::Expression {
+        if cfg!(windows) {
+            cmd!(
+                "powershell",
+                "-c",
+                format!("iwr {} | iex", Self::install_url())
             )
-            .set("Accept", "application/octet-stream")
-            .call()
-            .with_context(|| format!("Unable to get URL: {}", &self.download_url))?;
-
-        if response.status() != 200 {
-            bail!(
-                "GET {} returned {} status",
-                &self.download_url,
-                response.status()
-            );
+        } else {
+            cmd!("sh", "-c", format!("curl {} | sh", Self::install_url()))
         }
-
-        let bytes = Self::download_with_progress(response)?;
-
-        if bytes.len() != self.size as usize {
-            bail!(
-                "GET {} returned {} bytes, expected {}",
-                &self.download_url,
-                bytes.len(),
-                self.size
-            );
-        }
-
-        Ok(bytes)
     }
 
-    pub fn download_with_progress(response: ureq::Response) -> Result<Vec<u8>> {
-        let content_length = response
-            .header("Content-Length")
-            .ok_or("Failed to get content length".to_string())
-            .unwrap();
-
-        let content_length_u64 = content_length
-            .parse::<u64>()
-            .with_context(|| format!("Failed to parse content length: {}", content_length))?;
-
-        let progress = Self::build_progress_bar(content_length_u64);
-
-        let mut bytes: Vec<u8> = vec![];
-        let mut stream = response.into_reader();
-        let mut buffer = [0; 1024];
-
-        while let Ok(bytes_read) = stream.read(&mut buffer) {
-            if bytes_read == 0 {
-                break;
-            }
-
-            bytes.extend_from_slice(&buffer[..bytes_read]);
-            progress.set_position(bytes.len() as u64);
-        }
-
-        progress.finish_and_clear();
-
-        if bytes.is_empty() {
-            bail!("GET returned empty response");
-        }
-
-        Ok(bytes)
-    }
-
-    fn build_progress_bar(total_bytes: u64) -> ProgressBar {
-        let progress = ProgressBar::new(total_bytes);
-        progress.set_style(Self::download_bar_style());
-        progress.set_prefix("Downloading");
-        progress
-    }
-
-    fn download_bar_style() -> indicatif::ProgressStyle {
-        indicatif::ProgressStyle::with_template(
-            "{prefix:.cyan.bold}  {percent}% [{wide_bar}]  {bytes}/{total_bytes}",
-        )
-        .unwrap()
-        .progress_chars("=> ")
-    }
-
-    fn find_asset(release: &ListBucketResult, version: &str) -> Result<(String, String, u64)> {
-        for asset in &release.files {
-            if !asset.key.ends_with(".xz") {
-                continue;
-            }
-
-            let name = asset.key.split('/').last().expect("key");
-            let platform = name
-                .strip_prefix("qlty-")
-                .expect("name starts with qlty-")
-                .strip_suffix(".tar.xz")
-                .expect("name ends with .tar.xz");
-
-            if platform == Self::current_platform() {
-                let size = asset.size as u64;
-                let url = format!("http://qlty-releases.s3.amazonaws.com/qlty/v{version}/{name}");
-                return Ok((name.to_owned(), url.to_owned(), size));
-            }
-        }
-
-        bail!(
-            "qlty v{} is out, but not for this platform ({}) yet.",
-            version,
-            Self::current_platform()
-        );
-    }
-
-    pub fn current_platform() -> String {
-        let cpu_architecture = match std::env::consts::ARCH {
-            "aarch64" => "aarch64",
-            _ => "x86_64",
-        };
-
-        let platform_label = match std::env::consts::OS {
-            "macos" => "apple-darwin",
-            _ => "unknown-linux-gnu",
-        };
-
-        format!("{}-{}", cpu_architecture, platform_label)
-    }
-}
-
-impl std::fmt::Display for QltyRelease {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.version)
+    fn install_url() -> String {
+        std::env::var("QLTY_INSTALL_URL").unwrap_or_else(|_| DEFAULT_INSTALL_URL.to_string())
     }
 }
 
 #[derive(Debug, Deserialize, PartialEq)]
-struct ListBucketResult {
-    #[serde(default, rename = "CommonPrefixes")]
-    releases: Vec<Release>,
-
-    #[serde(default, rename = "Contents")]
-    files: Vec<Object>,
-}
-
-#[derive(Debug, Deserialize, PartialEq)]
-struct Release {
-    #[serde(rename = "Prefix")]
-    prefix: String,
-}
-
-#[derive(Debug, Deserialize, PartialEq)]
-struct Object {
-    #[serde(rename = "Key")]
-    key: String,
-
-    #[serde(rename = "Size")]
-    size: usize,
+struct DistManifest {
+    #[serde(default)]
+    announcement_tag: String,
 }
