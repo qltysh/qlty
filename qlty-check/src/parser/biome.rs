@@ -185,14 +185,13 @@ impl Biome {
                         None
                     } else if let Some(diff_op) = &op.diff_op {
                         if let Some(range) = &diff_op.insert {
-                            let start_offset = range.range[0] + cumulative_offset;
-                            let end_offset = range.range[1] + cumulative_offset;
-                            last_end_offset = end_offset;
+                            last_end_offset = range.range[1] + cumulative_offset;
 
                             build_insert_replacement(
                                 diff.dictionary.clone(),
-                                &[start_offset, end_offset],
+                                &range.range,
                                 source_code,
+                                cumulative_offset,
                             )
                         } else if let Some(range) = &diff_op.delete {
                             let start_offset = range.range[0] + cumulative_offset;
@@ -255,21 +254,25 @@ fn build_insert_replacement(
     dictionary: String,
     range: &[u64],
     source_code: &str,
+    cumulative_offset: u64,
 ) -> Option<Replacement> {
     let (start_offset, end_offset) = match range {
-        [start, end] => (*start as usize, *end as usize),
+        [start, end] => (*start, *end),
         _ => {
             return None;
         }
     };
 
     let sliced_data = dictionary
-        .get(start_offset..end_offset)
+        .get(start_offset as usize..end_offset as usize)
         .unwrap_or("")
         .to_string();
 
-    let (start_line, start_column, _end_line, _end_column) =
-        calculate_line_and_column(source_code, start_offset as u64, end_offset as u64);
+    let (start_line, start_column, _end_line, _end_column) = calculate_line_and_column(
+        source_code,
+        start_offset + cumulative_offset,
+        end_offset + cumulative_offset,
+    );
 
     Some(Replacement {
         data: sliced_data,
@@ -380,8 +383,8 @@ mod test {
             "summary": {
                 "changed": 0,
                 "unchanged": 1,
-                "duration": { "secs": 0, "nanos": 2044833 },
-                "errors": 2,
+                "duration": { "secs": 0, "nanos": 46965834 },
+                "errors": 3,
                 "warnings": 0,
                 "skipped": 0,
                 "suggestedFixesSkipped": 0,
@@ -419,7 +422,7 @@ mod test {
                         "frame": {
                         "path": null,
                         "span": [62, 65],
-                        "sourceCode": "const foobar = () => { }\nconst barfoo = () => { }\n\nenum Bar { Baz };\n\nconst foo = (bar: Bar) => {\n  switch (bar) {\n    case Bar.Baz:\n      foobar();\n      barfoo();\n      break;\n  }\n  { !foo ? null : 1 }\n}\n"
+                        "sourceCode": "const foobar = () => { }\nconst barfoo = () => { }\n\nenum Bar { Baz };\n\nconst foo = (bar: Bar) => {\n  switch (bar) {\n    case Bar.Baz:\n      foobar();\n      barfoo();\n      break;\n  }\n  { !foo ? null : 1 }\n}\n\nenum Foo { Bae };\n"
                         }
                     },
                     {
@@ -446,14 +449,14 @@ mod test {
                     },
                     {
                         "diff": {
-                        "dictionary": "const foobar = () => { }\nconst barfoo = () => { }\n\nenum Bar { Baz = 0 };\n\nconst foo = (bar: Bar) => {  { !foo ? null : 1 }\n}\n",
+                        "dictionary": "const foobar = () => { }\nconst barfoo = () => { }\n\nenum Bar { Baz = 0 };\n\nconst foo = (bar: Bar) => {\nenum Foo { Bae };\n",
                         "ops": [
                             { "diffOp": { "equal": { "range": [0, 62] } } },
                             { "diffOp": { "equal": { "range": [62, 66] } } },
                             { "diffOp": { "insert": { "range": [66, 70] } } },
                             { "diffOp": { "equal": { "range": [70, 101] } } },
-                            { "equalLines": { "line_count": 6 } },
-                            { "diffOp": { "equal": { "range": [101, 125] } } }
+                            { "equalLines": { "line_count": 8 } },
+                            { "diffOp": { "equal": { "range": [101, 120] } } }
                         ]
                         }
                     }
@@ -463,7 +466,87 @@ mod test {
                 "location": {
                     "path": { "file": "basic.in.ts" },
                     "span": [56, 59],
-                    "sourceCode": "const foobar = () => { }\nconst barfoo = () => { }\n\nenum Bar { Baz };\n\nconst foo = (bar: Bar) => {\n  switch (bar) {\n    case Bar.Baz:\n      foobar();\n      barfoo();\n      break;\n  }\n  { !foo ? null : 1 }\n}\n"
+                    "sourceCode": "const foobar = () => { }\nconst barfoo = () => { }\n\nenum Bar { Baz };\n\nconst foo = (bar: Bar) => {\n  switch (bar) {\n    case Bar.Baz:\n      foobar();\n      barfoo();\n      break;\n  }\n  { !foo ? null : 1 }\n}\n\nenum Foo { Bae };\n"
+                },
+                "tags": ["fixable"],
+                "source": null
+                },
+                {
+                "category": "lint/style/useEnumInitializers",
+                "severity": "error",
+                "description": "This enum declaration contains members that are implicitly initialized.",
+                "message": [
+                    { "elements": [], "content": "This " },
+                    { "elements": ["Emphasis"], "content": "enum declaration" },
+                    {
+                    "elements": [],
+                    "content": " contains members that are implicitly initialized."
+                    }
+                ],
+                "advices": {
+                    "advices": [
+                    {
+                        "log": [
+                        "info",
+                        [
+                            { "elements": [], "content": "This " },
+                            { "elements": ["Emphasis"], "content": "enum member" },
+                            {
+                            "elements": [],
+                            "content": " should be explicitly initialized."
+                            }
+                        ]
+                        ]
+                    },
+                    {
+                        "frame": {
+                        "path": null,
+                        "span": [218, 221],
+                        "sourceCode": "const foobar = () => { }\nconst barfoo = () => { }\n\nenum Bar { Baz };\n\nconst foo = (bar: Bar) => {\n  switch (bar) {\n    case Bar.Baz:\n      foobar();\n      barfoo();\n      break;\n  }\n  { !foo ? null : 1 }\n}\n\nenum Foo { Bae };\n"
+                        }
+                    },
+                    {
+                        "log": [
+                        "info",
+                        [
+                            {
+                            "elements": [],
+                            "content": "Allowing implicit initializations for enum members can cause bugs if enum declarations are modified over time."
+                            }
+                        ]
+                        ]
+                    },
+                    {
+                        "log": [
+                        "info",
+                        [
+                            {
+                            "elements": [],
+                            "content": "Safe fix: Initialize all enum members."
+                            }
+                        ]
+                        ]
+                    },
+                    {
+                        "diff": {
+                        "dictionary": "const foobar = () => { }\nconst barfoo = () => { }\n}\n\nenum Foo { Bae = 0 };\n",
+                        "ops": [
+                            { "diffOp": { "equal": { "range": [0, 50] } } },
+                            { "equalLines": { "line_count": 10 } },
+                            { "diffOp": { "equal": { "range": [50, 64] } } },
+                            { "diffOp": { "equal": { "range": [64, 68] } } },
+                            { "diffOp": { "insert": { "range": [68, 72] } } },
+                            { "diffOp": { "equal": { "range": [72, 75] } } }
+                        ]
+                        }
+                    }
+                    ]
+                },
+                "verboseAdvices": { "advices": [] },
+                "location": {
+                    "path": { "file": "basic.in.ts" },
+                    "span": [212, 215],
+                    "sourceCode": "const foobar = () => { }\nconst barfoo = () => { }\n\nenum Bar { Baz };\n\nconst foo = (bar: Bar) => {\n  switch (bar) {\n    case Bar.Baz:\n      foobar();\n      barfoo();\n      break;\n  }\n  { !foo ? null : 1 }\n}\n\nenum Foo { Bae };\n"
                 },
                 "tags": ["fixable"],
                 "source": null
@@ -504,7 +587,7 @@ mod test {
                     },
                     {
                         "diff": {
-                        "dictionary": "const foobar = () => { }\nconst barfoo = () => { }\n\nenum Bar { Baz };\n\nconst foo = (bar: Bar) => {\n  switch (bar) {\n    case Bar.Baz:      barfoo();\n      break;\n  }\n  { !foo ? null : 1 }\n}\n",
+                        "dictionary": "const foobar = () => { }\nconst barfoo = () => { }\n\nenum Bar { Baz };\n\nconst foo = (bar: Bar) => {\n  switch (bar) {\n    case Bar.Baz:      barfoo();\n      break;\n  }\n  { !foo ? null : 1 }\n}\n\nenum Foo { Bae };\n",
                         "ops": [
                             { "diffOp": { "equal": { "range": [0, 97] } } },
                             { "diffOp": { "equal": { "range": [97, 132] } } },
@@ -513,7 +596,7 @@ mod test {
                             { "diffOp": { "delete": { "range": [164, 169] } } },
                             { "diffOp": { "equal": { "range": [169, 185] } } },
                             { "diffOp": { "delete": { "range": [185, 186] } } },
-                            { "diffOp": { "equal": { "range": [186, 189] } } }
+                            { "diffOp": { "equal": { "range": [186, 208] } } }
                         ]
                         }
                     }
@@ -523,7 +606,7 @@ mod test {
                 "location": {
                     "path": { "file": "basic.in.ts" },
                     "span": [184, 203],
-                    "sourceCode": "const foobar = () => { }\nconst barfoo = () => { }\n\nenum Bar { Baz };\n\nconst foo = (bar: Bar) => {\n  switch (bar) {\n    case Bar.Baz:\n      foobar();\n      barfoo();\n      break;\n  }\n  { !foo ? null : 1 }\n}\n"
+                    "sourceCode": "const foobar = () => { }\nconst barfoo = () => { }\n\nenum Bar { Baz };\n\nconst foo = (bar: Bar) => {\n  switch (bar) {\n    case Bar.Baz:\n      foobar();\n      barfoo();\n      break;\n  }\n  { !foo ? null : 1 }\n}\n\nenum Foo { Bae };\n"
                 },
                 "tags": ["fixable"],
                 "source": null
@@ -556,6 +639,28 @@ mod test {
                       startLine: 4
                       startColumn: 16
                       endLine: 4
+                      endColumn: 16
+        - tool: biome
+          ruleKey: lint/style/useEnumInitializers
+          message: This enum declaration contains members that are implicitly initialized.
+          level: LEVEL_HIGH
+          category: CATEGORY_LINT
+          location:
+            path: basic.in.ts
+            range:
+              startLine: 16
+              startColumn: 6
+              endLine: 16
+              endColumn: 9
+          suggestions:
+            - source: SUGGESTION_SOURCE_TOOL
+              replacements:
+                - data: "= 0 "
+                  location:
+                    range:
+                      startLine: 16
+                      startColumn: 16
+                      endLine: 16
                       endColumn: 16
         - tool: biome
           ruleKey: lint/complexity/noUselessLoneBlockStatements

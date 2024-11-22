@@ -42,12 +42,14 @@ const foo = (bar: Bar) => {
       break;
   }
   { !foo ? null : 1 }
-}",
+}
+
+enum Foo { Bae };",
       "suggestions": [
         {
           "patch": "--- original
 +++ modified
-@@ -9,6 +9,5 @@
+@@ -9,8 +9,7 @@
        foobar();
        barfoo();
        break;
@@ -55,6 +57,8 @@ const foo = (bar: Bar) => {
 -  { !foo ? null : 1 }
 +  }!foo ? null : 1 
  }
+
+ enum Foo { Bae };
 ",
           "replacements": [
             {
@@ -136,6 +140,62 @@ const foo = (bar: Bar) => {
                   "endLine": 4,
                   "startColumn": 16,
                   "startLine": 4,
+                },
+              },
+            },
+          ],
+          "source": "SUGGESTION_SOURCE_TOOL",
+        },
+      ],
+      "tool": "biome",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "basic.in.ts",
+        "range": {
+          "endColumn": 9,
+          "endLine": 16,
+          "startColumn": 6,
+          "startLine": 16,
+        },
+      },
+      "message": "This enum declaration contains members that are implicitly initialized.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "lint/style/useEnumInitializers",
+      "snippet": "enum Foo { Bae };",
+      "snippetWithContext": "const foo = (bar: Bar) => {
+  switch (bar) {
+    case Bar.Baz:
+      foobar();
+      barfoo();
+      break;
+  }
+  { !foo ? null : 1 }
+}
+
+enum Foo { Bae };",
+      "suggestions": [
+        {
+          "patch": "--- original
++++ modified
+@@ -13,4 +13,4 @@
+   { !foo ? null : 1 }
+ }
+
+-enum Foo { Bae };
++enum Foo { Bae = 0 };
+",
+          "replacements": [
+            {
+              "data": "= 0 ",
+              "location": {
+                "range": {
+                  "endColumn": 16,
+                  "endLine": 16,
+                  "startColumn": 16,
+                  "startLine": 16,
                 },
               },
             },

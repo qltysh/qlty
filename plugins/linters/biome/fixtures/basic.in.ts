@@ -12,3 +12,5 @@ const foo = (bar: Bar) => {
   }
   { !foo ? null : 1 }
 }
+
+enum Foo { Bae };
