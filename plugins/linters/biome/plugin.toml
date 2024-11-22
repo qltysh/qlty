@@ -13,7 +13,7 @@ description = "A static analyzer for web projects"
 suggested = "config"
 
 [plugins.definitions.biome.drivers.lint]
-script = "biome check --reporter=json ${target}"
+script = "biome lint --reporter=json ${target}"
 success_codes = [0, 1]
 output = "stdout"
 output_format = "biome"

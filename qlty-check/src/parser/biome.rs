@@ -1,22 +1,26 @@
 use super::Parser;
 use anyhow::Result;
-use qlty_types::analysis::v1::{Category, Issue, Level, Location, Range};
+use qlty_types::analysis::v1::{
+    Category, Issue, Level, Location, Range, Replacement, Suggestion, SuggestionSource,
+};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BiomeOutput {
     pub diagnostics: Vec<BiomeDiagnostic>,
 }
 
-#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BiomeDiagnostic {
     pub category: String,
     pub severity: String,
     pub description: String,
     pub location: BiomeLocation,
+    #[serde(default)]
+    pub advices: Option<BiomeAdvices>,
 }
 
-#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BiomeLocation {
     pub path: BiomePath,
     pub span: Option<Vec<u64>>,
@@ -24,31 +28,70 @@ pub struct BiomeLocation {
     pub source_code: Option<String>,
 }
 
-#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BiomePath {
     pub file: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct BiomeAdvices {
+    pub advices: Vec<BiomeAdvice>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct BiomeAdvice {
+    #[serde(default)]
+    pub diff: Option<BiomeDiff>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct BiomeDiff {
+    pub dictionary: String,
+    pub ops: Vec<BiomeDiffOp>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct BiomeDiffOp {
+    #[serde(default, rename = "diffOp")]
+    pub diff_op: Option<DiffOperationWrapper>,
+    #[serde(default, rename = "equalLines")]
+    pub equal_lines: Option<EqualLines>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct DiffOperationWrapper {
+    pub equal: Option<DiffRange>,
+    pub insert: Option<DiffRange>,
+    pub delete: Option<DiffRange>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct EqualLines {
+    pub line_count: u32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct DiffRange {
+    pub range: Vec<u64>,
+}
+
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
-pub struct Biome {}
+pub struct Biome;
 
 impl Parser for Biome {
-    fn parse(&self, _plugin_name: &str, output: &str) -> Result<Vec<Issue>> {
+    fn parse(&self, plugin_name: &str, output: &str) -> Result<Vec<Issue>> {
         let mut issues = vec![];
         let biome_output: BiomeOutput = serde_json::from_str(output)?;
 
         for diagnostic in biome_output.diagnostics {
-            // Skip format issues.
-            if diagnostic.category == "format" {
-                continue;
-            }
+            let suggestions = self.build_suggestions(&diagnostic);
 
             // Range is a bit tricky to calculate.
-            let range = if let Some(source_code) = diagnostic.location.source_code {
-                let span = diagnostic.location.span.unwrap_or_default();
+            let range = if let Some(source_code) = &diagnostic.location.source_code {
+                let span = diagnostic.location.span.clone().unwrap_or_default();
 
                 let (start_line, start_column, end_line, end_column) = if let Some(start_offset) =
-                    span.get(0)
+                    span.first()
                 {
                     if let Some(end_offset) = span.get(1) {
                         calculate_line_and_column(source_code.as_str(), *start_offset, *end_offset)
@@ -71,15 +114,16 @@ impl Parser for Biome {
             };
 
             let issue = Issue {
-                tool: "biome".to_string(),
-                rule_key: diagnostic.category,
-                message: diagnostic.description,
+                tool: plugin_name.into(),
+                rule_key: diagnostic.category.clone(),
+                message: diagnostic.description.clone(),
                 category: Category::Lint.into(),
-                level: severity_to_level(diagnostic.severity).into(),
+                level: severity_to_level(&diagnostic.severity).into(),
                 location: Some(Location {
-                    path: diagnostic.location.path.file,
+                    path: diagnostic.location.path.file.clone(),
                     range,
                 }),
+                suggestions,
                 ..Default::default()
             };
 
@@ -88,6 +132,185 @@ impl Parser for Biome {
 
         Ok(issues)
     }
+}
+
+impl Biome {
+    fn build_suggestions(&self, diagnostic: &BiomeDiagnostic) -> Vec<Suggestion> {
+        if let Some(advices) = &diagnostic.advices {
+            if let Some(source_code) = &diagnostic.location.source_code {
+                advices
+                    .advices
+                    .iter()
+                    .filter_map(|advice| {
+                        let replacements = self.build_replacements(&advice.diff, source_code);
+
+                        if replacements.is_empty() {
+                            None
+                        } else {
+                            Some(Suggestion {
+                                source: SuggestionSource::Tool.into(),
+                                replacements,
+                                ..Default::default()
+                            })
+                        }
+                    })
+                    .collect()
+            } else {
+                vec![]
+            }
+        } else {
+            vec![]
+        }
+    }
+
+    fn build_replacements(&self, diff: &Option<BiomeDiff>, source_code: &str) -> Vec<Replacement> {
+        if let Some(diff) = diff {
+            let mut cumulative_offset = 0u64; // Tracks the offset caused by equalLines.
+            let mut line_iter = source_code.lines().enumerate(); // Line iterator with line numbers.
+            let mut current_line = 0; // Tracks the current line for equalLines offset calculation.
+            let mut last_end_offset = 0u64; // Tracks the last end offset for diffOps
+
+            diff.ops
+                .iter()
+                .filter_map(|op| {
+                    if let Some(equal_lines) = &op.equal_lines {
+                        current_line = get_end_line_from_range(source_code, last_end_offset);
+                        // Update cumulative_offset using equalLines.
+                        cumulative_offset += calculate_equal_lines_offset(
+                            &mut line_iter,
+                            equal_lines.line_count,
+                            current_line,
+                        );
+                        current_line += equal_lines.line_count as usize; // Move to the next line after equalLines.
+                        None
+                    } else if let Some(diff_op) = &op.diff_op {
+                        if let Some(range) = &diff_op.insert {
+                            let start_offset = range.range[0] + cumulative_offset;
+                            let end_offset = range.range[1] + cumulative_offset;
+                            last_end_offset = end_offset;
+
+                            build_insert_replacement(
+                                diff.dictionary.clone(),
+                                &[start_offset, end_offset],
+                                source_code,
+                            )
+                        } else if let Some(range) = &diff_op.delete {
+                            let start_offset = range.range[0] + cumulative_offset;
+                            let end_offset = range.range[1] + cumulative_offset;
+                            last_end_offset = end_offset;
+
+                            build_delete_replacement(source_code, &[start_offset, end_offset])
+                        } else if let Some(range) = &diff_op.equal {
+                            let end_offset = range.range[1] + cumulative_offset;
+                            last_end_offset = end_offset;
+
+                            None
+                        } else {
+                            None
+                        }
+                    } else {
+                        None
+                    }
+                })
+                .collect()
+        } else {
+            vec![]
+        }
+    }
+}
+
+fn calculate_equal_lines_offset(
+    line_iter: &mut std::iter::Enumerate<std::str::Lines>,
+    line_count: u32,
+    current_line: usize,
+) -> u64 {
+    let mut offset = 0u64;
+
+    for (line_idx, line) in line_iter {
+        if line_idx >= current_line && line_idx < current_line + line_count as usize {
+            offset += line.len() as u64 + 1; // Include newline character
+        } else if line_idx >= current_line + line_count as usize {
+            break;
+        }
+    }
+
+    offset + 1
+}
+
+fn get_end_line_from_range(source_code: &str, end_offset: u64) -> usize {
+    let mut current_offset = 0u64;
+
+    for (line_idx, line) in source_code.lines().enumerate() {
+        let line_length = line.chars().count() as u64 + 1; // +1 for the newline character.
+        if current_offset > end_offset {
+            return line_idx;
+        }
+        current_offset += line_length;
+    }
+
+    source_code.lines().count() // Default to the last line if out of bounds.
+}
+
+fn build_insert_replacement(
+    dictionary: String,
+    range: &[u64],
+    source_code: &str,
+) -> Option<Replacement> {
+    let (start_offset, end_offset) = match range {
+        [start, end] => (*start as usize, *end as usize),
+        _ => {
+            return None;
+        }
+    };
+
+    let sliced_data = dictionary
+        .get(start_offset..end_offset)
+        .unwrap_or("")
+        .to_string();
+
+    let (start_line, start_column, _end_line, _end_column) =
+        calculate_line_and_column(source_code, start_offset as u64, end_offset as u64);
+
+    Some(Replacement {
+        data: sliced_data,
+        location: Some(Location {
+            path: "".into(),
+            range: Some(Range {
+                start_line,
+                start_column,
+                end_line: start_line,
+                end_column: start_column,
+                ..Default::default()
+            }),
+        }),
+    })
+}
+
+fn build_delete_replacement(source_code: &str, range: &[u64]) -> Option<Replacement> {
+    // Extract the start and end indices from the range.
+    let (start_offset, end_offset) = match range {
+        [start, end] => (*start as usize, *end as usize),
+        _ => {
+            return None;
+        }
+    };
+
+    let (start_line, start_column, end_line, end_column) =
+        calculate_line_and_column(source_code, start_offset as u64, end_offset as u64);
+
+    Some(Replacement {
+        data: "".to_string(),
+        location: Some(Location {
+            path: "".into(), // Biome doesn't provide file-specific replacement paths here.
+            range: Some(Range {
+                start_line,
+                start_column,
+                end_line,
+                end_column,
+                ..Default::default()
+            }),
+        }),
+    })
 }
 
 fn calculate_line_and_column(
@@ -138,8 +361,8 @@ fn calculate_line_and_column(
     )
 }
 
-fn severity_to_level(severity: String) -> Level {
-    match severity.as_str() {
+fn severity_to_level(severity: &str) -> Level {
+    match severity {
         "warning" => Level::Medium,
         "error" => Level::High,
         _ => Level::Medium,
@@ -157,8 +380,8 @@ mod test {
             "summary": {
                 "changed": 0,
                 "unchanged": 1,
-                "duration": { "secs": 0, "nanos": 26938833 },
-                "errors": 3,
+                "duration": { "secs": 0, "nanos": 2044833 },
+                "errors": 2,
                 "warnings": 0,
                 "skipped": 0,
                 "suggestedFixesSkipped": 0,
@@ -173,8 +396,8 @@ mod test {
                     { "elements": [], "content": "This " },
                     { "elements": ["Emphasis"], "content": "enum declaration" },
                     {
-                        "elements": [],
-                        "content": " contains members that are implicitly initialized."
+                    "elements": [],
+                    "content": " contains members that are implicitly initialized."
                     }
                 ],
                 "advices": {
@@ -186,17 +409,17 @@ mod test {
                             { "elements": [], "content": "This " },
                             { "elements": ["Emphasis"], "content": "enum member" },
                             {
-                                "elements": [],
-                                "content": " should be explicitly initialized."
+                            "elements": [],
+                            "content": " should be explicitly initialized."
                             }
                         ]
                         ]
                     },
                     {
                         "frame": {
-                            "path": null,
-                            "span": [62, 65],
-                            "sourceCode": "const foobar = () => { }\nconst barfoo = () => { }\n\nenum Bar { Baz };\n\nconst foo = (bar: Bar) => {\n  switch (bar) {\n    case Bar.Baz:\n      foobar();\n      barfoo();\n      break;\n  }\n  { !foo ? null : 1 }\n}\n"
+                        "path": null,
+                        "span": [62, 65],
+                        "sourceCode": "const foobar = () => { }\nconst barfoo = () => { }\n\nenum Bar { Baz };\n\nconst foo = (bar: Bar) => {\n  switch (bar) {\n    case Bar.Baz:\n      foobar();\n      barfoo();\n      break;\n  }\n  { !foo ? null : 1 }\n}\n"
                         }
                     },
                     {
@@ -304,89 +527,13 @@ mod test {
                 },
                 "tags": ["fixable"],
                 "source": null
-                },
-                {
-                "category": "format",
-                "severity": "error",
-                "description": "Formatter would have printed the following content:",
-                "message": [
-                    {
-                    "elements": [],
-                    "content": "Formatter would have printed the following content:"
-                    }
-                ],
-                "advices": {
-                    "advices": [
-                    {
-                        "diff": {
-                        "dictionary": "const foobar = () => { };\nconst barfoo = () => {\n\nenum Bar {\n\tBaz,\n\n\nconst foo = (bar: Bar) => {\n  \tswitch (bar) {\n    \t\tcase Bar.Baz:\n      \t\t\tfoobar();\nbarfoo();\nbreak;\n}\n{\n\t\t!foo ? null : 1;\n\t}\n}",
-                        "ops": [
-                            { "diffOp": { "equal": { "range": [0, 22] } } },
-                            { "diffOp": { "delete": { "range": [22, 23] } } },
-                            { "diffOp": { "equal": { "range": [23, 24] } } },
-                            { "diffOp": { "insert": { "range": [24, 25] } } },
-                            { "diffOp": { "equal": { "range": [25, 48] } } },
-                            { "diffOp": { "delete": { "range": [22, 23] } } },
-                            { "diffOp": { "equal": { "range": [23, 24] } } },
-                            { "diffOp": { "insert": { "range": [24, 25] } } },
-                            { "diffOp": { "equal": { "range": [48, 60] } } },
-                            { "diffOp": { "delete": { "range": [22, 23] } } },
-                            { "diffOp": { "insert": { "range": [60, 62] } } },
-                            { "diffOp": { "equal": { "range": [62, 65] } } },
-                            { "diffOp": { "delete": { "range": [22, 23] } } },
-                            { "diffOp": { "insert": { "range": [65, 67] } } },
-                            { "diffOp": { "equal": { "range": [23, 24] } } },
-                            { "diffOp": { "delete": { "range": [24, 25] } } },
-                            { "diffOp": { "equal": { "range": [67, 97] } } },
-                            { "diffOp": { "delete": { "range": [97, 99] } } },
-                            { "diffOp": { "insert": { "range": [99, 100] } } },
-                            { "diffOp": { "equal": { "range": [100, 115] } } },
-                            { "diffOp": { "delete": { "range": [115, 119] } } },
-                            { "diffOp": { "insert": { "range": [119, 121] } } },
-                            { "diffOp": { "equal": { "range": [121, 135] } } },
-                            { "diffOp": { "delete": { "range": [135, 141] } } },
-                            { "diffOp": { "insert": { "range": [141, 144] } } },
-                            { "diffOp": { "equal": { "range": [144, 154] } } },
-                            { "diffOp": { "delete": { "range": [135, 141] } } },
-                            { "diffOp": { "insert": { "range": [141, 144] } } },
-                            { "diffOp": { "equal": { "range": [154, 164] } } },
-                            { "diffOp": { "delete": { "range": [135, 141] } } },
-                            { "diffOp": { "insert": { "range": [141, 144] } } },
-                            { "diffOp": { "equal": { "range": [164, 171] } } },
-                            { "diffOp": { "delete": { "range": [135, 137] } } },
-                            { "diffOp": { "insert": { "range": [141, 142] } } },
-                            { "diffOp": { "equal": { "range": [171, 173] } } },
-                            { "diffOp": { "delete": { "range": [97, 99] } } },
-                            { "diffOp": { "insert": { "range": [141, 142] } } },
-                            { "diffOp": { "equal": { "range": [173, 174] } } },
-                            { "diffOp": { "delete": { "range": [97, 98] } } },
-                            { "diffOp": { "insert": { "range": [174, 177] } } },
-                            { "diffOp": { "equal": { "range": [177, 192] } } },
-                            { "diffOp": { "delete": { "range": [97, 98] } } },
-                            { "diffOp": { "insert": { "range": [192, 195] } } },
-                            { "diffOp": { "equal": { "range": [195, 198] } } },
-                            { "diffOp": { "insert": { "range": [192, 193] } } },
-                            { "diffOp": { "equal": { "range": [48, 49] } } }
-                        ]
-                        }
-                    }
-                    ]
-                },
-                "verboseAdvices": { "advices": [] },
-                "location": {
-                    "path": { "file": "basic.in.ts" },
-                    "span": null,
-                    "sourceCode": null
-                },
-                "tags": [],
-                "source": null
                 }
             ],
-            "command": "check"
-        }
+            "command": "lint"
+            }
         "###;
 
-        let issues = Biome::default().parse("bandit", input);
+        let issues = Biome::default().parse("biome", input);
         insta::assert_yaml_snapshot!(issues.unwrap(), @r###"
         - tool: biome
           ruleKey: lint/style/useEnumInitializers
@@ -400,6 +547,16 @@ mod test {
               startColumn: 6
               endLine: 4
               endColumn: 9
+          suggestions:
+            - source: SUGGESTION_SOURCE_TOOL
+              replacements:
+                - data: "= 0 "
+                  location:
+                    range:
+                      startLine: 4
+                      startColumn: 16
+                      endLine: 4
+                      endColumn: 16
         - tool: biome
           ruleKey: lint/complexity/noUselessLoneBlockStatements
           message: "This block statement doesn't serve any purpose and can be safely removed."
@@ -412,6 +569,21 @@ mod test {
               startColumn: 3
               endLine: 13
               endColumn: 22
+          suggestions:
+            - source: SUGGESTION_SOURCE_TOOL
+              replacements:
+                - location:
+                    range:
+                      startLine: 12
+                      startColumn: 4
+                      endLine: 13
+                      endColumn: 5
+                - location:
+                    range:
+                      startLine: 13
+                      startColumn: 21
+                      endLine: 13
+                      endColumn: 22
         "###);
     }
 }

@@ -43,6 +43,44 @@ const foo = (bar: Bar) => {
   }
   { !foo ? null : 1 }
 }",
+      "suggestions": [
+        {
+          "patch": "--- original
++++ modified
+@@ -9,6 +9,5 @@
+       foobar();
+       barfoo();
+       break;
+-  }
+-  { !foo ? null : 1 }
++  }!foo ? null : 1 
+ }
+",
+          "replacements": [
+            {
+              "location": {
+                "range": {
+                  "endColumn": 5,
+                  "endLine": 13,
+                  "startColumn": 4,
+                  "startLine": 12,
+                },
+              },
+            },
+            {
+              "location": {
+                "range": {
+                  "endColumn": 22,
+                  "endLine": 13,
+                  "startColumn": 21,
+                  "startLine": 13,
+                },
+              },
+            },
+          ],
+          "source": "SUGGESTION_SOURCE_TOOL",
+        },
+      ],
       "tool": "biome",
     },
     {
@@ -75,6 +113,36 @@ const foo = (bar: Bar) => {
   }
   { !foo ? null : 1 }
 }",
+      "suggestions": [
+        {
+          "patch": "--- original
++++ modified
+@@ -1,7 +1,7 @@
+ const foobar = () => { }
+ const barfoo = () => { }
+
+-enum Bar { Baz };
++enum Bar { Baz = 0 };
+
+ const foo = (bar: Bar) => {
+   switch (bar) {
+",
+          "replacements": [
+            {
+              "data": "= 0 ",
+              "location": {
+                "range": {
+                  "endColumn": 16,
+                  "endLine": 4,
+                  "startColumn": 16,
+                  "startLine": 4,
+                },
+              },
+            },
+          ],
+          "source": "SUGGESTION_SOURCE_TOOL",
+        },
+      ],
       "tool": "biome",
     },
   ],
