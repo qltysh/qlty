@@ -57,7 +57,7 @@ test_patterns = [
 [[source]]
 name = "default"
 repository = "https://github.com/qltysh/qlty"
-branch = "main"
+tag = "v0.450.0"
 
 
 [[plugin]]
