@@ -38,7 +38,7 @@ pub struct Transform {
     /// Print coverage
     pub print: bool,
 
-    #[arg(long, requires = "print")]
+    #[arg(long, hide = true, requires = "print")]
     /// JSON output
     pub json: bool,
 

@@ -94,7 +94,7 @@ pub struct Check {
     fail_level: Level,
 
     /// JSON output
-    #[arg(long)]
+    #[arg(long, hide = true)]
     json: bool,
 
     /// Allow individual plugins to be skipped if they fail or crash

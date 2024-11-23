@@ -46,7 +46,7 @@ pub struct Smells {
     pub quiet: bool,
 
     /// JSON output
-    #[arg(long)]
+    #[arg(long, hide = true)]
     json: bool,
 
     /// Files to analyze
