@@ -30,8 +30,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # macos-latest-xlarge currently points to MacOS 14 Sonoma
+        # macos-15-xlarge points to MacOS 15 Sequoia
         os:
-          [macos-latest-xlarge, ubuntu-latest-16-cores, windows-latest-16-cores]
+          [
+            macos-latest-xlarge,
+            macos-15-xlarge,
+            ubuntu-latest-16-cores,
+            windows-latest-16-cores,
+          ]
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     concurrency:
