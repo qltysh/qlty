@@ -124,7 +124,7 @@ tree-sitter-rust = "0.21.2"
 tree-sitter-typescript = "0.21.2"
 trycmd = "0.15.8"
 ureq = { version = "2.10.1", features = ["json"] }
-url = "2.5.2"
+url = "2.5.4"
 uuid = { version = "1.11.0", features = ["v4"] }
 walkdir = "2.5.0"
 webbrowser = "1.0.2"
