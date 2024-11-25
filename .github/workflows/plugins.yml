@@ -99,4 +99,4 @@ jobs:
         working-directory: plugins
         run: |
           npm ci
-          npm test -- --testPathIgnorePatterns=trivy
+          npm test
