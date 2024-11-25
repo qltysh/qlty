@@ -8,8 +8,8 @@ strip_components = 0
 [plugins.definitions.trivy]
 releases = ["trivy"]
 config_files = ["trivy.yaml", "trivy-secret.yaml"]
-latest_version = "0.56.2"
-known_good_version = "0.53.0"
+latest_version = "0.57.1"
+known_good_version = "0.57.1"
 version_command = "trivy --version"
 description = "Comprehensive and versatile security scanner"
 security = true
