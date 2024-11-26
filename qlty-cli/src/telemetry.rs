@@ -89,7 +89,7 @@ impl Telemetry {
         self.track("Command Error", properties)
     }
 
-    pub fn panic(&self, panic_info: &std::panic::PanicInfo<'_>) -> Result<()> {
+    pub fn panic(&self, panic_info: &std::panic::PanicHookInfo<'_>) -> Result<()> {
         if self.level == TelemetryLevel::Off {
             return Ok(());
         }

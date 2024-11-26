@@ -37,6 +37,8 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.os }}
       cancel-in-progress: true
+    env:
+      QLTY_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     defaults:
       run:
         shell: bash
@@ -71,7 +73,7 @@ jobs:
         if: matrix.os == 'windows-latest-16-cores'
 
       - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
+        uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
 
@@ -88,12 +90,6 @@ jobs:
 
       - name: Check qlty version
         run: qlty --version
-
-      # Login to the GitHub Container Registry to reduce trivy rate limiting errors
-      - name: Log in to registry
-        # macOS does not support Docker
-        if: matrix.os != 'macos-latest-xlarge'
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Run plugins tests
         working-directory: plugins
