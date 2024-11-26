@@ -5,10 +5,12 @@ use clap::{Args, Subcommand};
 mod disable;
 mod enable;
 mod list;
+mod upgrade;
 
 pub use disable::Disable;
 pub use enable::Enable;
 pub use list::List;
+pub use upgrade::Upgrade;
 
 #[derive(Debug, Args)]
 pub struct Arguments {
@@ -27,6 +29,9 @@ pub enum Commands {
 
     /// List all available plugins
     List(List),
+
+    /// Upgrades given plugin
+    Upgrade(Upgrade),
 }
 
 impl Arguments {
@@ -35,6 +40,7 @@ impl Arguments {
             Commands::Enable(command) => command.execute(args),
             Commands::Disable(command) => command.execute(args),
             Commands::List(command) => command.execute(args),
+            Commands::Upgrade(command) => command.execute(args),
         }
     }
 }
