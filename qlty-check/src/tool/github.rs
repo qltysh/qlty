@@ -12,7 +12,6 @@ use tracing::{debug, info, trace};
 
 const GITHUB_API_VERSION: &str = "2022-11-28";
 const USER_AGENT_PREFIX: &str = "qlty-check";
-const QLTY_GITHUB_TOKEN: &str = "QLTY_GITHUB_TOKEN";
 
 #[derive(Debug, Clone, Default)]
 pub struct GitHubRelease {
@@ -392,7 +391,7 @@ impl GitHubReleaseTool {
             )
             .set("X-GitHub-Api-Version", GITHUB_API_VERSION);
 
-        if let Ok(auth_token) = std::env::var(QLTY_GITHUB_TOKEN) {
+        if let Ok(auth_token) = std::env::var("QLTY_GITHUB_TOKEN") {
             request = request.set("Authorization", &format!("Bearer {}", auth_token));
         }
 
