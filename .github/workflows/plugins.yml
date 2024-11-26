@@ -71,7 +71,7 @@ jobs:
 
       - name: Setup PHP with PECL extension
         uses: shivammathur/setup-php@v2
-        if: matrix.os == 'macos-latest-xlarge'
+        if: matrix.os == 'macos-latest-xlarge' || matrix.os == 'macos-15-xlarge'
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
