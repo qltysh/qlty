@@ -60,7 +60,7 @@ repository = "https://github.com/qltysh/qlty"
 tag = "v0.450.0"
 
 [runtimes.enabled]
-rust = "1.82.0" # This should be kept in sync with clippy version below
+rust = "1.82.0"
 
 [[plugin]]
 name = "actionlint"
@@ -71,7 +71,7 @@ version = "1.7.9"
 
 [[plugin]]
 name = "clippy"
-version = "1.82.0" # This should be kept in sync with rust runtime version above
+# Note: Clippy version is controlled by the rust version above
 
 [[plugin]]
 name = "eslint"
