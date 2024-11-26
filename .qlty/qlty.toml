@@ -71,7 +71,7 @@ version = "1.7.9"
 
 [[plugin]]
 name = "clippy"
-# Note: Clippy version is controlled by the rust version above
+version = "1.82.0" # Note: Clippy version is controlled by the rust version above
 
 [[plugin]]
 name = "eslint"
