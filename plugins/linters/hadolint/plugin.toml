@@ -13,7 +13,7 @@ known_good_version = "2.12.0"
 version_command = "hadolint --version"
 issue_url_format = "https://github.com/hadolint/hadolint/wiki/${rule}"
 description = "Dockerfile linter"
-suggested = "targets"
+suggested = "config"
 
 [plugins.definitions.hadolint.drivers.lint]
 script = "hadolint ${target} -f json --no-fail"
@@ -22,4 +22,4 @@ output = "stdout"
 output_format = "hadolint"
 cache_results = true
 batch = true
-suggested = "targets"
+suggested = "config"

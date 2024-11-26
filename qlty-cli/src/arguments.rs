@@ -24,6 +24,7 @@ pub struct Arguments {
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     /// Manage authentication
+    #[command(hide = true)]
     Auth(auth::Arguments),
 
     /// Run analysis build

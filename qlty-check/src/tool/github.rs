@@ -250,12 +250,14 @@ impl GitHubRelease {
     }
 
     fn allowed_content_types(&self) -> Vec<String> {
-        ["application/octet-stream",
+        [
+            "application/octet-stream",
             "application/gzip",
             "application/x-ms-dos-executable",
             "application/x-gtar",
             "application/x-xz",
-            "application/zip"]
+            "application/zip",
+        ]
         .iter()
         .map(|s| s.to_string())
         .collect::<Vec<_>>()
@@ -382,14 +384,18 @@ impl GitHubReleaseTool {
     }
 
     fn get_release_assets(&self, url: &str) -> Result<Vec<serde_json::Value>> {
-        let json = ureq::get(url)
+        let mut request = ureq::get(url)
             .set(
                 "User-Agent",
                 &format!("{}/{}", USER_AGENT_PREFIX, env!("CARGO_PKG_VERSION")),
             )
-            .set("X-GitHub-Api-Version", GITHUB_API_VERSION)
-            .call()?
-            .into_json::<serde_json::Value>()?;
+            .set("X-GitHub-Api-Version", GITHUB_API_VERSION);
+
+        if let Ok(auth_token) = std::env::var("QLTY_GITHUB_TOKEN") {
+            request = request.set("Authorization", &format!("Bearer {}", auth_token));
+        }
+
+        let json = request.call()?.into_json::<serde_json::Value>()?;
 
         json["assets"]
             .as_array()
