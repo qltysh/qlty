@@ -1,15 +1,18 @@
 use crate::{Arguments, CommandError, CommandSuccess};
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use clap::Args;
-use console::style;
 use qlty_config::Workspace;
 use std::fs;
-use toml_edit::{array, table, value, DocumentMut};
+use toml_edit::{value, DocumentMut};
 
 #[derive(Args, Debug)]
-pub struct Enable {
-    /// Plugins to enable specified as name=version
-    pub plugins: Vec<String>,
+pub struct Upgrade {
+    /// Plugin to upgrade
+    pub plugin: String,
+
+    /// Optional - Specific version to upgrade to
+    #[clap(long)]
+    pub version: Option<String>,
 }
 
 struct ConfigDocument {
@@ -28,43 +31,46 @@ impl ConfigDocument {
         })
     }
 
-    pub fn enable_plugin(&mut self, name: &str, version: &str) -> Result<()> {
-        let config = self.workspace.config()?;
+    pub fn upgrade_plugin(&mut self, name: &str, version: &Option<String>) -> Result<()> {
+        let version = if let Some(version) = version {
+            version
+        } else {
+            let config = self.workspace.config()?;
 
-        config
-            .plugins
-            .definitions
-            .get(name)
-            .cloned()
-            .with_context(|| {
-                format!(
-                    "Unknown plugin: The {} plugin was not found in any source.",
-                    name
-                )
-            })?;
+            let plugin = config
+                .plugins
+                .definitions
+                .get(name)
+                .context("Plugin not found")?;
+
+            &plugin.latest_version.clone().unwrap_or_else(|| {
+                plugin
+                    .known_good_version
+                    .clone()
+                    .unwrap_or("latest".to_string())
+            })
+        };
 
         if self.document.get("plugin").is_none() {
-            self.document["plugin"] = array();
+            bail!("No plugins found in qlty.toml");
         }
 
-        for plugin in self.document["plugin"].as_array_of_tables().unwrap() {
-            if plugin["name"].as_str() == Some(name) {
-                eprintln!("{} Plugin {} is already enabled", style("⚠").yellow(), name);
-                return Ok(());
+        let mut updated = false;
+
+        if let Some(plugin_tables) = self.document["plugin"].as_array_of_tables_mut() {
+            for plugin_table in plugin_tables.iter_mut() {
+                if plugin_table["name"].as_str() == Some(name) {
+                    updated = true;
+                    if version != "latest" {
+                        plugin_table["version"] = value(version);
+                    }
+                }
             }
         }
 
-        let mut plugin_table = table();
-        plugin_table["name"] = value(name);
-
-        if version != "latest" {
-            plugin_table["version"] = value(version);
+        if !updated {
+            bail!("Plugin not found in qlty.toml");
         }
-
-        self.document["plugin"]
-            .as_array_of_tables_mut()
-            .unwrap()
-            .push(plugin_table.as_table().unwrap().clone());
 
         Ok(())
     }
@@ -75,28 +81,14 @@ impl ConfigDocument {
     }
 }
 
-impl Enable {
+impl Upgrade {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
         let workspace = Workspace::require_initialized()?;
         workspace.fetch_sources()?;
 
         let mut config = ConfigDocument::new(&workspace)?;
 
-        for plugin in &self.plugins {
-            let parts: Vec<&str> = plugin.split('=').collect();
-
-            match parts.len() {
-                1 => {
-                    config.enable_plugin(parts[0], "latest")?;
-                }
-                2 => {
-                    config.enable_plugin(parts[0], parts[1])?;
-                }
-                _ => {
-                    return CommandError::err("Invalid plugin format");
-                }
-            }
-        }
+        config.upgrade_plugin(&self.plugin, &self.version)?;
 
         config.write()?;
         CommandSuccess::ok()
@@ -111,7 +103,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_enable_plugin() {
+    fn test_upgrade_plugin() {
         let (temp_dir, _) = sample_repo();
         let temp_path = temp_dir.path().to_path_buf();
 
@@ -121,14 +113,18 @@ mod tests {
             r#"
 config_version = "0"
 
-[plugins.definitions.to_enable]
+[plugins.definitions.upgradeable]
 file_types = ["ALL"]
 latest_version = "1.1.0"
 
-[plugins.definitions.to_enable.drivers.lint]
+[plugins.definitions.upgradeable.drivers.lint]
 script = "ls -l ${target}"
 success_codes = [0]
 output = "pass_fail"
+
+[[plugin]]
+name = "upgradeable"
+version = "1.0.0"
             "#,
         )
         .ok();
@@ -138,29 +134,30 @@ output = "pass_fail"
         };
 
         let mut config = ConfigDocument::new(&workspace).unwrap();
-        config.enable_plugin("to_enable", "latest").unwrap();
+        config.upgrade_plugin("upgradeable", &None).unwrap();
 
         let expected = r#"
 config_version = "0"
 
-[plugins.definitions.to_enable]
+[plugins.definitions.upgradeable]
 file_types = ["ALL"]
 latest_version = "1.1.0"
 
-[plugins.definitions.to_enable.drivers.lint]
+[plugins.definitions.upgradeable.drivers.lint]
 script = "ls -l ${target}"
 success_codes = [0]
 output = "pass_fail"
 
 [[plugin]]
-name = "to_enable"
+name = "upgradeable"
+version = "1.1.0"
         "#;
 
         assert_eq!(config.document.to_string().trim(), expected.trim());
     }
 
     #[test]
-    fn test_enable_plugin_wrong_plugin_name() {
+    fn test_upgrade_plugin_wrong_plugin_name() {
         let (temp_dir, _) = sample_repo();
         let temp_path = temp_dir.path().to_path_buf();
 
@@ -170,14 +167,9 @@ name = "to_enable"
             r#"
 config_version = "0"
 
-[plugins.definitions.to_enable]
-file_types = ["ALL"]
-latest_version = "1.1.0"
-
-[plugins.definitions.to_enable.drivers.lint]
-script = "ls -l ${target}"
-success_codes = [0]
-output = "pass_fail"
+[[plugin]]
+name = "actual_plugin"
+version = "1.0.0"
             "#,
         )
         .ok();
@@ -187,30 +179,12 @@ output = "pass_fail"
         };
 
         let mut config = ConfigDocument::new(&workspace).unwrap();
-        config.enable_plugin("to_enable", "1.2.1").unwrap();
 
-        let expected = r#"
-config_version = "0"
-
-[plugins.definitions.to_enable]
-file_types = ["ALL"]
-latest_version = "1.1.0"
-
-[plugins.definitions.to_enable.drivers.lint]
-script = "ls -l ${target}"
-success_codes = [0]
-output = "pass_fail"
-
-[[plugin]]
-name = "to_enable"
-version = "1.2.1"
-        "#;
-
-        assert_eq!(config.document.to_string().trim(), expected.trim());
+        assert!(config.upgrade_plugin("actual_typo", &None).is_err());
     }
 
     #[test]
-    fn test_enable_plugin_when_already_enabled() {
+    fn test_upgrade_plugin_with_given_version() {
         let (temp_dir, _) = sample_repo();
         let temp_path = temp_dir.path().to_path_buf();
 
@@ -220,18 +194,9 @@ version = "1.2.1"
             r#"
 config_version = "0"
 
-[plugins.definitions.already_enabled]
-file_types = ["ALL"]
-latest_version = "1.1.0"
-
-[plugins.definitions.already_enabled.drivers.lint]
-script = "ls -l ${target}"
-success_codes = [0]
-output = "pass_fail"
-
 [[plugin]]
-name = "already_enabled"
-version = "0.9.0"
+name = "plugin_to_upgrade"
+version = "1.0.0"
             "#,
         )
         .ok();
@@ -241,23 +206,16 @@ version = "0.9.0"
         };
 
         let mut config = ConfigDocument::new(&workspace).unwrap();
-        config.enable_plugin("already_enabled", "1.2.1").unwrap();
+        config
+            .upgrade_plugin("plugin_to_upgrade", &Some("2.1.0".to_string()))
+            .unwrap();
 
         let expected = r#"
 config_version = "0"
 
-[plugins.definitions.already_enabled]
-file_types = ["ALL"]
-latest_version = "1.1.0"
-
-[plugins.definitions.already_enabled.drivers.lint]
-script = "ls -l ${target}"
-success_codes = [0]
-output = "pass_fail"
-
 [[plugin]]
-name = "already_enabled"
-version = "0.9.0"
+name = "plugin_to_upgrade"
+version = "2.1.0"
         "#;
 
         assert_eq!(config.document.to_string().trim(), expected.trim());
