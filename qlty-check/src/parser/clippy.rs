@@ -119,7 +119,7 @@ impl Parser for Clippy {
                 issues.push(Issue {
                     tool: "clippy".into(),
                     rule_key: "build_failure".into(),
-                    message: "Clippy failed to compile the code.".into(),
+                    message: "Clippy failed to run because Rust could not compile.".into(),
                     level: Level::High.into(),
                     ..Default::default()
                 });
