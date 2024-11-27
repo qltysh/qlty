@@ -6,7 +6,7 @@
     "level": "LEVEL_LOW",
     "category": "CATEGORY_STYLE",
     "snippet": "#!/bin/sh",
-    "snippetWithContext": "#!/bin/sh/necho $foo",
+    "snippetWithContext": "#!/bin/sh/necho /"$foo/"",
     "location": {
       "path": "sample.sh",
       "range": {
