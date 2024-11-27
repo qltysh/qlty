@@ -30,16 +30,10 @@ fn check_tests() {
 
 #[test]
 #[ignore] // ignore tests that may require network connection
-fn network_check_tests() {
-    // only run .toml files in check/network directory
-    // prevent running toml files from *.in
-    setup_and_run_test_cases("tests/cmd/check/network/*.toml");
-}
-
-#[test]
-#[ignore] // also may require network connection
-fn fmt_tests() {
-    setup_and_run_test_cases("tests/cmd/fmt/**/*.toml");
+fn network_tests() {
+    // only run .toml files in check/network/*/ directory
+    // Run check and fmt network in sequence
+    setup_and_run_test_cases("tests/cmd/check/network/*/*.toml");
 }
 
 #[test]
