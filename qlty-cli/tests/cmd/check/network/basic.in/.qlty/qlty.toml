@@ -2,7 +2,7 @@ config_version = "0"
 
 [sources.default]
 repository = "https://github.com/qltysh/qlty"
-tag = "v0.102.0"
+tag = "v0.452.0"
 
 [[plugin]]
 name = "black"
