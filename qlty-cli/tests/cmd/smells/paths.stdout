@@ -9,7 +9,7 @@
     "language": "LANGUAGE_JAVASCRIPT",
     "category": "CATEGORY_STRUCTURE",
     "snippet": "function init() {/n  if (true) {/n    return;/n  }/n  return;/n  return;/n  return;/n  return;/n  return;/n  return;/n}",
-    "snippetWithContext": "function init() {/n  if (true) {/n    return;/n  }/n  return;/n  return;/n  return;/n  return;/n  return;/n  return;/n}/n",
+    "snippetWithContext": "function init() {/n  if (true) {/n    return;/n  }/n  return;/n  return;/n  return;/n  return;/n  return;/n  return;/n}",
     "effortMinutes": 20,
     "value": 7,
     "valueDelta": 1,
