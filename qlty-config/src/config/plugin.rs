@@ -110,6 +110,9 @@ pub struct DriverDef {
 
     #[serde(default)]
     pub autoload_script: Option<String>,
+
+    #[serde(default)]
+    pub missing_output_as_error: bool,
 }
 
 fn default_driver_timeout() -> u64 {
