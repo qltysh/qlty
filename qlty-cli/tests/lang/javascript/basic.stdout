@@ -20,6 +20,88 @@
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
+      "driver": "duplication",
+      "ruleKey": "similar-code",
+      "message": "Found 17 lines of similar code in 2 locations (mass = 90)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_JAVASCRIPT",
+      "category": "CATEGORY_DUPLICATION",
+      "snippet": "function f0(numbers) {/n  let mean = numbers.reduce((acc, num) => acc + num, 0) / numbers.length;/n/n  let sortedNumbers = numbers.sort();/n  let median;/n/n  if (sortedNumbers.length % 2 === 0) {/n    median =/n      (sortedNumbers[sortedNumbers.length / 2 - 1] +/n        sortedNumbers[sortedNumbers.length / 2]) //n      2;/n  } else {/n    median = sortedNumbers[Math.floor(sortedNumbers.length / 2)];/n  }/n/n  return [mean, median];/n}",
+      "snippetWithContext": "function f0(numbers) {/n  let mean = numbers.reduce((acc, num) => acc + num, 0) / numbers.length;/n/n  let sortedNumbers = numbers.sort();/n  let median;/n/n  if (sortedNumbers.length % 2 === 0) {/n    median =/n      (sortedNumbers[sortedNumbers.length / 2 - 1] +/n        sortedNumbers[sortedNumbers.length / 2]) //n      2;/n  } else {/n    median = sortedNumbers[Math.floor(sortedNumbers.length / 2)];/n  }/n/n  return [mean, median];/n}/n/nfunction f1(numbers) {/n  let mean = numbers.reduce((acc, num) => acc + num, 0) / numbers.length;/n/n  let sortedNumbers = numbers.sort();/n  let median;/n/n  if (sortedNumbers.length % 2 === 0) {/n    median =/n      (sortedNumbers[sortedNumbers.length / 2 - 1] +/n        sortedNumbers[sortedNumbers.length / 2]) /",
+      "effortMinutes": 20,
+      "value": 17,
+      "valueDelta": 2,
+      "location": {
+        "path": "identical.js",
+        "range": {
+          "startLine": 1,
+          "endLine": 17,
+          "startByte": 0,
+          "endByte": 425
+        }
+      },
+      "otherLocations": [
+        {
+          "path": "identical.js",
+          "range": {
+            "startLine": 19,
+            "endLine": 35
+          }
+        }
+      ],
+      "properties": {
+        [..],
+        [..],
+        [..],
+        [..]
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "buildId": [..],
+      "analyzedAt": [..],
+      "tool": "qlty",
+      "driver": "duplication",
+      "ruleKey": "similar-code",
+      "message": "Found 17 lines of similar code in 2 locations (mass = 90)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_JAVASCRIPT",
+      "category": "CATEGORY_DUPLICATION",
+      "snippet": "function f1(numbers) {/n  let mean = numbers.reduce((acc, num) => acc + num, 0) / numbers.length;/n/n  let sortedNumbers = numbers.sort();/n  let median;/n/n  if (sortedNumbers.length % 2 === 0) {/n    median =/n      (sortedNumbers[sortedNumbers.length / 2 - 1] +/n        sortedNumbers[sortedNumbers.length / 2]) //n      2;/n  } else {/n    median = sortedNumbers[Math.floor(sortedNumbers.length / 2)];/n  }/n/n  return [mean, median];/n}",
+      "snippetWithContext": "        sortedNumbers[sortedNumbers.length / 2]) //n      2;/n  } else {/n    median = sortedNumbers[Math.floor(sortedNumbers.length / 2)];/n  }/n/n  return [mean, median];/n}/n/nfunction f1(numbers) {/n  let mean = numbers.reduce((acc, num) => acc + num, 0) / numbers.length;/n/n  let sortedNumbers = numbers.sort();/n  let median;/n/n  if (sortedNumbers.length % 2 === 0) {/n    median =/n      (sortedNumbers[sortedNumbers.length / 2 - 1] +/n        sortedNumbers[sortedNumbers.length / 2]) //n      2;/n  } else {/n    median = sortedNumbers[Math.floor(sortedNumbers.length / 2)];/n  }/n/n  return [mean, median];/n}",
+      "effortMinutes": 20,
+      "value": 17,
+      "valueDelta": 2,
+      "location": {
+        "path": "identical.js",
+        "range": {
+          "startLine": 19,
+          "endLine": 35,
+          "startByte": 427,
+          "endByte": 852
+        }
+      },
+      "otherLocations": [
+        {
+          "path": "identical.js",
+          "range": {
+            "startLine": 1,
+            "endLine": 17
+          }
+        }
+      ],
+      "properties": {
+        [..],
+        [..],
+        [..],
+        [..]
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "buildId": [..],
+      "analyzedAt": [..],
+      "tool": "qlty",
       "driver": "structure",
       "ruleKey": "boolean-logic",
       "message": "Complex binary expression",
@@ -27,25 +109,25 @@
       "language": "LANGUAGE_JAVASCRIPT",
       "category": "CATEGORY_STRUCTURE",
       "snippet": "false && true",
-      "snippetWithContext": "function foo() {/n  return true || false && true && false || true;/n}",
+      "snippetWithContext": "function foo() {/n  return true || (false && true && false) || true;/n}",
       "effortMinutes": 10,
       "value": 4,
       "location": {
         "path": "cognitive/count_non_sequential_logical_operators.js",
         "range": {
           "startLine": 2,
-          "startColumn": 18,
+          "startColumn": 19,
           "endLine": 2,
-          "endColumn": 31,
-          "startByte": 34,
-          "endByte": 47
+          "endColumn": 32,
+          "startByte": 35,
+          "endByte": 48
         }
       },
       "mode": "MODE_BLOCK"
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "file-complexity",
@@ -53,8 +135,8 @@
       "level": "LEVEL_MEDIUM",
       "language": "LANGUAGE_JAVASCRIPT",
       "category": "CATEGORY_STRUCTURE",
-      "snippet": "function main() {/n    let foo = 42;/n    if (foo) {/n        if (foo > 10) {/n            if (foo < 20) {/n                if (foo % 2 === 0) {/n                    if (foo % 3 === 0) {/n                        if (foo % 5 === 0) {/n                            if (foo % 7 === 0) {/n                                if (foo % 11 === 0) {/n                                    if (foo % 13 === 0) {/n                                        if (foo % 17 === 0) {/n                                            console.log(/"Nested!/");/n                                        }/n                                    }/n                                }/n                            }/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n",
-      "snippetWithContext": "function main() {/n    let foo = 42;/n    if (foo) {/n        if (foo > 10) {/n            if (foo < 20) {/n                if (foo % 2 === 0) {/n                    if (foo % 3 === 0) {/n                        if (foo % 5 === 0) {/n                            if (foo % 7 === 0) {/n                                if (foo % 11 === 0) {/n                                    if (foo % 13 === 0) {/n                                        if (foo % 17 === 0) {/n                                            console.log(/"Nested!/");/n                                        }/n                                    }/n                                }/n                            }/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippet": "function main() {/n  let foo = 42;/n  if (foo) {/n    if (foo > 10) {/n      if (foo < 20) {/n        if (foo % 2 === 0) {/n          if (foo % 3 === 0) {/n            if (foo % 5 === 0) {/n              if (foo % 7 === 0) {/n                if (foo % 11 === 0) {/n                  if (foo % 13 === 0) {/n                    if (foo % 17 === 0) {/n                      console.log(/"Nested!/");/n                    }/n                  }/n                }/n              }/n            }/n          }/n        }/n      }/n    }/n  }/n}/n",
+      "snippetWithContext": "function main() {/n  let foo = 42;/n  if (foo) {/n    if (foo > 10) {/n      if (foo < 20) {/n        if (foo % 2 === 0) {/n          if (foo % 3 === 0) {/n            if (foo % 5 === 0) {/n              if (foo % 7 === 0) {/n                if (foo % 11 === 0) {/n                  if (foo % 13 === 0) {/n                    if (foo % 17 === 0) {/n                      console.log(/"Nested!/");/n                    }/n                  }/n                }/n              }/n            }/n          }/n        }/n      }/n    }/n  }/n}",
       "effortMinutes": 150,
       "value": 55,
       "valueDelta": 5,
@@ -66,7 +148,7 @@
           "endLine": 25,
           "endColumn": 1,
           "startByte": 0,
-          "endByte": 759
+          "endByte": 515
         }
       },
       "partialFingerprints": {
@@ -75,8 +157,8 @@
       "mode": "MODE_BLOCK"
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-complexity",
@@ -84,8 +166,8 @@
       "level": "LEVEL_MEDIUM",
       "language": "LANGUAGE_JAVASCRIPT",
       "category": "CATEGORY_STRUCTURE",
-      "snippet": "function main() {/n    let foo = 42;/n    if (foo) {/n        if (foo > 10) {/n            if (foo < 20) {/n                if (foo % 2 === 0) {/n                    if (foo % 3 === 0) {/n                        if (foo % 5 === 0) {/n                            if (foo % 7 === 0) {/n                                if (foo % 11 === 0) {/n                                    if (foo % 13 === 0) {/n                                        if (foo % 17 === 0) {/n                                            console.log(/"Nested!/");/n                                        }/n                                    }/n                                }/n                            }/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
-      "snippetWithContext": "function main() {/n    let foo = 42;/n    if (foo) {/n        if (foo > 10) {/n            if (foo < 20) {/n                if (foo % 2 === 0) {/n                    if (foo % 3 === 0) {/n                        if (foo % 5 === 0) {/n                            if (foo % 7 === 0) {/n                                if (foo % 11 === 0) {/n                                    if (foo % 13 === 0) {/n                                        if (foo % 17 === 0) {/n                                            console.log(/"Nested!/");/n                                        }/n                                    }/n                                }/n                            }/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippet": "function main() {/n  let foo = 42;/n  if (foo) {/n    if (foo > 10) {/n      if (foo < 20) {/n        if (foo % 2 === 0) {/n          if (foo % 3 === 0) {/n            if (foo % 5 === 0) {/n              if (foo % 7 === 0) {/n                if (foo % 11 === 0) {/n                  if (foo % 13 === 0) {/n                    if (foo % 17 === 0) {/n                      console.log(/"Nested!/");/n                    }/n                  }/n                }/n              }/n            }/n          }/n        }/n      }/n    }/n  }/n}",
+      "snippetWithContext": "function main() {/n  let foo = 42;/n  if (foo) {/n    if (foo > 10) {/n      if (foo < 20) {/n        if (foo % 2 === 0) {/n          if (foo % 3 === 0) {/n            if (foo % 5 === 0) {/n              if (foo % 7 === 0) {/n                if (foo % 11 === 0) {/n                  if (foo % 13 === 0) {/n                    if (foo % 17 === 0) {/n                      console.log(/"Nested!/");/n                    }/n                  }/n                }/n              }/n            }/n          }/n        }/n      }/n    }/n  }/n}",
       "effortMinutes": 195,
       "value": 55,
       "valueDelta": 37,
@@ -97,7 +179,7 @@
           "endLine": 24,
           "endColumn": 2,
           "startByte": 0,
-          "endByte": 758
+          "endByte": 514
         }
       },
       "partialFingerprints": {
@@ -106,8 +188,8 @@
       "mode": "MODE_BLOCK"
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-parameters",
@@ -116,25 +198,25 @@
       "language": "LANGUAGE_JAVASCRIPT",
       "category": "CATEGORY_STRUCTURE",
       "snippet": "(a, b, c, d, e, f)",
-      "snippetWithContext": "function f0() {/n}/n/nfunction f1(dog, cat) {/n}/n/nfunction f2(a, b, c, d, e, f) {/n}/n/nfunction f3() {/n    // Function calls don't count, only function definitions/n    const foo = bar(1, 2, 3, 4);/n}",
+      "snippetWithContext": "function f0() {}/n/nfunction f1(dog, cat) {}/n/nfunction f2(a, b, c, d, e, f) {}/n/nfunction f3() {/n  // Function calls don't count, only function definitions/n  const foo = bar(1, 2, 3, 4);/n}",
       "effortMinutes": 15,
       "value": 6,
       "location": {
         "path": "parameters.js",
         "range": {
-          "startLine": 7,
+          "startLine": 5,
           "startColumn": 12,
-          "endLine": 7,
+          "endLine": 5,
           "endColumn": 30,
-          "startByte": 57,
-          "endByte": 75
+          "startByte": 55,
+          "endByte": 73
         }
       },
       "mode": "MODE_BLOCK"
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -142,26 +224,26 @@
       "level": "LEVEL_MEDIUM",
       "language": "LANGUAGE_JAVASCRIPT",
       "category": "CATEGORY_STRUCTURE",
-      "snippet": "if (foo % 3 === 0) {/n                        if (foo % 5 === 0) {/n                            if (foo % 7 === 0) {/n                                if (foo % 11 === 0) {/n                                    if (foo % 13 === 0) {/n                                        if (foo % 17 === 0) {/n                                            console.log(/"Nested!/");/n                                        }/n                                    }/n                                }/n                            }/n                        }/n                    }",
-      "snippetWithContext": "function main() {/n    let foo = 42;/n    if (foo) {/n        if (foo > 10) {/n            if (foo < 20) {/n                if (foo % 2 === 0) {/n                    if (foo % 3 === 0) {/n                        if (foo % 5 === 0) {/n                            if (foo % 7 === 0) {/n                                if (foo % 11 === 0) {/n                                    if (foo % 13 === 0) {/n                                        if (foo % 17 === 0) {/n                                            console.log(/"Nested!/");/n                                        }/n                                    }/n                                }/n                            }/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippet": "if (foo % 3 === 0) {/n            if (foo % 5 === 0) {/n              if (foo % 7 === 0) {/n                if (foo % 11 === 0) {/n                  if (foo % 13 === 0) {/n                    if (foo % 17 === 0) {/n                      console.log(/"Nested!/");/n                    }/n                  }/n                }/n              }/n            }/n          }",
+      "snippetWithContext": "function main() {/n  let foo = 42;/n  if (foo) {/n    if (foo > 10) {/n      if (foo < 20) {/n        if (foo % 2 === 0) {/n          if (foo % 3 === 0) {/n            if (foo % 5 === 0) {/n              if (foo % 7 === 0) {/n                if (foo % 11 === 0) {/n                  if (foo % 13 === 0) {/n                    if (foo % 17 === 0) {/n                      console.log(/"Nested!/");/n                    }/n                  }/n                }/n              }/n            }/n          }/n        }/n      }/n    }/n  }/n}",
       "effortMinutes": 15,
       "value": 5,
       "location": {
         "path": "file_complexity.js",
         "range": {
           "startLine": 7,
-          "startColumn": 21,
+          "startColumn": 11,
           "endLine": 19,
-          "endColumn": 22,
-          "startByte": 160,
-          "endByte": 708
+          "endColumn": 12,
+          "startByte": 128,
+          "endByte": 484
         }
       },
       "mode": "MODE_BLOCK"
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -169,26 +251,26 @@
       "level": "LEVEL_MEDIUM",
       "language": "LANGUAGE_JAVASCRIPT",
       "category": "CATEGORY_STRUCTURE",
-      "snippet": "if (bar % 3 === 0) {/n                        console.log(/"Nested!/");/n                    }",
-      "snippetWithContext": "function simple() {}/n/nfunction complex() {/n    let bar = 42;/n    if (bar) {/n        if (bar > 10) {/n            if (bar < 20) {/n                if (bar % 2 === 0) {/n                    if (bar % 3 === 0) {/n                        console.log(/"Nested!/");/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippet": "if (bar % 3 === 0) {/n            console.log(/"Nested!/");/n          }",
+      "snippetWithContext": "function simple() {}/n/nfunction complex() {/n  let bar = 42;/n  if (bar) {/n    if (bar > 10) {/n      if (bar < 20) {/n        if (bar % 2 === 0) {/n          if (bar % 3 === 0) {/n            console.log(/"Nested!/");/n          }/n        }/n      }/n    }/n  }/n}",
       "effortMinutes": 15,
       "value": 5,
       "location": {
         "path": "function_complexity.js",
         "range": {
           "startLine": 9,
-          "startColumn": 21,
+          "startColumn": 11,
           "endLine": 11,
-          "endColumn": 22,
-          "startByte": 185,
-          "endByte": 275
+          "endColumn": 12,
+          "startByte": 153,
+          "endByte": 221
         }
       },
       "mode": "MODE_BLOCK"
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "return-statements",
@@ -214,8 +296,8 @@
       "mode": "MODE_BLOCK"
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "return-statements",
@@ -223,8 +305,8 @@
       "level": "LEVEL_MEDIUM",
       "language": "LANGUAGE_JAVASCRIPT",
       "category": "CATEGORY_STRUCTURE",
-      "snippet": "function f2(foo) {/n    switch (foo) {/n        case 1:/n            return 'bar1';/n        case 2:/n            return 'bar2';/n        case 3:/n            return 'bar3';/n        case 4:/n            return 'bar4';/n        case 5:/n            return 'bar5';/n        case 6:/n            return 'bar6';/n        case 7:/n            return 'bar7';/n        case 8:/n            return 'bar8';/n        case 9:/n            return 'bar9';/n        case 10:/n            return 'bar10';/n        default:/n            throw new Error('Invalid foo value');/n    }/n}",
-      "snippetWithContext": "        if (baz) {/n            if (qux) {/n                if (quux) {/n                    console.log('Deeply nested!');/n                }/n            }/n        }/n    }/n}/n/nfunction f2(foo) {/n    switch (foo) {/n        case 1:/n            return 'bar1';/n        case 2:/n            return 'bar2';/n        case 3:/n            return 'bar3';/n        case 4:/n            return 'bar4';/n        case 5:/n            return 'bar5';/n        case 6:/n            return 'bar6';/n        case 7:/n            return 'bar7';/n        case 8:/n            return 'bar8';/n        case 9:/n            return 'bar9';/n        case 10:/n            return 'bar10';/n        default:/n            throw new Error('Invalid foo value');/n    }/n}",
+      "snippet": "function f2(foo) {/n  switch (foo) {/n    case 1:/n      return /"bar1/";/n    case 2:/n      return /"bar2/";/n    case 3:/n      return /"bar3/";/n    case 4:/n      return /"bar4/";/n    case 5:/n      return /"bar5/";/n    case 6:/n      return /"bar6/";/n    case 7:/n      return /"bar7/";/n    case 8:/n      return /"bar8/";/n    case 9:/n      return /"bar9/";/n    case 10:/n      return /"bar10/";/n    default:/n      throw new Error(/"Invalid foo value/");/n  }/n}",
+      "snippetWithContext": "    if (baz) {/n      if (qux) {/n        if (quux) {/n          console.log(/"Deeply nested!/");/n        }/n      }/n    }/n  }/n}/n/nfunction f2(foo) {/n  switch (foo) {/n    case 1:/n      return /"bar1/";/n    case 2:/n      return /"bar2/";/n    case 3:/n      return /"bar3/";/n    case 4:/n      return /"bar4/";/n    case 5:/n      return /"bar5/";/n    case 6:/n      return /"bar6/";/n    case 7:/n      return /"bar7/";/n    case 8:/n      return /"bar8/";/n    case 9:/n      return /"bar9/";/n    case 10:/n      return /"bar10/";/n    default:/n      throw new Error(/"Invalid foo value/");/n  }/n}",
       "effortMinutes": 35,
       "value": 10,
       "valueDelta": 4,
@@ -235,8 +317,8 @@
           "startColumn": 1,
           "endLine": 58,
           "endColumn": 2,
-          "startByte": 632,
-          "endByte": 1176
+          "startByte": 518,
+          "endByte": 948
         }
       },
       "mode": "MODE_BLOCK"
@@ -244,8 +326,8 @@
   ],
   "stats": [
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "boolean_logic.js",
       "fullyQualifiedName": "boolean_logic.js",
       "path": "boolean_logic.js",
@@ -264,8 +346,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "count_conditional_assignment.js",
       "fullyQualifiedName": "cognitive/count_conditional_assignment.js",
       "path": "cognitive/count_conditional_assignment.js",
@@ -284,8 +366,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "count_function_with_ternary.js",
       "fullyQualifiedName": "cognitive/count_function_with_ternary.js",
       "path": "cognitive/count_function_with_ternary.js",
@@ -304,8 +386,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "count_non_sequential_logical_operators.js",
       "fullyQualifiedName": "cognitive/count_non_sequential_logical_operators.js",
       "path": "cognitive/count_non_sequential_logical_operators.js",
@@ -324,8 +406,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "count_recursion.js",
       "fullyQualifiedName": "cognitive/count_recursion.js",
       "path": "cognitive/count_recursion.js",
@@ -344,8 +426,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "multiple_conditionals.js",
       "fullyQualifiedName": "cognitive/multiple_conditionals.js",
       "path": "cognitive/multiple_conditionals.js",
@@ -364,8 +446,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "cyclo_basic.js",
       "fullyQualifiedName": "cyclomatic/cyclo_basic.js",
       "path": "cyclomatic/cyclo_basic.js",
@@ -384,8 +466,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "cyclo_if.js",
       "fullyQualifiedName": "cyclomatic/cyclo_if.js",
       "path": "cyclomatic/cyclo_if.js",
@@ -404,8 +486,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "cyclo_if_else.js",
       "fullyQualifiedName": "cyclomatic/cyclo_if_else.js",
       "path": "cyclomatic/cyclo_if_else.js",
@@ -424,8 +506,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "cyclo_if_else_if.js",
       "fullyQualifiedName": "cyclomatic/cyclo_if_else_if.js",
       "path": "cyclomatic/cyclo_if_else_if.js",
@@ -444,8 +526,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "cyclo_if_else_if_else.js",
       "fullyQualifiedName": "cyclomatic/cyclo_if_else_if_else.js",
       "path": "cyclomatic/cyclo_if_else_if_else.js",
@@ -464,8 +546,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "empty_function.js",
       "fullyQualifiedName": "cyclomatic/empty_function.js",
       "path": "cyclomatic/empty_function.js",
@@ -484,8 +566,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "empty_if.js",
       "fullyQualifiedName": "cyclomatic/empty_if.js",
       "path": "cyclomatic/empty_if.js",
@@ -495,8 +577,8 @@
       "classes": 0,
       "functions": 1,
       "fields": 0,
-      "lines": 3,
-      "codeLines": 3,
+      "lines": 4,
+      "codeLines": 4,
       "commentLines": 0,
       "blankLines": 0,
       "complexity": 1,
@@ -504,8 +586,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "if_with_bool.js",
       "fullyQualifiedName": "cyclomatic/if_with_bool.js",
       "path": "cyclomatic/if_with_bool.js",
@@ -515,8 +597,8 @@
       "classes": 0,
       "functions": 1,
       "fields": 0,
-      "lines": 3,
-      "codeLines": 3,
+      "lines": 4,
+      "codeLines": 4,
       "commentLines": 0,
       "blankLines": 0,
       "complexity": 2,
@@ -524,8 +606,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "iterative_for_of.js",
       "fullyQualifiedName": "cyclomatic/iterative_for_of.js",
       "path": "cyclomatic/iterative_for_of.js",
@@ -544,8 +626,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "iterative_map.js",
       "fullyQualifiedName": "cyclomatic/iterative_map.js",
       "path": "cyclomatic/iterative_map.js",
@@ -564,8 +646,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "iterative_methods_with_filter_and_include.js",
       "fullyQualifiedName": "cyclomatic/iterative_methods_with_filter_and_include.js",
       "path": "cyclomatic/iterative_methods_with_filter_and_include.js",
@@ -575,8 +657,8 @@
       "classes": 0,
       "functions": 1,
       "fields": 0,
-      "lines": 13,
-      "codeLines": 11,
+      "lines": 15,
+      "codeLines": 13,
       "commentLines": 0,
       "blankLines": 2,
       "complexity": 1,
@@ -584,8 +666,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "while_loop.js",
       "fullyQualifiedName": "cyclomatic/while_loop.js",
       "path": "cyclomatic/while_loop.js",
@@ -604,8 +686,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "class_declaration.js",
       "fullyQualifiedName": "fields/class_declaration.js",
       "path": "fields/class_declaration.js",
@@ -624,8 +706,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "getter_setter_declaration.js",
       "fullyQualifiedName": "fields/getter_setter_declaration.js",
       "path": "fields/getter_setter_declaration.js",
@@ -644,8 +726,8 @@
       "lcom4": 1
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "ignore_collaborators.js",
       "fullyQualifiedName": "fields/ignore_collaborators.js",
       "path": "fields/ignore_collaborators.js",
@@ -664,8 +746,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "multiple.js",
       "fullyQualifiedName": "fields/multiple.js",
       "path": "fields/multiple.js",
@@ -684,8 +766,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "private_field_declaration.js",
       "fullyQualifiedName": "fields/private_field_declaration.js",
       "path": "fields/private_field_declaration.js",
@@ -704,8 +786,8 @@
       "lcom4": 1
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "public_field_declaration.js",
       "fullyQualifiedName": "fields/public_field_declaration.js",
       "path": "fields/public_field_declaration.js",
@@ -724,8 +806,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "read.js",
       "fullyQualifiedName": "fields/read.js",
       "path": "fields/read.js",
@@ -744,8 +826,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "static_field_declaration.js",
       "fullyQualifiedName": "fields/static_field_declaration.js",
       "path": "fields/static_field_declaration.js",
@@ -764,8 +846,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "unique.js",
       "fullyQualifiedName": "fields/unique.js",
       "path": "fields/unique.js",
@@ -784,8 +866,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "write.js",
       "fullyQualifiedName": "fields/write.js",
       "path": "fields/write.js",
@@ -804,8 +886,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "file_complexity.js",
       "fullyQualifiedName": "file_complexity.js",
       "path": "file_complexity.js",
@@ -824,8 +906,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "function_complexity.js",
       "fullyQualifiedName": "function_complexity.js",
       "path": "function_complexity.js",
@@ -844,8 +926,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "function_with_onclick_in_jsx.js",
       "fullyQualifiedName": "functions/function_with_onclick_in_jsx.js",
       "path": "functions/function_with_onclick_in_jsx.js",
@@ -855,17 +937,17 @@
       "classes": 0,
       "functions": 2,
       "fields": 0,
-      "lines": 16,
-      "codeLines": 12,
+      "lines": 14,
+      "codeLines": 11,
       "commentLines": 0,
-      "blankLines": 4,
+      "blankLines": 3,
       "complexity": 0,
       "cyclomatic": 2,
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "methods_with_parameters.js",
       "fullyQualifiedName": "functions/methods_with_parameters.js",
       "path": "functions/methods_with_parameters.js",
@@ -884,8 +966,8 @@
       "lcom4": 1
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "methods_without_parameters.js",
       "fullyQualifiedName": "functions/methods_without_parameters.js",
       "path": "functions/methods_without_parameters.js",
@@ -904,8 +986,8 @@
       "lcom4": 1
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "singleton_methods_with_parameters.js",
       "fullyQualifiedName": "functions/singleton_methods_with_parameters.js",
       "path": "functions/singleton_methods_with_parameters.js",
@@ -924,8 +1006,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "singleton_methods_without_parameters.js",
       "fullyQualifiedName": "functions/singleton_methods_without_parameters.js",
       "path": "functions/singleton_methods_without_parameters.js",
@@ -944,8 +1026,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "identical.js",
       "fullyQualifiedName": "identical.js",
       "path": "identical.js",
@@ -955,17 +1037,17 @@
       "classes": 0,
       "functions": 2,
       "fields": 0,
-      "lines": 30,
-      "codeLines": 22,
+      "lines": 35,
+      "codeLines": 28,
       "commentLines": 0,
-      "blankLines": 8,
+      "blankLines": 7,
       "complexity": 4,
       "cyclomatic": 25,
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "lcom_0.js",
       "fullyQualifiedName": "lcom/lcom_0.js",
       "path": "lcom/lcom_0.js",
@@ -984,8 +1066,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "lcom_1-1.js",
       "fullyQualifiedName": "lcom/lcom_1-1.js",
       "path": "lcom/lcom_1-1.js",
@@ -1004,8 +1086,8 @@
       "lcom4": 1
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "lcom_1.js",
       "fullyQualifiedName": "lcom/lcom_1.js",
       "path": "lcom/lcom_1.js",
@@ -1024,8 +1106,8 @@
       "lcom4": 1
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "lcom_2.js",
       "fullyQualifiedName": "lcom/lcom_2.js",
       "path": "lcom/lcom_2.js",
@@ -1044,8 +1126,8 @@
       "lcom4": 2
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "lines.js",
       "fullyQualifiedName": "lines.js",
       "path": "lines.js",
@@ -1064,8 +1146,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "nested_control.js",
       "fullyQualifiedName": "nested_control.js",
       "path": "nested_control.js",
@@ -1084,8 +1166,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "parameters.js",
       "fullyQualifiedName": "parameters.js",
       "path": "parameters.js",
@@ -1095,8 +1177,8 @@
       "classes": 0,
       "functions": 4,
       "fields": 0,
-      "lines": 13,
-      "codeLines": 9,
+      "lines": 10,
+      "codeLines": 6,
       "commentLines": 1,
       "blankLines": 3,
       "complexity": 0,
@@ -1104,8 +1186,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "returns.js",
       "fullyQualifiedName": "returns.js",
       "path": "returns.js",
@@ -1115,8 +1197,8 @@
       "classes": 0,
       "functions": 5,
       "fields": 0,
-      "lines": 24,
-      "codeLines": 20,
+      "lines": 23,
+      "codeLines": 19,
       "commentLines": 0,
       "blankLines": 4,
       "complexity": 0,
@@ -1124,8 +1206,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "cognitive",
       "fullyQualifiedName": "cognitive",
       "path": "cognitive",
@@ -1143,8 +1225,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "cyclomatic",
       "fullyQualifiedName": "cyclomatic",
       "path": "cyclomatic",
@@ -1153,8 +1235,8 @@
       "classes": 0,
       "functions": 12,
       "fields": 0,
-      "lines": 64,
-      "codeLines": 62,
+      "lines": 68,
+      "codeLines": 66,
       "commentLines": 0,
       "blankLines": 2,
       "complexity": 14,
@@ -1162,8 +1244,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "fields",
       "fullyQualifiedName": "fields",
       "path": "fields",
@@ -1181,8 +1263,8 @@
       "lcom4": 2
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "functions",
       "fullyQualifiedName": "functions",
       "path": "functions",
@@ -1191,17 +1273,17 @@
       "classes": 4,
       "functions": 10,
       "fields": 4,
-      "lines": 48,
-      "codeLines": 41,
+      "lines": 46,
+      "codeLines": 40,
       "commentLines": 0,
-      "blankLines": 7,
+      "blankLines": 6,
       "complexity": 0,
       "cyclomatic": 9,
       "lcom4": 2
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "lcom",
       "fullyQualifiedName": "lcom",
       "path": "lcom",

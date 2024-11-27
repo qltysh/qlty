@@ -20,14 +20,96 @@
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
+      "driver": "duplication",
+      "ruleKey": "similar-code",
+      "message": "Found 17 lines of similar code in 2 locations (mass = 97)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_TSX",
+      "category": "CATEGORY_DUPLICATION",
+      "snippet": "function f0(numbers): [number, number] {/n  let mean = numbers.reduce((acc, num) => acc + num, 0) / numbers.length;/n/n  let sortedNumbers = numbers.sort();/n  let median;/n/n  if (sortedNumbers.length % 2 === 0) {/n    median =/n      (sortedNumbers[sortedNumbers.length / 2 - 1] +/n        sortedNumbers[sortedNumbers.length / 2]) //n      2;/n  } else {/n    median = sortedNumbers[Math.floor(sortedNumbers.length / 2)];/n  }/n/n  return [mean, median];/n}",
+      "snippetWithContext": "function f0(numbers): [number, number] {/n  let mean = numbers.reduce((acc, num) => acc + num, 0) / numbers.length;/n/n  let sortedNumbers = numbers.sort();/n  let median;/n/n  if (sortedNumbers.length % 2 === 0) {/n    median =/n      (sortedNumbers[sortedNumbers.length / 2 - 1] +/n        sortedNumbers[sortedNumbers.length / 2]) //n      2;/n  } else {/n    median = sortedNumbers[Math.floor(sortedNumbers.length / 2)];/n  }/n/n  return [mean, median];/n}/n/nfunction f1(numbers): [number, number] {/n  let mean = numbers.reduce((acc, num) => acc + num, 0) / numbers.length;/n/n  let sortedNumbers = numbers.sort();/n  let median;/n/n  if (sortedNumbers.length % 2 === 0) {/n    median =/n      (sortedNumbers[sortedNumbers.length / 2 - 1] +/n        sortedNumbers[sortedNumbers.length / 2]) /",
+      "effortMinutes": 20,
+      "value": 17,
+      "valueDelta": 2,
+      "location": {
+        "path": "identical.tsx",
+        "range": {
+          "startLine": 1,
+          "endLine": 17,
+          "startByte": 0,
+          "endByte": 443
+        }
+      },
+      "otherLocations": [
+        {
+          "path": "identical.tsx",
+          "range": {
+            "startLine": 19,
+            "endLine": 35
+          }
+        }
+      ],
+      "properties": {
+        [..],
+        [..],
+        [..],
+        [..]
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "buildId": [..],
+      "analyzedAt": [..],
+      "tool": "qlty",
+      "driver": "duplication",
+      "ruleKey": "similar-code",
+      "message": "Found 17 lines of similar code in 2 locations (mass = 97)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_TSX",
+      "category": "CATEGORY_DUPLICATION",
+      "snippet": "function f1(numbers): [number, number] {/n  let mean = numbers.reduce((acc, num) => acc + num, 0) / numbers.length;/n/n  let sortedNumbers = numbers.sort();/n  let median;/n/n  if (sortedNumbers.length % 2 === 0) {/n    median =/n      (sortedNumbers[sortedNumbers.length / 2 - 1] +/n        sortedNumbers[sortedNumbers.length / 2]) //n      2;/n  } else {/n    median = sortedNumbers[Math.floor(sortedNumbers.length / 2)];/n  }/n/n  return [mean, median];/n}",
+      "snippetWithContext": "        sortedNumbers[sortedNumbers.length / 2]) //n      2;/n  } else {/n    median = sortedNumbers[Math.floor(sortedNumbers.length / 2)];/n  }/n/n  return [mean, median];/n}/n/nfunction f1(numbers): [number, number] {/n  let mean = numbers.reduce((acc, num) => acc + num, 0) / numbers.length;/n/n  let sortedNumbers = numbers.sort();/n  let median;/n/n  if (sortedNumbers.length % 2 === 0) {/n    median =/n      (sortedNumbers[sortedNumbers.length / 2 - 1] +/n        sortedNumbers[sortedNumbers.length / 2]) //n      2;/n  } else {/n    median = sortedNumbers[Math.floor(sortedNumbers.length / 2)];/n  }/n/n  return [mean, median];/n}",
+      "effortMinutes": 20,
+      "value": 17,
+      "valueDelta": 2,
+      "location": {
+        "path": "identical.tsx",
+        "range": {
+          "startLine": 19,
+          "endLine": 35,
+          "startByte": 445,
+          "endByte": 888
+        }
+      },
+      "otherLocations": [
+        {
+          "path": "identical.tsx",
+          "range": {
+            "startLine": 1,
+            "endLine": 17
+          }
+        }
+      ],
+      "properties": {
+        [..],
+        [..],
+        [..],
+        [..]
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "buildId": [..],
+      "analyzedAt": [..],
+      "tool": "qlty",
       "driver": "structure",
       "ruleKey": "file-complexity",
       "message": "High total complexity (count = 55)",
       "level": "LEVEL_MEDIUM",
       "language": "LANGUAGE_TSX",
       "category": "CATEGORY_STRUCTURE",
-      "snippet": "function main(): void {/n    let foo = 42;/n    if (foo) {/n        if (foo > 10) {/n            if (foo < 20) {/n                if (foo % 2 === 0) {/n                    if (foo % 3 === 0) {/n                        if (foo % 5 === 0) {/n                            if (foo % 7 === 0) {/n                                if (foo % 11 === 0) {/n                                    if (foo % 13 === 0) {/n                                        if (foo % 17 === 0) {/n                                            console.log(/"Nested!/");/n                                        }/n                                    }/n                                }/n                            }/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n",
-      "snippetWithContext": "function main(): void {/n    let foo = 42;/n    if (foo) {/n        if (foo > 10) {/n            if (foo < 20) {/n                if (foo % 2 === 0) {/n                    if (foo % 3 === 0) {/n                        if (foo % 5 === 0) {/n                            if (foo % 7 === 0) {/n                                if (foo % 11 === 0) {/n                                    if (foo % 13 === 0) {/n                                        if (foo % 17 === 0) {/n                                            console.log(/"Nested!/");/n                                        }/n                                    }/n                                }/n                            }/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippet": "function main(): void {/n  let foo = 42;/n  if (foo) {/n    if (foo > 10) {/n      if (foo < 20) {/n        if (foo % 2 === 0) {/n          if (foo % 3 === 0) {/n            if (foo % 5 === 0) {/n              if (foo % 7 === 0) {/n                if (foo % 11 === 0) {/n                  if (foo % 13 === 0) {/n                    if (foo % 17 === 0) {/n                      console.log(/"Nested!/");/n                    }/n                  }/n                }/n              }/n            }/n          }/n        }/n      }/n    }/n  }/n}/n",
+      "snippetWithContext": "function main(): void {/n  let foo = 42;/n  if (foo) {/n    if (foo > 10) {/n      if (foo < 20) {/n        if (foo % 2 === 0) {/n          if (foo % 3 === 0) {/n            if (foo % 5 === 0) {/n              if (foo % 7 === 0) {/n                if (foo % 11 === 0) {/n                  if (foo % 13 === 0) {/n                    if (foo % 17 === 0) {/n                      console.log(/"Nested!/");/n                    }/n                  }/n                }/n              }/n            }/n          }/n        }/n      }/n    }/n  }/n}",
       "effortMinutes": 150,
       "value": 55,
       "valueDelta": 5,
@@ -39,7 +121,7 @@
           "endLine": 25,
           "endColumn": 1,
           "startByte": 0,
-          "endByte": 765
+          "endByte": 521
         }
       },
       "partialFingerprints": {
@@ -48,8 +130,8 @@
       "mode": "MODE_BLOCK"
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-complexity",
@@ -57,8 +139,8 @@
       "level": "LEVEL_MEDIUM",
       "language": "LANGUAGE_TSX",
       "category": "CATEGORY_STRUCTURE",
-      "snippet": "function main(): void {/n    let foo = 42;/n    if (foo) {/n        if (foo > 10) {/n            if (foo < 20) {/n                if (foo % 2 === 0) {/n                    if (foo % 3 === 0) {/n                        if (foo % 5 === 0) {/n                            if (foo % 7 === 0) {/n                                if (foo % 11 === 0) {/n                                    if (foo % 13 === 0) {/n                                        if (foo % 17 === 0) {/n                                            console.log(/"Nested!/");/n                                        }/n                                    }/n                                }/n                            }/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
-      "snippetWithContext": "function main(): void {/n    let foo = 42;/n    if (foo) {/n        if (foo > 10) {/n            if (foo < 20) {/n                if (foo % 2 === 0) {/n                    if (foo % 3 === 0) {/n                        if (foo % 5 === 0) {/n                            if (foo % 7 === 0) {/n                                if (foo % 11 === 0) {/n                                    if (foo % 13 === 0) {/n                                        if (foo % 17 === 0) {/n                                            console.log(/"Nested!/");/n                                        }/n                                    }/n                                }/n                            }/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippet": "function main(): void {/n  let foo = 42;/n  if (foo) {/n    if (foo > 10) {/n      if (foo < 20) {/n        if (foo % 2 === 0) {/n          if (foo % 3 === 0) {/n            if (foo % 5 === 0) {/n              if (foo % 7 === 0) {/n                if (foo % 11 === 0) {/n                  if (foo % 13 === 0) {/n                    if (foo % 17 === 0) {/n                      console.log(/"Nested!/");/n                    }/n                  }/n                }/n              }/n            }/n          }/n        }/n      }/n    }/n  }/n}",
+      "snippetWithContext": "function main(): void {/n  let foo = 42;/n  if (foo) {/n    if (foo > 10) {/n      if (foo < 20) {/n        if (foo % 2 === 0) {/n          if (foo % 3 === 0) {/n            if (foo % 5 === 0) {/n              if (foo % 7 === 0) {/n                if (foo % 11 === 0) {/n                  if (foo % 13 === 0) {/n                    if (foo % 17 === 0) {/n                      console.log(/"Nested!/");/n                    }/n                  }/n                }/n              }/n            }/n          }/n        }/n      }/n    }/n  }/n}",
       "effortMinutes": 195,
       "value": 55,
       "valueDelta": 37,
@@ -70,7 +152,7 @@
           "endLine": 24,
           "endColumn": 2,
           "startByte": 0,
-          "endByte": 764
+          "endByte": 520
         }
       },
       "partialFingerprints": {
@@ -79,8 +161,8 @@
       "mode": "MODE_BLOCK"
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-parameters",
@@ -89,25 +171,25 @@
       "language": "LANGUAGE_TSX",
       "category": "CATEGORY_STRUCTURE",
       "snippet": "(a, b, c, d, e, f)",
-      "snippetWithContext": "function f0(): void {/n}/n/nfunction f1(dog, cat): void {/n}/n/nfunction f2(a, b, c, d, e, f): void {/n}/n/nfunction f3(): void {/n    // Function calls don't count, only function definitions/n    const foo = bar(1, 2, 3, 4);/n}",
+      "snippetWithContext": "function f0(): void {}/n/nfunction f1(dog, cat): void {}/n/nfunction f2(a, b, c, d, e, f): void {}/n/nfunction f3(): void {/n  // Function calls don't count, only function definitions/n  const foo = bar(1, 2, 3, 4);/n}",
       "effortMinutes": 15,
       "value": 6,
       "location": {
         "path": "parameters.tsx",
         "range": {
-          "startLine": 7,
+          "startLine": 5,
           "startColumn": 12,
-          "endLine": 7,
+          "endLine": 5,
           "endColumn": 30,
-          "startByte": 69,
-          "endByte": 87
+          "startByte": 67,
+          "endByte": 85
         }
       },
       "mode": "MODE_BLOCK"
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -115,26 +197,26 @@
       "level": "LEVEL_MEDIUM",
       "language": "LANGUAGE_TSX",
       "category": "CATEGORY_STRUCTURE",
-      "snippet": "if (foo % 3 === 0) {/n                        if (foo % 5 === 0) {/n                            if (foo % 7 === 0) {/n                                if (foo % 11 === 0) {/n                                    if (foo % 13 === 0) {/n                                        if (foo % 17 === 0) {/n                                            console.log(/"Nested!/");/n                                        }/n                                    }/n                                }/n                            }/n                        }/n                    }",
-      "snippetWithContext": "function main(): void {/n    let foo = 42;/n    if (foo) {/n        if (foo > 10) {/n            if (foo < 20) {/n                if (foo % 2 === 0) {/n                    if (foo % 3 === 0) {/n                        if (foo % 5 === 0) {/n                            if (foo % 7 === 0) {/n                                if (foo % 11 === 0) {/n                                    if (foo % 13 === 0) {/n                                        if (foo % 17 === 0) {/n                                            console.log(/"Nested!/");/n                                        }/n                                    }/n                                }/n                            }/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippet": "if (foo % 3 === 0) {/n            if (foo % 5 === 0) {/n              if (foo % 7 === 0) {/n                if (foo % 11 === 0) {/n                  if (foo % 13 === 0) {/n                    if (foo % 17 === 0) {/n                      console.log(/"Nested!/");/n                    }/n                  }/n                }/n              }/n            }/n          }",
+      "snippetWithContext": "function main(): void {/n  let foo = 42;/n  if (foo) {/n    if (foo > 10) {/n      if (foo < 20) {/n        if (foo % 2 === 0) {/n          if (foo % 3 === 0) {/n            if (foo % 5 === 0) {/n              if (foo % 7 === 0) {/n                if (foo % 11 === 0) {/n                  if (foo % 13 === 0) {/n                    if (foo % 17 === 0) {/n                      console.log(/"Nested!/");/n                    }/n                  }/n                }/n              }/n            }/n          }/n        }/n      }/n    }/n  }/n}",
       "effortMinutes": 15,
       "value": 5,
       "location": {
         "path": "file_complexity.tsx",
         "range": {
           "startLine": 7,
-          "startColumn": 21,
+          "startColumn": 11,
           "endLine": 19,
-          "endColumn": 22,
-          "startByte": 166,
-          "endByte": 714
+          "endColumn": 12,
+          "startByte": 134,
+          "endByte": 490
         }
       },
       "mode": "MODE_BLOCK"
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -142,26 +224,26 @@
       "level": "LEVEL_MEDIUM",
       "language": "LANGUAGE_TSX",
       "category": "CATEGORY_STRUCTURE",
-      "snippet": "if (bar % 3 === 0) {/n                        console.log(/"Nested!/");/n                    }",
-      "snippetWithContext": "function simple(): void {}/n/nfunction complex(): void {/n    let bar = 42;/n    if (bar) {/n        if (bar > 10) {/n            if (bar < 20) {/n                if (bar % 2 === 0) {/n                    if (bar % 3 === 0) {/n                        console.log(/"Nested!/");/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippet": "if (bar % 3 === 0) {/n            console.log(/"Nested!/");/n          }",
+      "snippetWithContext": "function simple(): void {}/n/nfunction complex(): void {/n  let bar = 42;/n  if (bar) {/n    if (bar > 10) {/n      if (bar < 20) {/n        if (bar % 2 === 0) {/n          if (bar % 3 === 0) {/n            console.log(/"Nested!/");/n          }/n        }/n      }/n    }/n  }/n}",
       "effortMinutes": 15,
       "value": 5,
       "location": {
         "path": "function_complexity.tsx",
         "range": {
           "startLine": 9,
-          "startColumn": 21,
+          "startColumn": 11,
           "endLine": 11,
-          "endColumn": 22,
-          "startByte": 197,
-          "endByte": 287
+          "endColumn": 12,
+          "startByte": 165,
+          "endByte": 233
         }
       },
       "mode": "MODE_BLOCK"
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "return-statements",
@@ -169,8 +251,8 @@
       "level": "LEVEL_MEDIUM",
       "language": "LANGUAGE_TSX",
       "category": "CATEGORY_STRUCTURE",
-      "snippet": "function f2(foo): string {/n    switch (foo) {/n        case 1:/n            return 'bar1';/n        case 2:/n            return 'bar2';/n        case 3:/n            return 'bar3';/n        case 4:/n            return 'bar4';/n        case 5:/n            return 'bar5';/n        case 6:/n            return 'bar6';/n        case 7:/n            return 'bar7';/n        case 8:/n            return 'bar8';/n        case 9:/n            return 'bar9';/n        case 10:/n            return 'bar10';/n        default:/n            throw new Error('Invalid foo value');/n    }/n}",
-      "snippetWithContext": "        if (baz) {/n            if (qux) {/n                if (quux) {/n                    console.log('Deeply nested!');/n                }/n            }/n        }/n    }/n}/n/nfunction f2(foo): string {/n    switch (foo) {/n        case 1:/n            return 'bar1';/n        case 2:/n            return 'bar2';/n        case 3:/n            return 'bar3';/n        case 4:/n            return 'bar4';/n        case 5:/n            return 'bar5';/n        case 6:/n            return 'bar6';/n        case 7:/n            return 'bar7';/n        case 8:/n            return 'bar8';/n        case 9:/n            return 'bar9';/n        case 10:/n            return 'bar10';/n        default:/n            throw new Error('Invalid foo value');/n    }/n}",
+      "snippet": "function f2(foo): string {/n  switch (foo) {/n    case 1:/n      return /"bar1/";/n    case 2:/n      return /"bar2/";/n    case 3:/n      return /"bar3/";/n    case 4:/n      return /"bar4/";/n    case 5:/n      return /"bar5/";/n    case 6:/n      return /"bar6/";/n    case 7:/n      return /"bar7/";/n    case 8:/n      return /"bar8/";/n    case 9:/n      return /"bar9/";/n    case 10:/n      return /"bar10/";/n    default:/n      throw new Error(/"Invalid foo value/");/n  }/n}",
+      "snippetWithContext": "    if (baz) {/n      if (qux) {/n        if (quux) {/n          console.log(/"Deeply nested!/");/n        }/n      }/n    }/n  }/n}/n/nfunction f2(foo): string {/n  switch (foo) {/n    case 1:/n      return /"bar1/";/n    case 2:/n      return /"bar2/";/n    case 3:/n      return /"bar3/";/n    case 4:/n      return /"bar4/";/n    case 5:/n      return /"bar5/";/n    case 6:/n      return /"bar6/";/n    case 7:/n      return /"bar7/";/n    case 8:/n      return /"bar8/";/n    case 9:/n      return /"bar9/";/n    case 10:/n      return /"bar10/";/n    default:/n      throw new Error(/"Invalid foo value/");/n  }/n}",
       "effortMinutes": 35,
       "value": 10,
       "valueDelta": 4,
@@ -181,8 +263,8 @@
           "startColumn": 1,
           "endLine": 58,
           "endColumn": 2,
-          "startByte": 650,
-          "endByte": 1202
+          "startByte": 536,
+          "endByte": 974
         }
       },
       "mode": "MODE_BLOCK"
@@ -190,8 +272,8 @@
   ],
   "stats": [
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "boolean_logic.tsx",
       "fullyQualifiedName": "boolean_logic.tsx",
       "path": "boolean_logic.tsx",
@@ -210,8 +292,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "count_complex_function.tsx",
       "fullyQualifiedName": "cognitive/count_complex_function.tsx",
       "path": "cognitive/count_complex_function.tsx",
@@ -230,8 +312,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "count_complex_nested_function.tsx",
       "fullyQualifiedName": "cognitive/count_complex_nested_function.tsx",
       "path": "cognitive/count_complex_nested_function.tsx",
@@ -250,8 +332,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "count_nesting_loops.tsx",
       "fullyQualifiedName": "cognitive/count_nesting_loops.tsx",
       "path": "cognitive/count_nesting_loops.tsx",
@@ -270,8 +352,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "count_ternary.tsx",
       "fullyQualifiedName": "cognitive/count_ternary.tsx",
       "path": "cognitive/count_ternary.tsx",
@@ -290,8 +372,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "count_binary.tsx",
       "fullyQualifiedName": "cyclomatic/count_binary.tsx",
       "path": "cyclomatic/count_binary.tsx",
@@ -301,8 +383,8 @@
       "classes": 0,
       "functions": 0,
       "fields": 0,
-      "lines": 1,
-      "codeLines": 1,
+      "lines": 2,
+      "codeLines": 2,
       "commentLines": 0,
       "blankLines": 0,
       "complexity": 2,
@@ -310,8 +392,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "count_if.tsx",
       "fullyQualifiedName": "cyclomatic/count_if.tsx",
       "path": "cyclomatic/count_if.tsx",
@@ -321,8 +403,8 @@
       "classes": 0,
       "functions": 0,
       "fields": 0,
-      "lines": 1,
-      "codeLines": 1,
+      "lines": 2,
+      "codeLines": 2,
       "commentLines": 0,
       "blankLines": 0,
       "complexity": 1,
@@ -330,8 +412,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "count_loop.tsx",
       "fullyQualifiedName": "cyclomatic/count_loop.tsx",
       "path": "cyclomatic/count_loop.tsx",
@@ -350,8 +432,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "count_no_logic.tsx",
       "fullyQualifiedName": "cyclomatic/count_no_logic.tsx",
       "path": "cyclomatic/count_no_logic.tsx",
@@ -370,8 +452,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "cyclo_if_else.tsx",
       "fullyQualifiedName": "cyclomatic/cyclo_if_else.tsx",
       "path": "cyclomatic/cyclo_if_else.tsx",
@@ -390,8 +472,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "cyclo_if_else_if.tsx",
       "fullyQualifiedName": "cyclomatic/cyclo_if_else_if.tsx",
       "path": "cyclomatic/cyclo_if_else_if.tsx",
@@ -410,8 +492,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "cyclo_if_else_if_else.tsx",
       "fullyQualifiedName": "cyclomatic/cyclo_if_else_if_else.tsx",
       "path": "cyclomatic/cyclo_if_else_if_else.tsx",
@@ -430,8 +512,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "iterative_for_of.tsx",
       "fullyQualifiedName": "cyclomatic/iterative_for_of.tsx",
       "path": "cyclomatic/iterative_for_of.tsx",
@@ -450,8 +532,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "iterative_map.tsx",
       "fullyQualifiedName": "cyclomatic/iterative_map.tsx",
       "path": "cyclomatic/iterative_map.tsx",
@@ -470,8 +552,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "iterative_methods_with_filter_and_include.tsx",
       "fullyQualifiedName": "cyclomatic/iterative_methods_with_filter_and_include.tsx",
       "path": "cyclomatic/iterative_methods_with_filter_and_include.tsx",
@@ -481,8 +563,8 @@
       "classes": 0,
       "functions": 1,
       "fields": 0,
-      "lines": 13,
-      "codeLines": 11,
+      "lines": 15,
+      "codeLines": 13,
       "commentLines": 0,
       "blankLines": 2,
       "complexity": 1,
@@ -490,8 +572,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "basic_declaration.tsx",
       "fullyQualifiedName": "fields/basic_declaration.tsx",
       "path": "fields/basic_declaration.tsx",
@@ -510,8 +592,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "class_declaration.tsx",
       "fullyQualifiedName": "fields/class_declaration.tsx",
       "path": "fields/class_declaration.tsx",
@@ -530,8 +612,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "declaration_with_access_modifiers.tsx",
       "fullyQualifiedName": "fields/declaration_with_access_modifiers.tsx",
       "path": "fields/declaration_with_access_modifiers.tsx",
@@ -550,8 +632,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "declaration_with_initializer.tsx",
       "fullyQualifiedName": "fields/declaration_with_initializer.tsx",
       "path": "fields/declaration_with_initializer.tsx",
@@ -570,8 +652,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "ignore_collaborators.tsx",
       "fullyQualifiedName": "fields/ignore_collaborators.tsx",
       "path": "fields/ignore_collaborators.tsx",
@@ -590,8 +672,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "multiple.tsx",
       "fullyQualifiedName": "fields/multiple.tsx",
       "path": "fields/multiple.tsx",
@@ -610,8 +692,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "read.tsx",
       "fullyQualifiedName": "fields/read.tsx",
       "path": "fields/read.tsx",
@@ -630,8 +712,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "unique.tsx",
       "fullyQualifiedName": "fields/unique.tsx",
       "path": "fields/unique.tsx",
@@ -650,8 +732,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "write.tsx",
       "fullyQualifiedName": "fields/write.tsx",
       "path": "fields/write.tsx",
@@ -670,8 +752,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "file_complexity.tsx",
       "fullyQualifiedName": "file_complexity.tsx",
       "path": "file_complexity.tsx",
@@ -690,8 +772,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "function_complexity.tsx",
       "fullyQualifiedName": "function_complexity.tsx",
       "path": "function_complexity.tsx",
@@ -710,8 +792,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "function_with_onclick_in_tsx.tsx",
       "fullyQualifiedName": "functions/function_with_onclick_in_tsx.tsx",
       "path": "functions/function_with_onclick_in_tsx.tsx",
@@ -730,8 +812,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "functional_components_with_props.tsx",
       "fullyQualifiedName": "functions/functional_components_with_props.tsx",
       "path": "functions/functional_components_with_props.tsx",
@@ -750,8 +832,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "functional_components_without_props.tsx",
       "fullyQualifiedName": "functions/functional_components_without_props.tsx",
       "path": "functions/functional_components_without_props.tsx",
@@ -770,8 +852,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "identical.tsx",
       "fullyQualifiedName": "identical.tsx",
       "path": "identical.tsx",
@@ -781,17 +863,17 @@
       "classes": 0,
       "functions": 2,
       "fields": 0,
-      "lines": 30,
-      "codeLines": 22,
+      "lines": 35,
+      "codeLines": 28,
       "commentLines": 0,
-      "blankLines": 8,
+      "blankLines": 7,
       "complexity": 4,
       "cyclomatic": 25,
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "lcom_0.tsx",
       "fullyQualifiedName": "lcom/lcom_0.tsx",
       "path": "lcom/lcom_0.tsx",
@@ -810,8 +892,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "lcom_1-1.tsx",
       "fullyQualifiedName": "lcom/lcom_1-1.tsx",
       "path": "lcom/lcom_1-1.tsx",
@@ -830,8 +912,8 @@
       "lcom4": 1
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "lcom_1.tsx",
       "fullyQualifiedName": "lcom/lcom_1.tsx",
       "path": "lcom/lcom_1.tsx",
@@ -850,8 +932,8 @@
       "lcom4": 1
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "lcom_2.tsx",
       "fullyQualifiedName": "lcom/lcom_2.tsx",
       "path": "lcom/lcom_2.tsx",
@@ -870,8 +952,8 @@
       "lcom4": 2
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "lines.tsx",
       "fullyQualifiedName": "lines.tsx",
       "path": "lines.tsx",
@@ -890,8 +972,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "nested_control.tsx",
       "fullyQualifiedName": "nested_control.tsx",
       "path": "nested_control.tsx",
@@ -910,8 +992,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "parameters.tsx",
       "fullyQualifiedName": "parameters.tsx",
       "path": "parameters.tsx",
@@ -921,8 +1003,8 @@
       "classes": 0,
       "functions": 4,
       "fields": 0,
-      "lines": 13,
-      "codeLines": 9,
+      "lines": 10,
+      "codeLines": 6,
       "commentLines": 1,
       "blankLines": 3,
       "complexity": 0,
@@ -930,8 +1012,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "returns.tsx",
       "fullyQualifiedName": "returns.tsx",
       "path": "returns.tsx",
@@ -941,8 +1023,8 @@
       "classes": 0,
       "functions": 5,
       "fields": 0,
-      "lines": 24,
-      "codeLines": 20,
+      "lines": 23,
+      "codeLines": 19,
       "commentLines": 0,
       "blankLines": 4,
       "complexity": 0,
@@ -950,8 +1032,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "cognitive",
       "fullyQualifiedName": "cognitive",
       "path": "cognitive",
@@ -969,8 +1051,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "cyclomatic",
       "fullyQualifiedName": "cyclomatic",
       "path": "cyclomatic",
@@ -979,8 +1061,8 @@
       "classes": 0,
       "functions": 7,
       "fields": 0,
-      "lines": 50,
-      "codeLines": 48,
+      "lines": 54,
+      "codeLines": 52,
       "commentLines": 0,
       "blankLines": 2,
       "complexity": 13,
@@ -988,8 +1070,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "fields",
       "fullyQualifiedName": "fields",
       "path": "fields",
@@ -1007,8 +1089,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "functions",
       "fullyQualifiedName": "functions",
       "path": "functions",
@@ -1026,8 +1108,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": [..],
+      "analyzedAt": [..],
       "name": "lcom",
       "fullyQualifiedName": "lcom",
       "path": "lcom",
