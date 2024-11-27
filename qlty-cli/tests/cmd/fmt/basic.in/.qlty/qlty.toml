@@ -2,7 +2,7 @@ config_version = "0"
 
 [sources.default]
 repository = "https://github.com/qltysh/qlty"
-branch = "main"
+tag = "v0.452.0"
 
 [runtimes.enabled]
 python = "3.10.13"
