@@ -450,7 +450,7 @@ mod test {
               endByte: 603
         - tool: clippy
           ruleKey: build_failure
-          message: Clippy failed to compile the code.
+          message: Clippy failed to run because Rust could not compile.
           level: LEVEL_HIGH
         "###);
     }
