@@ -3,14 +3,14 @@ use std::path::PathBuf;
 use crate::source_reader::offset_to_location;
 
 use super::Parser;
-use anyhow::{bail, Result};
+use anyhow::Result;
 use qlty_analysis::{join_path_string, utils::fs::path_to_string};
 use qlty_types::analysis::v1::{
     Category, Issue, Level, Location, Range, Replacement, Suggestion, SuggestionSource,
 };
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use tracing::trace;
+use tracing::{trace, warn};
 use url::Url;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -111,11 +111,18 @@ impl Parser for Clippy {
             let clippy_issue = ClippyIssue::from_json(line);
 
             if Some(false) == clippy_issue.success {
-                bail!(
+                warn!(
                     "Clippy output includes success: false, {:?}, raw line: {:?}",
-                    clippy_issue,
-                    line
+                    clippy_issue, line
                 );
+
+                issues.push(Issue {
+                    tool: "clippy".into(),
+                    rule_key: "build_failure".into(),
+                    message: "Clippy failed to compile the code.".into(),
+                    level: Level::High.into(),
+                    ..Default::default()
+                });
             }
 
             if clippy_issue.message.is_none() {
@@ -409,6 +416,43 @@ mod test {
                       startByte: 523
                       endByte: 542
         "#);
+    }
+
+    #[test]
+    fn parse_build_error() {
+        let clippy = Clippy::default();
+
+        let input = r###"
+            {"reason":"compiler-artifact","package_id":"registry+https://github.com/rust-lang/crates.io-index#libc@0.2.164","manifest_path":"/Users/arslan/work/code_climate/qlty/.qlty/results/cargo_home/registry/src/index.crates.io-6f17d22bba15001f/libc-0.2.164/Cargo.toml","target":{"kind":["custom-build"],"crate_types":["bin"],"name":"build-script-build","src_path":"/Users/arslan/work/code_climate/qlty/.qlty/results/cargo_home/registry/src/index.crates.io-6f17d22bba15001f/libc-0.2.164/build.rs","edition":"2015","doc":false,"doctest":false,"test":false},"profile":{"opt_level":"0","debuginfo":0,"debug_assertions":true,"overflow_checks":true,"test":false},"features":["default","extra_traits","std"],"filenames":["/Users/arslan/work/code_climate/qlty/.qlty/results/cargo_target_dir/debug/build/libc-ab2b57d6096c028e/build-script-build"],"executable":null,"fresh":true}
+            {"reason":"build-script-executed","package_id":"registry+https://github.com/rust-lang/crates.io-index#libc@0.2.164","linked_libs":[],"linked_paths":[],"cfgs":["freebsd11","emscripten_new_stat_abi","libc_priv_mod_use","libc_union","libc_const_size_of","libc_align","libc_int128","libc_core_cvoid","libc_packedN","libc_cfg_target_vendor","libc_non_exhaustive","libc_long_array","libc_ptr_addr_of","libc_underscore_const_names","libc_const_extern_fn"],"env":[],"out_dir":"/Users/arslan/work/code_climate/qlty/.qlty/results/cargo_target_dir/debug/build/libc-cd0db8e5c9e0e840/out"}
+            {"reason":"compiler-artifact","package_id":"path+file:///Users/arslan/work/code_climate/qlty/qlty-check#0.452.0","manifest_path":"/Users/arslan/work/code_climate/qlty/qlty-check/Cargo.toml","target":{"kind":["lib"],"crate_types":["lib"],"name":"qlty-check","src_path":"/Users/arslan/work/code_climate/qlty/qlty-check/src/lib.rs","edition":"2021","doc":true,"doctest":false,"test":true},"profile":{"opt_level":"0","debuginfo":2,"debug_assertions":true,"overflow_checks":true,"test":false},"features":[],"filenames":["/Users/arslan/work/code_climate/qlty/.qlty/results/cargo_target_dir/debug/deps/libqlty_check-01d40922354d01fb.rmeta"],"executable":null,"fresh":false}
+            {"reason":"compiler-message","package_id":"path+file:///Users/arslan/work/code_climate/qlty/qlty-cli#qlty@0.452.0","manifest_path":"/Users/arslan/work/code_climate/qlty/qlty-cli/Cargo.toml","target":{"kind":["lib"],"crate_types":["lib"],"name":"qlty","src_path":"/Users/arslan/work/code_climate/qlty/qlty-cli/src/lib.rs","edition":"2021","doc":true,"doctest":false,"test":true},"message":{"rendered":"error[E0412]: cannot find type `PanicHookInfo` in module `std::panic`\n  --> qlty-cli/src/telemetry.rs:92:50\n   |\n92 |     pub fn panic(&self, panic_info: &std::panic::PanicHookInfo<'_>) -> Result<()> {\n   |                                                  ^^^^^^^^^^^^^ help: a struct with a similar name exists: `PanicInfo`\n  --> /rustc/25ef9e3d85d934b27d9dada2f9dd52b1dc63bb04/library/core/src/panic/panic_info.rs:26:1\n   |\n   = note: similarly named struct `PanicInfo` defined here\n\n","$message_type":"diagnostic","children":[{"children":[],"code":null,"level":"help","message":"a struct with a similar name exists","rendered":null,"spans":[{"byte_end":2748,"byte_start":2735,"column_end":63,"column_start":50,"expansion":null,"file_name":"qlty-cli/src/telemetry.rs","is_primary":true,"label":null,"line_end":92,"line_start":92,"suggested_replacement":"PanicInfo","suggestion_applicability":"MaybeIncorrect","text":[{"highlight_end":63,"highlight_start":50,"text":"    pub fn panic(&self, panic_info: &std::panic::PanicHookInfo<'_>) -> Result<()> {"}]}]}],"code":{"code":"E0412","explanation":"A used type name is not in scope.\n\nErroneous code examples:\n\n```compile_fail,E0412\nimpl Something {} // error: type name `Something` is not in scope\n\n// or:\n\ntrait Foo {\n    fn bar(N); // error: type name `N` is not in scope\n}\n\n// or:\n\nfn foo(x: T) {} // type name `T` is not in scope\n```\n\nTo fix this error, please verify you didn't misspell the type name, you did\ndeclare it or imported it into the scope. Examples:\n\n```\nstruct Something;\n\nimpl Something {} // ok!\n\n// or:\n\ntrait Foo {\n    type N;\n\n    fn bar(_: Self::N); // ok!\n}\n\n// or:\n\nfn foo<T>(x: T) {} // ok!\n```\n\nAnother case that causes this error is when a type is imported into a parent\nmodule. To fix this, you can follow the suggestion and use File directly or\n`use super::File;` which will import the types from the parent namespace. An\nexample that causes this error is below:\n\n```compile_fail,E0412\nuse std::fs::File;\n\nmod foo {\n    fn some_function(f: File) {}\n}\n```\n\n```\nuse std::fs::File;\n\nmod foo {\n    // either\n    use super::File;\n    // or\n    // use std::fs::File;\n    fn foo(f: File) {}\n}\n# fn main() {} // don't insert it for us; that'll break imports\n```\n"},"level":"error","message":"cannot find type `PanicHookInfo` in module `std::panic`","spans":[{"byte_end":603,"byte_start":579,"column_end":25,"column_start":1,"expansion":null,"file_name":"/rustc/25ef9e3d85d934b27d9dada2f9dd52b1dc63bb04/library/core/src/panic/panic_info.rs","is_primary":false,"label":"similarly named struct `PanicInfo` defined here","line_end":26,"line_start":26,"suggested_replacement":null,"suggestion_applicability":null,"text":[]},{"byte_end":2748,"byte_start":2735,"column_end":63,"column_start":50,"expansion":null,"file_name":"qlty-cli/src/telemetry.rs","is_primary":true,"label":null,"line_end":92,"line_start":92,"suggested_replacement":null,"suggestion_applicability":null,"text":[{"highlight_end":63,"highlight_start":50,"text":"    pub fn panic(&self, panic_info: &std::panic::PanicHookInfo<'_>) -> Result<()> {"}]}]}}
+            {"reason":"compiler-message","package_id":"path+file:///Users/arslan/work/code_climate/qlty/qlty-cli#qlty@0.452.0","manifest_path":"/Users/arslan/work/code_climate/qlty/qlty-cli/Cargo.toml","target":{"kind":["lib"],"crate_types":["lib"],"name":"qlty","src_path":"/Users/arslan/work/code_climate/qlty/qlty-cli/src/lib.rs","edition":"2021","doc":true,"doctest":false,"test":true},"message":{"rendered":"error: aborting due to 1 previous error\n\n","$message_type":"diagnostic","children":[],"code":null,"level":"error","message":"aborting due to 1 previous error","spans":[]}}
+            {"reason":"compiler-message","package_id":"path+file:///Users/arslan/work/code_climate/qlty/qlty-cli#qlty@0.452.0","manifest_path":"/Users/arslan/work/code_climate/qlty/qlty-cli/Cargo.toml","target":{"kind":["lib"],"crate_types":["lib"],"name":"qlty","src_path":"/Users/arslan/work/code_climate/qlty/qlty-cli/src/lib.rs","edition":"2021","doc":true,"doctest":false,"test":true},"message":{"rendered":"For more information about this error, try `rustc --explain E0412`.\n","$message_type":"diagnostic","children":[],"code":null,"level":"failure-note","message":"For more information about this error, try `rustc --explain E0412`.","spans":[]}}
+            {"reason":"build-finished","success":false}
+        "###;
+
+        let issues = clippy.parse("clippy", input);
+        insta::assert_yaml_snapshot!(issues.unwrap(), @r###"
+        - tool: clippy
+          ruleKey: E0412
+          message: "cannot find type `PanicHookInfo` in module `std::panic`"
+          level: LEVEL_MEDIUM
+          category: CATEGORY_LINT
+          location:
+            path: /rustc/25ef9e3d85d934b27d9dada2f9dd52b1dc63bb04/library/core/src/panic/panic_info.rs
+            range:
+              startLine: 26
+              startColumn: 1
+              endLine: 26
+              endColumn: 25
+              startByte: 579
+              endByte: 603
+        - tool: clippy
+          ruleKey: build_failure
+          message: Clippy failed to compile the code.
+          level: LEVEL_HIGH
+        "###);
     }
 
     #[test]
