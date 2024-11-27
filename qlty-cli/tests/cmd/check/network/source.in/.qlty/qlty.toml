@@ -1,9 +1,12 @@
 config_version = "0"
 
-[[source]]
-name = "default"
+[sources.default]
 repository = "https://github.com/qltysh/qlty"
 tag = "v0.452.0"
 
+[runtimes.enabled]
+python = "3.10.13"
+
 [[plugin]]
 name = "black"
+version = "24.1.1"
