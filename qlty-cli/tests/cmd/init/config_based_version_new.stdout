@@ -9,8 +9,8 @@
 #
 # Try Qlty Cloud: https://qlty.sh
 #
-# For a guide to configuration, visit https://qlty.sh/docs/config
-# Or for a full reference, visit https://qlty.sh/docs/qlty-toml
+# For a guide to configuration, visit https://qlty.sh/d/config
+# Or for a full reference, visit https://qlty.sh/d/qlty-toml
 config_version = "0"
 
 exclude_patterns = [
