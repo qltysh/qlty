@@ -1,1 +1,1 @@
-❌ Could not find a .qlty/qlty.toml file.
+❌ Qlty must be set up in this repository. Try: qlty init
