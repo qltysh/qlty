@@ -276,7 +276,11 @@ impl InvocationResult {
                 self.invocation.tmpfile_contents = Some(contents);
             }
             Err(e) => {
-                self.invocation.parser_error = Some(e.to_string());
+                if self.plan.driver.missing_output_as_error {
+                    self.invocation.tmpfile_contents = Some("".to_string());
+                } else {
+                    self.invocation.parser_error = Some(e.to_string());
+                }
             }
         }
 
@@ -323,14 +327,20 @@ impl InvocationResult {
                 &self.invocation.stdout
             };
 
-            let file_results = self.plan.driver.parse(output, &self.plan);
+            if output.is_empty() && self.plan.driver.missing_output_as_error {
+                self.invocation.exit_result =
+                    qlty_types::analysis::v1::ExitResult::UnknownError.into();
+                self.log_error_output();
+            } else {
+                let file_results = self.plan.driver.parse(output, &self.plan);
 
-            match file_results {
-                Ok(file_results) => {
-                    self.file_results = Some(file_results);
-                }
-                Err(e) => {
-                    self.invocation.parser_error = Some(e.to_string());
+                match file_results {
+                    Ok(file_results) => {
+                        self.file_results = Some(file_results);
+                    }
+                    Err(e) => {
+                        self.invocation.parser_error = Some(e.to_string());
+                    }
                 }
             }
         }
