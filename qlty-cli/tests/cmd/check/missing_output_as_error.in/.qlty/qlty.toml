@@ -1,0 +1,15 @@
+config_version = "0"
+
+[plugins.definitions.exists]
+file_types = ["shell"]
+
+[plugins.definitions.exists.drivers.lint]
+prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd"
+script = "echo \"The plugin crashed for some reason\""
+success_codes = [0]
+output = "tmpfile"
+missing_output_as_error = true
+
+[[plugin]]
+name = "exists"
+version = "1.0.0"
