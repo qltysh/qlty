@@ -509,6 +509,8 @@ pub enum Category {
     Accessibility = 11,
     DeadCode = 12,
     Lint = 13,
+    Secret = 14,
+    DependencyAlert = 15,
 }
 impl Category {
     /// String value of the enum field names used in the ProtoBuf definition.
@@ -531,6 +533,8 @@ impl Category {
             Category::Accessibility => "CATEGORY_ACCESSIBILITY",
             Category::DeadCode => "CATEGORY_DEAD_CODE",
             Category::Lint => "CATEGORY_LINT",
+            Category::Secret => "CATEGORY_SECRET",
+            Category::DependencyAlert => "CATEGORY_DEPENDENCY_ALERT",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.
@@ -550,6 +554,8 @@ impl Category {
             "CATEGORY_ACCESSIBILITY" => Some(Self::Accessibility),
             "CATEGORY_DEAD_CODE" => Some(Self::DeadCode),
             "CATEGORY_LINT" => Some(Self::Lint),
+            "CATEGORY_SECRET" => Some(Self::Secret),
+            "CATEGORY_DEPENDENCY_ALERT" => Some(Self::DependencyAlert),
             _ => None,
         }
     }

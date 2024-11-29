@@ -94,6 +94,8 @@ impl serde::Serialize for Category {
             Self::Accessibility => "CATEGORY_ACCESSIBILITY",
             Self::DeadCode => "CATEGORY_DEAD_CODE",
             Self::Lint => "CATEGORY_LINT",
+            Self::Secret => "CATEGORY_SECRET",
+            Self::DependencyAlert => "CATEGORY_DEPENDENCY_ALERT",
         };
         serializer.serialize_str(variant)
     }
@@ -119,6 +121,8 @@ impl<'de> serde::Deserialize<'de> for Category {
             "CATEGORY_ACCESSIBILITY",
             "CATEGORY_DEAD_CODE",
             "CATEGORY_LINT",
+            "CATEGORY_SECRET",
+            "CATEGORY_DEPENDENCY_ALERT",
         ];
 
         struct GeneratedVisitor;
@@ -173,6 +177,8 @@ impl<'de> serde::Deserialize<'de> for Category {
                     "CATEGORY_ACCESSIBILITY" => Ok(Category::Accessibility),
                     "CATEGORY_DEAD_CODE" => Ok(Category::DeadCode),
                     "CATEGORY_LINT" => Ok(Category::Lint),
+                    "CATEGORY_SECRET" => Ok(Category::Secret),
+                    "CATEGORY_DEPENDENCY_ALERT" => Ok(Category::DependencyAlert),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }
