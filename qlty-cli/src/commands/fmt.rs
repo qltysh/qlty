@@ -65,14 +65,14 @@ impl Fmt {
         let report = processor.compute()?;
 
         if self.index {
-            println!("Indexing formatted files...");
-
             let repo = workspace.repo()?;
             let mut index = repo.index()?;
 
             for path in &report.formatted {
                 index.add_path(&path)?;
             }
+
+            index.write()?;
         }
 
         let formatter = TextFormatter::new(&report, settings.verbose);
