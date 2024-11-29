@@ -255,6 +255,12 @@ pub enum OutputCategory {
 
     #[serde(rename = "lint")]
     Lint,
+
+    #[serde(rename = "secret")]
+    Secret,
+
+    #[serde(rename = "dependency_alert")]
+    DependencyAlert,
 }
 
 impl Into<Category> for OutputCategory {
@@ -273,6 +279,8 @@ impl Into<Category> for OutputCategory {
             OutputCategory::Duplication => Category::Duplication,
             OutputCategory::DeadCode => Category::DeadCode,
             OutputCategory::Lint => Category::Lint,
+            OutputCategory::Secret => Category::Secret,
+            OutputCategory::DependencyAlert => Category::DependencyAlert,
         }
     }
 }
