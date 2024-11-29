@@ -6,6 +6,3 @@
 # chmod +x .git/hooks/pre-commit
 
 qlty fmt --trigger pre-commit --upstream=HEAD
-
-
-
