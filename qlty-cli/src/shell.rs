@@ -13,6 +13,7 @@ mod zsh;
 
 pub use bash::Bash;
 pub use fish::Fish;
+use tracing::warn;
 pub use zsh::Zsh;
 
 #[derive(Clone, Debug)]
@@ -56,13 +57,16 @@ pub trait TabCompletingShell {
     fn clap_shell(&self) -> Shell;
 }
 
-pub fn build(specified: Option<Shell>) -> Box<dyn TabCompletingShell> {
+pub fn build(specified: Option<Shell>) -> Option<Box<dyn TabCompletingShell>> {
     let shell = specified.unwrap_or_else(|| Shell::from_env().unwrap_or(Shell::Bash));
 
     match shell {
-        Shell::Bash => Box::new(Bash),
-        Shell::Fish => Box::new(Fish),
-        Shell::Zsh => Box::new(Zsh),
-        _ => panic!("Unsupported shell: {}", shell),
+        Shell::Bash => Some(Box::new(Bash)),
+        Shell::Fish => Some(Box::new(Fish)),
+        Shell::Zsh => Some(Box::new(Zsh)),
+        _ => {
+            warn!("Unsupported shell: {:?}", shell);
+            None
+        }
     }
 }

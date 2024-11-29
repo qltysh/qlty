@@ -17,20 +17,26 @@ pub struct Completions {
 impl Completions {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
         let bin_name = self.bin_name();
-        let mut shell = crate::shell::build(self.shell);
 
-        let mut command = Arguments::command();
-        let completions = shell.generate(&bin_name, &mut command)?;
+        if let Some(mut shell) = crate::shell::build(self.shell) {
+            let mut command = Arguments::command();
+            let completions = shell.generate(&bin_name, &mut command)?;
 
-        if self.install {
-            let path = shell.install(&completions)?;
-            shell.update_rc(&path)?;
-            eprintln!("Completions installed in {}", path.display());
+            if self.install {
+                let path = shell.install(&completions)?;
+                shell.update_rc(&path)?;
+                eprintln!("Completions installed in {}", path.display());
+            } else {
+                println!("{}", completions.completions);
+            }
+
+            CommandSuccess::ok()
         } else {
-            println!("{}", completions.completions);
+            eprintln!("Unsupported shell: {:?}", self.shell);
+            Err(CommandError::InvalidOptions {
+                message: "Unsupported shell".to_owned(),
+            })
         }
-
-        CommandSuccess::ok()
     }
 
     fn bin_name(&self) -> String {

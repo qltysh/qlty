@@ -4,7 +4,6 @@ use crate::CommandSuccess;
 
 #[derive(Error, Debug)]
 pub enum CommandError {
-    // TODO: Start using CommandError::Config
     #[error("Config error")]
     Config,
 
