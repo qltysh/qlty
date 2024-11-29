@@ -414,7 +414,6 @@ impl Driver {
             OutputFormat::Shellcheck => Box::new(Shellcheck {}),
             OutputFormat::Stylelint => Box::new(Stylelint {}),
             OutputFormat::Sqlfluff => Box::new(Sqlfluff {}),
-            OutputFormat::TrivySarif => Box::new(TrivySarif {}),
             OutputFormat::Knip => Box::new(Knip {}),
             OutputFormat::Taplo => Box::new(Taplo {}),
             OutputFormat::Actionlint => Box::new(Actionlint {}),
@@ -430,6 +429,13 @@ impl Driver {
             OutputFormat::Ruff => Box::new(Ruff {}),
             OutputFormat::GolangciLint => Box::new(GolangciLint {}),
             OutputFormat::Biome => Box::new(Biome {}),
+            OutputFormat::TrivySarif => {
+                let category = self
+                    .output_category
+                    .map(|output_category| output_category.into());
+
+                Box::new(TrivySarif::new(category))
+            }
 
             OutputFormat::Sarif => {
                 let level = self.output_level.map(|output_level| output_level.into());

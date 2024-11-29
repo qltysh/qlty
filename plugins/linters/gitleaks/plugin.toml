@@ -21,7 +21,7 @@ script = "gitleaks detect --no-git --source=${target} --exit-code=101 -f sarif -
 success_codes = [0, 101]
 output = "tmpfile"
 output_format = "sarif"
-output_category = "vulnerability"
+output_category = "secret"
 output_level = "high"
 cache_results = true
 batch = false

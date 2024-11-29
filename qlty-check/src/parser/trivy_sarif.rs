@@ -12,7 +12,15 @@ const VALID_MESSAGE_LINES_PREFIX: [&str; 5] = [
 ];
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
-pub struct TrivySarif {}
+pub struct TrivySarif {
+    pub category: Option<Category>,
+}
+
+impl TrivySarif {
+    pub fn new(category: Option<Category>) -> Self {
+        Self { category }
+    }
+}
 
 impl Parser for TrivySarif {
     fn parse(&self, plugin_name: &str, output: &str) -> Result<Vec<Issue>> {
@@ -20,7 +28,7 @@ impl Parser for TrivySarif {
             .parse(plugin_name, output)?
             .into_iter()
             .map(|mut issue| {
-                issue.category = Category::Vulnerability.into();
+                issue.category = self.category.unwrap_or(Category::Vulnerability).into();
                 issue.documentation_url = extract_link(&issue.message);
                 issue.message = sanitize_message(&issue.message);
                 issue

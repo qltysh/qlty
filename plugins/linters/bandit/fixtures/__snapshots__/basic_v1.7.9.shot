@@ -4,7 +4,7 @@ exports[`linter=bandit fixture=basic version=1.7.9 1`] = `
 {
   "issues": [
     {
-      "category": "CATEGORY_VULNERABILITY",
+      "category": "CATEGORY_DEPENDENCY_ALERT",
       "documentationUrl": "https://bandit.readthedocs.io/en/1.7.9/blacklists/blacklist_calls.html#b301-pickle",
       "level": "LEVEL_HIGH",
       "location": {
@@ -32,7 +32,7 @@ dill.dump([1, 2, "3"], file_obj)",
       "tool": "bandit",
     },
     {
-      "category": "CATEGORY_VULNERABILITY",
+      "category": "CATEGORY_DEPENDENCY_ALERT",
       "documentationUrl": "https://bandit.readthedocs.io/en/1.7.9/blacklists/blacklist_imports.html#b403-import-pickle",
       "level": "LEVEL_HIGH",
       "location": {

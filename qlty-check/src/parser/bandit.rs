@@ -33,7 +33,7 @@ impl Parser for Bandit {
             let issue = Issue {
                 tool: "bandit".into(),
                 message: result.issue_text,
-                category: Category::Vulnerability.into(),
+                category: Category::DependencyAlert.into(),
                 level: severity_to_level(result.issue_severity).into(),
                 rule_key: result.test_id,
                 documentation_url: result.more_info,
@@ -150,12 +150,12 @@ mod test {
         "###;
 
         let issues = Bandit::default().parse("bandit", input);
-        insta::assert_yaml_snapshot!(issues.unwrap(), @r#"
+        insta::assert_yaml_snapshot!(issues.unwrap(), @r###"
         - tool: bandit
           ruleKey: B403
           message: Consider possible security implications associated with dill module.
           level: LEVEL_HIGH
-          category: CATEGORY_VULNERABILITY
+          category: CATEGORY_DEPENDENCY_ALERT
           documentationUrl: "https://bandit.readthedocs.io/en/1.7.8/blacklists/blacklist_imports.html#b403-import-pickle"
           location:
             path: "./basic.in.py"
@@ -167,7 +167,7 @@ mod test {
           ruleKey: B301
           message: "Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue."
           level: LEVEL_HIGH
-          category: CATEGORY_VULNERABILITY
+          category: CATEGORY_DEPENDENCY_ALERT
           documentationUrl: "https://bandit.readthedocs.io/en/1.7.8/blacklists/blacklist_calls.html#b301-pickle"
           location:
             path: "./basic.in.py"
@@ -176,6 +176,6 @@ mod test {
               startColumn: 6
               endLine: 6
               endColumn: 22
-        "#);
+        "###);
     }
 }

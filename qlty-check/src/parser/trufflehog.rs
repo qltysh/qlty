@@ -40,7 +40,12 @@ impl Parser for Trufflehog {
             let parsed_data: Output =
                 serde_json::from_str(trufflehog_source.trim()).expect("Error parsing JSON data");
 
-            let range = parsed_data.source_metadata.data.filesystem.line.map(|line| Range {
+            let range = parsed_data
+                .source_metadata
+                .data
+                .filesystem
+                .line
+                .map(|line| Range {
                     start_line: line + 1,
                     ..Default::default()
                 });
@@ -48,7 +53,7 @@ impl Parser for Trufflehog {
             let issue = Issue {
                 tool: "trufflehog".into(),
                 message: format!("Secret detected {}", parsed_data.redacted),
-                category: Category::Vulnerability.into(),
+                category: Category::Secret.into(),
                 level: Level::High.into(),
                 rule_key: parsed_data.detector_name,
                 location: Some(Location {
@@ -78,12 +83,12 @@ mod test {
         "###;
 
         let issues = Trufflehog::default().parse("trufflehog", input);
-        insta::assert_yaml_snapshot!(issues.unwrap(), @r#"
+        insta::assert_yaml_snapshot!(issues.unwrap(), @r###"
         - tool: trufflehog
           ruleKey: URI
           message: "Secret detected https://admin:********@the-internet.herokuapp.com"
           level: LEVEL_HIGH
-          category: CATEGORY_VULNERABILITY
+          category: CATEGORY_SECRET
           location:
             path: secrets.in.py
             range:
@@ -92,7 +97,7 @@ mod test {
           ruleKey: URI
           message: "Secret detected https://admin:********@the-internet.herokuapp.com"
           level: LEVEL_HIGH
-          category: CATEGORY_VULNERABILITY
+          category: CATEGORY_SECRET
           location:
             path: second.in.py
             range:
@@ -101,9 +106,9 @@ mod test {
           ruleKey: URI
           message: "Secret detected https://admin:********@the-internet.herokuapp.com"
           level: LEVEL_HIGH
-          category: CATEGORY_VULNERABILITY
+          category: CATEGORY_SECRET
           location:
             path: thrid.in.py
-        "#);
+        "###);
     }
 }

@@ -38,6 +38,7 @@ target = { type = "literal", path = "." }
 runs_from = { type = "root_or_parent_with_any_config" }
 output = "stdout"
 output_format = "trivy_sarif"
+output_category = "secret"
 cache_results = true
 batch = false
 
