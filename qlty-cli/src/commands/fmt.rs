@@ -43,6 +43,10 @@ pub struct Fmt {
     #[arg(long)]
     pub upstream: Option<String>,
 
+    /// Add formatted files to the Git index
+    #[arg(long)]
+    pub index: bool,
+
     /// Files to analyze
     pub paths: Vec<PathBuf>,
 }
@@ -59,6 +63,17 @@ impl Fmt {
 
         let mut processor = Processor::new(&plan, results);
         let report = processor.compute()?;
+
+        if self.index {
+            println!("Indexing formatted files...");
+
+            let repo = workspace.repo()?;
+            let mut index = repo.index()?;
+
+            for path in &report.formatted {
+                index.add_path(&path)?;
+            }
+        }
 
         let formatter = TextFormatter::new(&report, settings.verbose);
         formatter.write_to(&mut std::io::stdout())?;
