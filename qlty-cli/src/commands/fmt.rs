@@ -44,9 +44,13 @@ pub struct Fmt {
     #[arg(long)]
     pub upstream: Option<String>,
 
-    /// Add formatted files to the Git index
+    /// Format files in the Git index
     #[arg(long)]
     pub index: bool,
+
+    /// Format files in the specified Git index file
+    #[arg(long)]
+    pub index_file: Option<PathBuf>,
 
     /// Files to analyze
     pub paths: Vec<PathBuf>,
@@ -54,6 +58,10 @@ pub struct Fmt {
 
 impl Fmt {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
+        if let Some(_index_file) = &self.index_file {
+            return CommandSuccess::ok();
+        }
+
         let workspace = Workspace::require_initialized()?;
         workspace.fetch_sources()?;
 
@@ -65,18 +73,8 @@ impl Fmt {
         let mut processor = Processor::new(&plan, results);
         let report = processor.compute()?;
 
-        if self.index {
-            let mut args = vec!["add"];
-
-            for path in &report.formatted {
-                if let Some(path_str) = path.to_str() {
-                    args.push(path_str);
-                }
-            }
-
-            if args.len() > 1 {
-                cmd("git", &args).run()?;
-            }
+        if self.index || self.index_file.is_some() {
+            self.git_add(&report.formatted)?;
         }
 
         let formatter = TextFormatter::new(&report, settings.verbose);
@@ -90,6 +88,22 @@ impl Fmt {
                 ..Default::default()
             })
         }
+    }
+
+    fn git_add(&self, paths: &[PathBuf]) -> Result<()> {
+        let mut args = vec!["add"];
+
+        for path in paths {
+            if let Some(path_str) = path.to_str() {
+                args.push(path_str);
+            }
+        }
+
+        if args.len() > 1 {
+            cmd("git", &args).run()?;
+        }
+
+        Ok(())
     }
 
     fn build_settings(&self) -> Result<Settings> {
