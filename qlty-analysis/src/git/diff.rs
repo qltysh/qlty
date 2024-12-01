@@ -1,6 +1,6 @@
 use crate::code::FileIndex;
 use anyhow::Result;
-use git2::{Diff, DiffOptions, Repository};
+use git2::{Diff, DiffOptions, Index, Repository};
 use ignore::{DirEntry, Walk, WalkBuilder};
 use qlty_config::issue_transformer::IssueTransformer;
 use qlty_types::analysis::v1::Issue;
@@ -15,6 +15,8 @@ use tracing::{debug, trace, warn};
 const PLUS: char = '+';
 
 pub enum DiffMode {
+    HeadToIndex,
+    HeadToIndexFile(PathBuf),
     HeadToWorkdir,
     UpstreamToWorkdir(String),
 }
@@ -31,6 +33,7 @@ impl GitDiff {
         let head_commit = repository.head()?.peel_to_commit()?;
 
         let commit = match mode {
+            DiffMode::HeadToIndex | DiffMode::HeadToIndexFile(_) => head_commit,
             DiffMode::HeadToWorkdir => head_commit,
             DiffMode::UpstreamToWorkdir(ref upstream_ref) => {
                 let upstream_head = repository.revparse_single(upstream_ref)?.peel_to_commit()?;
@@ -44,10 +47,35 @@ impl GitDiff {
             commit.id()
         );
 
-        let diff = repository.diff_tree_to_workdir_with_index(
-            Some(&commit.tree()?),
-            Some(&mut Self::diff_options()),
-        )?;
+        let mut diff_opts = DiffOptions::new();
+
+        let diff = match mode {
+            DiffMode::HeadToIndex => {
+                let index = repository.index()?;
+
+                repository.diff_tree_to_index(
+                    Some(&commit.tree()?),
+                    Some(&index),
+                    Some(&mut diff_opts),
+                )?
+            }
+            DiffMode::HeadToIndexFile(index_path) => {
+                let index = Index::open(&index_path)?;
+
+                repository.diff_tree_to_index(
+                    Some(&commit.tree()?),
+                    Some(&index),
+                    Some(&mut diff_opts),
+                )?
+            }
+            _ => {
+                diff_opts.include_untracked(true);
+
+                repository
+                    .diff_tree_to_workdir_with_index(Some(&commit.tree()?), Some(&mut diff_opts))?
+            }
+        };
+
         let changed_files = Self::diff_to_paths(&diff, &repository)?;
 
         debug!("Found {} changed files", changed_files.len());
@@ -127,12 +155,6 @@ impl GitDiff {
         }
 
         Ok(files)
-    }
-
-    fn diff_options() -> DiffOptions {
-        let mut opts = DiffOptions::new();
-        opts.include_untracked(true);
-        opts
     }
 
     fn diff_to_paths(diff: &Diff, repository: &Repository) -> Result<Vec<PathBuf>> {

@@ -45,11 +45,11 @@ pub struct Fmt {
     pub upstream: Option<String>,
 
     /// Format files in the Git index
-    #[arg(long)]
+    #[arg(long, conflicts_with = "index_file")]
     pub index: bool,
 
     /// Format files in the specified Git index file
-    #[arg(long)]
+    #[arg(long, conflicts_with = "index")]
     pub index_file: Option<PathBuf>,
 
     /// Files to analyze
@@ -58,15 +58,59 @@ pub struct Fmt {
 
 impl Fmt {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
-        if let Some(_index_file) = &self.index_file {
-            return CommandSuccess::ok();
-        }
-
         let workspace = Workspace::require_initialized()?;
         workspace.fetch_sources()?;
 
+        // if self.index {
+        //     let repository = workspace.repo()?;
+        //     let index = repository.index()?;
+
+        //     let head_commit = repository.head()?.peel_to_commit()?;
+        //     let head_tree = head_commit.tree()?;
+        //     let mut diff_opts = git2::DiffOptions::new();
+
+        //     let diff = repository.diff_tree_to_index(
+        //         Some(&head_tree),
+        //         Some(&index),
+        //         Some(&mut diff_opts),
+        //     )?;
+
+        //     for delta in diff.deltas() {
+        //         if let Some(path) = delta.new_file().path() {
+        //             dbg!(path);
+        //         }
+        //     }
+
+        //     return CommandSuccess::ok();
+        // }
+
+        // if let Some(index_file) = &self.index_file {
+        //     let repository = workspace.repo()?;
+        //     let index = git2::Index::open(index_file)?;
+
+        //     let head_commit = repository.head()?.peel_to_commit()?;
+        //     let head_tree = head_commit.tree()?;
+        //     let mut diff_opts = git2::DiffOptions::new();
+
+        //     let diff = repository.diff_tree_to_index(
+        //         Some(&head_tree),
+        //         Some(&index),
+        //         Some(&mut diff_opts),
+        //     )?;
+
+        //     for delta in diff.deltas() {
+        //         if let Some(path) = delta.new_file().path() {
+        //             dbg!(path);
+        //         }
+        //     }
+
+        //     return CommandSuccess::ok();
+        // }
+
         let settings = self.build_settings()?;
         let plan = Planner::new(ExecutionVerb::Fmt, &settings)?.compute()?;
+        // dbg!(plan);
+        // return CommandSuccess::ok();
         let executor = Executor::new(&plan);
         let results = executor.install_and_invoke()?;
 
@@ -116,6 +160,8 @@ impl Fmt {
         settings.progress = !self.no_progress;
         settings.filters = CheckFilter::from_optional_list(self.filter.clone());
         settings.upstream = self.upstream.clone();
+        settings.index = self.index;
+        settings.index_file = self.index_file.clone();
         settings.paths = self.paths.clone();
         settings.trigger = self.trigger.into();
 
