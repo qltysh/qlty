@@ -74,7 +74,9 @@ impl Fmt {
                 }
             }
 
-            cmd("git", &args).run()?;
+            if args.len() > 1 {
+                cmd("git", &args).run()?;
+            }
         }
 
         let formatter = TextFormatter::new(&report, settings.verbose);
