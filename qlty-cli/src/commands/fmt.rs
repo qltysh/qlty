@@ -2,6 +2,7 @@ use crate::ui::format::TextFormatter;
 use crate::{Arguments, CommandError, CommandSuccess, Trigger};
 use anyhow::Result;
 use clap::Args;
+use duct::cmd;
 use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Settings};
 use qlty_config::Workspace;
 use qlty_types::analysis::v1::ExecutionVerb;
@@ -65,14 +66,25 @@ impl Fmt {
         let report = processor.compute()?;
 
         if self.index {
-            let repo = workspace.repo()?;
-            let mut index = repo.index()?;
+            // let repo = workspace.repo()?;
+            // let mut index = repo.index()?;
 
-            for path in &report.formatted {
-                index.add_path(&path)?;
-            }
+            // for path in &report.formatted {
+            //     index.add_path(&path)?;
+            // }
 
-            index.write()?;
+            // index.write()?;
+
+            //////////////////////
+            // let mut args = vec!["status", "--porcelain"];
+
+            // for path in &self.paths {
+            //     args.push(path);
+            // }
+
+            // let output = cmd("git", &args).read()?;
+            // Ok(!output.is_empty())
+            cmd!("echo", "hi").run()?;
         }
 
         let formatter = TextFormatter::new(&report, settings.verbose);
