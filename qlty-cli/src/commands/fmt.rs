@@ -84,7 +84,7 @@ impl Fmt {
 
             // let output = cmd("git", &args).read()?;
             // Ok(!output.is_empty())
-            cmd!("echo", "hi").run()?;
+            cmd!("false").run()?;
         }
 
         let formatter = TextFormatter::new(&report, settings.verbose);
