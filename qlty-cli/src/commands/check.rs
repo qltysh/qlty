@@ -103,7 +103,7 @@ pub struct Check {
     skip_errored_plugins: bool,
 
     #[arg(long, hide = true)]
-    stdin: bool,
+    upstream_from_pre_push: bool,
 
     /// Files to analyze
     pub paths: Vec<PathBuf>,
@@ -111,12 +111,13 @@ pub struct Check {
 
 impl Check {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
-        if self.stdin {
+        if self.upstream_from_pre_push {
             let mut buffer = String::new();
             io::stdin().read_to_string(&mut buffer)?;
-            println!("stdin:\n\n{}", buffer);
-            // <local-ref> SP <local-object-name> SP <remote-ref> SP <remote-object-name> LF
 
+            let parts: Vec<&str> = buffer.split_whitespace().collect();
+            let remote_commit_id = parts.get(3).unwrap_or(&"");
+            dbg!(remote_commit_id);
             return CommandSuccess::ok();
         }
 
