@@ -14,6 +14,7 @@ use qlty_config::Workspace;
 use qlty_types::analysis::v1::ExecutionVerb;
 use qlty_types::analysis::v1::Level;
 use qlty_types::level_from_str;
+use std::io::{self, Read};
 use std::path::PathBuf;
 
 static LOOKING_GLASS: Emoji<'_, '_> = Emoji("🔍  ", "");
@@ -101,12 +102,22 @@ pub struct Check {
     #[arg(hide = true, long, conflicts_with = "fail_level")]
     skip_errored_plugins: bool,
 
+    #[arg(long, hide = true)]
+    stdin: bool,
+
     /// Files to analyze
     pub paths: Vec<PathBuf>,
 }
 
 impl Check {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
+        if self.stdin {
+            let mut buffer = String::new();
+            io::stdin().read_to_string(&mut buffer)?;
+            println!("{}", buffer);
+            return CommandSuccess::ok();
+        }
+
         self.validate_options()?;
 
         let workspace = Workspace::require_initialized()?;
