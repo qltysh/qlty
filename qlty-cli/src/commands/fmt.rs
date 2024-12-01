@@ -73,10 +73,8 @@ impl Fmt {
             self.git_add(&report.formatted)?;
         }
 
-        if self.trigger == Trigger::Manual {
-            let formatter = TextFormatter::new(&report, settings.verbose);
-            formatter.write_to(&mut std::io::stdout())?;
-        }
+        let formatter = TextFormatter::new(&report, settings.verbose);
+        formatter.write_to(&mut std::io::stdout())?;
 
         if !self.no_error && report.has_errors() {
             Err(CommandError::Lint)
