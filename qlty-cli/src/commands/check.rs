@@ -116,6 +116,7 @@ impl Check {
             io::stdin().read_to_string(&mut buffer)?;
             println!("stdin:\n\n{}", buffer);
             // <local-ref> SP <local-object-name> SP <remote-ref> SP <remote-object-name> LF
+
             return CommandSuccess::ok();
         }
 
