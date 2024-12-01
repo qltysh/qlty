@@ -114,7 +114,7 @@ impl Check {
         if self.stdin {
             let mut buffer = String::new();
             io::stdin().read_to_string(&mut buffer)?;
-            println!("{}", buffer);
+            println!("stdin:\n\n{}", buffer);
             return CommandSuccess::ok();
         }
 
