@@ -6,4 +6,4 @@
 # chmod +x .git/hooks/pre-commit
 
 echo $GIT_INDEX_FILE
-qlty fmt --trigger pre-commit --upstream=HEAD # -- index
+qlty fmt --trigger pre-commit --upstream=HEAD --index

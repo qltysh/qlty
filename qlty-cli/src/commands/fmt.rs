@@ -66,25 +66,15 @@ impl Fmt {
         let report = processor.compute()?;
 
         if self.index {
-            // let repo = workspace.repo()?;
-            // let mut index = repo.index()?;
+            let mut args = vec!["add"];
 
-            // for path in &report.formatted {
-            //     index.add_path(&path)?;
-            // }
+            for path in &report.formatted {
+                if let Some(path_str) = path.to_str() {
+                    args.push(path_str);
+                }
+            }
 
-            // index.write()?;
-
-            //////////////////////
-            // let mut args = vec!["status", "--porcelain"];
-
-            // for path in &self.paths {
-            //     args.push(path);
-            // }
-
-            // let output = cmd("git", &args).read()?;
-            // Ok(!output.is_empty())
-            cmd!("false").run()?;
+            cmd("git", &args).run()?;
         }
 
         let formatter = TextFormatter::new(&report, settings.verbose);
