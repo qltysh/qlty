@@ -111,16 +111,6 @@ pub struct Check {
 
 impl Check {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
-        if self.upstream_from_pre_push {
-            let mut buffer = String::new();
-            io::stdin().read_to_string(&mut buffer)?;
-
-            let parts: Vec<&str> = buffer.split_whitespace().collect();
-            let remote_commit_id = parts.get(3).unwrap_or(&"");
-            dbg!(remote_commit_id);
-            return CommandSuccess::ok();
-        }
-
         self.validate_options()?;
 
         let workspace = Workspace::require_initialized()?;
@@ -221,7 +211,7 @@ impl Check {
         settings.progress = !self.no_progress;
         settings.formatters = !self.no_formatters;
         settings.filters = CheckFilter::from_optional_list(self.filter.clone());
-        settings.upstream = self.upstream.clone();
+        settings.upstream = self.compute_upstream()?;
         settings.level = level_from_str(&self.level.clone().unwrap_or("".to_string()));
         settings.fail_level = if self.no_fail {
             None
@@ -234,6 +224,23 @@ impl Check {
         settings.skip_errored_plugins = self.skip_errored_plugins;
 
         Ok(settings)
+    }
+
+    fn compute_upstream(&self) -> Result<Option<String>> {
+        if self.upstream_from_pre_push {
+            let mut buffer = String::new();
+            io::stdin().read_to_string(&mut buffer)?;
+
+            // https://git-scm.com/docs/githooks#_pre_push
+            //
+            // <local-ref> SP <local-object-name> SP <remote-ref> SP <remote-object-name> LF
+            let parts: Vec<&str> = buffer.split_whitespace().collect();
+            let remote_commit_id = parts.get(3).unwrap_or(&"");
+
+            Ok(Some(remote_commit_id.to_string()))
+        } else {
+            Ok(self.upstream.clone())
+        }
     }
 
     fn write_stdout(&self, report: &Report, settings: &Settings) -> Result<()> {
