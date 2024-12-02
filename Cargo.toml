@@ -127,7 +127,7 @@ ureq = { version = "2.10.1", features = ["json"] }
 url = "2.5.4"
 uuid = { version = "1.11.0", features = ["v4"] }
 walkdir = "2.5.0"
-webbrowser = "1.0.2"
+webbrowser = "1.0.3"
 whoami = "1.5.2"
 zip = "2.2.1"
 
