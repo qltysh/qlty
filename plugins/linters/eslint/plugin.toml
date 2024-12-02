@@ -32,7 +32,7 @@ max_batch = 40
 suggested = "config"
 
 [[plugins.definitions.eslint.drivers.lint.version]]
-version_matcher = "<9.0.0"
+version_matcher = ">=5.0.0, <9.0.0"
 script = "eslint --output-file ${tmpfile} --format json ${target}"
 batch_by = "config_file"
 error_codes = [2]
@@ -53,4 +53,27 @@ cache_results = true
 max_batch = 40
 suggested = "config"
 known_good_version = "8.57.0"
+
+[[plugins.definitions.eslint.drivers.lint.version]]
+version_matcher = "<5.0.0"
+script = "eslint --output-file ${tmpfile} --format json ${target}"
+batch_by = "config_file"
+error_codes = [2]
+success_codes = [0, 1]
+config_files = [
+  ".eslintrc",
+  ".eslintrc.cjs",
+  ".eslintrc.mjs",
+  ".eslintrc.js",
+  ".eslintrc.json",
+  ".eslintrc.yaml",
+  ".eslintrc.yml",
+]
+output = "tmpfile"
+output_format = "eslint"
+batch = true
+cache_results = true
+max_batch = 40
+suggested = "config"
+known_good_version = "v4.19.1"
 missing_output_as_error = true
