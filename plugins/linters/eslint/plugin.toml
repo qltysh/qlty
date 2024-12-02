@@ -53,3 +53,4 @@ cache_results = true
 max_batch = 40
 suggested = "config"
 known_good_version = "8.57.0"
+missing_output_as_error = true
