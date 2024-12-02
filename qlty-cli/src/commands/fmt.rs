@@ -2,6 +2,7 @@ use crate::ui::format::TextFormatter;
 use crate::{Arguments, CommandError, CommandSuccess, Trigger};
 use anyhow::Result;
 use clap::Args;
+use duct::cmd;
 use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Settings};
 use qlty_config::Workspace;
 use qlty_types::analysis::v1::ExecutionVerb;
@@ -43,6 +44,14 @@ pub struct Fmt {
     #[arg(long)]
     pub upstream: Option<String>,
 
+    /// Format files in the Git index
+    #[arg(long, conflicts_with = "index_file")]
+    pub index: bool,
+
+    /// Format files in the specified Git index file
+    #[arg(long, conflicts_with = "index")]
+    pub index_file: Option<PathBuf>,
+
     /// Files to analyze
     pub paths: Vec<PathBuf>,
 }
@@ -60,6 +69,10 @@ impl Fmt {
         let mut processor = Processor::new(&plan, results);
         let report = processor.compute()?;
 
+        if self.index || self.index_file.is_some() {
+            self.git_add(&report.formatted)?;
+        }
+
         let formatter = TextFormatter::new(&report, settings.verbose);
         formatter.write_to(&mut std::io::stdout())?;
 
@@ -73,6 +86,22 @@ impl Fmt {
         }
     }
 
+    fn git_add(&self, paths: &[PathBuf]) -> Result<()> {
+        let mut args = vec!["add"];
+
+        for path in paths {
+            if let Some(path_str) = path.to_str() {
+                args.push(path_str);
+            }
+        }
+
+        if args.len() > 1 {
+            cmd("git", &args).run()?;
+        }
+
+        Ok(())
+    }
+
     fn build_settings(&self) -> Result<Settings> {
         let mut settings = Settings::default();
         settings.root = Workspace::assert_within_git_directory()?;
@@ -83,6 +112,8 @@ impl Fmt {
         settings.progress = !self.no_progress;
         settings.filters = CheckFilter::from_optional_list(self.filter.clone());
         settings.upstream = self.upstream.clone();
+        settings.index = self.index;
+        settings.index_file = self.index_file.clone();
         settings.paths = self.paths.clone();
         settings.trigger = self.trigger.into();
 

@@ -1,7 +1,7 @@
 use crate::errors::CommandError;
 use qlty_config::config::CheckTrigger;
 
-#[derive(clap::ValueEnum, Debug, Clone, Copy)]
+#[derive(clap::ValueEnum, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Trigger {
     Manual,
     PreCommit,

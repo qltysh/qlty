@@ -14,6 +14,7 @@ use qlty_config::Workspace;
 use qlty_types::analysis::v1::ExecutionVerb;
 use qlty_types::analysis::v1::Level;
 use qlty_types::level_from_str;
+use std::io::{self, Read};
 use std::path::PathBuf;
 
 static LOOKING_GLASS: Emoji<'_, '_> = Emoji("🔍  ", "");
@@ -100,6 +101,9 @@ pub struct Check {
     /// Allow individual plugins to be skipped if they fail or crash
     #[arg(hide = true, long, conflicts_with = "fail_level")]
     skip_errored_plugins: bool,
+
+    #[arg(long, hide = true)]
+    upstream_from_pre_push: bool,
 
     /// Files to analyze
     pub paths: Vec<PathBuf>,
@@ -207,7 +211,7 @@ impl Check {
         settings.progress = !self.no_progress;
         settings.formatters = !self.no_formatters;
         settings.filters = CheckFilter::from_optional_list(self.filter.clone());
-        settings.upstream = self.upstream.clone();
+        settings.upstream = self.compute_upstream()?;
         settings.level = level_from_str(&self.level.clone().unwrap_or("".to_string()));
         settings.fail_level = if self.no_fail {
             None
@@ -220,6 +224,23 @@ impl Check {
         settings.skip_errored_plugins = self.skip_errored_plugins;
 
         Ok(settings)
+    }
+
+    fn compute_upstream(&self) -> Result<Option<String>> {
+        if self.upstream_from_pre_push {
+            let mut buffer = String::new();
+            io::stdin().read_to_string(&mut buffer)?;
+
+            // https://git-scm.com/docs/githooks#_pre_push
+            //
+            // <local-ref> SP <local-object-name> SP <remote-ref> SP <remote-object-name> LF
+            let parts: Vec<&str> = buffer.split_whitespace().collect();
+            let remote_commit_id = parts.get(3).unwrap_or(&"");
+
+            Ok(Some(remote_commit_id.to_string()))
+        } else {
+            Ok(self.upstream.clone())
+        }
     }
 
     fn write_stdout(&self, report: &Report, settings: &Settings) -> Result<()> {

@@ -50,6 +50,7 @@ impl Plan {
             TargetMode::Paths(ref paths) => format!(" {} paths", paths),
             TargetMode::UpstreamDiff(ref upstream) => format!(" vs. {}", upstream),
             TargetMode::HeadDiff => " vs. HEAD".to_string(),
+            _ => "".to_string(),
         }
     }
 
