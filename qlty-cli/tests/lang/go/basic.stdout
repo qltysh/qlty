@@ -315,7 +315,7 @@
       "commentLines": 0,
       "blankLines": 1,
       "complexity": 2,
-      "cyclomatic": 11,
+      "cyclomatic": 13,
       "lcom4": 0
     },
     {
