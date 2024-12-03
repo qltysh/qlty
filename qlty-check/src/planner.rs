@@ -286,6 +286,10 @@ impl Planner {
     fn compute_target_mode(&self) -> TargetMode {
         if self.settings.all {
             TargetMode::All
+        } else if self.settings.index {
+            TargetMode::Index
+        } else if self.settings.index_file.is_some() {
+            TargetMode::IndexFile(self.settings.index_file.clone().unwrap())
         } else if self.settings.sample.is_some() {
             TargetMode::Sample(self.settings.sample.unwrap())
         } else if !self.settings.paths.is_empty() {

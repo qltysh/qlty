@@ -28,6 +28,7 @@ impl Plan {
             TargetMode::Paths(ref paths) => format!("{} over {} paths", self.mode, paths),
             TargetMode::UpstreamDiff(ref upstream) => format!("{} vs. {}", self.mode, upstream),
             TargetMode::HeadDiff => format!("{} vs. HEAD", self.mode),
+            _ => "".to_string(),
         }
     }
 }

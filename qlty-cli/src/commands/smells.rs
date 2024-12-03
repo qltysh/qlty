@@ -250,6 +250,8 @@ impl Smells {
             }
             TargetMode::UpstreamDiff(ref upstream) => format!(" vs. {}", upstream),
             TargetMode::HeadDiff => " vs. HEAD".to_string(),
+            TargetMode::Index => " index".to_string(),
+            TargetMode::IndexFile(ref file) => format!(" index file {}", file.display()),
         };
 
         format!("Analyzing{}...", suffix)

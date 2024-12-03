@@ -60,3 +60,11 @@ impl From<serde_json::Error> for CommandError {
         }
     }
 }
+
+impl From<git2::Error> for CommandError {
+    fn from(error: git2::Error) -> Self {
+        CommandError::Unknown {
+            source: error.into(),
+        }
+    }
+}

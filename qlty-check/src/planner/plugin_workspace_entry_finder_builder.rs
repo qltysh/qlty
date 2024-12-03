@@ -56,6 +56,12 @@ impl PluginWorkspaceEntryFinderBuilder {
                 TargetMode::HeadDiff => {
                     Arc::new(DiffSource::new(self.git_diff()?.changed_files, &self.root))
                 }
+                TargetMode::Index => {
+                    Arc::new(DiffSource::new(self.git_diff()?.changed_files, &self.root))
+                }
+                TargetMode::IndexFile(_) => {
+                    Arc::new(DiffSource::new(self.git_diff()?.changed_files, &self.root))
+                }
             });
         }
         if let Some(source) = &self.source {
