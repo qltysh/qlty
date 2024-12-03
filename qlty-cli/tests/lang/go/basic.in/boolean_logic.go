@@ -4,7 +4,7 @@ func f0() int {
 }
 
 func f1() {
-	if foo != 0 && bar != 0 && baz != 0 && qux != 0 {
+	if foo != 0 && bar != 0 && baz != 0 && qux != 0 && quux != 0 {
 		return
 	}
 }

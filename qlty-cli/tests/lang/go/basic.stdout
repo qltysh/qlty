@@ -103,6 +103,33 @@
       "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
+      "ruleKey": "boolean-logic",
+      "message": "Complex binary expression",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_GO",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "foo != 0 && bar != 0",
+      "snippetWithContext": "func f0() int {/n/tx := foo - bar + 1/n/treturn x/n}/n/nfunc f1() {/n/tif foo != 0 && bar != 0 && baz != 0 && qux != 0 && quux != 0 {/n/t/treturn/n/t}/n}",
+      "effortMinutes": 10,
+      "value": 4,
+      "location": {
+        "path": "boolean_logic.go",
+        "range": {
+          "startLine": 7,
+          "startColumn": 5,
+          "endLine": 7,
+          "endColumn": 25,
+          "startByte": 65,
+          "endByte": 85
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
       "ruleKey": "file-complexity",
       "message": "High total complexity (count = 55)",
       "level": "LEVEL_MEDIUM",
