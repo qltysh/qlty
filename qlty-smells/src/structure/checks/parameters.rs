@@ -63,6 +63,41 @@ mod test {
     use super::*;
 
     #[test]
+    fn parameters_go() {
+        let source_file = Arc::new(File::from_string(
+            "go",
+            r#"
+                func f2(a int, b int, c int, d int, e int, f int) {
+                }
+            "#,
+        ));
+
+        insta::assert_yaml_snapshot!(check(5, source_file.clone(), &source_file.parse()), @r###"
+        - tool: qlty
+          driver: structure
+          ruleKey: function-parameters
+          message: "Function with many parameters (count = 6): f2"
+          level: LEVEL_MEDIUM
+          language: LANGUAGE_GO
+          category: CATEGORY_STRUCTURE
+          snippet: "(a int, b int, c int, d int, e int, f int)"
+          snippetWithContext: "\n                func f2(a int, b int, c int, d int, e int, f int) {\n                }\n            "
+          effortMinutes: 17
+          value: 6
+          valueDelta: 1
+          location:
+            path: STRING
+            range:
+              startLine: 2
+              startColumn: 24
+              endLine: 2
+              endColumn: 66
+              startByte: 24
+              endByte: 66
+        "###);
+    }
+
+    #[test]
     fn parameters_not_found() {
         let source_file = Arc::new(File::from_string(
             "python",

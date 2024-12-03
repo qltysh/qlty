@@ -165,6 +165,33 @@
       "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
+      "ruleKey": "function-parameters",
+      "message": "Function with many parameters (count = 6): f2",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_GO",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "(a int, b int, c int, d int, e int, f int)",
+      "snippetWithContext": "func f0() {/n}/n/nfunc f1(dog string, cat string) {/n}/n/nfunc f2(a int, b int, c int, d int, e int, f int) {/n}/n/nfunc f3() {/n/t// Function calls don't count, only function definitions/n/tfoo := bar(1, 2, 3, 4, 5)/n/tfmt.Println(foo)/n}",
+      "effortMinutes": 15,
+      "value": 6,
+      "location": {
+        "path": "parameters.go",
+        "range": {
+          "startLine": 7,
+          "startColumn": 8,
+          "endLine": 7,
+          "endColumn": 50,
+          "startByte": 59,
+          "endByte": 101
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
       "ruleKey": "nested-control-flow",
       "message": "Deeply nested control flow (level = 5)",
       "level": "LEVEL_MEDIUM",

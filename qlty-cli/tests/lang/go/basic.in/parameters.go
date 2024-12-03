@@ -1,10 +1,10 @@
 func f0() {
 }
 
-func f1(dog, cat string) {
+func f1(dog string, cat string) {
 }
 
-func f2(a, b, c, d, e, f int) {
+func f2(a int, b int, c int, d int, e int, f int) {
 }
 
 func f3() {

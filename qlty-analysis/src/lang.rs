@@ -160,9 +160,12 @@ pub trait Language {
                 && parameter_name != format!("&mut {}", self_keyword)
             {
                 return Some(parameter_name);
+            } else {
+                None
             }
+        } else {
+            return Some(parameter_name);
         }
-        None
     }
 
     fn get_parameter_names(
