@@ -9,6 +9,13 @@ use tracing::{debug, trace, warn};
 
 const ALL: &str = "ALL";
 
+#[cfg(not(windows))]
+const PLATFORM_DISABLED_PLUGINS: &[&str] = &[];
+
+#[cfg(windows)]
+// TODO(loren): allow platform support to be configured by the plugin
+const PLATFORM_DISABLED_PLUGINS: &[&str] = &["semgrep"];
+
 pub fn enabled_plugins(planner: &Planner) -> Result<Vec<ActivePlugin>> {
     let active_plugins = configure_plugins(planner)?;
 
@@ -45,6 +52,14 @@ fn configure_plugins(planner: &Planner) -> Result<Vec<ActivePlugin>> {
 
     for enabled_plugin in planner.config.plugin.iter() {
         if enabled_plugin.mode == IssueMode::Disabled {
+            continue;
+        }
+
+        if PLATFORM_DISABLED_PLUGINS.contains(&enabled_plugin.name.as_str()) {
+            debug!(
+                "Plugin {} is disabled on this platform, skipping.",
+                enabled_plugin.name
+            );
             continue;
         }
 
