@@ -13,7 +13,6 @@ const ALL: &str = "ALL";
 const PLATFORM_DISABLED_PLUGINS: &[&str] = &[];
 
 #[cfg(windows)]
-// TODO(loren): allow platform support to be configured by the plugin
 const PLATFORM_DISABLED_PLUGINS: &[&str] = &["semgrep"];
 
 pub fn enabled_plugins(planner: &Planner) -> Result<Vec<ActivePlugin>> {
