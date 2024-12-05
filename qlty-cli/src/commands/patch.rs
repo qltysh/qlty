@@ -11,7 +11,11 @@ use qlty_types::analysis::v1::Issue;
 
 #[derive(Args, Debug)]
 pub struct Patch {
+    /// Path to patch
     path: String,
+    /// Allow unsafe fixes
+    #[arg(long)]
+    r#unsafe: bool,
 }
 
 impl Patch {
@@ -22,7 +26,7 @@ impl Patch {
         let workspace = Workspace::new()?;
         let staging_area = StagingArea::generate(Mode::Source, workspace.root.clone(), None);
 
-        let fixed = Patcher::new(&staging_area).try_apply(&issues);
+        let fixed = Patcher::new(&staging_area).try_apply(&issues, self.r#unsafe);
 
         eprintln!(
             "{}",

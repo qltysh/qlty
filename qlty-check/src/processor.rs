@@ -90,7 +90,8 @@ impl Processor {
 
     fn compute_fixes(&mut self) {
         if self.plan.verb == ExecutionVerb::Check && self.plan.settings.fix {
-            self.fixed = Patcher::new(&self.plan.staging_area).try_apply(&self.fixable_issues());
+            self.fixed = Patcher::new(&self.plan.staging_area)
+                .try_apply(&self.fixable_issues(), self.plan.settings.r#unsafe);
         }
     }
 
@@ -106,11 +107,7 @@ impl Processor {
     }
 
     fn fixable_issues(&self) -> Vec<Issue> {
-        self.issues
-            .iter()
-            .filter(|issue| Patcher::is_patchable(issue))
-            .cloned()
-            .collect()
+        Patcher::filter_issues(&self.issues, self.plan.settings.r#unsafe)
     }
 
     fn transform_issue(&self, issue: &Issue) -> Option<Issue> {
