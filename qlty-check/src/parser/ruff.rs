@@ -7,12 +7,12 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 struct RuffIssue {
-    code: String,
+    code: Option<String>,
     filename: String,
     location: RuffLocation,
     end_location: RuffLocation,
     message: String,
-    url: String,
+    url: Option<String>,
     fix: Option<RuffFix>,
 }
 
@@ -47,11 +47,11 @@ impl Parser for Ruff {
         for ruff_issue in ruff_issues {
             let issue = Issue {
                 tool: "ruff".to_string(),
-                rule_key: ruff_issue.code,
+                rule_key: ruff_issue.code.unwrap_or("error".to_string()),
                 message: ruff_issue.message,
                 category: Category::Lint.into(),
                 level: Level::Medium.into(),
-                documentation_url: ruff_issue.url,
+                documentation_url: ruff_issue.url.unwrap_or_default(),
                 location: Some(Location {
                     path: ruff_issue.filename.clone(),
                     range: Some(Range {
@@ -115,6 +115,23 @@ mod test {
     fn parse() {
         let input = r###"
         [
+        {
+        "cell": null,
+        "code": null,
+        "end_location": {
+            "column": 12,
+            "row": 42
+        },
+        "filename": "/private/var/folders/b9/flqsg2gj0zs94d9802z004qw0000gn/T/plugins_odriQA/basic.in.pyy",
+        "fix": null,
+        "location": {
+            "column": 11,
+            "row": 42
+        },
+        "message": "SyntaxError: Simple statements must be separated by newlines or semicolons",
+        "noqa_row": null,
+        "url": null
+        },
         {
             "cell": null,
             "code": "E402",
@@ -219,7 +236,19 @@ mod test {
         "###;
 
         let issues = Ruff::default().parse("Ruff", input);
-        insta::assert_yaml_snapshot!(issues.unwrap(), @r#"
+        insta::assert_yaml_snapshot!(issues.unwrap(), @r###"
+        - tool: ruff
+          ruleKey: error
+          message: "SyntaxError: Simple statements must be separated by newlines or semicolons"
+          level: LEVEL_MEDIUM
+          category: CATEGORY_LINT
+          location:
+            path: /private/var/folders/b9/flqsg2gj0zs94d9802z004qw0000gn/T/plugins_odriQA/basic.in.pyy
+            range:
+              startLine: 42
+              startColumn: 11
+              endLine: 42
+              endColumn: 12
         - tool: ruff
           ruleKey: E402
           message: Module level import not at top of file
@@ -292,6 +321,6 @@ mod test {
                       startColumn: 1
                       endLine: 10
                       endColumn: 1
-        "#);
+        "###);
     }
 }
