@@ -166,7 +166,9 @@ fn replace_in_range(
     }
 
     if start < mdata.len() && end < mdata.len() {
-        mdata.replace_range(start..end, replacement);
+        let start_index = mdata.char_indices().nth(start).unwrap().0;
+        let end_index = mdata.char_indices().nth(end).unwrap().0;
+        mdata.replace_range(start_index..end_index, replacement);
         true
     } else {
         warn!(
