@@ -81,7 +81,7 @@ impl Patcher {
         let mut modified_source = original_source.clone();
 
         for issue in issues.iter() {
-            if !Patcher::is_patchable(&issue, allow_unsafe) {
+            if !Patcher::is_patchable(issue, allow_unsafe) {
                 // guard to avoid issues with no suggestions. this does not guard against unsafe rules
                 continue;
             }
