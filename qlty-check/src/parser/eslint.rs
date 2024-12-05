@@ -76,6 +76,19 @@ impl Parser for Eslint {
                 let end_column = message.end_column.unwrap_or(column) as u32;
 
                 let suggestions = if let Some(fix) = message.fix {
+                    let mut start_byte = fix.range[0] as u32;
+                    let mut end_byte = fix.range[1] as u32;
+                    if let Some(ref source) = file.source {
+                        start_byte =
+                            source.char_indices().nth(start_byte as usize).unwrap().0 as u32;
+                        end_byte = source.char_indices().nth(end_byte as usize).unwrap().0 as u32;
+                    } else {
+                        debug!(
+                            "Failed to translate characters to bytes for {}",
+                            file.file_path
+                        );
+                    }
+
                     vec![qlty_types::analysis::v1::Suggestion {
                         id: String::from("fix"),
                         description: String::from("fix"),
@@ -85,8 +98,8 @@ impl Parser for Eslint {
                             location: Some(Location {
                                 path: file.file_path.clone(),
                                 range: Some(Range {
-                                    start_byte: Some(fix.range[0] as u32),
-                                    end_byte: Some(fix.range[1] as u32),
+                                    start_byte: Some(start_byte),
+                                    end_byte: Some(end_byte),
                                     start_line,
                                     start_column,
                                     end_line,
