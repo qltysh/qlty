@@ -7,7 +7,10 @@ use qlty_types::analysis::v1::Issue;
 use std::{borrow::BorrowMut, collections::HashSet, path::PathBuf};
 use tracing::{debug, error, trace, warn};
 
-const UNSAFE_RULES: [&str; 1] = ["eslint:@typescript-eslint/no-explicit-any"];
+const UNSAFE_RULES: [&str; 2] = [
+    "eslint:@typescript-eslint/no-explicit-any",
+    "eslint:@typescript-eslint/no-empty-interface",
+];
 
 #[derive(Debug, Clone)]
 pub struct Patcher {
