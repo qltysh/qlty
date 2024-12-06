@@ -21,6 +21,7 @@ dialoguer.workspace = true
 flate2.workspace = true
 keyring.workspace = true
 prost.workspace = true
+qlty-config.workspace = true
 qlty-analysis.workspace = true
 qlty-types.workspace = true
 serde_json.workspace = true

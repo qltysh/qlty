@@ -2,6 +2,7 @@ use anyhow::Result;
 use clap::Args;
 use console::style;
 use indicatif::HumanBytes;
+use qlty_config::version::LONG_VERSION;
 use qlty_config::{QltyConfig, Workspace};
 use qlty_coverage::eprintln_unless;
 use qlty_coverage::formats::Formats;
@@ -10,7 +11,6 @@ use qlty_coverage::publish::{Planner, Processor, Reader, Report, Settings, Uploa
 use std::path::PathBuf;
 use std::time::Instant;
 
-use crate::version::LONG_VERSION;
 use crate::{CommandError, CommandSuccess};
 
 #[derive(Debug, Args)]

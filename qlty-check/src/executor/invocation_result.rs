@@ -6,7 +6,10 @@ use crate::{
 use anyhow::{Context, Result};
 use chrono::prelude::*;
 use qlty_analysis::utils::fs::path_to_string;
-use qlty_config::config::{OutputDestination, TargetType};
+use qlty_config::{
+    config::{OutputDestination, TargetType},
+    version::QLTY_VERSION,
+};
 use qlty_types::analysis::v1::{
     Category, ExecutionVerb, ExitResult, Invocation, Issue, Level, Location, Message, MessageLevel,
 };
@@ -60,7 +63,7 @@ impl InvocationResult {
                 build_timestamp: Default::default(),
                 commit_sha: Default::default(),
                 id: plan.invocation_id.clone(),
-                qlty_cli_version: env!("CARGO_PKG_VERSION").to_string(),
+                qlty_cli_version: QLTY_VERSION.to_string(),
                 plugin_name: plan.tool.name(),
                 driver_name: plan.driver_name.clone(),
                 prefix: plan.plugin.prefix.clone().unwrap_or_default(),

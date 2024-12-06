@@ -6,7 +6,6 @@ pub mod git;
 pub mod lang;
 mod report;
 pub mod utils;
-pub mod version;
 mod walker;
 pub mod workspace_entries;
 

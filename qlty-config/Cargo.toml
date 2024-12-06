@@ -23,6 +23,7 @@ git2.workspace = true
 glob.workspace = true
 globset.workspace = true
 ignore.workspace = true
+lazy_static.workspace = true
 md5.workspace = true
 qlty-types.workspace = true
 semver.workspace = true
