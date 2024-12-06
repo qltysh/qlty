@@ -239,7 +239,7 @@ impl Check {
 
             // When pushing a new branch, the remote object name is 40 zeros.
             // In this case, revert to the upstream branch.
-            if remote_commit_id.len() > 0 && remote_commit_id.chars().all(|c| c == '0') {
+            if !remote_commit_id.is_empty() && remote_commit_id.chars().all(|c| c == '0') {
                 Ok(self.upstream.clone())
             } else {
                 Ok(Some(remote_commit_id.to_string()))
