@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=reek fixture=basic version=6.3.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://github.com/troessner/reek/blob/v6.3.0/docs/Irresponsible-Module.md",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.rb",
+        "range": {
+          "startLine": 1,
+        },
+      },
+      "message": "has no descriptive comment",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "IrresponsibleModule",
+      "snippet": "class        Plumbus",
+      "snippetWithContext": "class        Plumbus
+  private
+
+
+
+
+
+
+ def smooth; end
+end
+",
+      "tool": "reek",
+    },
+  ],
+}
+`;

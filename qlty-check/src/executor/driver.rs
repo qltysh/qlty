@@ -16,6 +16,7 @@ use crate::parser::phpstan::Phpstan;
 use crate::parser::pylint::Pylint;
 use crate::parser::radarlint::Radarlint;
 use crate::parser::regex::Regex;
+use crate::parser::reek::Reek;
 use crate::parser::ripgrep::Ripgrep;
 use crate::parser::rubocop::Rubocop;
 use crate::parser::ruff::Ruff;
@@ -429,6 +430,7 @@ impl Driver {
             OutputFormat::Ruff => Box::new(Ruff {}),
             OutputFormat::GolangciLint => Box::new(GolangciLint {}),
             OutputFormat::Biome => Box::new(Biome {}),
+            OutputFormat::Reek => Box::new(Reek {}),
             OutputFormat::TrivySarif => {
                 let category = self
                     .output_category
