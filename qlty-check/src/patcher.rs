@@ -5,7 +5,7 @@ use anyhow::Result;
 use itertools::Itertools;
 use qlty_types::analysis::v1::Issue;
 use std::{borrow::BorrowMut, collections::HashSet, ops::RangeInclusive, path::PathBuf};
-use tracing::{trace, warn};
+use tracing::{debug, error, trace, warn};
 
 const UNSAFE_RULES: [&str; 3] = [
     "eslint:@typescript-eslint/no-explicit-any",
@@ -80,13 +80,7 @@ impl Patcher {
         let original_source = self.staging_area.read(path.clone())?;
         let mut modified_source = original_source.clone();
 
-        let issues = issues.iter().sorted_by(|a, b| {
-            b.range()
-                .map(|r| r.start_byte.unwrap_or(r.start_line))
-                .cmp(&a.range().map(|r| r.start_byte.unwrap_or(r.start_line)))
-        });
-
-        for issue in issues {
+        for issue in issues.iter() {
             if !Patcher::is_patchable(issue, allow_unsafe) {
                 // guard to avoid issues with no suggestions. this does not guard against unsafe rules
                 continue;
@@ -109,19 +103,45 @@ impl Patcher {
                 &patch_string
             );
 
-            let replacements = issue.suggestions[0]
-                .replacements
-                .iter()
-                .sorted_by(|a, b| a.range().end_byte.cmp(&b.range().end_byte));
-            for replacement in replacements {
-                let start = replacement.range().start_byte() as usize;
-                let end = replacement.range().end_byte() as usize;
-                modified_source.replace_range(start..end, replacement.data.as_str());
+            if let Ok(patch) = diffy::Patch::from_str(&patch_string) {
+                match diffy::apply(&modified_source, &patch) {
+                    Ok(patched_source) => {
+                        if patched_source != modified_source {
+                            debug!(
+                                "Successfully applied patch for {} ({}):\n{}",
+                                display_location, full_rule_key, &patch,
+                            );
+
+                            fixed.insert(FixedResult {
+                                rule_key: issue.rule_key.clone(),
+                                location: issue.location().unwrap().clone(),
+                            });
+
+                            modified_source = patched_source;
+                        } else {
+                            warn!(
+                                "Patch produced no change to contents {}:\n{}",
+                                path.display(),
+                                &patch
+                            );
+                        }
+                    }
+                    Err(error) => {
+                        error!(
+                            "Failed to apply patch for {} ({}): {}\n{}",
+                            display_location,
+                            full_rule_key,
+                            error.to_string(),
+                            &patch
+                        );
+                    }
+                }
+            } else {
+                error!(
+                    "Failed to parse patch for {} ({}):\n{}",
+                    display_location, full_rule_key, patch_string
+                );
             }
-            fixed.insert(FixedResult {
-                rule_key: issue.rule_key.clone(),
-                location: issue.location().unwrap().clone(),
-            });
         }
 
         self.staging_area
