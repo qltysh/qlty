@@ -251,7 +251,7 @@ impl Telemetry {
             "Command": format!("{} {} {}", program, subcommand, sanitized_args).trim(),
             "Duration MS": self.start_time.elapsed().as_millis(),
             "Repository": repository_identifier(self.repository_path.clone()),
-            "Environment": environment(),
+            "Environment": Self::environment(),
             "CI": std::env::var("CI").is_ok().to_string(),
         });
 
