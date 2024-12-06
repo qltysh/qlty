@@ -1,3 +1,5 @@
+use rust_embed::Embed;
+
 #[derive(Embed)]
-#[folder = "examples/public/"]
+#[folder = "../../plugins/"]
 struct Asset;
