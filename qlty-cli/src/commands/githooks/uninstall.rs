@@ -13,14 +13,14 @@ impl Uninstall {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
         Workspace::require_initialized()?;
 
-        let git_hooks_dir = Path::new(".git").join("hooks");
-        let hooks = [
-            git_hooks_dir.join("pre-commit"),
-            git_hooks_dir.join("pre-push"),
-        ];
-
         #[cfg(unix)]
         {
+            let git_hooks_dir = Path::new(".git").join("hooks");
+            let hooks = [
+                git_hooks_dir.join("pre-commit"),
+                git_hooks_dir.join("pre-push"),
+            ];
+
             for hook in &hooks {
                 if std::fs::exists(hook).unwrap_or_default() {
                     let metadata = fs::metadata(hook).with_context(|| {
