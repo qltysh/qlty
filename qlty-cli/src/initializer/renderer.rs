@@ -93,7 +93,7 @@ impl Renderer {
     fn render_directory_source(&self, source: &SourceSpec) -> Result<String> {
         let mut template = include_str!("./templates/source_directory.toml").to_owned();
         template = template.replace("{name}", &source.name);
-        template = template.replace("{directory}", &source.target.as_ref().unwrap());
+        template = template.replace("{directory}", source.target.as_ref().unwrap());
         Ok(template)
     }
 
