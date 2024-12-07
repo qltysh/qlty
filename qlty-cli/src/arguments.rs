@@ -1,10 +1,11 @@
+use crate::commands::*;
 #[cfg(feature = "alpha")]
 use crate::commands::{auth, cache, config, plugins};
-use crate::{commands::*, version::LONG_VERSION};
 use crate::{CommandError, CommandSuccess};
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use console::style;
+use qlty_config::version::LONG_VERSION;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about = "This is qlty, the Qlty command line interface.", long_version = LONG_VERSION.as_str(), long_about = None)]
@@ -60,6 +61,10 @@ pub enum Commands {
 
     /// Auto-format
     Fmt(Fmt),
+
+    /// Manage Git hooks
+    #[command(hide = true)]
+    Githooks(githooks::Arguments),
 
     /// Set up Qlty in the repository
     Init(Init),
@@ -128,6 +133,7 @@ impl Arguments {
             Commands::Discord(command) => command.execute(self),
             Commands::Docs(command) => command.execute(self),
             Commands::Fmt(command) => command.execute(self),
+            Commands::Githooks(command) => command.execute(self),
             Commands::Install(command) => command.execute(self),
             Commands::Init(command) => command.execute(self),
             Commands::Metrics(command) => command.execute(self),

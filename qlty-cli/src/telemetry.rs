@@ -251,7 +251,7 @@ impl Telemetry {
             "Command": format!("{} {} {}", program, subcommand, sanitized_args).trim(),
             "Duration MS": self.start_time.elapsed().as_millis(),
             "Repository": repository_identifier(self.repository_path.clone()),
-            "Environment": std::env::var("AWS_EXECUTION_ENV").unwrap_or("LOCAL".to_string()),
+            "Environment": Self::environment(),
             "CI": std::env::var("CI").is_ok().to_string(),
         });
 
@@ -260,6 +260,15 @@ impl Telemetry {
         }
 
         properties
+    }
+
+    fn environment() -> String {
+        let aws_execution_env = std::env::var("AWS_EXECUTION_ENV");
+
+        match aws_execution_env {
+            Ok(value) => format!("AWS_EXECUTION_ENV={}", value),
+            Err(_) => "UNKNOWN".to_string(),
+        }
     }
 
     pub fn current_level() -> TelemetryLevel {

@@ -10,6 +10,7 @@ mod deinit;
 mod discord;
 mod docs;
 mod fmt;
+pub mod githooks;
 mod init;
 mod install;
 mod metrics;

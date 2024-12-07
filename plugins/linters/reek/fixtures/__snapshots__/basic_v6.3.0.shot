@@ -1,0 +1,60 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=reek fixture=basic version=6.3.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://github.com/troessner/reek/blob/v6.3.0/docs/Manual-Dispatch.md",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.rb",
+        "range": {
+          "startLine": 4,
+        },
+      },
+      "message": "Foo#check_response manually dispatches method call",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "ManualDispatch",
+      "snippet": "    if respond_to?(:foo)",
+      "snippetWithContext": "# My documented class
+class Foo
+  def check_response
+    if respond_to?(:foo)
+      puts "hi"
+    elsif respond_to?(:bar)
+      puts "var"
+    end
+  end
+end",
+      "tool": "reek",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://github.com/troessner/reek/blob/v6.3.0/docs/Manual-Dispatch.md",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.rb",
+        "range": {
+          "startLine": 6,
+        },
+      },
+      "message": "Foo#check_response manually dispatches method call",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "ManualDispatch",
+      "snippet": "    elsif respond_to?(:bar)",
+      "snippetWithContext": "# My documented class
+class Foo
+  def check_response
+    if respond_to?(:foo)
+      puts "hi"
+    elsif respond_to?(:bar)
+      puts "var"
+    end
+  end
+end",
+      "tool": "reek",
+    },
+  ],
+}
+`;

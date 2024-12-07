@@ -4,7 +4,7 @@ mod migration;
 pub mod sources;
 mod toml_merge;
 mod user;
-mod version;
+pub mod version;
 mod workspace;
 
 pub use crate::config::FileType;

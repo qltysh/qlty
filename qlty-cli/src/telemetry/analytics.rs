@@ -1,10 +1,9 @@
 // Portions of this code are from https://github.com/meilisearch/segment
 // MIT License: https://github.com/meilisearch/segment/blob/main/LICENSE
 use crate::telemetry::locale::current_locale;
-use crate::version::BUILD_IDENTIFIER;
 use anyhow::{Context, Result};
 use base64::Engine as _;
-use qlty_analysis::version::QLTY_VERSION;
+use qlty_config::version::{BUILD_IDENTIFIER, QLTY_VERSION};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use serde_json::{Map, Value};

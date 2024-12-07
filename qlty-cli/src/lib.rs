@@ -9,7 +9,6 @@ mod success;
 mod telemetry;
 mod ui;
 mod upgrade;
-mod version;
 
 pub use arguments::Arguments;
 pub use errors::CommandError;

@@ -467,58 +467,60 @@ pub enum OutputFormat {
     #[default]
     #[serde(rename = "sarif")]
     Sarif,
+    #[serde(rename = "actionlint")]
+    Actionlint,    
+    #[serde(rename = "bandit")]
+    Bandit,
+    #[serde(rename = "biome")]
+    Biome,    
+    #[serde(rename = "clippy")]
+    Clippy,    
+    #[serde(rename = "coffeelint")]
+    Coffeelint,    
     #[serde(rename = "eslint")]
     Eslint,
+    #[serde(rename = "golangci_lint")]
+    GolangciLint,    
     #[serde(rename = "hadolint")]
     Hadolint,
+    #[serde(rename = "knip")]
+    Knip,    
     #[serde(rename = "markdownlint")]
     Markdownlint,
+    #[serde(rename = "mypy")]
+    Mypy,    
     #[serde(rename = "pylint")]
     Pylint,
+    #[serde(rename = "php_codesniffer")]
+    PhpCodesniffer,
+    #[serde(rename = "phpstan")]
+    Phpstan,
+    #[serde(rename = "radarlint")]
+    Radarlint,
+    #[serde(rename = "reek")]
+    Reek,
     #[serde(rename = "regex")]
     Regex,
+    #[serde(rename = "ripgrep")]
+    Ripgrep,
     #[serde(rename = "rubocop")]
     Rubocop,
+    #[serde(rename = "ruff")]
+    Ruff,    
     #[serde(rename = "shellcheck")]
     Shellcheck,
+    #[serde(rename = "sqlfluff")]
+    Sqlfluff,
     #[serde(rename = "stylelint")]
     Stylelint,
     #[serde(rename = "taplo")]
     Taplo,
-    #[serde(rename = "sqlfluff")]
-    Sqlfluff,
     #[serde(rename = "trivy_sarif")]
     TrivySarif,
-    #[serde(rename = "actionlint")]
-    Actionlint,
     #[serde(rename = "trufflehog")]
     Trufflehog,
     #[serde(rename = "tsc")]
     Tsc,
-    #[serde(rename = "knip")]
-    Knip,
-    #[serde(rename = "bandit")]
-    Bandit,
-    #[serde(rename = "clippy")]
-    Clippy,
-    #[serde(rename = "ripgrep")]
-    Ripgrep,
-    #[serde(rename = "phpstan")]
-    Phpstan,
-    #[serde(rename = "php_codesniffer")]
-    PhpCodesniffer,
-    #[serde(rename = "radarlint")]
-    Radarlint,
-    #[serde(rename = "mypy")]
-    Mypy,
-    #[serde(rename = "coffeelint")]
-    Coffeelint,
-    #[serde(rename = "ruff")]
-    Ruff,
-    #[serde(rename = "golangci_lint")]
-    GolangciLint,
-    #[serde(rename = "biome")]
-    Biome,
 }
 
 impl std::fmt::Display for OutputFormat {
@@ -526,8 +528,11 @@ impl std::fmt::Display for OutputFormat {
         match self {
             OutputFormat::Actionlint => write!(f, "actionlint"),
             OutputFormat::Bandit => write!(f, "bandit"),
+            OutputFormat::Biome => write!(f, "biome"),
             OutputFormat::Clippy => write!(f, "clippy"),
+            OutputFormat::Coffeelint => write!(f, "coffeelint"),
             OutputFormat::Eslint => write!(f, "eslint"),
+            OutputFormat::GolangciLint => write!(f, "golangci_lint"),
             OutputFormat::Hadolint => write!(f, "hadolint"),
             OutputFormat::Knip => write!(f, "knip"),
             OutputFormat::Markdownlint => write!(f, "markdownlint"),
@@ -536,9 +541,11 @@ impl std::fmt::Display for OutputFormat {
             OutputFormat::Phpstan => write!(f, "phpstan"),
             OutputFormat::Pylint => write!(f, "pylint"),
             OutputFormat::Radarlint => write!(f, "radarlint"),
+            OutputFormat::Reek => write!(f, "reek"),
             OutputFormat::Regex => write!(f, "regex"),
             OutputFormat::Ripgrep => write!(f, "ripgrep"),
             OutputFormat::Rubocop => write!(f, "rubocop"),
+            OutputFormat::Ruff => write!(f, "ruff"),
             OutputFormat::Sarif => write!(f, "sarif"),
             OutputFormat::Shellcheck => write!(f, "shellcheck"),
             OutputFormat::Sqlfluff => write!(f, "sqlfluff"),
@@ -547,10 +554,6 @@ impl std::fmt::Display for OutputFormat {
             OutputFormat::TrivySarif => write!(f, "trivy_sarif"),
             OutputFormat::Trufflehog => write!(f, "trufflehog"),
             OutputFormat::Tsc => write!(f, "tsc"),
-            OutputFormat::Coffeelint => write!(f, "coffeelint"),
-            OutputFormat::Ruff => write!(f, "ruff"),
-            OutputFormat::GolangciLint => write!(f, "golangci_lint"),
-            OutputFormat::Biome => write!(f, "biome"),
         }
     }
 }

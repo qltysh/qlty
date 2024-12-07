@@ -19,11 +19,12 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-fn git_commit_oid() -> String {
+fn git_commit_oid(directory: &str) -> String {
     if let Ok(output) = std::process::Command::new("git")
         .arg("rev-list")
         .arg("-1")
         .arg("HEAD")
+        .current_dir(directory)
         .output()
     {
         if output.status.success() {
@@ -32,17 +33,19 @@ fn git_commit_oid() -> String {
                 .to_string()
         } else {
             // When not in git repository
-            // (e.g. when the user install by `cargo install deno`)
-            "UNKNOWN".to_string()
+            "community".to_string()
         }
     } else {
-        // When there is no git command for some reason
-        "UNKNOWN".to_string()
+        panic!("Failed to run git command");
     }
 }
 
 fn main() {
-    println!("cargo:rustc-env=GIT_COMMIT_OID={}", git_commit_oid());
+    println!("cargo:rustc-env=GIT_COMMIT_QLTY={}", git_commit_oid("."));
+    println!(
+        "cargo:rustc-env=GIT_COMMIT_QLTY_PRO={}",
+        git_commit_oid("..")
+    );
 
     println!(
         "cargo:rustc-env=BUILD_PROFILE={}",

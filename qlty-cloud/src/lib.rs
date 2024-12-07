@@ -1,11 +1,10 @@
 pub mod export;
 pub mod format;
 mod token;
-pub mod version;
 
+use qlty_config::version::QLTY_VERSION;
 pub use token::Token;
 use ureq::Request;
-pub use version::VERSION;
 
 const QLTY_API_URL: &str = "https://qlty.sh/api";
 const USER_AGENT_PREFIX: &str = "qlty";
@@ -44,7 +43,10 @@ impl Client {
     fn build_request(&self, request: Request) -> Request {
         let mut request = request;
 
-        request = request.set("User-Agent", &format!("{}/{}", USER_AGENT_PREFIX, VERSION));
+        request = request.set(
+            "User-Agent",
+            &format!("{}/{}", USER_AGENT_PREFIX, QLTY_VERSION),
+        );
 
         if let Some(header_value) = self.authorization_header() {
             request = request.set("Authorization", &header_value);

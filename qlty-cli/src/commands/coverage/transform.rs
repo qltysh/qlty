@@ -1,8 +1,9 @@
-use crate::{version::LONG_VERSION, CommandError, CommandSuccess};
+use crate::{CommandError, CommandSuccess};
 use anyhow::Result;
 use clap::Args;
 use console::style;
 use qlty_cloud::format::JsonEachRowFormatter;
+use qlty_config::version::LONG_VERSION;
 use qlty_coverage::{
     eprintln_unless,
     formats::Formats,

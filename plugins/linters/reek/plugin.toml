@@ -1,0 +1,27 @@
+config_version = "0"
+
+[plugins.definitions.reek]
+runtime = "ruby"
+package = "reek"
+file_types = ["ruby"]
+latest_version = "6.3.0"
+known_good_version = "6.3.0"
+version_command = "reek --version"
+config_files = [".reek.yml"]
+description = "Code smell detector for Ruby"
+
+[plugins.definitions.reek.drivers.lint]
+script = "reek --format json ${target}"
+
+# reek --help shows:
+# <snip>
+# Exit codes:
+#        --success-exit-code CODE     The exit code when no smells are found (default: 0)
+#        --failure-exit-code CODE     The exit code when smells are found (default: 2)
+# <snip>
+success_codes = [0, 2]
+output = "stdout"
+output_format = "reek"
+batch = true
+cache_results = true
+suggested = "targets"
