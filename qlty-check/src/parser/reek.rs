@@ -1,12 +1,14 @@
 use super::Parser;
 use anyhow::Result;
 use qlty_types::analysis::v1::{Category, Issue, Level, Location, Range};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 pub struct Reek {}
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ReekJson {
+// JSON format: https://github.com/troessner/reek/blob/master/spec/reek/report/json_report_spec.rb
+
+#[derive(Debug, Deserialize, Clone)]
+struct ReekSmell {
   pub context: String,
   pub lines: Vec<i32>,
   pub message: String,
@@ -18,13 +20,13 @@ pub struct ReekJson {
 impl Parser for Reek {
     fn parse(&self, plugin_name: &str, output: &str) -> Result<Vec<Issue>> {
         let mut issues = vec![];
-        let reek_issues: Vec<ReekJson> = serde_json::from_str(output)?;
+        let reek_smells: Vec<ReekSmell> = serde_json::from_str(output)?;
 
-        for smell in reek_issues {
+        for smell in reek_smells {
             let issue = Issue {
                 tool: plugin_name.into(),
                 documentation_url: smell.documentation_link,
-                message: smell.message.trim().to_string(),
+                message: format!("{} {}", smell.context.trim(), smell.message.trim()),
                 category: Category::Lint.into(),
                 level: Level::Medium.into(),
                 rule_key: smell.smell_type,
@@ -75,7 +77,7 @@ mod test {
         insta::assert_yaml_snapshot!(issues.unwrap(), @r#"
         - tool: Reek
           ruleKey: Attribute
-          message: is a writable attribute
+          message: "Shipment#referer is a writable attribute"
           level: LEVEL_MEDIUM
           category: CATEGORY_LINT
           documentationUrl: "https://github.com/troessner/reek/blob/v6.3.0/docs/Attribute.md"
@@ -85,7 +87,7 @@ mod test {
               startLine: 13
         - tool: Reek
           ruleKey: IrresponsibleModule
-          message: has no descriptive comment
+          message: Shipment has no descriptive comment
           level: LEVEL_MEDIUM
           category: CATEGORY_LINT
           documentationUrl: "https://github.com/troessner/reek/blob/v6.3.0/docs/Irresponsible-Module.md"
