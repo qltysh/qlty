@@ -13,16 +13,6 @@ pub struct LocalSource {
 impl Source for LocalSource {
     fn files(&self) -> Result<Vec<SourceFile>> {
         let mut source_files = Vec::new();
-        dbg!(&self.root);
-
-        // let read_dir = fs::read_dir(&self.root).with_context(|| {
-        //     format!(
-        //         "Could not read the local source directory {}",
-        //         self.root.display()
-        //     )
-        // })?;
-
-        // dbg!(&read_dir);
 
         let walkdir = WalkDir::new(&self.root).into_iter();
 
@@ -49,7 +39,6 @@ impl Source for LocalSource {
             }
         }
 
-        dbg!(&source_files);
         Ok(source_files)
     }
 

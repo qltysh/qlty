@@ -185,6 +185,10 @@ impl Scanner {
 
             for config_file in &config_files {
                 for source in self.source_list.sources().iter() {
+                    if self.settings.workspace.root.join(config_file).exists() {
+                        continue;
+                    }
+
                     if let Some(source_file) = source.get_config_file(plugin_name, config_file)? {
                         configs_to_install.push(source_file);
                     }

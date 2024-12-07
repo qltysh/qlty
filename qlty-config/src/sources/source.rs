@@ -71,11 +71,7 @@ pub trait Source: SourceFetch {
         Ok(self
             .files()?
             .into_iter()
-            .filter(|file| {
-                let is_match = globset.is_match(&file.path);
-                dbg!(&file.path, is_match);
-                is_match
-            })
+            .filter(|file| globset.is_match(&file.path))
             .collect::<Vec<SourceFile>>())
     }
 
