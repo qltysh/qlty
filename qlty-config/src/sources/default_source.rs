@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use super::{source::SourceFetch, Source, SourceFile};
-use anyhow::{bail, Result};
+use anyhow::Result;
 use qlty_plugins::Plugins;
 
 #[derive(Debug, Clone)]
