@@ -1,12 +1,10 @@
 use super::{source::SourceFetch, Source, SourceFile};
-use crate::Library;
 use anyhow::Result;
 use std::path::{Path, PathBuf};
 use tracing::debug;
 
 #[derive(Debug, Clone)]
 pub struct LocalSource {
-    pub library: Library,
     pub origin: PathBuf,
 }
 

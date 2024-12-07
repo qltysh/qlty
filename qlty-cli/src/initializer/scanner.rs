@@ -456,7 +456,6 @@ config_files = ["config.toml"]
 
         fn sources(&self) -> Vec<Box<dyn Source>> {
             vec![Box::new(LocalSource {
-                library: Library::new(&self.temp_path).unwrap(),
                 origin: self
                     .temp_path
                     .join(".qlty/sources/https---testing-com/test_branch/"),
