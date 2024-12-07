@@ -184,13 +184,17 @@ impl Scanner {
 
             for config_file in &config_files {
                 for source in self.source_list.sources().iter() {
-                    let config_path = source.config_path(plugin_name, config_file.into());
+                    // let config_path = source.config_path(plugin_name, config_file.into());
 
-                    // If the config file exists in the source, but not in the workspace
-                    if config_path.exists()
-                        && !self.settings.workspace.root.join(config_file).exists()
-                    {
-                        configs_to_install.push(config_path);
+                    // // If the config file exists in the source, but not in the workspace
+                    // if config_path.exists()
+                    //     && !self.settings.workspace.root.join(config_file).exists()
+                    // {
+                    //     configs_to_install.push(config_path);
+                    // }
+
+                    if let Some(source_file) = source.get_config_file(config_file)? {
+                        configs_to_install.push(source_file.path.clone());
                     }
                 }
             }
