@@ -22,6 +22,17 @@ pub struct SourceFile {
     pub contents: String,
 }
 
+impl SourceFile {
+    pub fn write_to(&self, path: &Path) -> Result<()> {
+        std::fs::write(path, &self.contents).with_context(|| {
+            format!(
+                "Could not write the plugin configuration to {}",
+                path.display()
+            )
+        })
+    }
+}
+
 pub trait SourceFetch: Debug + Send + Sync {
     fn fetch(&self) -> Result<()>;
     fn clone_box(&self) -> Box<dyn SourceFetch>;
