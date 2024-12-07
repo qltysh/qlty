@@ -14,53 +14,47 @@
 config_version = "0"
 
 exclude_patterns = [
-    "*_min.*",
-    "*-min.*",
-    "*.min.*",
-    "**/*.d.ts",
-    "**/.yarn/**",
-    "**/bower_components/**",
-    "**/build/**",
-    "**/cache/**",
-    "**/config/**",
-    "**/db/**",
-    "**/deps/**",
-    "**/dist/**",
-    "**/extern/**",
-    "**/external/**",
-    "**/generated/**",
-    "**/Godeps/**",
-    "**/gradlew/**",
-    "**/mvnw/**",
-    "**/node_modules/**",
-    "**/protos/**",
-    "**/seed/**",
-    "**/target/**",
-    "**/testdata/**",
-    "**/vendor/**",
-    "**/assets/**",
-    "**/linters/**",
-    "**/fixtures/**",
+  "*_min.*",
+  "*-min.*",
+  "*.min.*",
+  "**/*.d.ts",
+  "**/.yarn/**",
+  "**/bower_components/**",
+  "**/build/**",
+  "**/cache/**",
+  "**/config/**",
+  "**/db/**",
+  "**/deps/**",
+  "**/dist/**",
+  "**/extern/**",
+  "**/external/**",
+  "**/generated/**",
+  "**/Godeps/**",
+  "**/gradlew/**",
+  "**/mvnw/**",
+  "**/node_modules/**",
+  "**/protos/**",
+  "**/seed/**",
+  "**/target/**",
+  "**/testdata/**",
+  "**/vendor/**",
+  "**/assets/**",
 ]
 
 test_patterns = [
-    "**/test/**",
-    "**/spec/**",
-    "**/*.test.*",
-    "**/*.spec.*",
-    "**/*_test.*",
-    "**/*_spec.*",
-    "**/test_*.*",
-    "**/spec_*.*",
+  "**/test/**",
+  "**/spec/**",
+  "**/*.test.*",
+  "**/*.spec.*",
+  "**/*_test.*",
+  "**/*_spec.*",
+  "**/test_*.*",
+  "**/spec_*.*",
 ]
 
 [[source]]
 name = "default"
-repository = "https://github.com/qltysh/qlty"
-tag = "v0.450.0"
-
-[runtimes.enabled]
-rust = "1.82.0"
+default = true
 
 [[plugin]]
 name = "actionlint"
@@ -70,13 +64,35 @@ name = "bandit"
 version = "1.7.9"
 
 [[plugin]]
+name = "brakeman"
+
+[[plugin]]
+name = "checkov"
+
+[[plugin]]
 name = "clippy"
-version = "1.82.0" # Note: Clippy version is controlled by the rust version above
+
+[[plugin]]
+name = "coffeelint"
+
+[[plugin]]
+name = "dotenv-linter"
 
 [[plugin]]
 name = "eslint"
-version = "8.57.0"
-package_file = ".qlty/configs/package.json"
+version = "v4.19.1"
+
+[[plugin]]
+name = "flake8"
+
+[[plugin]]
+name = "gofmt"
+
+[[plugin]]
+name = "golangci-lint"
+
+[[plugin]]
+name = "hadolint"
 
 [[plugin]]
 name = "markdownlint"
@@ -86,10 +102,29 @@ version = "0.41.0"
 name = "osv-scanner"
 
 [[plugin]]
+name = "php-codesniffer"
+
+[[plugin]]
+name = "phpstan"
+
+[[plugin]]
 name = "prettier"
 
 [[plugin]]
+name = "radarlint"
+
+[[plugin]]
 name = "ripgrep"
+
+[[plugin]]
+name = "rubocop"
+
+[[plugin]]
+name = "ruff"
+version = "0.5.3"
+
+[[plugin]]
+name = "semgrep"
 
 [[plugin]]
 name = "shellcheck"
@@ -98,11 +133,24 @@ name = "shellcheck"
 name = "shfmt"
 
 [[plugin]]
+name = "standardrb"
+
+[[plugin]]
 name = "stylelint"
 version = "14.6.1"
 
 [[plugin]]
+name = "trivy"
+drivers = [
+  "config",
+  "fs-vuln",
+]
+
+[[plugin]]
 name = "trufflehog"
+
+[[plugin]]
+name = "vale"
 
 [[plugin]]
 name = "yamllint"
