@@ -56,7 +56,24 @@ impl Default for Box<dyn SourceFetch> {
 pub trait Source: SourceFetch {
     fn source_files(&self) -> Result<Vec<SourceFile>>;
 
-    fn get_config_file(&self, file_name: &Path) -> Result<Option<SourceFile>>;
+    fn get_config_file(&self, plugin_name: &str, config_file: &Path) -> Result<Option<SourceFile>> {
+        let candidates = vec![
+            PathBuf::from("plugins/linters")
+                .join(plugin_name)
+                .join(config_file),
+            PathBuf::from("linters").join(plugin_name).join(config_file),
+        ];
+
+        for candidate in candidates {
+            if let Some(file) = self.get_file(&candidate)? {
+                return Ok(Some(file));
+            }
+        }
+
+        Ok(None)
+    }
+
+    fn get_file(&self, file_name: &Path) -> Result<Option<SourceFile>>;
 
     fn toml(&self) -> Result<toml::Value> {
         let mut toml: toml::Value = toml::Value::Table(toml::value::Table::new());

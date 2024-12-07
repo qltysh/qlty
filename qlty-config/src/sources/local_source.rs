@@ -19,7 +19,7 @@ impl Source for LocalSource {
         Ok(vec![]) // TODO
     }
 
-    fn get_config_file(&self, _file_name: &Path) -> Result<Option<SourceFile>> {
+    fn get_file(&self, file_name: &Path) -> Result<Option<SourceFile>> {
         Ok(None)
     }
 

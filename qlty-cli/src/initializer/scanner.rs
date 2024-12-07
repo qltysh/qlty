@@ -193,7 +193,7 @@ impl Scanner {
                     //     configs_to_install.push(config_path);
                     // }
 
-                    if let Some(source_file) = source.get_config_file(config_file)? {
+                    if let Some(source_file) = source.get_config_file(plugin_name, config_file)? {
                         configs_to_install.push(source_file);
                     }
                 }
