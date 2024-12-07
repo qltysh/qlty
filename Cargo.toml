@@ -69,6 +69,7 @@ qlty-cloud = { version = "0.460.0", path = "qlty-cloud" }
 qlty-config = { version = "0.460.0", path = "qlty-config" }
 qlty-coverage = { version = "0.460.0", path = "qlty-coverage" }
 qlty-llm = { version = "0.460.0", path = "qlty-llm" }
+qlty-plugins = { version = "0.460.0", path = "qlty-plugins" }
 qlty-skills = { version = "0.460.0", path = "qlty-skills" }
 qlty-smells = { version = "0.460.0", path = "qlty-smells" }
 qlty-test-utilities = { version = "0.460.0", path = "qlty-test-utilities" }

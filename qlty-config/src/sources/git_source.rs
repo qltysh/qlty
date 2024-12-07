@@ -1,4 +1,4 @@
-use super::{source::SourceFetch, Source, SourceFile};
+use super::{source::SourceFetch, LocalSource, Source, SourceFile};
 use crate::Library;
 use anyhow::{Context, Result};
 use git2::{Remote, Repository, ResetType};
@@ -25,11 +25,13 @@ pub enum GitSourceReference {
 
 impl Source for GitSource {
     fn files(&self) -> Result<Vec<SourceFile>> {
-        Ok(vec![]) // TODO
+        let local_source = self.local_source();
+        local_source.files()
     }
 
     fn get_file(&self, file_name: &Path) -> Result<Option<SourceFile>> {
-        Ok(None)
+        let local_source = self.local_source();
+        local_source.get_file(file_name)
     }
 
     fn clone_box(&self) -> Box<dyn Source> {
@@ -246,10 +248,10 @@ impl GitSource {
             .join(self.origin_directory_name())
     }
 
-    // fn local_origin_ref_path(&self, library: &Library) -> PathBuf {
-    //     self.local_origin_path(library)
-    //         .join(self.reference_directory_name())
-    // }
+    fn local_origin_ref_path(&self, library: &Library) -> PathBuf {
+        self.local_origin_path(library)
+            .join(self.reference_directory_name())
+    }
 
     fn origin_directory_name(&self) -> String {
         let mut origin = self.origin.clone();
@@ -264,6 +266,14 @@ impl GitSource {
         match &self.reference {
             GitSourceReference::Branch(branch) => branch.to_string(),
             GitSourceReference::Tag(tag) => tag.to_string(),
+        }
+    }
+}
+
+impl GitSource {
+    fn local_source(&self) -> LocalSource {
+        LocalSource {
+            root: self.local_origin_ref_path(&self.library),
         }
     }
 }

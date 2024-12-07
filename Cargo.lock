@@ -2372,6 +2372,7 @@ dependencies = [
  "globset",
  "ignore",
  "md5",
+ "qlty-plugins",
  "qlty-types",
  "semver",
  "serde",
