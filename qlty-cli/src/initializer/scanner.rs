@@ -13,7 +13,7 @@ use itertools::Itertools;
 use package_file::PackageFileScanner;
 use qlty_config::{
     config::{Builder, Ignore, PackageFileCandidate, PluginDef, SuggestionMode},
-    sources::SourceFetch,
+    sources::{SourceFetch, SourceFile},
     QltyConfig,
 };
 use std::{
@@ -52,7 +52,7 @@ pub struct InstalledPlugin {
     pub name: String,
     pub version: String,
     pub files_count: FilesCount,
-    pub config_files: Vec<PathBuf>,
+    pub config_files: Vec<SourceFile>,
     pub enabled_drivers: Vec<String>,
     pub package_file: Option<String>,
     pub package_filters: Vec<String>,
@@ -194,7 +194,7 @@ impl Scanner {
                     // }
 
                     if let Some(source_file) = source.get_config_file(config_file)? {
-                        configs_to_install.push(source_file.path.clone());
+                        configs_to_install.push(source_file);
                     }
                 }
             }

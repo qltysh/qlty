@@ -16,6 +16,7 @@ Also, please make sure you are specifying the latest source tag in your qlty.tom
 
 For more information, please visit: https://qlty.io/docs/troubleshooting/source-parse-error"#;
 
+#[derive(Debug, Clone)]
 pub struct SourceFile {
     pub path: PathBuf,
     pub contents: String,
