@@ -74,6 +74,5 @@ output_format = "eslint"
 batch = true
 cache_results = true
 max_batch = 40
-suggested = "config"
-known_good_version = "v4.19.1"
+known_good_version = "4.19.1"
 missing_output_as_error = true
