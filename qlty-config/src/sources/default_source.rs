@@ -53,7 +53,7 @@ mod test {
     #[test]
     fn test_plugin_tomls() {
         let default_source = DefaultSource {};
-        let plugin_tomls = default_source.files().unwrap();
+        let plugin_tomls = default_source.plugin_tomls().unwrap();
         assert!(plugin_tomls.len() > 10);
     }
 }
