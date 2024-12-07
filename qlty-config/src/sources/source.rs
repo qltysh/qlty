@@ -57,7 +57,7 @@ pub trait Source: SourceFetch {
     fn plugin_tomls(&self) -> Result<Vec<SourceFile>> {
         let mut globset_builder = GlobSetBuilder::new();
 
-        for pattern in vec![
+        for pattern in &[
             "*/linters/*/plugin.toml",
             "*/plugins/linters/*/plugin.toml",
             "linters/*/plugin.toml",
