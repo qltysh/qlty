@@ -61,17 +61,23 @@ impl Renderer {
     }
 
     fn render_source(&self, source: &SourceSpec) -> Result<String> {
-        if source.is_repository() {
+        if source.is_default() {
+            self.render_default_source()
+        } else if source.is_repository() {
             self.render_repository_source(source)
         } else {
             self.render_directory_source(source)
         }
     }
 
+    fn render_default_source(&self) -> Result<String> {
+        Ok(include_str!("./templates/source_default.toml").to_owned())
+    }
+
     fn render_repository_source(&self, source: &SourceSpec) -> Result<String> {
         let mut template = include_str!("./templates/source_git.toml").to_owned();
         template = template.replace("{name}", &source.name);
-        template = template.replace("{repository}", &source.target);
+        template = template.replace("{repository}", &source.target.as_ref().unwrap());
 
         Ok(match &source.reference {
             Some(SourceRefSpec::Branch(branch)) => template
@@ -87,7 +93,7 @@ impl Renderer {
     fn render_directory_source(&self, source: &SourceSpec) -> Result<String> {
         let mut template = include_str!("./templates/source_directory.toml").to_owned();
         template = template.replace("{name}", &source.name);
-        template = template.replace("{directory}", &source.target);
+        template = template.replace("{directory}", &source.target.as_ref().unwrap());
         Ok(template)
     }
 

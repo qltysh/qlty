@@ -2,12 +2,10 @@ use super::{Renderer, Settings};
 use anyhow::{bail, Result};
 use qlty_config::{config::Builder, sources::SourcesList};
 
-const DEFAULT_SOURCE_REPOSITORY: &str = "https://github.com/qltysh/qlty.git";
-
 #[derive(Debug, Clone, Default)]
 pub struct SourceSpec {
     pub name: String,
-    pub target: String,
+    pub target: Option<String>,
     pub reference: Option<SourceRefSpec>,
 }
 
@@ -27,13 +25,18 @@ impl SourceSpec {
 
         Ok(Self {
             name: parts[0].to_string(),
-            target: parts[1].to_string(),
+            target: Some(parts[1].to_string()),
             reference: None,
         })
     }
 
+    pub fn is_default(&self) -> bool {
+        self.name == "default" && self.target.is_none()
+    }
+
     pub fn is_repository(&self) -> bool {
-        self.target.starts_with("https://") || self.target.starts_with("git@")
+        self.target.is_some() && self.target.as_ref().unwrap().starts_with("https://")
+            || self.target.as_ref().unwrap().starts_with("git@")
     }
 }
 
@@ -43,10 +46,7 @@ pub fn source_specs_from_settings(settings: &Settings) -> Result<Vec<SourceSpec>
     if !settings.skip_default_source {
         sources.push(SourceSpec {
             name: "default".to_string(),
-            target: DEFAULT_SOURCE_REPOSITORY.to_string(),
-            reference: Some(SourceRefSpec::Tag(fetch_source_ref(
-                DEFAULT_SOURCE_REPOSITORY.to_string(),
-            )?)),
+            ..Default::default()
         });
     };
 
@@ -56,7 +56,7 @@ pub fn source_specs_from_settings(settings: &Settings) -> Result<Vec<SourceSpec>
                 name: source.name,
                 target: source.target.clone(),
                 reference: Some(SourceRefSpec::Tag(fetch_source_ref(
-                    source.target.to_string(),
+                    source.target.as_ref().unwrap().to_string(),
                 )?)),
             })
         } else {
