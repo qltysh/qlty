@@ -5,7 +5,7 @@ use serde::Deserialize;
 
 pub struct Reek {}
 
-// JSON format spec (test): https://github.com/troessner/reek/blob/master/spec/reek/report/json_report_spec.rb
+// JSON format (test): https://github.com/troessner/reek/blob/master/features/reports/json.feature
 // JSON format code: https://github.com/troessner/reek/blob/master/lib/reek/report/json_report.rb
 
 #[derive(Debug, Deserialize, Clone)]
@@ -24,17 +24,18 @@ impl Parser for Reek {
         let reek_smells: Vec<ReekSmell> = serde_json::from_str(output)?;
 
         for smell in reek_smells {
+          for line in smell.lines {
             let issue = Issue {
                 tool: plugin_name.into(),
-                documentation_url: smell.documentation_link,
+                documentation_url: smell.documentation_link.clone(),
                 message: format!("{} {}", smell.context.trim(), smell.message.trim()),
                 category: Category::Lint.into(),
                 level: Level::Medium.into(),
-                rule_key: smell.smell_type,
+                rule_key: smell.smell_type.clone(),
                 location: Some(Location {
-                    path: smell.source,
+                    path: smell.source.clone(),
                     range: Some(Range {
-                        start_line: smell.lines[0] as u32,
+                        start_line: line as u32,
                         ..Default::default()
                     }),
                 }),
@@ -42,7 +43,7 @@ impl Parser for Reek {
             };
 
             issues.push(issue);
-
+          }
         }
 
         Ok(issues)
@@ -55,47 +56,37 @@ mod test {
 
     #[test]
     fn parse() {
-        let input = r###"[
-          {
-            "context":"Shipment#referer",
-            "lines":[13],
-            "message":"is a writable attribute",
-            "smell_type":"Attribute",
-            "source":"app/models/shipment.rb",
-            "documentation_link":"https://github.com/troessner/reek/blob/v6.3.0/docs/Attribute.md"
-          },
-          {
-            "context":"Shipment",
-            "lines":[1],
-            "message":"has no descriptive comment",
-            "smell_type":"IrresponsibleModule",
-            "source":"app/models/shipment.rb",
-            "documentation_link":"https://github.com/troessner/reek/blob/v6.3.0/docs/Irresponsible-Module.md"
-          }
-        ]"###;
+        let input = r###"[{
+          "context":"Foo#check_response",
+          "lines":[4,6],
+          "message":"manually dispatches method call",
+          "smell_type":"ManualDispatch",
+          "source":"linters/reek/fixtures/basic.in.rb",
+          "documentation_link":"https://github.com/troessner/reek/blob/v6.3.0/docs/Manual-Dispatch.md"
+        }]"###;
 
         let issues = Reek {}.parse("Reek", input);
         insta::assert_yaml_snapshot!(issues.unwrap(), @r#"
         - tool: Reek
-          ruleKey: Attribute
-          message: "Shipment#referer is a writable attribute"
+          ruleKey: ManualDispatch
+          message: "Foo#check_response manually dispatches method call"
           level: LEVEL_MEDIUM
           category: CATEGORY_LINT
-          documentationUrl: "https://github.com/troessner/reek/blob/v6.3.0/docs/Attribute.md"
+          documentationUrl: "https://github.com/troessner/reek/blob/v6.3.0/docs/Manual-Dispatch.md"
           location:
-            path: app/models/shipment.rb
+            path: linters/reek/fixtures/basic.in.rb
             range:
-              startLine: 13
+              startLine: 4
         - tool: Reek
-          ruleKey: IrresponsibleModule
-          message: Shipment has no descriptive comment
+          ruleKey: ManualDispatch
+          message: "Foo#check_response manually dispatches method call"
           level: LEVEL_MEDIUM
           category: CATEGORY_LINT
-          documentationUrl: "https://github.com/troessner/reek/blob/v6.3.0/docs/Irresponsible-Module.md"
+          documentationUrl: "https://github.com/troessner/reek/blob/v6.3.0/docs/Manual-Dispatch.md"
           location:
-            path: app/models/shipment.rb
+            path: linters/reek/fixtures/basic.in.rb
             range:
-              startLine: 1
+              startLine: 6
         "#);
     }
 }
