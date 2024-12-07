@@ -1,0 +1,15 @@
+config_version = "0"
+
+[plugins.definitions.kube-linter]
+package = "golang.stackrox.io/kube-linter/cmd/kube-linter"
+runtime = "go"
+file_types = ["yaml"]
+latest_version = "0.7.1"
+known_good_version = "0.7.1"
+description = "Linting for Kubernetes YAML files and Helm charts"
+
+[plugins.definitions.kube-linter.drivers.lint]
+script = "kube-linter lint ${target} --format sarif"
+success_codes = [0, 1]
+output = "stdout"
+output_format = "sarif"
