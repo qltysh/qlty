@@ -119,7 +119,7 @@ impl Renderer {
 
         if !plugin.drivers.is_empty() {
             toml.push_str("drivers = [\n");
-            for driver in &plugin.drivers {
+            for driver in plugin.drivers.iter().sorted() {
                 toml.push_str(&format!("  \"{}\",\n", driver));
             }
             toml.push_str("]\n");
