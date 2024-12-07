@@ -69,13 +69,24 @@ pub trait Source: SourceFetch {
         let globset = globset_builder.build()?;
 
         Ok(self
-            .files()?
+            .paths()?
             .into_iter()
-            .filter(|file| globset.is_match(&file.path))
+            .filter(|path| globset.is_match(&path))
+            .map(|path| {
+                self.get_file(&path)
+                    .with_context(|| {
+                        format!(
+                            "Could not read the plugin configuration from {}",
+                            path.display()
+                        )
+                    })
+                    .unwrap()
+                    .unwrap()
+            })
             .collect::<Vec<SourceFile>>())
     }
 
-    fn files(&self) -> Result<Vec<SourceFile>>;
+    fn paths(&self) -> Result<Vec<PathBuf>>;
 
     fn get_config_file(&self, plugin_name: &str, config_file: &Path) -> Result<Option<SourceFile>> {
         let candidates = vec![

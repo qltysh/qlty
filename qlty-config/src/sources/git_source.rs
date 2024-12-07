@@ -24,9 +24,9 @@ pub enum GitSourceReference {
 }
 
 impl Source for GitSource {
-    fn files(&self) -> Result<Vec<SourceFile>> {
+    fn paths(&self) -> Result<Vec<PathBuf>> {
         let local_source = self.local_source();
-        local_source.files()
+        local_source.paths()
     }
 
     fn get_file(&self, file_name: &Path) -> Result<Option<SourceFile>> {

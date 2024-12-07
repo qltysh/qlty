@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use super::{source::SourceFetch, Source, SourceFile};
 use anyhow::{bail, Result};
@@ -8,23 +8,14 @@ use qlty_plugins::Plugins;
 pub struct DefaultSource {}
 
 impl Source for DefaultSource {
-    fn files(&self) -> Result<Vec<SourceFile>> {
-        let mut source_files = vec![];
+    fn paths(&self) -> Result<Vec<PathBuf>> {
+        let mut paths = vec![];
 
         for file_path in Plugins::iter() {
-            let source_file = self.get_file(Path::new(file_path.as_ref()))?;
-
-            if let Some(file) = source_file {
-                source_files.push(file);
-            } else {
-                bail!(
-                    "Could not find expected file in default source: {}",
-                    file_path
-                );
-            }
+            paths.push(PathBuf::from(file_path.as_ref()));
         }
 
-        Ok(source_files)
+        Ok(paths)
     }
 
     fn get_file(&self, file_name: &Path) -> Result<Option<SourceFile>> {

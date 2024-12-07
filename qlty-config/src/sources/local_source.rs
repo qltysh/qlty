@@ -11,8 +11,8 @@ pub struct LocalSource {
 }
 
 impl Source for LocalSource {
-    fn files(&self) -> Result<Vec<SourceFile>> {
-        let mut source_files = Vec::new();
+    fn paths(&self) -> Result<Vec<PathBuf>> {
+        let mut paths = Vec::new();
 
         let walkdir = WalkDir::new(&self.root).into_iter();
 
@@ -26,20 +26,11 @@ impl Source for LocalSource {
             let path = entry.path();
 
             if path.is_file() {
-                source_files.push(SourceFile {
-                    path: path.to_path_buf(),
-                    contents: fs::read_to_string(path).with_context(|| {
-                        format!(
-                            "Could not read the file {} from the local source {}",
-                            path.display(),
-                            self.root.display()
-                        )
-                    })?,
-                });
+                paths.push(path.to_path_buf());
             }
         }
 
-        Ok(source_files)
+        Ok(paths)
     }
 
     fn get_file(&self, file_name: &Path) -> Result<Option<SourceFile>> {
