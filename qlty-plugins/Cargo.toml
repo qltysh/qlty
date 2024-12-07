@@ -1,0 +1,19 @@
+[package]
+name = "qlty-plugins"
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+license-file.workspace = true
+edition.workspace = true
+
+[lib]
+doctest = false
+test = true
+
+[dependencies]
+rust-embed.workspace = true

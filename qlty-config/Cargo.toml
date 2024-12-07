@@ -25,6 +25,7 @@ globset.workspace = true
 ignore.workspace = true
 lazy_static.workspace = true
 md5.workspace = true
+qlty-plugins.workspace = true
 qlty-types.workspace = true
 semver.workspace = true
 serde_with.workspace = true

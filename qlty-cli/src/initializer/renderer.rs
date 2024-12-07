@@ -61,17 +61,23 @@ impl Renderer {
     }
 
     fn render_source(&self, source: &SourceSpec) -> Result<String> {
-        if source.is_repository() {
+        if source.is_default() {
+            self.render_default_source()
+        } else if source.is_repository() {
             self.render_repository_source(source)
         } else {
             self.render_directory_source(source)
         }
     }
 
+    fn render_default_source(&self) -> Result<String> {
+        Ok(include_str!("./templates/source_default.toml").to_owned())
+    }
+
     fn render_repository_source(&self, source: &SourceSpec) -> Result<String> {
         let mut template = include_str!("./templates/source_git.toml").to_owned();
         template = template.replace("{name}", &source.name);
-        template = template.replace("{repository}", &source.target);
+        template = template.replace("{repository}", source.target.as_ref().unwrap());
 
         Ok(match &source.reference {
             Some(SourceRefSpec::Branch(branch)) => template
@@ -87,7 +93,7 @@ impl Renderer {
     fn render_directory_source(&self, source: &SourceSpec) -> Result<String> {
         let mut template = include_str!("./templates/source_directory.toml").to_owned();
         template = template.replace("{name}", &source.name);
-        template = template.replace("{directory}", &source.target);
+        template = template.replace("{directory}", source.target.as_ref().unwrap());
         Ok(template)
     }
 
@@ -113,7 +119,7 @@ impl Renderer {
 
         if !plugin.drivers.is_empty() {
             toml.push_str("drivers = [\n");
-            for driver in &plugin.drivers {
+            for driver in plugin.drivers.iter().sorted() {
                 toml.push_str(&format!("  \"{}\",\n", driver));
             }
             toml.push_str("]\n");
@@ -160,9 +166,10 @@ mod test {
     fn test_git_source() {
         let renderer = Renderer::new(
             &vec![SourceSpec {
-                name: "default".to_string(),
-                target: "https://github.com/example/example".to_string(),
+                name: "example".to_string(),
+                target: Some("https://github.com/example/example".to_string()),
                 reference: Some(SourceRefSpec::Branch("main".to_string())),
+                default: false,
             }],
             &vec![],
         );
@@ -170,7 +177,7 @@ mod test {
             strip_default_toml(renderer.render().unwrap()),
             r#"
 [[source]]
-name = "default"
+name = "example"
 repository = "https://github.com/example/example"
 branch = "main"
 "#
@@ -184,13 +191,15 @@ branch = "main"
             &vec![
                 SourceSpec {
                     name: "source1".to_string(),
-                    target: "./source1".to_string(),
+                    target: Some("./source1".to_string()),
                     reference: None,
+                    default: false,
                 },
                 SourceSpec {
                     name: "source2".to_string(),
-                    target: "./source2".to_string(),
+                    target: Some("./source2".to_string()),
                     reference: None,
+                    default: false,
                 },
             ],
             &vec![],
@@ -214,8 +223,9 @@ directory = "./source2"
         let renderer = Renderer::new(
             &vec![SourceSpec {
                 name: "source".to_string(),
-                target: "https://github.com/example/example".to_string(),
+                target: Some("https://github.com/example/example".to_string()),
                 reference: None,
+                default: false,
             }],
             &vec![],
         );
@@ -227,7 +237,7 @@ directory = "./source2"
         let renderer = Renderer::new(
             &vec![SourceSpec {
                 name: "local".to_string(),
-                target: "./dir".to_string(),
+                target: Some("./dir".to_string()),
                 ..Default::default()
             }],
             &vec![],
