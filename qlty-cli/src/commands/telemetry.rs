@@ -4,7 +4,7 @@ use crate::{
 };
 use anyhow::{anyhow, Result};
 use clap::Args;
-use qlty_analysis::version::BUILD_PROFILE;
+use qlty_config::version::BUILD_PROFILE;
 use std::path::PathBuf;
 use tracing::{debug, info};
 

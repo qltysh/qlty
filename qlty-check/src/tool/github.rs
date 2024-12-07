@@ -7,6 +7,7 @@ use crate::{
 use anyhow::Result;
 use once_cell::sync::OnceCell;
 use qlty_config::config::{Cpu, DownloadDef, OperatingSystem, PluginDef, ReleaseDef, System};
+use qlty_config::version::QLTY_VERSION;
 use sha2::Digest;
 use tracing::{debug, info, trace};
 
@@ -387,7 +388,7 @@ impl GitHubReleaseTool {
         let mut request = ureq::get(url)
             .set(
                 "User-Agent",
-                &format!("{}/{}", USER_AGENT_PREFIX, env!("CARGO_PKG_VERSION")),
+                &format!("{}/{}", USER_AGENT_PREFIX, QLTY_VERSION),
             )
             .set("X-GitHub-Api-Version", GITHUB_API_VERSION);
 

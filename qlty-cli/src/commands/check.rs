@@ -237,7 +237,13 @@ impl Check {
             let parts: Vec<&str> = buffer.split_whitespace().collect();
             let remote_commit_id = parts.get(3).unwrap_or(&"");
 
-            Ok(Some(remote_commit_id.to_string()))
+            // When pushing a new branch, the remote object name is 40 zeros.
+            // In this case, revert to the upstream branch.
+            if !remote_commit_id.is_empty() && remote_commit_id.chars().all(|c| c == '0') {
+                Ok(self.upstream.clone())
+            } else {
+                Ok(Some(remote_commit_id.to_string()))
+            }
         } else {
             Ok(self.upstream.clone())
         }

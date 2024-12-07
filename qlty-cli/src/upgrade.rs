@@ -1,7 +1,7 @@
 use anyhow::{bail, Context, Result};
 use dialoguer::{theme::ColorfulTheme, Confirm};
 use duct::cmd;
-use qlty_analysis::version::QLTY_VERSION;
+use qlty_config::version::{qlty_semver, QLTY_VERSION};
 use serde::Deserialize;
 
 use std::time::SystemTime;
@@ -72,7 +72,7 @@ impl QltyRelease {
         let release = Self::load_latest()?;
         user_data.touch_version_checked_at()?;
 
-        if release.semver()? > qlty_analysis::version::qlty_semver() {
+        if release.semver()? > qlty_semver() {
             return Ok(Some(release.version));
         }
 

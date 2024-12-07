@@ -31,7 +31,7 @@ pub use source::SourceDef;
 use crate::config::plugin::EnabledRuntimes;
 pub use crate::config::plugin::PluginsConfig;
 use crate::sources::{Source, SourcesList};
-use crate::version::VERSION;
+use crate::version::QLTY_VERSION;
 use crate::Library;
 use anyhow::{anyhow, bail, Result};
 use semver::Version;
@@ -96,7 +96,7 @@ impl QltyConfig {
         }
 
         let expected_version = Version::parse(self.cli_version.as_ref().unwrap())?;
-        let actual_version = Version::parse(VERSION)?;
+        let actual_version = Version::parse(QLTY_VERSION)?;
 
         if !self.is_version_compatible(&expected_version, &actual_version) {
             if cfg!(debug_assertions) {

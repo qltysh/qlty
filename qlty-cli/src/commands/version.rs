@@ -1,8 +1,7 @@
-use crate::{
-    errors::CommandError, success::CommandSuccess, version::LONG_VERSION, Arguments, QltyRelease,
-};
+use crate::{errors::CommandError, success::CommandSuccess, Arguments, QltyRelease};
 use anyhow::Result;
 use clap::Args;
+use qlty_config::version::LONG_VERSION;
 
 #[derive(Args, Debug)]
 pub struct Version {}

@@ -1,10 +1,11 @@
+use crate::commands::*;
 #[cfg(feature = "alpha")]
 use crate::commands::{auth, cache, config, plugins};
-use crate::{commands::*, version::LONG_VERSION};
 use crate::{CommandError, CommandSuccess};
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use console::style;
+use qlty_config::version::LONG_VERSION;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about = "This is qlty, the Qlty command line interface.", long_version = LONG_VERSION.as_str(), long_about = None)]

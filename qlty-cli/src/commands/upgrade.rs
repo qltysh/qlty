@@ -3,8 +3,8 @@ use crate::{Arguments, CommandError, CommandSuccess};
 use anyhow::Result;
 use clap::{Args, Subcommand};
 use console::style;
-use qlty_analysis::version::QLTY_VERSION;
 use qlty_config::sources::SourceUpgrade;
+use qlty_config::version::QLTY_VERSION;
 use std::time::Instant;
 
 #[derive(Args, Debug)]
