@@ -5,7 +5,8 @@ use serde::Deserialize;
 
 pub struct Reek {}
 
-// JSON format: https://github.com/troessner/reek/blob/master/spec/reek/report/json_report_spec.rb
+// JSON format spec (test): https://github.com/troessner/reek/blob/master/spec/reek/report/json_report_spec.rb
+// JSON format code: https://github.com/troessner/reek/blob/master/lib/reek/report/json_report.rb
 
 #[derive(Debug, Deserialize, Clone)]
 struct ReekSmell {
