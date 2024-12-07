@@ -5,7 +5,7 @@ use tracing::debug;
 
 #[derive(Debug, Clone)]
 pub struct LocalSource {
-    pub origin: PathBuf,
+    pub root: PathBuf,
 }
 
 impl Source for LocalSource {
@@ -24,7 +24,7 @@ impl Source for LocalSource {
 
 impl SourceFetch for LocalSource {
     fn fetch(&self) -> Result<()> {
-        debug!("Skipping source fetch: {:?}", self.origin);
+        debug!("Skipping source fetch: {:?}", self.root);
         Ok(())
     }
 

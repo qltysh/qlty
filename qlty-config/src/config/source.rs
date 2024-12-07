@@ -31,7 +31,7 @@ impl SourceDef {
         // This allows for a local override of a repository.
         if self.directory.is_some() {
             Ok(Box::new(LocalSource {
-                origin: self.directory.clone().unwrap(),
+                root: self.directory.clone().unwrap(),
             }))
         } else if self.repository.is_some() {
             if self.tag.is_some() && self.branch.is_some() {
