@@ -56,7 +56,8 @@ test_patterns = [
 
 [[source]]
 name = "default"
-default = true
+repository = "https://github.com/qltysh/qlty"
+tag = "v0.450.0"
 
 [runtimes.enabled]
 rust = "1.82.0"
