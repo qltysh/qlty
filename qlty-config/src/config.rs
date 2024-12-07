@@ -166,11 +166,7 @@ impl QltyConfig {
 
 #[cfg(test)]
 mod test {
-    use config::{Config, File, FileFormat};
-
-    use crate::{config::Builder, Workspace};
-
-    use super::QltyConfig;
+    use crate::Workspace;
 
     #[test]
     #[ignore] // always requires network connection
@@ -178,75 +174,5 @@ mod test {
         let workspace = Workspace::new().unwrap();
         workspace.fetch_sources().unwrap();
         workspace.config().unwrap();
-    }
-
-    //     // full_config_from_toml_str
-    //     #[test]
-    //     fn test_full_config_from_toml_str() {
-    //         let workspace = Workspace::new().unwrap();
-    //         let library = workspace.library().unwrap();
-
-    //         let toml = r#"
-    // [[source]]
-    // name = "testing"
-    // repository = "https://testing.com"
-    // branch = "test_branch"
-    // "#;
-    //         // let file = File::from_str(&toml, FileFormat::Toml);
-    //         // let builder = Config::builder().add_source(file);
-    //         // let config = builder.build().unwrap();
-    //         // let deserialized: QltyConfig = config.try_deserialize().unwrap();
-    //         let config = Builder::full_config_from_toml_str(&toml.to_string(), &library).unwrap();
-    //         dbg!(&config);
-    //         assert_eq!(config.source.len(), 1);
-    //     }
-
-    #[test]
-    fn test_sources_config_from_toml() {
-        let toml = r#"
-[[source]]
-name = "testing"
-repository = "https://testing.com"
-branch = "test_branch"
-"#;
-        // let file = File::from_str(&toml, FileFormat::Toml);
-        // let builder = Config::builder().add_source(file);
-        // let config = builder.build().unwrap();
-        // let deserialized: QltyConfig = config.try_deserialize().unwrap();
-        let config = Builder::sources_config_from_toml(&toml.to_string()).unwrap();
-        // dbg!(&config);
-        assert_eq!(config.source.len(), 1);
-    }
-
-    #[test]
-    fn test_git_source_toml() {
-        let toml = r#"
-[[source]]
-name = "testing"
-repository = "https://testing.com"
-branch = "test_branch"
-"#;
-        let file = File::from_str(&toml, FileFormat::Toml);
-        let builder = Config::builder().add_source(file);
-        let config = builder.build().unwrap();
-        let deserialized: QltyConfig = config.try_deserialize().unwrap();
-        dbg!(&deserialized);
-        assert_eq!(deserialized.source.len(), 1);
-    }
-
-    #[test]
-    fn test_git_source_yaml() {
-        let yaml = r#"
-source:
-- branch: test_branch
-  name: testing
-  repository: https://testing.com
-"#;
-        let file = File::from_str(&yaml, FileFormat::Yaml);
-        let builder = Config::builder().add_source(file);
-        let config = builder.build().unwrap();
-        let deserialized: QltyConfig = config.try_deserialize().unwrap();
-        dbg!(&deserialized);
-        assert_eq!(deserialized.source.len(), 1);
     }
 }

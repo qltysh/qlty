@@ -113,8 +113,6 @@ pub trait Source: SourceFetch {
             toml = TomlMerge::merge(toml, contents_toml).unwrap();
         }
 
-        // dbg!(&self, &toml);
-
         Ok(toml)
     }
 

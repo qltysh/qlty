@@ -344,9 +344,6 @@ impl Scanner {
         self.source_list.fetch()?;
 
         let qlty_toml_string = Renderer::new(&self.source_specs, &[]).render()?;
-        // dbg!(&qlty_toml_string);
-        // eprintln!("{}", qlty_toml_string);
-
         Builder::full_config_from_toml_str(&qlty_toml_string, &self.settings.workspace.library()?)
     }
 
@@ -535,11 +532,8 @@ config_files = ["config.toml"]
         assert_eq!(scanner.sources_only_config.source.len(), 1);
 
         let scanner_source = scanner.sources_only_config.source.get(0).unwrap();
-        dbg!(&scanner_source);
         assert_eq!(scanner_source.name, Some("testing".to_string()));
-        // assert!(scanner_source.default);
         assert_eq!(scanner_source.branch, Some("test_branch".to_string()));
-        // dbg!(&scanner.sources_only_config.plugins.definitions);
         assert!(scanner
             .sources_only_config
             .plugins

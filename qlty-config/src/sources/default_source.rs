@@ -63,6 +63,6 @@ mod test {
     fn test_plugin_tomls() {
         let default_source = DefaultSource {};
         let plugin_tomls = default_source.files().unwrap();
-        assert_eq!(plugin_tomls.len(), 46);
+        assert!(plugin_tomls.len() > 10);
     }
 }

@@ -137,7 +137,6 @@ impl Builder {
 
     fn build_config(toml: Value) -> Result<QltyConfig> {
         let config = Self::toml_to_config(toml)?;
-        // dbg!("config", &config);
         config.validate_cli_version()?;
         Ok(config)
     }
@@ -210,11 +209,9 @@ impl Builder {
 
     fn parse_toml_as_config(toml: Value) -> Result<QltyConfig> {
         let yaml = serde_yaml::to_string(&toml).unwrap();
-        // eprintln!("{}", yaml);
         let file = File::from_str(&yaml, FileFormat::Yaml);
         let builder = Config::builder().add_source(file);
-        let config = builder.build()?;
-        // dbg!("config", &config);
+        let config = builder.build()?; // dbg!("config", &config);
         config
             .try_deserialize()
             .context("Invalid TOML configuration")
@@ -261,7 +258,6 @@ impl Builder {
         qlty_toml_str: &String,
         library: &Library,
     ) -> Result<QltyConfig> {
-        // eprintln!("{}", qlty_toml_str);
         let sources = Self::sources_list_from_qlty_toml(qlty_toml_str, library)?.toml()?;
         let qlty_config = Self::qlty_config_from_toml_string(qlty_toml_str)?;
         Self::full_config(sources, qlty_config)
@@ -286,10 +282,8 @@ impl Builder {
         toml = Self::merge(toml, Self::qlty_config_from_toml_string(qlty_toml_str)?)?;
 
         if let Ok(sources_config) = Self::extract_sources(toml) {
-            // dbg!(&sources_config);
             Self::build_config(sources_config)
         } else {
-            // dbg!("default");
             Ok(Self::default_config()?)
         }
     }
