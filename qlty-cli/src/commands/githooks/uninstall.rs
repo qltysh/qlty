@@ -19,22 +19,25 @@ impl Uninstall {
             git_hooks_dir.join("pre-push"),
         ];
 
-        for hook in &hooks {
-            if std::fs::exists(hook).unwrap_or_default() {
-                let metadata = fs::metadata(hook).with_context(|| {
-                    format!("Failed to read metadata for hook at {}", hook.display())
-                })?;
-                let mut permissions = metadata.permissions();
+        #[cfg(unix)]
+        {
+            for hook in &hooks {
+                if std::fs::exists(hook).unwrap_or_default() {
+                    let metadata = fs::metadata(hook).with_context(|| {
+                        format!("Failed to read metadata for hook at {}", hook.display())
+                    })?;
+                    let mut permissions = metadata.permissions();
 
-                // Remove execute permissions
-                permissions.set_mode(permissions.mode() & !0o111);
+                    // Remove execute permissions
+                    permissions.set_mode(permissions.mode() & !0o111);
 
-                fs::set_permissions(hook, permissions).with_context(|| {
-                    format!(
-                        "Failed to remove execute permissions from hook at {}",
-                        hook.display()
-                    )
-                })?;
+                    fs::set_permissions(hook, permissions).with_context(|| {
+                        format!(
+                            "Failed to remove execute permissions from hook at {}",
+                            hook.display()
+                        )
+                    })?;
+                }
             }
         }
 
