@@ -3,8 +3,10 @@ use anyhow::{Context as _, Result};
 use clap::Args;
 use qlty_config::Workspace;
 use std::fs;
-use std::os::unix::fs::PermissionsExt as _;
 use std::path::Path;
+
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt as _;
 
 #[derive(Args, Debug)]
 pub struct Install {}
