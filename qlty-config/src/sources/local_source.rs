@@ -3,6 +3,7 @@ use anyhow::{Context as _, Result};
 use std::fs;
 use std::path::{Path, PathBuf};
 use tracing::debug;
+use walkdir::WalkDir;
 
 #[derive(Debug, Clone)]
 pub struct LocalSource {
@@ -12,20 +13,31 @@ pub struct LocalSource {
 impl Source for LocalSource {
     fn files(&self) -> Result<Vec<SourceFile>> {
         let mut source_files = Vec::new();
+        dbg!(&self.root);
 
-        let read_dir = fs::read_dir(&self.root).with_context(|| {
-            format!(
-                "Could not read the local source directory {}",
-                self.root.display()
-            )
-        })?;
+        // let read_dir = fs::read_dir(&self.root).with_context(|| {
+        //     format!(
+        //         "Could not read the local source directory {}",
+        //         self.root.display()
+        //     )
+        // })?;
 
-        for entry in read_dir {
-            let path = entry?.path();
+        // dbg!(&read_dir);
+
+        let walkdir = WalkDir::new(&self.root).into_iter();
+
+        for entry in walkdir {
+            let entry = entry.with_context(|| {
+                format!(
+                    "Could not read the local source directory {}",
+                    self.root.display()
+                )
+            })?;
+            let path = entry.path();
 
             if path.is_file() {
                 source_files.push(SourceFile {
-                    path: path.clone(),
+                    path: path.to_path_buf(),
                     contents: fs::read_to_string(&path).with_context(|| {
                         format!(
                             "Could not read the file {} from the local source {}",
@@ -37,6 +49,7 @@ impl Source for LocalSource {
             }
         }
 
+        dbg!(&source_files);
         Ok(source_files)
     }
 

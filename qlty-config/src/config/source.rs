@@ -7,7 +7,7 @@ use std::path::PathBuf;
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct SourceDef {
     #[serde(default)]
-    pub default: bool,
+    pub default: Option<bool>,
 
     #[serde(default)]
     pub directory: Option<PathBuf>,
@@ -32,7 +32,7 @@ impl SourceDef {
     pub fn source(&self, library: &Library) -> Result<Box<dyn Source>> {
         // If both a repository and directory are defined, we'll use the directory.
         // This allows for a local override of a repository.
-        if self.default {
+        if self.default.unwrap_or_default() {
             Ok(Box::new(DefaultSource {}))
         } else if self.directory.is_some() {
             Ok(Box::new(LocalSource {

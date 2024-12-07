@@ -24,6 +24,7 @@ impl Source for DefaultSource {
             }
         }
 
+        dbg!(&source_files);
         Ok(source_files)
     }
 
@@ -31,11 +32,13 @@ impl Source for DefaultSource {
         let file_path = file_name.to_str().expect("file path is not valid");
 
         if let Some(embedded_file) = Plugins::get(file_path) {
+            dbg!("Found embedded file: {}", file_path);
             Ok(Some(SourceFile {
                 path: file_name.to_path_buf(),
                 contents: String::from_utf8_lossy(&embedded_file.data).to_string(),
             }))
         } else {
+            dbg!("Could not find embedded file: {}", file_path);
             Ok(None)
         }
     }
@@ -52,5 +55,17 @@ impl SourceFetch for DefaultSource {
 
     fn clone_box(&self) -> Box<dyn SourceFetch> {
         Box::new(self.clone())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_plugin_tomls() {
+        let default_source = DefaultSource {};
+        let plugin_tomls = default_source.files().unwrap();
+        assert_eq!(plugin_tomls.len(), 46);
     }
 }

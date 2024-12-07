@@ -16,7 +16,7 @@ Also, please make sure you are specifying the latest source tag in your qlty.tom
 
 For more information, please visit: https://qlty.io/docs/troubleshooting/source-parse-error"#;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SourceFile {
     pub path: PathBuf,
     pub contents: String,
@@ -57,7 +57,12 @@ pub trait Source: SourceFetch {
     fn plugin_tomls(&self) -> Result<Vec<SourceFile>> {
         let mut globset_builder = GlobSetBuilder::new();
 
-        for pattern in vec!["linters/*/plugin.toml", "plugins/linters/*/plugin.toml"] {
+        for pattern in vec![
+            "*/linters/*/plugin.toml",
+            "*/plugins/linters/*/plugin.toml",
+            "linters/*/plugin.toml",
+            "plugins/linters/*/plugin.toml",
+        ] {
             globset_builder.add(Glob::new(&pattern)?);
         }
 
@@ -66,13 +71,15 @@ pub trait Source: SourceFetch {
         Ok(self
             .files()?
             .into_iter()
-            .filter(|file| globset.is_match(&file.path))
-            .collect())
+            .filter(|file| {
+                let is_match = globset.is_match(&file.path);
+                dbg!(&file.path, is_match);
+                is_match
+            })
+            .collect::<Vec<SourceFile>>())
     }
 
-    fn files(&self) -> Result<Vec<SourceFile>> {
-        Ok(vec![])
-    }
+    fn files(&self) -> Result<Vec<SourceFile>>;
 
     fn get_config_file(&self, plugin_name: &str, config_file: &Path) -> Result<Option<SourceFile>> {
         let candidates = vec![
@@ -109,6 +116,8 @@ pub trait Source: SourceFetch {
 
             toml = TomlMerge::merge(toml, contents_toml).unwrap();
         }
+
+        // dbg!(&self, &toml);
 
         Ok(toml)
     }

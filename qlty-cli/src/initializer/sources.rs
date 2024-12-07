@@ -5,6 +5,7 @@ use qlty_config::{config::Builder, sources::SourcesList};
 #[derive(Debug, Clone, Default)]
 pub struct SourceSpec {
     pub name: String,
+    pub default: bool,
     pub target: Option<String>,
     pub reference: Option<SourceRefSpec>,
 }
@@ -27,11 +28,12 @@ impl SourceSpec {
             name: parts[0].to_string(),
             target: Some(parts[1].to_string()),
             reference: None,
+            default: false,
         })
     }
 
     pub fn is_default(&self) -> bool {
-        self.name == "default" && self.target.is_none()
+        self.default
     }
 
     pub fn is_repository(&self) -> bool {
@@ -46,6 +48,7 @@ pub fn source_specs_from_settings(settings: &Settings) -> Result<Vec<SourceSpec>
     if !settings.skip_default_source {
         sources.push(SourceSpec {
             name: "default".to_string(),
+            default: true,
             ..Default::default()
         });
     };
@@ -58,11 +61,13 @@ pub fn source_specs_from_settings(settings: &Settings) -> Result<Vec<SourceSpec>
                 reference: Some(SourceRefSpec::Tag(fetch_source_ref(
                     source.target.as_ref().unwrap().to_string(),
                 )?)),
+                default: false,
             })
         } else {
             sources.push(SourceSpec {
                 name: source.name,
                 target: source.target,
+                default: false,
                 reference: None,
             });
         }
@@ -120,11 +125,11 @@ mod test {
     fn test_source_spec() {
         let source = SourceSpec::new("name=./directory").unwrap();
         assert_eq!(source.name, "name");
-        assert_eq!(source.target, "./directory");
+        assert_eq!(source.target.unwrap(), "./directory");
 
         let source = SourceSpec::new("name=https://github.com/foo/bar").unwrap();
         assert_eq!(source.name, "name");
-        assert_eq!(source.target, "https://github.com/foo/bar");
+        assert_eq!(source.target.unwrap(), "https://github.com/foo/bar");
     }
 
     #[test]

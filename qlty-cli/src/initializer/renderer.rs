@@ -166,9 +166,10 @@ mod test {
     fn test_git_source() {
         let renderer = Renderer::new(
             &vec![SourceSpec {
-                name: "default".to_string(),
-                target: "https://github.com/example/example".to_string(),
+                name: "example".to_string(),
+                target: Some("https://github.com/example/example".to_string()),
                 reference: Some(SourceRefSpec::Branch("main".to_string())),
+                default: false,
             }],
             &vec![],
         );
@@ -176,7 +177,7 @@ mod test {
             strip_default_toml(renderer.render().unwrap()),
             r#"
 [[source]]
-name = "default"
+name = "example"
 repository = "https://github.com/example/example"
 branch = "main"
 "#
@@ -190,13 +191,15 @@ branch = "main"
             &vec![
                 SourceSpec {
                     name: "source1".to_string(),
-                    target: "./source1".to_string(),
+                    target: Some("./source1".to_string()),
                     reference: None,
+                    default: false,
                 },
                 SourceSpec {
                     name: "source2".to_string(),
-                    target: "./source2".to_string(),
+                    target: Some("./source2".to_string()),
                     reference: None,
+                    default: false,
                 },
             ],
             &vec![],
@@ -220,8 +223,9 @@ directory = "./source2"
         let renderer = Renderer::new(
             &vec![SourceSpec {
                 name: "source".to_string(),
-                target: "https://github.com/example/example".to_string(),
+                target: Some("https://github.com/example/example".to_string()),
                 reference: None,
+                default: false,
             }],
             &vec![],
         );
@@ -233,7 +237,7 @@ directory = "./source2"
         let renderer = Renderer::new(
             &vec![SourceSpec {
                 name: "local".to_string(),
-                target: "./dir".to_string(),
+                target: Some("./dir".to_string()),
                 ..Default::default()
             }],
             &vec![],
