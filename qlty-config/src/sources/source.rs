@@ -63,7 +63,7 @@ pub trait Source: SourceFetch {
             "linters/*/plugin.toml",
             "plugins/linters/*/plugin.toml",
         ] {
-            globset_builder.add(Glob::new(&pattern)?);
+            globset_builder.add(Glob::new(pattern)?);
         }
 
         let globset = globset_builder.build()?;

@@ -28,7 +28,7 @@ impl Source for LocalSource {
             if path.is_file() {
                 source_files.push(SourceFile {
                     path: path.to_path_buf(),
-                    contents: fs::read_to_string(&path).with_context(|| {
+                    contents: fs::read_to_string(path).with_context(|| {
                         format!(
                             "Could not read the file {} from the local source {}",
                             path.display(),
