@@ -71,7 +71,7 @@ pub trait Source: SourceFetch {
         Ok(self
             .paths()?
             .into_iter()
-            .filter(|path| globset.is_match(&path))
+            .filter(|path| globset.is_match(path))
             .map(|path| {
                 self.get_file(&path)
                     .with_context(|| {
