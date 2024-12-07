@@ -1,12 +1,12 @@
+use super::SourcesList;
 use crate::config::Builder;
 use crate::{QltyConfig, TomlMerge};
 use anyhow::{Context, Result};
 use config::File;
+use globset::{Glob, GlobSetBuilder};
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
 use tracing::trace;
-
-use super::SourcesList;
 
 const SOURCE_PARSE_ERROR: &str = r#"There was an error reading configuration from one of your declared Sources.
 
@@ -54,7 +54,25 @@ impl Default for Box<dyn SourceFetch> {
 }
 
 pub trait Source: SourceFetch {
-    fn source_files(&self) -> Result<Vec<SourceFile>>;
+    fn plugin_tomls(&self) -> Result<Vec<SourceFile>> {
+        let mut globset_builder = GlobSetBuilder::new();
+
+        for pattern in vec!["linters/*/plugin.toml", "plugins/linters/*/plugin.toml"] {
+            globset_builder.add(Glob::new(&pattern)?);
+        }
+
+        let globset = globset_builder.build()?;
+
+        Ok(self
+            .files()?
+            .into_iter()
+            .filter(|file| globset.is_match(&file.path))
+            .collect())
+    }
+
+    fn files(&self) -> Result<Vec<SourceFile>> {
+        Ok(vec![])
+    }
 
     fn get_config_file(&self, plugin_name: &str, config_file: &Path) -> Result<Option<SourceFile>> {
         let candidates = vec![
@@ -78,15 +96,15 @@ pub trait Source: SourceFetch {
     fn toml(&self) -> Result<toml::Value> {
         let mut toml: toml::Value = toml::Value::Table(toml::value::Table::new());
 
-        for source_file in self.source_files()?.iter() {
-            trace!("Loading plugin config from {}", source_file.path.display());
+        for plugin_toml in self.plugin_tomls()?.iter() {
+            trace!("Loading plugin config from {}", plugin_toml.path.display());
 
-            let contents_toml = source_file
+            let contents_toml = plugin_toml
                 .contents
                 .parse::<toml::Value>()
-                .with_context(|| format!("Could not parse {}", source_file.path.display()))?;
+                .with_context(|| format!("Could not parse {}", plugin_toml.path.display()))?;
 
-            Builder::validate_toml(&source_file.path, contents_toml.clone())
+            Builder::validate_toml(&plugin_toml.path, contents_toml.clone())
                 .with_context(|| SOURCE_PARSE_ERROR)?;
 
             toml = TomlMerge::merge(toml, contents_toml).unwrap();
@@ -104,50 +122,6 @@ pub trait Source: SourceFetch {
             .try_deserialize()
             .context("Could not process the plugin configuration")
     }
-
-    // fn paths_glob(&self) -> Result<Vec<PathBuf>> {
-    //     if !self.local_root().exists() {
-    //         bail!(
-    //             "The source directory does not exist: {}",
-    //             self.local_root().display()
-    //         );
-    //     }
-
-    //     Ok(glob(
-    //         &self
-    //             .local_root()
-    //             .join("linters/*/plugin.toml")
-    //             .to_string_lossy(),
-    //     )?
-    //     .chain(glob(
-    //         &self
-    //             .local_root()
-    //             .join("plugins/linters/*/plugin.toml")
-    //             .to_string_lossy(),
-    //     )?)
-    //     .flat_map(Result::ok)
-    //     .collect::<Vec<_>>())
-    // }
-
-    // fn config_path_with_prefix(
-    //     &self,
-    //     plugin_name: &str,
-    //     config_file: &PathBuf,
-    //     prefix: &str,
-    // ) -> PathBuf {
-    //     self.local_root()
-    //         .join(prefix)
-    //         .join(plugin_name)
-    //         .join(config_file)
-    // }
-
-    // fn config_path(&self, plugin_name: &str, config_file: PathBuf) -> PathBuf {
-    //     let path = self.config_path_with_prefix(plugin_name, &config_file, "plugins/linters");
-    //     if path.exists() {
-    //         return path;
-    //     }
-    //     self.config_path_with_prefix(plugin_name, &config_file, "linters")
-    // }
 
     fn clone_box(&self) -> Box<dyn Source>;
 }

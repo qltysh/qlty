@@ -11,11 +11,7 @@ pub struct LocalSource {
 }
 
 impl Source for LocalSource {
-    // fn local_root(&self) -> PathBuf {
-    //     self.origin.clone()
-    // }
-
-    fn source_files(&self) -> Result<Vec<SourceFile>> {
+    fn files(&self) -> Result<Vec<SourceFile>> {
         Ok(vec![]) // TODO
     }
 

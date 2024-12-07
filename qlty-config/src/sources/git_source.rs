@@ -24,11 +24,7 @@ pub enum GitSourceReference {
 }
 
 impl Source for GitSource {
-    // fn local_root(&self) -> PathBuf {
-    //     self.local_origin_ref_path(&self.library)
-    // }
-
-    fn source_files(&self) -> Result<Vec<SourceFile>> {
+    fn files(&self) -> Result<Vec<SourceFile>> {
         Ok(vec![]) // TODO
     }
 

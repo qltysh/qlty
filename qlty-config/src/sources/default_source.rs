@@ -7,11 +7,7 @@ use anyhow::Result;
 pub struct DefaultSource {}
 
 impl Source for DefaultSource {
-    // fn local_root(&self) -> PathBuf {
-    //     self.origin.clone()
-    // }
-
-    fn source_files(&self) -> Result<Vec<SourceFile>> {
+    fn files(&self) -> Result<Vec<SourceFile>> {
         Ok(vec![]) // TODO
     }
 
