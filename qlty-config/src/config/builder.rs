@@ -64,7 +64,7 @@ impl Builder {
         include_str!("../../default.toml").parse::<Value>().unwrap()
     }
 
-    pub fn extract_sources(mut toml: Value) -> Result<Value> {
+    fn extract_sources(mut toml: Value) -> Result<Value> {
         let mut new_toml = Value::Table(Default::default());
 
         // Extract and process the "sources" section
@@ -211,7 +211,7 @@ impl Builder {
         let yaml = serde_yaml::to_string(&toml).unwrap();
         let file = File::from_str(&yaml, FileFormat::Yaml);
         let builder = Config::builder().add_source(file);
-        let config = builder.build()?; // dbg!("config", &config);
+        let config = builder.build()?;
         config
             .try_deserialize()
             .context("Invalid TOML configuration")
@@ -277,7 +277,7 @@ impl Builder {
         Builder::sources_config_from_toml(qlty_toml_str)?.sources_list(library)
     }
 
-    pub fn sources_config_from_toml(qlty_toml_str: &String) -> Result<QltyConfig> {
+    fn sources_config_from_toml(qlty_toml_str: &String) -> Result<QltyConfig> {
         let mut toml = Self::defaults_toml();
         toml = Self::merge(toml, Self::qlty_config_from_toml_string(qlty_toml_str)?)?;
 

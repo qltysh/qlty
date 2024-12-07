@@ -343,8 +343,10 @@ impl Scanner {
     fn sources_only_config(&self) -> Result<QltyConfig> {
         self.source_list.fetch()?;
 
-        let qlty_toml_string = Renderer::new(&self.source_specs, &[]).render()?;
-        Builder::full_config_from_toml_str(&qlty_toml_string, &self.settings.workspace.library()?)
+        Builder::full_config_from_toml_str(
+            &Renderer::new(&self.source_specs, &[]).render()?,
+            &self.settings.workspace.library()?,
+        )
     }
 
     fn insert_package_filters_and_package_file(
