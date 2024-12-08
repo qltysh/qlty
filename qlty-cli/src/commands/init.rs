@@ -165,7 +165,7 @@ impl Init {
             let config_files = installed_plugin
                 .config_files
                 .iter()
-                .map(|f| f.file_name().unwrap().to_string_lossy())
+                .map(|f| f.path.file_name().unwrap().to_string_lossy())
                 .join(", ");
 
             let formatted = installed_plugin
