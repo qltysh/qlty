@@ -142,7 +142,7 @@ impl Check {
         let mut processor = Processor::new(&plan, results);
         let report = processor.compute()?;
 
-        if report.fixed.len() > 0 {
+        if !report.fixed.is_empty() {
             steps.start(FIXING, format!("Fixed {} issues", report.fixed.len()));
             let format_report = self.format_after_fix(&settings, &report)?;
             steps.start(
