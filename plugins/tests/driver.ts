@@ -63,7 +63,7 @@ export class QltyDriver {
     this.linterName = linterName;
     this.linterVersion = linterVersion;
     this.sandboxPath = fs.realpathSync(
-      fs.mkdtempSync(path.resolve(TMPDIR, TEMP_PREFIX)),
+      fs.mkdtempSync(path.resolve(TMPDIR, TEMP_PREFIX))
     );
     this.debug = Debug(`qlty:${linterName}`);
   }
@@ -73,7 +73,7 @@ export class QltyDriver {
     this.debug(
       "Created sandbox %s from %s",
       this.sandboxPath,
-      this.fixturesDir,
+      this.fixturesDir
     );
 
     const input_path = path.join(this.fixturesDir, input);
@@ -97,7 +97,7 @@ export class QltyDriver {
 
     fs.writeFileSync(
       path.resolve(this.sandboxPath, ".gitignore"),
-      this.getGitIgnoreContents(),
+      this.getGitIgnoreContents()
     );
 
     const gitDriver = git.simpleGit(this.sandboxPath);
@@ -124,7 +124,7 @@ export class QltyDriver {
         : this.linterVersion;
 
       await this.runQltyCmd(
-        `plugins enable ${this.linterName}=${linterVersion}`,
+        `plugins enable ${this.linterName}=${linterVersion}`
       );
     }
   }
@@ -143,7 +143,7 @@ export class QltyDriver {
       .readdirSync(this.fixturesDir)
       .sort()
       .filter(
-        (target) => !target.includes(SNAPSHOTS_DIR) && !target.startsWith("."),
+        (target) => !target.includes(SNAPSHOTS_DIR) && !target.startsWith(".")
       );
   }
 
@@ -151,12 +151,12 @@ export class QltyDriver {
     if (OPTIONS.testAgainstKnownGoodVersion) {
       const knownGoodVersion = getKnownGoodVersion(
         this.pluginDir,
-        this.linterName,
+        this.linterName
       );
       const knownGoodSnapshot = path.resolve(
         this.fixturesDir,
         SNAPSHOTS_DIR,
-        `${prefix}_v${knownGoodVersion}.shot`,
+        `${prefix}_v${knownGoodVersion}.shot`
       );
 
       return knownGoodSnapshot;
@@ -205,25 +205,25 @@ export class QltyDriver {
 
   async runQltyCmd(
     argStr: string,
-    execOptions?: ExecOptions,
+    execOptions?: ExecOptions
   ): Promise<{ stdout: string; stderr: string }> {
     this.debug("Running qlty %s", argStr);
     return await this.runQlty(
       argStr.split(" ").filter((arg) => arg.length > 0),
-      execOptions,
+      execOptions
     );
   }
 
   async runQlty(
     args: string[],
-    execOptions?: ExecOptions,
+    execOptions?: ExecOptions
   ): Promise<{ stdout: string; stderr: string }> {
     return await execFilePromise(...this.buildExecArgs(args, execOptions));
   }
 
   buildExecArgs(
     args: string[],
-    execOptions?: ExecOptions,
+    execOptions?: ExecOptions
   ): [string, string[], ExecOptions] {
     return [
       "qlty",
@@ -247,7 +247,7 @@ export class QltyDriver {
       runResult,
       deterministicResults: this.tryParseDeterministicResults(
         this.sandboxPath,
-        runResult.outputJson,
+        runResult.outputJson
       ),
     };
   }
@@ -307,7 +307,7 @@ export class QltyDriver {
   qltyTomlSource() {
     return `[[source]]
 name = "default"
-directory = ${JSON.stringify(REPO_ROOT)}
+default = true
 `;
   }
 
