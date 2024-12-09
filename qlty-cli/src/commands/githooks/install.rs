@@ -13,22 +13,14 @@ pub struct Install {}
 
 const QLTY_HOOKS_DIR: &str = ".qlty/hooks";
 
-const PRE_COMMIT_HOOK: &str = r#"#!/bin/sh
-qlty fmt --trigger pre-commit --index-file="$GIT_INDEX_FILE"
-"#;
-
-const PRE_PUSH_HOOK: &str = r#"#!/bin/sh
-qlty check --trigger pre-push --upstream-from-pre-push --no-formatters --skip-errored-plugins
-"#;
-
 impl Install {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
         Workspace::require_initialized()?;
 
         fs::create_dir_all(QLTY_HOOKS_DIR)?;
 
-        install_hook("pre-commit", PRE_COMMIT_HOOK)?;
-        install_hook("pre-push", PRE_PUSH_HOOK)?;
+        install_hook("pre-commit", include_str!("./pre_commit.sh"))?;
+        install_hook("pre-push", include_str!("./pre_push.sh"))?;
 
         CommandSuccess::ok()
     }
@@ -46,6 +38,15 @@ fn install_hook(hook_name: &str, contents: &str) -> Result<()> {
     })?;
 
     let git_hooks_dir = Path::new(".git").join("hooks");
+
+    if !git_hooks_dir.exists() {
+        fs::create_dir_all(&git_hooks_dir).with_context(|| {
+            format!(
+                "Failed to create git hooks directory at {}",
+                git_hooks_dir.display()
+            )
+        })?;
+    }
     let symlink_path = git_hooks_dir.join(hook_name);
 
     if symlink_path.exists() {
