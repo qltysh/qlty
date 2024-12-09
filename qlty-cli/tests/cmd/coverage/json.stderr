@@ -1,4 +1,4 @@
-qlty [..] ([..] debug)
+qlty [..] [..]-[..] ([..] debug [..])
 https://qlty.sh/d/coverage
 
   Retrieving CI metadata...

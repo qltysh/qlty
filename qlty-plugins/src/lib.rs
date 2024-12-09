@@ -1,7 +1,7 @@
 use rust_embed::Embed;
 
 #[derive(Embed)]
-#[folder = "../plugins/"]
+#[folder = "plugins/"]
 #[include = "*.toml"]
 #[exclude = ".qlty/qlty.toml"]
 #[exclude = "*/fixtures/*"]
