@@ -2,7 +2,7 @@ use crate::Language;
 use tracing::warn;
 use tree_sitter::{Node, TreeCursor};
 
-const MAX_CURSOR_DEPTH: u32 = 400;
+const MAX_CURSOR_DEPTH: u32 = 300;
 
 pub trait Visitor {
     fn process_node(&mut self, cursor: &mut TreeCursor) {
