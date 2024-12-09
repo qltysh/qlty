@@ -68,9 +68,6 @@ pub fn setup_and_run_test_cases(glob: &str) {
 }
 
 fn setup_and_run_test_cases_diff_flag(glob: &str, diff: bool) {
-    let prev_val = std::env::var("RUST_BACKTRACE").unwrap_or_default();
-    std::env::set_var("RUST_BACKTRACE", "0");
-
     let (cases, fixtures) = detect_cases_and_fixtures(glob);
 
     let _repositories: Vec<_> = fixtures
@@ -81,10 +78,9 @@ fn setup_and_run_test_cases_diff_flag(glob: &str, diff: bool) {
     for case in cases {
         TestCases::new()
             .case(case.strip_prefix(MANIFEST_DIR).unwrap())
+            .env("RUST_BACKTRACE", "0")
             .timeout(Duration::from_secs(DEFAULT_TEST_TIMEOUT));
     }
-
-    std::env::set_var("RUST_BACKTRACE", &prev_val);
 }
 
 fn detect_cases_and_fixtures(path_glob: &str) -> (Vec<PathBuf>, Vec<PathBuf>) {
