@@ -1,3 +1,2 @@
 bin.name = "qlty"
 args = ["check", "--all", "--no-cache", "--json"]
-env.remove = ["RUST_BACKTRACE"]

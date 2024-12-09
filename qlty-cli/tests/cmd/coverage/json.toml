@@ -13,8 +13,6 @@ args = [
 ]
 bin.name = "qlty"
 
-env.remove = ["RUST_BACKTRACE"]
-
 [env.add]
 GITHUB_ACTIONS = "true"
 GITHUB_HEAD_REF = ""

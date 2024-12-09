@@ -2,4 +2,3 @@ bin.name = "qlty"
 args = ["--version", "--no-upgrade-check"]
 stderr = ""
 status.code = 0
-env.remove = ["RUST_BACKTRACE"]

@@ -1,3 +1,2 @@
 args = ["config", "migrate", "--dry-run",]
 bin.name = "qlty"
-env.remove = ["RUST_BACKTRACE"]

@@ -1,4 +1,3 @@
 args = ["metrics", "app"]
 bin.name = "qlty"
 status.code = 0
-env.remove = ["RUST_BACKTRACE"]

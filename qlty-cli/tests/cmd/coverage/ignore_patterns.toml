@@ -10,7 +10,7 @@ args = [
 bin.name = "qlty"
 
 [env]
-remove = ["GITHUB_ACTIONS", "RUST_BACKTRACE"]
+remove = ["GITHUB_ACTIONS"]
 
 [env.add]
 QLTY_COVERAGE_TOKEN = "123"

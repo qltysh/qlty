@@ -1,3 +1,2 @@
 bin.name = "qlty"
 args = ["init", "--dry-run", "--skip-default-source", "--no-upgrade-check"]
-env.remove = ["RUST_BACKTRACE"]
