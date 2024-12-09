@@ -51,4 +51,7 @@ fn main() {
         "cargo:rustc-env=BUILD_PROFILE={}",
         std::env::var("PROFILE").unwrap()
     );
+
+    let build_date = chrono::Utc::now().format("%Y-%m-%d").to_string();
+    println!("cargo:rustc-env=BUILD_DATE={}", build_date);
 }

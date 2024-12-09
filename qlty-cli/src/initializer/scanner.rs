@@ -13,7 +13,7 @@ use itertools::Itertools;
 use package_file::PackageFileScanner;
 use qlty_config::{
     config::{Builder, Ignore, PackageFileCandidate, PluginDef, SuggestionMode},
-    sources::SourceFetch,
+    sources::{SourceFetch, SourceFile},
     QltyConfig,
 };
 use std::{
@@ -52,7 +52,7 @@ pub struct InstalledPlugin {
     pub name: String,
     pub version: String,
     pub files_count: FilesCount,
-    pub config_files: Vec<PathBuf>,
+    pub config_files: Vec<SourceFile>,
     pub enabled_drivers: Vec<String>,
     pub package_file: Option<String>,
     pub package_filters: Vec<String>,
@@ -176,6 +176,7 @@ impl Scanner {
 
             let mut configs_to_install = vec![];
             let mut config_files = plugin.config_files.clone();
+
             plugin.drivers.iter().for_each(|(driver_name, driver)| {
                 if drivers_to_activate.contains_key(driver_name) {
                     config_files.extend(driver.config_files.clone());
@@ -184,13 +185,12 @@ impl Scanner {
 
             for config_file in &config_files {
                 for source in self.source_list.sources().iter() {
-                    let config_path = source.config_path(plugin_name, config_file.into());
+                    if self.settings.workspace.root.join(config_file).exists() {
+                        continue;
+                    }
 
-                    // If the config file exists in the source, but not in the workspace
-                    if config_path.exists()
-                        && !self.settings.workspace.root.join(config_file).exists()
-                    {
-                        configs_to_install.push(config_path);
+                    if let Some(source_file) = source.get_config_file(plugin_name, config_file)? {
+                        configs_to_install.push(source_file);
                     }
                 }
             }
@@ -411,7 +411,7 @@ mod test {
     use qlty_analysis::utils::fs::path_to_native_string;
     use qlty_config::{
         sources::{LocalSource, Source},
-        Library, Workspace,
+        Workspace,
     };
     use qlty_test_utilities::git::sample_repo;
     use std::fs::{self, File};
@@ -428,12 +428,15 @@ mod test {
         fn fetch(&self) -> Result<()> {
             fs::create_dir_all(&self.temp_path.join(path_to_native_string(
                 ".qlty/sources/https---testing-com/test_branch/linters/exists",
-            )))?;
+            )))
+            .unwrap();
+
+            let path = self.temp_path.join(path_to_native_string(
+                ".qlty/sources/https---testing-com/test_branch/linters/exists/plugin.toml",
+            ));
 
             fs::write(
-                &self.temp_path.join(path_to_native_string(
-                    ".qlty/sources/https---testing-com/test_branch/linters/exists/plugin.toml",
-                )),
+                &path,
                 r#"
 config_version = "0"
 
@@ -450,7 +453,8 @@ output = "pass_fail"
 suggested = "targets"
 config_files = ["config.toml"]
                 "#,
-            )?;
+            )
+            .unwrap();
 
             Ok(())
         }
@@ -461,8 +465,7 @@ config_files = ["config.toml"]
 
         fn sources(&self) -> Vec<Box<dyn Source>> {
             vec![Box::new(LocalSource {
-                library: Library::new(&self.temp_path).unwrap(),
-                origin: self
+                root: self
                     .temp_path
                     .join(".qlty/sources/https---testing-com/test_branch/"),
             })]
@@ -478,11 +481,12 @@ config_files = ["config.toml"]
         };
 
         let source_spec = SourceSpec {
-            name: "default".to_string(),
-            target: "https://testing.com".to_string(),
+            name: "testing".to_string(),
+            target: Some("https://testing.com".to_string()),
             reference: Some(crate::initializer::SourceRefSpec::Branch(
                 "test_branch".to_string(),
             )),
+            default: false,
         };
 
         let settings = Settings {
@@ -530,11 +534,7 @@ config_files = ["config.toml"]
         assert_eq!(scanner.sources_only_config.source.len(), 1);
 
         let scanner_source = scanner.sources_only_config.source.get(0).unwrap();
-        assert_eq!(scanner_source.name, Some("default".to_string()));
-        assert_eq!(
-            scanner_source.repository,
-            Some("https://testing.com".to_string())
-        );
+        assert_eq!(scanner_source.name, Some("testing".to_string()));
         assert_eq!(scanner_source.branch, Some("test_branch".to_string()));
         assert!(scanner
             .sources_only_config
@@ -699,7 +699,14 @@ config_files = ["config.toml"]
         let installed_plugin = scanner.plugins.iter().find(|p| p.name == "exists").unwrap();
         assert_eq!(installed_plugin.version, "latest");
         assert_eq!(installed_plugin.files_count, 7);
-        assert_eq!(installed_plugin.config_files, vec![config_file_path]);
+        assert_eq!(
+            installed_plugin
+                .config_files
+                .iter()
+                .map(|f| f.path.clone())
+                .collect::<Vec<_>>(),
+            vec![config_file_path]
+        );
         assert_eq!(installed_plugin.package_file, None);
     }
 

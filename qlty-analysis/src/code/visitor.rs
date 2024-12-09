@@ -1,5 +1,8 @@
 use crate::Language;
+use tracing::warn;
 use tree_sitter::{Node, TreeCursor};
+
+const MAX_CURSOR_DEPTH: u32 = 300;
 
 pub trait Visitor {
     fn process_node(&mut self, cursor: &mut TreeCursor) {
@@ -8,6 +11,13 @@ pub trait Visitor {
         let language = self.language();
 
         if self.skip_node(&node) {
+            return;
+        }
+
+        if cursor.depth() > MAX_CURSOR_DEPTH {
+            // This is a safety check to prevent stack overflow
+            // due to infinite recursion on deeply nested trees.
+            warn!("Max cursor depth reached");
             return;
         }
 
