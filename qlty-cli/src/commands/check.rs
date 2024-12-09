@@ -4,6 +4,7 @@ use crate::ui::format::ErrorsFormatter;
 use crate::ui::format::TextFormatter;
 use crate::ui::Steps;
 use crate::{Arguments, CommandError, CommandSuccess, Trigger};
+use anyhow::bail;
 use anyhow::Result;
 use autofix::autofix;
 use clap::Args;
@@ -16,9 +17,12 @@ use qlty_types::analysis::v1::Level;
 use qlty_types::level_from_str;
 use std::io::{self, Read};
 use std::path::PathBuf;
+use tracing::debug;
 
 static LOOKING_GLASS: Emoji<'_, '_> = Emoji("🔍  ", "");
 static THINKING: Emoji<'_, '_> = Emoji("🤔  ", "");
+static FIXING: Emoji<'_, '_> = Emoji("🛠️  ", "");
+static FORMATTING: Emoji<'_, '_> = Emoji("📝  ", "");
 
 #[derive(Args, Clone, Debug)]
 pub struct Check {
@@ -116,10 +120,11 @@ impl Check {
         let workspace = Workspace::require_initialized()?;
         workspace.fetch_sources()?;
 
-        let mut steps = Steps::new(self.no_progress, 1);
+        let settings = self.build_settings()?;
+        let num_steps = if settings.fix { 3 } else { 1 };
+        let mut steps = Steps::new(self.no_progress, num_steps);
         steps.start(THINKING, "Planning... ");
 
-        let settings = self.build_settings()?;
         let plan = Planner::new(ExecutionVerb::Check, &settings)?.compute()?;
 
         steps.start(LOOKING_GLASS, format!("Analyzing{}...", plan.description()));
@@ -138,6 +143,15 @@ impl Check {
         let mut processor = Processor::new(&plan, results);
         let report = processor.compute()?;
 
+        if !report.fixed.is_empty() {
+            steps.start(FIXING, format!("Fixed {} issues", report.fixed.len()));
+            let format_report = self.format_after_fix(&settings, &report)?;
+            steps.start(
+                FORMATTING,
+                format!("Formatted {} files", format_report.formatted.len()),
+            );
+        }
+
         self.write_stdout(&report, &settings)?;
         self.write_stderr(&report)?;
 
@@ -152,6 +166,22 @@ impl Check {
                 fail: report.is_failure(),
             })
         }
+    }
+
+    fn format_after_fix(&self, settings: &Settings, report: &Report) -> Result<Report> {
+        debug!("Format after fix: {:?}", report.fixed);
+        let mut settings = settings.clone();
+        settings.filters = vec![];
+        settings.paths = report
+            .fixed
+            .iter()
+            .map(|f| settings.root.join(f.location.path.clone()))
+            .collect();
+        let plan = Planner::new(ExecutionVerb::Fmt, &settings)?.compute()?;
+        let executor = Executor::new(&plan);
+        let results = executor.install_and_invoke()?;
+        let mut processor = Processor::new(&plan, results);
+        processor.compute()
     }
 
     fn validate_options(&self) -> Result<(), CommandError> {
@@ -237,9 +267,13 @@ impl Check {
             let parts: Vec<&str> = buffer.split_whitespace().collect();
             let remote_commit_id = parts.get(3).unwrap_or(&"");
 
+            if remote_commit_id.is_empty() {
+                bail!("Missing remote commit ID from Git pre-push input")
+            }
+
             // When pushing a new branch, the remote object name is 40 zeros.
             // In this case, revert to the upstream branch.
-            if !remote_commit_id.is_empty() && remote_commit_id.chars().all(|c| c == '0') {
+            if remote_commit_id.chars().all(|c| c == '0') {
                 Ok(self.upstream.clone())
             } else {
                 Ok(Some(remote_commit_id.to_string()))

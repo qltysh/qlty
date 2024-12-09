@@ -307,7 +307,7 @@ export class QltyDriver {
   qltyTomlSource() {
     return `[[source]]
 name = "default"
-directory = ${JSON.stringify(REPO_ROOT)}
+default = true
 `;
   }
 

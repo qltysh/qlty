@@ -17,8 +17,9 @@ exclude_patterns = [
     "*_min.*",
     "*-min.*",
     "*.min.*",
-    "**/*.d.ts",
     "**/.yarn/**",
+    "**/*.d.ts",
+    "**/assets/**",
     "**/bower_components/**",
     "**/build/**",
     "**/cache/**",
@@ -28,19 +29,19 @@ exclude_patterns = [
     "**/dist/**",
     "**/extern/**",
     "**/external/**",
+    "**/fixtures/**",
     "**/generated/**",
     "**/Godeps/**",
     "**/gradlew/**",
+    "**/linters/**",
     "**/mvnw/**",
     "**/node_modules/**",
     "**/protos/**",
     "**/seed/**",
     "**/target/**",
     "**/testdata/**",
+    "**/tests/lang/**",
     "**/vendor/**",
-    "**/assets/**",
-    "**/linters/**",
-    "**/fixtures/**",
 ]
 
 test_patterns = [
@@ -64,10 +65,6 @@ rust = "1.82.0"
 
 [[plugin]]
 name = "actionlint"
-
-[[plugin]]
-name = "bandit"
-version = "1.7.9"
 
 [[plugin]]
 name = "clippy"

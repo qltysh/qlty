@@ -97,10 +97,9 @@ impl Initializer {
 
         for installed_plugin in &self.plugins {
             for config_file in &installed_plugin.config_files {
-                let file_name = config_file.file_name().unwrap();
-                let to = library.configs_dir().join(file_name);
-
-                std::fs::copy(config_file, to)?;
+                let file_name = config_file.path.file_name().unwrap();
+                let destination = library.configs_dir().join(file_name);
+                config_file.write_to(&destination)?;
             }
         }
 
