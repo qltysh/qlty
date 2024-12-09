@@ -56,15 +56,15 @@ A good bug report shouldn't leave others needing to chase you up for more inform
 
 - Make sure that you are using the latest version of the CLI and any sources and plugins
 - Determine if your bug is really a bug and not an error on your side e.g. using incompatible environment components/versions
-  - Make sure that you have read the [documentation](https://docs.qlty.sh).
-  - If you are looking for support, you might want to check [this section](#i-have-a-question)).
+    - Make sure that you have read the [documentation](https://docs.qlty.sh).
+    - If you are looking for support, you might want to check [this section](#i-have-a-question)).
 - To see if other users have experienced (and potentially already solved) the same issue you are having, check if there is not already a bug report existing for your bug or error in the GitHub [Issues](/issues) or [Discussions](https://github.com/orgs/qltysh/discussions).
 - Collect information about the bug:
-  - Stack trace (Traceback)
-  - OS, Platform and Version (Windows, Linux, macOS, x86, ARM)
-  - Version of the interpreter, compiler, SDK, runtime environment, package manager, depending on what seems relevant.
-  - Possibly your input and the output
-  - Can you reliably reproduce the issue? And can you also reproduce it with older versions?
+    - Stack trace (Traceback)
+    - OS, Platform and Version (Windows, Linux, macOS, x86, ARM)
+    - Version of the interpreter, compiler, SDK, runtime environment, package manager, depending on what seems relevant.
+    - Possibly your input and the output
+    - Can you reliably reproduce the issue? And can you also reproduce it with older versions?
 
 #### How do I submit a good bug report?
 
