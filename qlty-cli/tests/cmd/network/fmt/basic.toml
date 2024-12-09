@@ -2,3 +2,4 @@ bin.name = "qlty"
 args = ["fmt", "--all"]
 status.code = 0
 stderr = ""
+env.remove = ["RUST_BACKTRACE"]

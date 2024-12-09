@@ -1,3 +1,4 @@
 args = ["smells", "--all", "--no-snippets"]
 bin.name = "qlty"
 status.code = 0
+env.remove = ["RUST_BACKTRACE"]

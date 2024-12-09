@@ -1,2 +1,3 @@
 bin.name = "qlty"
 args = ["check", "--all", "--no-cache", "--skip-errored-plugins"]
+env.remove = ["RUST_BACKTRACE"]

@@ -1,3 +1,4 @@
 bin.name = "qlty"
 args = ["build", "--no-plugins", "--print"]
 status.code = 0
+env.remove = ["RUST_BACKTRACE"]
