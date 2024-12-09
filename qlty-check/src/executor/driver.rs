@@ -16,6 +16,7 @@ use crate::parser::phpstan::Phpstan;
 use crate::parser::pylint::Pylint;
 use crate::parser::radarlint::Radarlint;
 use crate::parser::regex::Regex;
+use crate::parser::reek::Reek;
 use crate::parser::ripgrep::Ripgrep;
 use crate::parser::rubocop::Rubocop;
 use crate::parser::ruff::Ruff;
@@ -405,47 +406,22 @@ impl Driver {
 
     fn parser(&self) -> Box<dyn Parser> {
         let parser: Box<dyn Parser> = match self.output_format {
+            OutputFormat::Actionlint => Box::new(Actionlint {}),
+            OutputFormat::Bandit => Box::new(Bandit {}),
+            OutputFormat::Biome => Box::new(Biome {}),
+            OutputFormat::Clippy => Box::<Clippy>::default(),
+            OutputFormat::Coffeelint => Box::new(Coffeelint {}),
             OutputFormat::Eslint => Box::<Eslint>::default(),
+            OutputFormat::GolangciLint => Box::new(GolangciLint {}),
             OutputFormat::Hadolint => Box::new(Hadolint {}),
+            OutputFormat::Knip => Box::new(Knip {}),
             OutputFormat::Markdownlint => Box::new(Markdownlint {}),
             OutputFormat::Mypy => Box::new(Mypy {}),
-            OutputFormat::Pylint => Box::new(Pylint {}),
-            OutputFormat::Rubocop => Box::new(Rubocop {}),
-            OutputFormat::Shellcheck => Box::new(Shellcheck {}),
-            OutputFormat::Stylelint => Box::new(Stylelint {}),
-            OutputFormat::Sqlfluff => Box::new(Sqlfluff {}),
-            OutputFormat::Knip => Box::new(Knip {}),
-            OutputFormat::Taplo => Box::new(Taplo {}),
-            OutputFormat::Actionlint => Box::new(Actionlint {}),
-            OutputFormat::Trufflehog => Box::new(Trufflehog {}),
-            OutputFormat::Tsc => Box::new(Tsc {}),
-            OutputFormat::Bandit => Box::new(Bandit {}),
-            OutputFormat::Clippy => Box::<Clippy>::default(),
-            OutputFormat::Ripgrep => Box::new(Ripgrep {}),
-            OutputFormat::Phpstan => Box::new(Phpstan {}),
             OutputFormat::PhpCodesniffer => Box::new(PhpCodesniffer {}),
+            OutputFormat::Phpstan => Box::new(Phpstan {}),
+            OutputFormat::Pylint => Box::new(Pylint {}),
             OutputFormat::Radarlint => Box::new(Radarlint {}),
-            OutputFormat::Coffeelint => Box::new(Coffeelint {}),
-            OutputFormat::Ruff => Box::new(Ruff {}),
-            OutputFormat::GolangciLint => Box::new(GolangciLint {}),
-            OutputFormat::Biome => Box::new(Biome {}),
-            OutputFormat::TrivySarif => {
-                let category = self
-                    .output_category
-                    .map(|output_category| output_category.into());
-
-                Box::new(TrivySarif::new(category))
-            }
-
-            OutputFormat::Sarif => {
-                let level = self.output_level.map(|output_level| output_level.into());
-
-                let category = self
-                    .output_category
-                    .map(|output_category| output_category.into());
-
-                Box::new(Sarif::new(level, category))
-            }
+            OutputFormat::Reek => Box::new(Reek {}),
 
             OutputFormat::Regex => {
                 let level = self.output_level.map(|output_level| output_level.into());
@@ -462,6 +438,35 @@ impl Driver {
 
                 Box::new(Regex::new(regex, level, category))
             }
+
+            OutputFormat::Ripgrep => Box::new(Ripgrep {}),
+            OutputFormat::Rubocop => Box::new(Rubocop {}),
+            OutputFormat::Ruff => Box::new(Ruff {}),
+
+            OutputFormat::Sarif => {
+                let level = self.output_level.map(|output_level| output_level.into());
+
+                let category = self
+                    .output_category
+                    .map(|output_category| output_category.into());
+
+                Box::new(Sarif::new(level, category))
+            }
+
+            OutputFormat::Shellcheck => Box::new(Shellcheck {}),
+            OutputFormat::Stylelint => Box::new(Stylelint {}),
+            OutputFormat::Sqlfluff => Box::new(Sqlfluff {}),
+            OutputFormat::Taplo => Box::new(Taplo {}),
+            OutputFormat::Tsc => Box::new(Tsc {}),
+
+            OutputFormat::TrivySarif => {
+                let category = self
+                    .output_category
+                    .map(|output_category| output_category.into());
+
+                Box::new(TrivySarif::new(category))
+            }
+            OutputFormat::Trufflehog => Box::new(Trufflehog {}),
         };
 
         parser
