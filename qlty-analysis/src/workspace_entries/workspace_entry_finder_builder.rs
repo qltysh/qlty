@@ -103,20 +103,22 @@ impl WorkspaceEntryFinderBuilder {
         let mut interpreters = HashMap::new();
 
         for language_name in self.config.language.keys() {
-            let file_type = self.config.file_types.get(language_name).unwrap();
+            let language = self.config.language.get(language_name).unwrap();
+
             debug!(
                 "Matching {} with globs: {:?}",
-                language_name, file_type.globs
+                language_name, &language.globs
             );
-            let matcher = LanguageGlobsMatcher::new(language_name, &file_type.globs)?;
+            let matcher = LanguageGlobsMatcher::new(language_name, &language.globs)?;
+
             languages.push(Box::new(matcher));
 
-            if !file_type.interpreters.is_empty() {
+            if !language.interpreters.is_empty() {
                 debug!(
                     "Matching {} with interpretters: {:?}",
-                    language_name, file_type.interpreters
+                    language_name, language.interpreters
                 );
-                interpreters.insert(language_name.to_string(), file_type.interpreters.to_owned());
+                interpreters.insert(language_name.to_string(), language.interpreters.to_owned());
             }
         }
 

@@ -136,7 +136,6 @@ interpreters = ["jruby", "rbx", "rake", "macruby", "ruby"]
 
 [file_types.rust]
 globs = ["*.rs"]
-interpreters = []
 
 [file_types.shell]
 globs = [
@@ -307,15 +306,44 @@ globs = ["*.swift"]
 globs = ["openapi.yaml", "openapi.*.yaml"]
 
 [language.kotlin]
+globs = ["*.kt"]
 
 [language.php]
+globs = [
+  "*.php",
+  "*.ctp",
+  "*.fcgi",
+  "*.inc",
+  "*.php3",
+  "*.php4",
+  "*.php5",
+  "*.phps",
+  "*.phpt",
+  "*.phtml",
+  "**/.php_cs",
+  "**/.php_cs.dist",
+  "**/Phakefile",
+]
 
 [language.go]
+globs = ["*.go"]
 
 [language.python]
+globs = [
+  "*.py",
+  "*.pyw",
+  "**/DEPS",
+  "**/Snakefile",
+  "**/SConscript",
+  "**/wscript",
+  "**/SConstruct",
+  "**/.gclient",
+]
+interpreters = ["python", "python3", "python2", "pypy"]
 duplication.filter_patterns = ["(import_statement _)"]
 
 [language.rust]
+globs = ["*.rs"]
 test_syntax_patterns = ["""
     (
       (mod_item
@@ -335,8 +363,21 @@ duplication.filter_patterns = ["(use_declaration _)"]
 duplication.nodes_threshold = 50
 
 [language.java]
+globs = ["*.java"]
 
 [language.javascript]
+globs = ["*.js", "*.mjs", "*.cjs", "*.jsx", "**/Jakefile"]
+interpreters = [
+  "rhino",
+  "gjs",
+  "qjs",
+  "js",
+  "chakra",
+  "v8-shell",
+  "v8",
+  "node",
+  "d8",
+]
 duplication.filter_patterns = [
   "(import_statement _)",
   #  JavaScript requires: const name = require("name");
@@ -356,11 +397,40 @@ duplication.filter_patterns = [
 ]
 
 [language.ruby]
+globs = [
+  "*.rb",
+  "*.rake",
+  "**/.irbrc",
+  "**/.pryrc",
+  "**/Appraisals",
+  "**/Berksfile",
+  "**/Brewfile",
+  "**/buildfile",
+  "**/Buildfile",
+  "**/Capfile",
+  "**/Dangerfile",
+  "**/Deliverfile",
+  "**/Fastfile",
+  "**/Gemfile",
+  "**/Guardfile",
+  "**/Jarfile",
+  "**/Mavenfile",
+  "**/Podfile",
+  "**/Puppetfile",
+  "**/Rakefile",
+  "**/Snapfile",
+  "**/Thorfile",
+  "**/Vagrantfile",
+]
+interpreters = ["jruby", "rbx", "rake", "macruby", "ruby"]
 
 [language.typescript]
+globs = ["*.ts", "*.mts", "*.cts"]
+interpreters = ["ts-node", "deno"]
 duplication.filter_patterns = ["(import_statement _)"]
 
 [language.tsx]
+globs = ["*.tsx", "*.mtsx", "*.ctsx"]
 
 [smells.boolean_logic]
 threshold = 4
