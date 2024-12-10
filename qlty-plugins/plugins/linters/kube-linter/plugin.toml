@@ -1,11 +1,8 @@
 config_version = "0"
 
-[plugins.releases.kube-linter]
-github = "stackrox/kube-linter"
-download_type = "targz"
-
 [plugins.definitions.kube-linter]
-releases = ["kube-linter"]
+package = "golang.stackrox.io/kube-linter/cmd/kube-linter"
+runtime = "go"
 file_types = ["yaml"]
 latest_version = "0.7.1"
 known_good_version = "0.7.1"
