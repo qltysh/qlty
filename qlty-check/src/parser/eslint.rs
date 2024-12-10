@@ -78,10 +78,15 @@ impl Parser for Eslint {
                 let suggestions = if let Some(fix) = message.fix {
                     let mut start_byte = fix.range[0] as u32;
                     let mut end_byte = fix.range[1] as u32;
+
                     if let Some(ref source) = file.source {
-                        start_byte =
-                            source.char_indices().nth(start_byte as usize).unwrap().0 as u32;
-                        end_byte = source.char_indices().nth(end_byte as usize).unwrap().0 as u32;
+                        if let Some((pos, _)) = source.char_indices().nth(start_byte as usize) {
+                            start_byte = pos as u32;
+
+                            if let Some((pos, _)) = source.char_indices().nth(end_byte as usize) {
+                                end_byte = pos as u32;
+                            }
+                        }
                     } else {
                         debug!(
                             "Failed to translate characters to bytes for {}",
