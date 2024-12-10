@@ -37,7 +37,7 @@ use std::{
 use tracing::{debug, error, info, warn};
 
 const MAX_ISSUES: usize = 10_000;
-const MAX_ISSUES_PER_FILE: usize = 1000;
+const MAX_ISSUES_PER_FILE: usize = 100;
 
 #[derive(Debug, Clone)]
 pub struct Executor {
@@ -136,7 +136,7 @@ impl Executor {
         }
 
         self.progress.clear();
-        let issues = Self::build_issue_results(
+        let mut issues = Self::build_issue_results(
             &self.plan.hits,
             &invocations,
             self.plan.settings.skip_errored_plugins,
@@ -155,6 +155,9 @@ impl Executor {
         );
 
         if issues.len() >= MAX_ISSUES {
+            issues.truncate(MAX_ISSUES);
+            issues.shrink_to_fit();
+
             messages.push(Message {
                 timestamp: Some(Utc::now().into()),
                 module: "qlty_check::executor".to_string(),
@@ -489,6 +492,7 @@ impl Executor {
         for cache_hit in cache_hits {
             for issue in &cache_hit.issues {
                 issues.push(issue.to_owned());
+
                 if issues.len() >= MAX_ISSUES {
                     warn!(
                         "Maximum issue count of {} reached in cache, skipping further issues.",
@@ -566,12 +570,9 @@ fn run_invocation(
                     file_result.issues.len(),
                     MAX_ISSUES_PER_FILE
                 );
-                progress.set_message(&format!(
-                    "Ignoring issues from {}",
-                    path_to_string(&file_result.path)
-                ));
                 issue_limit_reached.insert(PathBuf::from(&file_result.path));
-                file_result.issues.clear();
+                file_result.issues.truncate(MAX_ISSUES_PER_FILE);
+                file_result.issues.shrink_to_fit();
                 continue;
             }
 
