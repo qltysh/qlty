@@ -15,8 +15,8 @@ use crate::parser::php_codesniffer::PhpCodesniffer;
 use crate::parser::phpstan::Phpstan;
 use crate::parser::pylint::Pylint;
 use crate::parser::radarlint::Radarlint;
-use crate::parser::regex::Regex;
 use crate::parser::reek::Reek;
+use crate::parser::regex::Regex;
 use crate::parser::ripgrep::Ripgrep;
 use crate::parser::rubocop::Rubocop;
 use crate::parser::ruff::Ruff;
@@ -60,6 +60,7 @@ use tracing::warn;
 use tracing::{debug, error, info};
 
 const DEFAULT_SUCCESS_EXIT_CODE: i64 = 0;
+const MAX_OUTPUT_SIZE_BYTES: usize = 1024 * 1024 * 100; // 100 MB
 
 #[derive(Debug, Clone)]
 pub struct Driver {
@@ -223,6 +224,13 @@ impl Driver {
     }
 
     pub fn parse(&self, output: &str, plan: &InvocationPlan) -> Result<Vec<FileResult>> {
+        if output.len() > MAX_OUTPUT_SIZE_BYTES {
+            bail!(
+                "Output size exceeds maximum allowed size of {} bytes",
+                MAX_OUTPUT_SIZE_BYTES
+            );
+        }
+
         let parser = self.parser();
         let issues = parser.parse(&plan.plugin_name, output);
         let path_prefix = self.get_path_prefix(plan);
