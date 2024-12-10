@@ -3,7 +3,7 @@ config_version = "0"
 [plugins.definitions.eslint]
 runtime = "node"
 package = "eslint"
-file_types = ["javascript", "typescript", "tsx"]
+file_types = ["javascript", "typescript", "jsx", "tsx"]
 affects_cache = [".eslintignore", "package.json", "tsconfig.json"]
 latest_version = "9.13.0"
 known_good_version = "9.7.0"

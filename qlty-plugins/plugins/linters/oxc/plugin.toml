@@ -3,7 +3,7 @@ config_version = "0"
 [plugins.definitions.oxc]
 runtime = "node"
 package = "oxlint"
-file_types = ["javascript", "typescript", "tsx"]
+file_types = ["javascript", "typescript", "jsx", "tsx"]
 affects_cache = ["package.json", "tsconfig.json"]
 latest_version = "0.11.1"
 known_good_version = "0.11.1"
