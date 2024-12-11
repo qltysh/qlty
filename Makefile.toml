@@ -1,0 +1,71 @@
+[tasks.clean]
+command = "cargo"
+args = ["clean"]
+
+[tasks.check]
+command = "cargo"
+args = ["check"]
+
+[tasks.build]
+command = "cargo"
+args = ["build"]
+
+[tasks.test]
+command = "cargo"
+args = ["test"]
+
+[tasks.insta-accept]
+command = "cargo"
+args = ["insta", "test", "--accept"]
+
+[tasks.insta-review]
+command = "cargo"
+args = ["insta", "test", "--review"]
+
+[tasks.build-release]
+command = "cargo"
+args = ["build", "--release"]
+
+[tasks.create-bin-dir]
+script = "mkdir -p ~/.qlty/bin"
+
+[tasks.create-bin-dir.windows]
+script = "if not exist %USERPROFILE%\\.qlty\\bin ( md %USERPROFILE%\\.qlty\\bin )"
+
+[tasks.symlink]
+dependencies = ["create-bin-dir"]
+script = "ln -sf $PWD/cli/target/release/qlty $HOME/.qlty/bin/qlty"
+
+[tasks.symlink.windows]
+dependencies = ["create-bin-dir"]
+script = "copy /y %CD%\\cli\\target\\release\\qlty*.exe %USERPROFILE%\\.qlty\\bin"
+
+[tasks.symlink-debug]
+dependencies = ["create-bin-dir"]
+script = "ln -sf $PWD/cli/target/debug/qlty ~/.qlty/bin/qlty"
+
+[tasks.symlink-debug.windows]
+dependencies = ["create-bin-dir"]
+script = "copy /y %CD%\\cli\\target\\debug\\qlty*.exe %USERPROFILE%\\.qlty\\bin"
+
+[tasks.validate-pre-install]
+script = '[ -d "$HOME/.qlty/bin" ] && [[ ":$PATH:" == *":$HOME/.qlty/bin:"* ]] || (echo "ERROR: Please run the qlty installer and try again" && false)'
+
+[tasks.install]
+dependencies = ["validate-pre-install", "build-release", "symlink"]
+
+[tasks.install-debug]
+dependencies = ["validate-pre-install", "build", "symlink-debug"]
+
+[tasks.unused-deps]
+command = "cargo"
+args = ["machete"]
+
+[tasks.dev-test-flow]
+dependencies = ["check", "test"]
+
+[tasks.all]
+dependencies = ["build", "build-release"]
+
+[tasks.default]
+alias = "dev-test-flow"
