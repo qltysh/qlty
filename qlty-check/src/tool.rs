@@ -346,10 +346,11 @@ pub trait Tool: Debug + Sync + Send {
                             );
                         } else {
                             bail!(
-                                "Invalid tool version: {}: {} does not match version {:?}",
+                                "Invalid tool version: {}: {} does not match version {:?} (extracted with regex {:?})",
                                 self.version_command().as_ref().unwrap_or(&"".to_string()),
                                 installed_version,
-                                version
+                                version,
+                                self.version_regex()
                             );
                         }
                     }
