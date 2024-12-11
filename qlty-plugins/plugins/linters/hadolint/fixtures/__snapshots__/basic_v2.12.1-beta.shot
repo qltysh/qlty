@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`linter=hadolint fixture=basic version=2.12.0 1`] = `
+exports[`linter=hadolint fixture=basic version=2.12.1-beta 1`] = `
 {
   "issues": [
     {
