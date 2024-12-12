@@ -3,7 +3,7 @@ config_version = "0"
 [plugins.definitions.biome]
 runtime = "node"
 package = "@biomejs/biome"
-file_types = ["typescript", "javascript", "tsx", "json", "css"]
+file_types = ["typescript", "javascript", "jsx", "tsx", "json", "css"]
 config_files = ["biome.json"]
 affects_cache = ["package.json", ".editorconfig"]
 latest_version = "1.9.4"
