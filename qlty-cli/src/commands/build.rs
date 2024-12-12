@@ -117,7 +117,7 @@ impl Build {
                     Ok(Report::default())
                 } else {
                     info!("Running plugins...");
-                    self.run_check(&workspace)
+                    self.run_check()
                 }
             }
         })
@@ -229,7 +229,7 @@ impl Build {
         processor.compute()
     }
 
-    fn run_check(&self, workspace: &Workspace) -> Result<Report> {
+    fn run_check(&self) -> Result<Report> {
         let settings = self.build_check_settings()?;
         let mut planner = qlty_check::Planner::new(ExecutionVerb::Check, &settings)?;
         let plan = planner.compute()?;
@@ -237,7 +237,7 @@ impl Build {
         let executor = qlty_check::Executor::new(&plan);
 
         let results = executor.install_and_invoke()?;
-        let results = autofix(&results, &settings, workspace, &plan.staging_area, None)?;
+        let results = autofix(&results, &settings, &plan.staging_area, None)?;
         let mut processor = qlty_check::Processor::new(&plan, results.clone());
         let report = processor.compute()?;
 

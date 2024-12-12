@@ -132,13 +132,7 @@ impl Check {
 
         let executor = Executor::new(&plan);
         let results = executor.install_and_invoke()?;
-        let results = autofix(
-            &results,
-            &settings,
-            &workspace,
-            &plan.staging_area,
-            Some(&mut steps),
-        )?;
+        let results = autofix(&results, &settings, &plan.staging_area, Some(&mut steps))?;
 
         let mut processor = Processor::new(&plan, results);
         let report = processor.compute()?;

@@ -1,13 +1,11 @@
 use crate::ui::Steps;
 use anyhow::Result;
 use qlty_check::{executor::staging_area::StagingArea, Results, Settings};
-use qlty_config::Workspace;
 
 #[cfg(feature = "llm")]
 pub fn autofix(
     results: &Results,
     settings: &Settings,
-    workspace: &Workspace,
     staging_area: &StagingArea,
     steps: Option<&mut Steps>,
 ) -> Result<Results> {
@@ -17,7 +15,7 @@ pub fn autofix(
     static ROBOT: Emoji<'_, '_> = Emoji("🤖  ", "");
 
     if settings.ai && !results.issues.is_empty() {
-        let mut autofixer = Autofixer::new(settings, workspace, staging_area, results);
+        let mut autofixer = Autofixer::new(settings, staging_area, results);
         autofixer.plan();
 
         if autofixer.completions_count() > 0 {

@@ -5,7 +5,7 @@ use anyhow::Result;
 use itertools::Itertools;
 use qlty_types::analysis::v1::Issue;
 use std::{borrow::BorrowMut, collections::HashSet, ops::RangeInclusive, path::PathBuf};
-use tracing::{debug, error, trace, warn};
+use tracing::{debug, error, info, trace, warn};
 
 const UNSAFE_RULES: [&str; 3] = [
     "eslint:@typescript-eslint/no-explicit-any",
