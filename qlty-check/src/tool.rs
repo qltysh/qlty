@@ -336,20 +336,21 @@ pub trait Tool: Debug + Sync + Send {
             Some(_) => {
                 let installed_version = self.installed_version()?;
 
-                match self.version() {
-                    Some(ref version) => {
-                        if installed_version == *version {
+                match self.expected_version()? {
+                    Some(ref expected_version) => {
+                        if installed_version == *expected_version {
                             info!(
                                 "Validated tool: {}: {}",
                                 self.version_command().as_ref().unwrap_or(&"".to_string()),
-                                version
+                                expected_version
                             );
                         } else {
                             bail!(
-                                "Invalid tool version: {}: {} does not match version {:?}",
+                                "Invalid tool version: {}: {} does not match version {:?} (extracted with regex {:?})",
                                 self.version_command().as_ref().unwrap_or(&"".to_string()),
                                 installed_version,
-                                version
+                                expected_version,
+                                self.version_regex()
                             );
                         }
                     }
@@ -377,6 +378,36 @@ pub trait Tool: Debug + Sync + Send {
 
     fn version_regex(&self) -> String {
         r"v?(\d+\.\d+\.\d+)".to_string()
+    }
+
+    fn expected_version(&self) -> Result<Option<String>> {
+        let re = Regex::new(&self.version_regex())
+            .with_context(|| format!("Invalid regex {:?} for package", self.version_regex()))?;
+
+        if let Some(declared_version) = self.version() {
+            if let Some(captures) = re.captures(&declared_version) {
+                let captured_version = captures
+                    .get(1)
+                    .with_context(|| {
+                        format!(
+                            "No version captured from {:?} using regex {:?}",
+                            declared_version,
+                            self.version_regex()
+                        )
+                    })?
+                    .as_str();
+
+                Ok(Some(captured_version.to_string()))
+            } else {
+                bail!(
+                    "Package version {:?} does not match regex {:?}",
+                    declared_version,
+                    self.version_regex()
+                );
+            }
+        } else {
+            Ok(None)
+        }
     }
 
     fn installed_version(&self) -> Result<String> {

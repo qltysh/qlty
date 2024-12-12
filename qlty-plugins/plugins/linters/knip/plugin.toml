@@ -3,7 +3,7 @@ config_version = "0"
 [plugins.definitions.knip]
 runtime = "node"
 package = "knip"
-file_types = ["javascript", "typescript", "tsx"]
+file_types = ["javascript", "typescript", "jsx", "tsx"]
 config_files = [
   "knip.json",
   "knip.jsonc",

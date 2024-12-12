@@ -55,7 +55,7 @@ impl QltyRelease {
     pub fn ask_for_upgrade_confirmation() -> Result<bool> {
         Ok(Confirm::with_theme(&ColorfulTheme::default())
             .with_prompt("Do you want to upgrade qlty now?")
-            .default(false)
+            .default(true)
             .show_default(true)
             .interact()?)
     }
