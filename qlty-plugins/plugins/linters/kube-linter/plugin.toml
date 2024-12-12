@@ -31,6 +31,7 @@ os = "windows"
 url = "https://github.com/stackrox/kube-linter/releases/download/v${version}/kube-linter.exe"
 
 [plugins.definitions.kube-linter]
+downloads = ["kube-linter"]
 file_types = ["yaml"]
 latest_version = "0.7.1"
 known_good_version = "0.7.1"
