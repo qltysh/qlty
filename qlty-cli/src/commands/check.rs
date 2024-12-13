@@ -17,6 +17,7 @@ use qlty_types::analysis::v1::Level;
 use qlty_types::level_from_str;
 use std::io::{self, Read};
 use std::path::PathBuf;
+use std::thread;
 use tracing::debug;
 
 static LOOKING_GLASS: Emoji<'_, '_> = Emoji("🔍  ", "");
@@ -129,6 +130,19 @@ impl Check {
 
         steps.start(LOOKING_GLASS, format!("Analyzing{}...", plan.description()));
         eprintln!();
+
+        if self.trigger == Trigger::PreCommit || self.trigger == Trigger::PrePush {
+            eprintln!("Tap enter to skip...");
+
+            thread::spawn(move || loop {
+                let mut input = String::new();
+                io::stdin().read_line(&mut input).ok();
+
+                if input == "\n" {
+                    std::process::exit(0);
+                }
+            });
+        }
 
         let executor = Executor::new(&plan);
         let results = executor.install_and_invoke()?;
