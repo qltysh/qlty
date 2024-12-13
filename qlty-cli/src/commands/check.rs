@@ -15,7 +15,7 @@ use qlty_config::Workspace;
 use qlty_types::analysis::v1::ExecutionVerb;
 use qlty_types::analysis::v1::Level;
 use qlty_types::level_from_str;
-use std::io::IsTerminal as _;
+use std::io::BufRead as _;
 use std::io::{self, Read};
 use std::path::PathBuf;
 use std::thread;
@@ -132,21 +132,21 @@ impl Check {
         steps.start(LOOKING_GLASS, format!("Analyzing{}...", plan.description()));
         eprintln!();
 
-        if std::io::stdin().is_terminal()
-            && (self.trigger == Trigger::PreCommit || self.trigger == Trigger::PrePush)
-        {
+        if self.trigger == Trigger::PreCommit || self.trigger == Trigger::PrePush {
             eprintln!("Tap enter to skip...");
 
             thread::spawn(move || loop {
                 let mut input = String::new();
-                io::stdin().read_line(&mut input).ok();
 
-                if input == "\n" {
-                    std::process::exit(0);
+                if let Ok(tty) = std::fs::File::open("/dev/tty") {
+                    let mut tty_reader = io::BufReader::new(tty);
+                    tty_reader.read_line(&mut input).ok();
+
+                    if input == "\n" {
+                        std::process::exit(0);
+                    }
                 }
             });
-        } else {
-            dbg!("Not a terminal");
         }
 
         let executor = Executor::new(&plan);
