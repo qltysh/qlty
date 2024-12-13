@@ -86,9 +86,35 @@ runtime = "python"
 package = "${MY_PLUGIN}"
 ```
 
-### Plugin Run
+### Plugin Driver(s)
 
-The script and the various options to run the plugin correctly can also be found in the `plugin.toml` file. `[plugins.definitions.MY_PLUGIN.drivers.lint]` contains the script, success codes, output, output format, batch and a few other options.
+Drivers are defined under `[plugins.definitions.${MY_PLUGIN}.drivers.${driver}]` and contain the script, success codes, output, output format, batch and a few other options.
+
+- `success_codes`: An array of exit codes that denote that the plugin run finished successfully. Ordinarily you might expect this to just be 0 to denote a binary exit successfully, but because many plugins use a 0 vs 1 (or 2) to differentiate between successful runs that did not find any issues vs successful runs that did find issues, Qlty accepts an array of valid exit codes.
+
+## Creating a Parser
+
+If the plugin supports a standard format, like SARIF, you are set, and do not need to create a parser. Many tools output structured (like JSON), but not standardized, output, which requires a Rust parser to translate that structure into Qlty issues.
+
+Parsers can be found in `qlty_check/source/parser/*` and are the best source for learning how to write a parser. Writing a parser involves:
+
+1. Writing the Rust code to translate the output format
+2. Writing an inline test within the parser file for this parser
+3. Adding new references to the parser within the codebase
+
+### Parser tests
+
+Each parser contains an inline test which typically can be run within VSCode by clicking "Run tests". VSCode simply runs (`cargo test --package qlty-check --lib -- parser::reek::test::parse --exact --show-output` e.g.) behind the scenes.
+
+Typically, you'll update the input of the test by hand to match the tool's output.
+
+And you can use `insta` to write the test output for you automatically, which helps prevents test failures from small character deltas in manually written output. Install `insta` with:
+
+```
+cargo install cargo-insta
+```
+
+Run `cargo insta review` to display and accept/reject test output.
 
 ## Tests
 
