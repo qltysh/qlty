@@ -1,15 +1,57 @@
-# Qlty Plugins Guide
+# Qlty Plugin Development Guide
 
-This is a loose guide on how to add new plugins.
+The plugins directory contains definitions and tests for plugins supported by the Qlty CLI.
 
-This plugins repo basically contains definitions and tests for various plugins supported by the main Qlty application.
+Creating a plugin in Qlty typically the following steps:
 
-## Toml file
+1. Creating the folder structure and a valid plugin.toml file
+2. (Sometimes) Creating a parser in Rust which understands the tool's output format
+3. Creating at least 1 test target file in the fixtures directory with its expected output as a snapshot
 
-The code to add support for a given plugin (`MY_PLUGIN`) is placed under `linters/MY_PLUGIN`.
-The definitions for a given plugin can be found in `plugin.toml` file, which contains instructions on how to install the plugin, as well as how to execute it.
+## Plugin Structure
+
+(N.B.: Copying and editing an existing plugin is a good way to get started, but this section helps put these files into context.)
+
+A plugin consists of:
+
+1. A top-level folder for `MY_PLUGIN` at `linters/${MY_PLUGIN}`
+2. The plugin definition file `linters/${MY_PLUGIN}/plugin.toml` located at the top level of this folder
+3. A "fixtures" directory under plugins containing the test target and snapshot for the target
+
+## The Plugin Definition File ("plugin.toml")
+
+The plugin definition file (`plugin.toml`) is the heart of the plugin; it contains instructions on how to install the plugin; its capabilities; and how to run it.
+
+You'll typically see at least a section for the definition of the plugin (`[plugins.definitions.${MY_PLUGIN}]`) as well as one or more sections for each "driver" the plugin supports. For a plugin that supports both formatting and linting, you'd see two a section for each one of these drivers: `[plugins.definitions.${MY_PLUGIN}.drivers.lint]` and `[plugins.definitions.${MY_PLUGIN}.drivers.format]`
 
 ### Plugin Installation
+
+You must define as part of the plugin a way to install it. There are a variety of ways to install a plugin.
+
+### Plugin Installation: GitHub Release
+
+If the plugin lives on GitHub, as many do, and stores releases on GitHub, the plugin can define a "releases" section and download release from GitHub. E.g. hadolint currently defines a release as:
+
+```
+[plugins.releases.hadolint]
+github = "hadolint/hadolint"
+download_type = "executable"
+```
+
+And then in its plugin definition references this release:
+
+```
+[plugins.definitions.hadolint]
+releases = ["hadolint"]
+```
+
+And 
+
+You can point to a binary with the following syntax:
+
+[plugins.releases.hadolint]
+github = "hadolint/hadolint"
+download_type = "executable"
 
 For plugins which have a usable executable release on Github, those can be installed via Github releases using `[plugins.releases.MY_PLUGIN]`.
 Example: `linters/gitleaks/plugin.toml`.
