@@ -30,7 +30,7 @@ Every plugin.toml needs to define how to find/install the plugin. There are a va
 
 ### Plugin Installation: GitHub Release
 
-If the plugin lives on GitHub, as many do, and stores its releases on GitHub, the plugin can define (and later reference) a "releases" section. 
+If the plugin lives on GitHub, as many do, and stores its releases on GitHub, the plugin can define (and later reference) a "releases" section.
 
 ```
 [plugins.releases.${MY_PLUGIN}]
