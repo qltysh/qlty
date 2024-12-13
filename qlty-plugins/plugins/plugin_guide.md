@@ -8,15 +8,15 @@ Creating a plugin in Qlty typically the following steps:
 2. (Sometimes) Creating a parser in Rust which understands the tool's output format
 3. Creating at least 1 test target file in the fixtures directory with its expected output as a snapshot
 
-## Plugin Structure
+## Plugin Structure / Definition
 
 (N.B.: Copying and editing an existing plugin is a good way to get started, but this section helps put these files into context.)
 
 A plugin consists of:
 
 1. A top-level folder for `MY_PLUGIN` at `linters/${MY_PLUGIN}`
-2. The plugin definition file `linters/${MY_PLUGIN}/plugin.toml` located at the top level of this folder
-3. A "fixtures" directory under plugins containing the test target and snapshot for the target
+2. The plugin definition file `linters/${MY_PLUGIN}/plugin.toml` located at the top level of this folder, along with a simple test runner
+3. A "fixtures" directory under plugins containing the test target and snapshot for the target.
 
 ## The Plugin Definition File ("plugin.toml")
 
@@ -26,38 +26,65 @@ You'll typically see at least a section for the definition of the plugin (`[plug
 
 ### Plugin Installation
 
-You must define as part of the plugin a way to install it. There are a variety of ways to install a plugin.
+Every plugin.toml needs to define how to find/install the plugin. There are a variety of options, listed below:
 
 ### Plugin Installation: GitHub Release
 
-If the plugin lives on GitHub, as many do, and stores releases on GitHub, the plugin can define a "releases" section and download release from GitHub. E.g. hadolint currently defines a release as:
+If the plugin lives on GitHub, as many do, and stores its releases on GitHub, the plugin can define (and later reference) a "releases" section. 
 
 ```
-[plugins.releases.hadolint]
-github = "hadolint/hadolint"
+[plugins.releases.${MY_PLUGIN}]
+github = "plugin-owner/plugin-repo"
 download_type = "executable"
 ```
 
-And then in its plugin definition references this release:
+`download_type` can also be defined as a `zip` or `targz`
+
+The plugin definition references this release as follows:
 
 ```
-[plugins.definitions.hadolint]
-releases = ["hadolint"]
+[plugins.definitions.${MY_PLUGIN}]
+releases = ["${MY_PLUGIN}"]
 ```
 
-And 
+NB: The GitHub Release installation type uses a heuristic to determine the appropriate download URL for the platform/architecture in question. If the release doesn't follow this heuristic, you may find you may need to define each architecture/platform individually
 
-You can point to a binary with the following syntax:
+### Plugin Installation: Downloads
 
-[plugins.releases.hadolint]
-github = "hadolint/hadolint"
-download_type = "executable"
+If the plugin binaries can be downloaded, you can also define download sections for each known platform / architecture. This is also appropriate for some GitHub Releases which do not follow a URL standard we recognize for architecture/platform.
 
-For plugins which have a usable executable release on Github, those can be installed via Github releases using `[plugins.releases.MY_PLUGIN]`.
-Example: `linters/gitleaks/plugin.toml`.
+Define a download section for each architecture/platform the plugin supports. E.g. and substitute a variable ${version} if the version is in the URL.
 
-For plugins which require a runtime, such as python, they require the package and runtime option in their definitions `[plugins.definitions.MY_PLUGIN]`.
-Example: `linters/black/plugin.toml`.
+```
+[[plugins.downloads.${MY_PLUGIN}.system]]
+cpu = "x86_64"
+os = "macos"
+url = "https://github.com/myplugin-owner/myplugin-repo/releases/download/v${version}/my-plugin-darwin"
+```
+
+```
+[[plugins.downloads.${MY_PLUGIN}.system]]
+cpu = "aarch64"
+os = "windows"
+url = "https://github.com/myplugin-owner/myplugin-repo/releases/download/v${version}/my-plugin_arm64.exe"
+```
+
+In the main plugin definition section, reference these downloads as follows:
+
+```
+[plugins.definitions.${MY_PLUGIN}]
+downloads = ["${MY_PLUGIN}"]
+```
+
+### Plugin Installation: With a Runtime
+
+For plugins which require a runtime, such as python, define the runtime and package in the main plugin defintion. For example:
+
+```
+[plugins.definitions.${MY_PLUGIN}]
+runtime = "python"
+package = "${MY_PLUGIN}"
+```
 
 ### Plugin Run
 
@@ -92,7 +119,7 @@ Also to test and add snapshots for the updated versions of the plugins, you can 
 
 NOTE: It will add snapshots in .shot files, but will not validate with older snapshot files.
 
-### Some gachas and solutions
+### Some gotchas and solutions
 
 - You can use the logs in `.qlty` folder to ensure plugin is installing correctly. Make sure the runtime version and plugin version are correctly defined in `.qlty/qlty.toml` in case of installation issues.
 
