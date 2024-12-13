@@ -1,0 +1,101 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=kube-linter fixture=basic version=0.7.1 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_VULNERABILITY",
+      "documentationUrl": "https://docs.kubelinter.io/#/generated/templates?id=latest-tag",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.yaml",
+        "range": {
+          "endColumn": 1,
+          "endLine": 1,
+          "startColumn": 1,
+          "startLine": 1,
+        },
+      },
+      "message": "The container "sec-ctx-demo" is using an invalid container image, "busybox". Please use images that are not blocked by the \`BlockList\` criteria : [".*:(latest)$" "^[^:]*$" "(.*/[^:]+)$"]
+object: <no namespace>/security-context-demo /v1, Kind=Pod",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "latest-tag",
+      "snippet": "apiVersion: v1",
+      "snippetWithContext": "apiVersion: v1
+kind: Pod
+metadata:
+  name: security-context-demo
+spec:
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+  volumes:
+  - name: sec-ctx-vol",
+      "tool": "kube-linter",
+    },
+    {
+      "category": "CATEGORY_VULNERABILITY",
+      "documentationUrl": "https://docs.kubelinter.io/#/generated/templates?id=read-only-root-filesystems",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.yaml",
+        "range": {
+          "endColumn": 1,
+          "endLine": 1,
+          "startColumn": 1,
+          "startLine": 1,
+        },
+      },
+      "message": "container "sec-ctx-demo" does not have a read-only root file system
+object: <no namespace>/security-context-demo /v1, Kind=Pod",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "no-read-only-root-fs",
+      "snippet": "apiVersion: v1",
+      "snippetWithContext": "apiVersion: v1
+kind: Pod
+metadata:
+  name: security-context-demo
+spec:
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+  volumes:
+  - name: sec-ctx-vol",
+      "tool": "kube-linter",
+    },
+    {
+      "category": "CATEGORY_VULNERABILITY",
+      "documentationUrl": "https://docs.kubelinter.io/#/generated/templates?id=memory-requirements",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.yaml",
+        "range": {
+          "endColumn": 1,
+          "endLine": 1,
+          "startColumn": 1,
+          "startLine": 1,
+        },
+      },
+      "message": "container "sec-ctx-demo" has memory limit 0
+object: <no namespace>/security-context-demo /v1, Kind=Pod",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "unset-memory-requirements",
+      "snippet": "apiVersion: v1",
+      "snippetWithContext": "apiVersion: v1
+kind: Pod
+metadata:
+  name: security-context-demo
+spec:
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+  volumes:
+  - name: sec-ctx-vol",
+      "tool": "kube-linter",
+    },
+  ],
+}
+`;

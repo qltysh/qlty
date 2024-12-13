@@ -1,0 +1,48 @@
+config_version = "0"
+
+[[plugins.downloads.kube-linter.system]]
+cpu = "x86_64"
+os = "linux"
+url = "https://github.com/stackrox/kube-linter/releases/download/v${version}/kube-linter-linux"
+
+[[plugins.downloads.kube-linter.system]]
+cpu = "aarch64"
+os = "linux"
+url = "https://github.com/stackrox/kube-linter/releases/download/v${version}/kube-linter-linux_arm64"
+
+[[plugins.downloads.kube-linter.system]]
+cpu = "x86_64"
+os = "macos"
+url = "https://github.com/stackrox/kube-linter/releases/download/v${version}/kube-linter-darwin"
+
+[[plugins.downloads.kube-linter.system]]
+cpu = "aarch64"
+os = "macos"
+url = "https://github.com/stackrox/kube-linter/releases/download/v${version}/kube-linter-darwin_arm64"
+
+[[plugins.downloads.kube-linter.system]]
+cpu = "aarch64"
+os = "windows"
+url = "https://github.com/stackrox/kube-linter/releases/download/v${version}/kube-linter_arm64.exe"
+
+[[plugins.downloads.kube-linter.system]]
+cpu = "x86_64"
+os = "windows"
+url = "https://github.com/stackrox/kube-linter/releases/download/v${version}/kube-linter.exe"
+
+[plugins.definitions.kube-linter]
+downloads = ["kube-linter"]
+file_types = ["yaml"]
+latest_version = "0.7.1"
+known_good_version = "0.7.1"
+description = "Linting for Kubernetes YAML files and Helm charts"
+config_files = [".kube-linter.yaml", ".kube-linter.yml"]
+suggested = "config"
+
+[plugins.definitions.kube-linter.drivers.lint]
+script = "kube-linter lint ${target} --format sarif"
+success_codes = [0, 1]
+output = "stdout"
+output_format = "sarif"
+output_category = "vulnerability"
+output_level = "medium"
