@@ -19,7 +19,7 @@ use std::io::BufRead as _;
 use std::io::{self, Read};
 use std::path::PathBuf;
 use std::thread;
-use tracing::{debug, warn};
+use tracing::debug;
 
 static LOOKING_GLASS: Emoji<'_, '_> = Emoji("🔍  ", "");
 static THINKING: Emoji<'_, '_> = Emoji("🤔  ", "");
