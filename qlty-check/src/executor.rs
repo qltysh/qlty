@@ -408,12 +408,14 @@ impl Executor {
         pool.install(|| {
             invocations
                 .into_par_iter()
-                .map(|plan| {
+                .filter_map(|plan| {
                     if self.total_issues.load(Ordering::SeqCst) > MAX_ISSUES {
-                        bail!(
+                        warn!(
                             "Stopping invocations: Maximum total issue count of {} was reached",
                             MAX_ISSUES
                         );
+
+                        return None;
                     }
 
                     let invocation_result = run_invocation(
@@ -430,7 +432,7 @@ impl Executor {
                         );
                     }
 
-                    invocation_result
+                    Some(invocation_result)
                 })
                 .collect::<Vec<_>>()
         })
