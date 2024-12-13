@@ -15,6 +15,7 @@ use qlty_config::Workspace;
 use qlty_types::analysis::v1::ExecutionVerb;
 use qlty_types::analysis::v1::Level;
 use qlty_types::level_from_str;
+use std::io::IsTerminal as _;
 use std::io::{self, Read};
 use std::path::PathBuf;
 use std::thread;
@@ -131,7 +132,9 @@ impl Check {
         steps.start(LOOKING_GLASS, format!("Analyzing{}...", plan.description()));
         eprintln!();
 
-        if self.trigger == Trigger::PreCommit || self.trigger == Trigger::PrePush {
+        if io::stdin().is_terminal()
+            && (self.trigger == Trigger::PreCommit || self.trigger == Trigger::PrePush)
+        {
             eprintln!("Tap enter to skip...");
 
             thread::spawn(move || loop {
