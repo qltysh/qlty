@@ -138,6 +138,8 @@ impl Check {
                 let mut input = String::new();
                 io::stdin().read_line(&mut input).ok();
 
+                // dbg!(&input);
+
                 if input == "\n" {
                     std::process::exit(0);
                 }
