@@ -140,9 +140,9 @@ impl Check {
 
                 // dbg!(&input);
 
-                if input == "\n" {
-                    std::process::exit(0);
-                }
+                // if input == "\n" {
+                std::process::exit(0);
+                // }
             });
         }
 
