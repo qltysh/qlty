@@ -37,6 +37,7 @@ latest_version = "0.7.1"
 known_good_version = "0.7.1"
 description = "Linting for Kubernetes YAML files and Helm charts"
 config_files = [".kube-linter.yaml", ".kube-linter.yml"]
+suggested = "config"
 
 [plugins.definitions.kube-linter.drivers.lint]
 script = "kube-linter lint ${target} --format sarif"
