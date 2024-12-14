@@ -126,7 +126,6 @@ The snapshot tests are under the `linters/MY_PLUGIN/fixtures` directory. The my 
 
 Create the "fixtures" directory structure if one does not exist as well as:
 
-
 - an example "target" typically named something like basic.in.py (extension dependent on plugin). This needs to be a file with issues the plugin identifies
 - a \_\_snapshots\_\_ directory containing snaphotted output from a plugin run against the fixture file created above.
 - in the snaphost directory, a snapshot file for each version / file named e.g. `basic_v0.2.2.shot` where the version matches the plugin version you're testing against.
@@ -140,6 +139,7 @@ npm test ${PLUGIN_NAME}
 ```
 
 e.g. `npm test reek`
+
 ### Using Local Plugin Definitions
 
 Qlty's default source for plugin definitions is the github.com/qltysh/qlty remote repository, which is fine for most cases, but is not always appropriate for plugin development where developers expect that their local plugin definitions to be used.
