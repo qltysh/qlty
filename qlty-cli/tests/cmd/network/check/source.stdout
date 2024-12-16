@@ -4,4 +4,4 @@
 basic.py:0:0
     0:0  fmt     Incorrect formatting, autoformat by running `qlty fmt`.  black:fmt
 
-Checked 1 files
+Checked 1 file

@@ -28,7 +28,9 @@ impl Formatter for TextFormatter {
         print_issues(writer, &self.report)?;
         print_invocations(writer, &self.report, self.verbose)?;
 
-        if self.verbose >= 1 && self.report.targets_count() > 0 {
+        if (self.report.verb != ExecutionVerb::Fmt || self.verbose >= 1)
+            && self.report.targets_count() > 0
+        {
             writeln!(
                 writer,
                 "{} {} {}",
