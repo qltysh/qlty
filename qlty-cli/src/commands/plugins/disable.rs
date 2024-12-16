@@ -1,9 +1,9 @@
 use crate::{Arguments, CommandError, CommandSuccess};
-use anyhow::Result;
+use anyhow::{bail, Result};
 use clap::Args;
 use qlty_config::Workspace;
 use std::fs;
-use toml_edit::{DocumentMut, Item};
+use toml_edit::{DocumentMut, value};
 
 #[derive(Args, Debug)]
 pub struct Disable {
@@ -28,14 +28,23 @@ impl ConfigDocument {
     }
 
     pub fn disable_plugin(&mut self, name: &str) -> Result<()> {
-        if let Some(plugins) = self.document["plugin"].as_array_of_tables_mut() {
-            plugins.iter_mut().for_each(|plugin| {
-                if let Some(plugin_name) = plugin.get("name").and_then(Item::as_str) {
-                    if plugin_name == name {
-                        plugin["mode"] = "disabled".into();
-                    }
+        if self.document.get("plugin").is_none() {
+            bail!("No plugins found in qlty.toml");
+        }
+
+        let mut updated = false;
+
+        if let Some(plugin_tables) = self.document["plugin"].as_array_of_tables_mut() {
+            for plugin_table in plugin_tables.iter_mut() {
+                if plugin_table["name"].as_str() == Some(name) {
+                    updated = true;
+                    plugin_table["mode"] = value("disabled");
                 }
-            });
+            }
+        }
+
+        if !updated {
+            bail!("Plugin not found in qlty.toml");
         }
 
         Ok(())
