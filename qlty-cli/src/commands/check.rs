@@ -133,7 +133,7 @@ impl Check {
         eprintln!();
 
         if self.trigger == Trigger::PreCommit || self.trigger == Trigger::PrePush {
-            eprintln!("Tap enter to skip...");
+            eprintln!("Tap {} to skip...", style("enter").bold(),);
 
             thread::spawn(move || loop {
                 let mut input = String::new();
