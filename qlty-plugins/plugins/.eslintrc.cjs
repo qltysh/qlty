@@ -17,7 +17,7 @@ module.exports = {
       plugins: ["@typescript-eslint", "import"],
       parser: "@typescript-eslint/parser",
       parserOptions: {
-        project: "plugins/tsconfig.json",
+        project: "qlty-plugins/plugins/tsconfig.json",
       },
       extends: [
         "plugin:@typescript-eslint/recommended",

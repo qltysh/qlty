@@ -42,6 +42,9 @@ exclude_patterns = [
     "**/testdata/**",
     "**/tests/lang/**",
     "**/vendor/**",
+
+    # Ignore symlink
+    "plugins/**",
 ]
 
 test_patterns = [
