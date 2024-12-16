@@ -80,6 +80,8 @@ version = "0.41.0"
 
 [[plugin]]
 name = "osv-scanner"
+# Disable during Git hooks because it is slow and requires network
+triggers = ["manual", "build"] 
 
 [[plugin]]
 name = "prettier"
@@ -102,3 +104,9 @@ name = "trufflehog"
 
 [[plugin]]
 name = "yamllint"
+
+# Disable linters which are likely to produce false positives
+# on our test fixtures directories
+[[ignore]]
+plugins = ["osv-scanner", "trufflehog"]
+file_patterns = ["qlty-cli/tests/**"]
