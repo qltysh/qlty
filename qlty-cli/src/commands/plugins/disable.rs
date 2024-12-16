@@ -1,7 +1,7 @@
 use crate::{Arguments, CommandError, CommandSuccess};
 use anyhow::{bail, Result};
 use clap::Args;
-use qlty_config::Workspace;
+use qlty_config::{config::IssueMode, Workspace};
 use std::fs;
 use toml_edit::{DocumentMut, value};
 
@@ -38,7 +38,7 @@ impl ConfigDocument {
             for plugin_table in plugin_tables.iter_mut() {
                 if plugin_table["name"].as_str() == Some(name) {
                     updated = true;
-                    plugin_table["mode"] = value("disabled");
+                    plugin_table["mode"] = value(IssueMode::Disabled.to_string());
                 }
             }
         }

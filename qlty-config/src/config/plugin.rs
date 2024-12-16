@@ -715,7 +715,15 @@ pub enum IssueMode {
     Disabled = 4,
 }
 
-impl IssueMode {
+impl IssueMode {pub fn to_string(&self) -> String {
+    match self {
+        IssueMode::Block => "block".to_string(),
+        IssueMode::Comment => "comment".to_string(),
+        IssueMode::Monitor => "monitor".to_string(),
+        IssueMode::Disabled => "disabled".to_string(),
+        }
+    }
+
     pub fn extract_issue_mode_from_smells(
         language: &Language,
         qlty_config: &QltyConfig,
