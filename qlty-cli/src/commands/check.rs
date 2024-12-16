@@ -125,12 +125,17 @@ impl Check {
         let settings = self.build_settings()?;
         let num_steps = if settings.fix { 3 } else { 1 };
         let mut steps = Steps::new(self.no_progress, num_steps);
-        steps.start(THINKING, "Planning... ");
+
+        if self.verbose >= 1 {
+            steps.start(THINKING, "Planning... ");
+        }
 
         let plan = Planner::new(ExecutionVerb::Check, &settings)?.compute()?;
 
-        steps.start(LOOKING_GLASS, format!("Analyzing{}...", plan.description()));
-        eprintln!();
+        if self.verbose >= 1 {
+            steps.start(LOOKING_GLASS, format!("Analyzing{}...", plan.description()));
+            eprintln!();
+        }
 
         if self.trigger == Trigger::PreCommit || self.trigger == Trigger::PrePush {
             eprintln!("Tap {} to skip...", style("enter").bold(),);
