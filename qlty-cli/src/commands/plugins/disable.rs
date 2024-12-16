@@ -131,4 +131,30 @@ version = "1.0.0"
 
         assert_eq!(config.document.to_string().trim(), expected.trim());
     }
+
+    #[test]
+    fn test_disable_plugin_wrong_name() {
+        let (temp_dir, _) = sample_repo();
+        let temp_path = temp_dir.path().to_path_buf();
+
+        let workspace = Workspace {
+            root: temp_path.clone(),
+        };
+        fs::create_dir_all(&temp_path.join(path_to_native_string(".qlty"))).ok();
+
+        fs::write(
+            &temp_path.join(path_to_native_string(".qlty/qlty.toml")),
+            r#"
+config_version = "0"
+
+[[plugin]]
+name = "disableme"
+version = "1.0.0"
+            "#,
+        )
+        .ok();
+        let mut config = ConfigDocument::new(&workspace).unwrap();
+
+        assert!(config.disable_plugin("typo-command").is_err());
+    }
 }
