@@ -138,20 +138,7 @@ impl Check {
         }
 
         if self.trigger == Trigger::PreCommit || self.trigger == Trigger::PrePush {
-            eprintln!("Tap {} to skip...", style("enter").bold(),);
-
-            thread::spawn(move || loop {
-                let mut input = String::new();
-
-                if let Ok(tty) = std::fs::File::open("/dev/tty") {
-                    let mut tty_reader = io::BufReader::new(tty);
-                    tty_reader.read_line(&mut input).ok();
-
-                    if input == "\n" {
-                        std::process::exit(0);
-                    }
-                }
-            });
+            self.spawn_exit_on_enter_thread();
         }
 
         let executor = Executor::new(&plan);
@@ -190,6 +177,23 @@ impl Check {
                 fail: report.is_failure(),
             })
         }
+    }
+
+    fn spawn_exit_on_enter_thread(&self) {
+        eprintln!("Tap {} to skip...", style("enter").bold(),);
+
+        thread::spawn(move || loop {
+            let mut input = String::new();
+
+            if let Ok(tty) = std::fs::File::open("/dev/tty") {
+                let mut tty_reader = io::BufReader::new(tty);
+                tty_reader.read_line(&mut input).ok();
+
+                if input == "\n" {
+                    std::process::exit(0);
+                }
+            }
+        });
     }
 
     fn format_after_fix(&self, settings: &Settings, report: &Report) -> Result<Report> {
