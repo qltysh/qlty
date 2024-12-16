@@ -29,11 +29,11 @@ impl ConfigDocument {
 
     pub fn disable_plugin(&mut self, name: &str) -> Result<()> {
         if let Some(plugins) = self.document["plugin"].as_array_of_tables_mut() {
-            plugins.retain(|plugin| {
+            plugins.iter_mut().for_each(|plugin| {
                 if let Some(plugin_name) = plugin.get("name").and_then(Item::as_str) {
-                    plugin_name != name
-                } else {
-                    true // Do not modify unknown data
+                    if plugin_name == name {
+                        plugin["mode"] = "disabled".into();
+                    }
                 }
             });
         }
@@ -109,6 +109,11 @@ config_version = "0"
 [[plugin]]
 name = "stays"
 version = "1.0.0"
+
+[[plugin]]
+name = "to_disable"
+version = "1.0.0"
+mode = "disabled"
 
 [[plugin]]
 name = "also_stays"
