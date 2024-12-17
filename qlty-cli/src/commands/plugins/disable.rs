@@ -28,10 +28,6 @@ impl ConfigDocument {
     }
 
     pub fn disable_plugin(&mut self, name: &str) -> Result<()> {
-        if self.document.get("plugin").is_none() {
-            bail!("No plugins found in qlty.toml");
-        }
-
         let mut updated = false;
 
         if let Some(plugin_tables) = self.document["plugin"].as_array_of_tables_mut() {

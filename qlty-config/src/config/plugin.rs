@@ -468,27 +468,27 @@ pub enum OutputFormat {
     #[serde(rename = "sarif")]
     Sarif,
     #[serde(rename = "actionlint")]
-    Actionlint,    
+    Actionlint,
     #[serde(rename = "bandit")]
     Bandit,
     #[serde(rename = "biome")]
-    Biome,    
+    Biome,
     #[serde(rename = "clippy")]
-    Clippy,    
+    Clippy,
     #[serde(rename = "coffeelint")]
-    Coffeelint,    
+    Coffeelint,
     #[serde(rename = "eslint")]
     Eslint,
     #[serde(rename = "golangci_lint")]
-    GolangciLint,    
+    GolangciLint,
     #[serde(rename = "hadolint")]
     Hadolint,
     #[serde(rename = "knip")]
-    Knip,    
+    Knip,
     #[serde(rename = "markdownlint")]
     Markdownlint,
     #[serde(rename = "mypy")]
-    Mypy,    
+    Mypy,
     #[serde(rename = "pylint")]
     Pylint,
     #[serde(rename = "php_codesniffer")]
@@ -506,7 +506,7 @@ pub enum OutputFormat {
     #[serde(rename = "rubocop")]
     Rubocop,
     #[serde(rename = "ruff")]
-    Ruff,    
+    Ruff,
     #[serde(rename = "shellcheck")]
     Shellcheck,
     #[serde(rename = "sqlfluff")]
@@ -715,12 +715,13 @@ pub enum IssueMode {
     Disabled = 4,
 }
 
-impl IssueMode {pub fn to_string(&self) -> String {
-    match self {
-        IssueMode::Block => "block".to_string(),
-        IssueMode::Comment => "comment".to_string(),
-        IssueMode::Monitor => "monitor".to_string(),
-        IssueMode::Disabled => "disabled".to_string(),
+impl IssueMode {
+    pub fn to_string(&self) -> String {
+        match self {
+            IssueMode::Block => "block".to_string(),
+            IssueMode::Comment => "comment".to_string(),
+            IssueMode::Monitor => "monitor".to_string(),
+            IssueMode::Disabled => "disabled".to_string(),
         }
     }
 
