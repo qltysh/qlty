@@ -36,7 +36,6 @@ pub fn autofix(
 pub fn autofix(
     results: &Results,
     _settings: &Settings,
-    _workspace: &Workspace,
     _staging_area: &StagingArea,
     _steps: Option<&mut Steps>,
 ) -> Result<Results> {
