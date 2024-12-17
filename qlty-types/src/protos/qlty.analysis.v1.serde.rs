@@ -3840,6 +3840,9 @@ impl serde::Serialize for Suggestion {
         if !self.patch.is_empty() {
             len += 1;
         }
+        if self.r#unsafe {
+            len += 1;
+        }
         if self.source != 0 {
             len += 1;
         }
@@ -3855,6 +3858,9 @@ impl serde::Serialize for Suggestion {
         }
         if !self.patch.is_empty() {
             struct_ser.serialize_field("patch", &self.patch)?;
+        }
+        if self.r#unsafe {
+            struct_ser.serialize_field("unsafe", &self.r#unsafe)?;
         }
         if self.source != 0 {
             let v = SuggestionSource::try_from(self.source)
@@ -3877,6 +3883,7 @@ impl<'de> serde::Deserialize<'de> for Suggestion {
             "id",
             "description",
             "patch",
+            "unsafe",
             "source",
             "replacements",
         ];
@@ -3886,6 +3893,7 @@ impl<'de> serde::Deserialize<'de> for Suggestion {
             Id,
             Description,
             Patch,
+            Unsafe,
             Source,
             Replacements,
         }
@@ -3912,6 +3920,7 @@ impl<'de> serde::Deserialize<'de> for Suggestion {
                             "id" => Ok(GeneratedField::Id),
                             "description" => Ok(GeneratedField::Description),
                             "patch" => Ok(GeneratedField::Patch),
+                            "unsafe" => Ok(GeneratedField::Unsafe),
                             "source" => Ok(GeneratedField::Source),
                             "replacements" => Ok(GeneratedField::Replacements),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -3936,6 +3945,7 @@ impl<'de> serde::Deserialize<'de> for Suggestion {
                 let mut id__ = None;
                 let mut description__ = None;
                 let mut patch__ = None;
+                let mut r#unsafe__ = None;
                 let mut source__ = None;
                 let mut replacements__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -3958,6 +3968,12 @@ impl<'de> serde::Deserialize<'de> for Suggestion {
                             }
                             patch__ = Some(map_.next_value()?);
                         }
+                        GeneratedField::Unsafe => {
+                            if r#unsafe__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("unsafe"));
+                            }
+                            r#unsafe__ = Some(map_.next_value()?);
+                        }
                         GeneratedField::Source => {
                             if source__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("source"));
@@ -3976,6 +3992,7 @@ impl<'de> serde::Deserialize<'de> for Suggestion {
                     id: id__.unwrap_or_default(),
                     description: description__.unwrap_or_default(),
                     patch: patch__.unwrap_or_default(),
+                    r#unsafe: r#unsafe__.unwrap_or_default(),
                     source: source__.unwrap_or_default(),
                     replacements: replacements__.unwrap_or_default(),
                 })
