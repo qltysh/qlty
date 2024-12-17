@@ -716,12 +716,12 @@ pub enum IssueMode {
 }
 
 impl IssueMode {
-    pub fn to_string(&self) -> String {
+    pub fn to_str(&self) -> &'static str {
         match self {
-            IssueMode::Block => "block".to_string(),
-            IssueMode::Comment => "comment".to_string(),
-            IssueMode::Monitor => "monitor".to_string(),
-            IssueMode::Disabled => "disabled".to_string(),
+            IssueMode::Block => "block",
+            IssueMode::Comment => "comment",
+            IssueMode::Monitor => "monitor",
+            IssueMode::Disabled => "disabled",
         }
     }
 

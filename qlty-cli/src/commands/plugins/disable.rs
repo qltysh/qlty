@@ -34,7 +34,7 @@ impl ConfigDocument {
             for plugin_table in plugin_tables.iter_mut() {
                 if plugin_table["name"].as_str() == Some(name) {
                     updated = true;
-                    plugin_table["mode"] = value(IssueMode::Disabled.to_string());
+                    plugin_table["mode"] = value(IssueMode::Disabled.to_str());
                 }
             }
         }

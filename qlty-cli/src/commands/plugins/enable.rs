@@ -50,23 +50,18 @@ impl ConfigDocument {
         if let Some(plugin_tables) = self.document["plugin"].as_array_of_tables_mut() {
             for plugin_table in plugin_tables.iter_mut() {
                 if plugin_table["name"].as_str() == Some(name) {
-                    if plugin_table.get("mode").is_none() {
-                        eprintln!("{} Plugin {} is already enabled", style("⚠").yellow(), name);
-                        return Ok(());
-                    } else {
-                        match plugin_table["mode"].as_str() {
-                            Some(value) if value == IssueMode::Disabled.to_string() => {
-                                plugin_table.remove("mode");
-                                return Ok(());
-                            }
-                            Some(_) | None => {
-                                eprintln!(
-                                    "{} Plugin {} is already enabled",
-                                    style("⚠").yellow(),
-                                    name
-                                );
-                                return Ok(());
-                            }
+                    match plugin_table.get("mode") {
+                        Some(value) if value.as_str() == Some(IssueMode::Disabled.to_str()) => {
+                            plugin_table.remove("mode");
+                            return Ok(());
+                        }
+                        Some(_) | None => {
+                            eprintln!(
+                                "{} Plugin {} is already enabled",
+                                style("⚠").yellow(),
+                                name
+                            );
+                            return Ok(());
                         }
                     }
                 }
