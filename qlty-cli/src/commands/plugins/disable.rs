@@ -44,7 +44,7 @@ impl ConfigDocument {
         }
 
         if !updated {
-            bail!("Plugin not found in qlty.toml");
+            bail!("Plugin '{}' not found in qlty.toml", name);
         }
 
         Ok(())
