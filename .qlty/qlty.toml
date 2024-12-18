@@ -87,3 +87,7 @@ name = "yamllint"
 [[ignore]]
 plugins = ["osv-scanner", "trufflehog"]
 file_patterns = ["qlty-cli/tests/**"]
+
+[[ignore]]
+rules = ["markdownlint/MD024"]
+file_patterns = ["CHANGELOG.md"]
