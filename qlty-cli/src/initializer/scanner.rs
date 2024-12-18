@@ -312,7 +312,18 @@ impl Scanner {
             ..Default::default()
         };
 
+
+        let current_platform = std::env::consts::OS;
+
         for candidate in DriverCandidate::build_driver_candidates(plugin_def) {
+            match &candidate.driver.supported_platforms {
+                Some(platforms) => {
+                    if !platforms.iter().any(|platform| platform.to_string() == current_platform) {
+                        continue;
+                    }
+                }
+                None => {}
+            }
             let driver_initializer: Box<dyn DriverInitializer> = match &candidate.driver.suggested {
                 SuggestionMode::Targets => {
                     Box::new(TargetDriver::new(candidate, plugin_def, self)?)
