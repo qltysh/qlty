@@ -2,7 +2,7 @@ use crate::{Arguments, CommandError, CommandSuccess};
 use anyhow::{Context, Result};
 use clap::Args;
 use console::style;
-use qlty_config::Workspace;
+use qlty_config::{config::IssueMode, Workspace};
 use std::fs;
 use toml_edit::{array, table, value, DocumentMut};
 
@@ -47,10 +47,24 @@ impl ConfigDocument {
             self.document["plugin"] = array();
         }
 
-        for plugin in self.document["plugin"].as_array_of_tables().unwrap() {
-            if plugin["name"].as_str() == Some(name) {
-                eprintln!("{} Plugin {} is already enabled", style("⚠").yellow(), name);
-                return Ok(());
+        if let Some(plugin_tables) = self.document["plugin"].as_array_of_tables_mut() {
+            for plugin_table in plugin_tables.iter_mut() {
+                if plugin_table["name"].as_str() == Some(name) {
+                    match plugin_table.get("mode") {
+                        Some(value) if value.as_str() == Some(IssueMode::Disabled.to_str()) => {
+                            plugin_table.remove("mode");
+                            return Ok(());
+                        }
+                        Some(_) | None => {
+                            eprintln!(
+                                "{} Plugin {} is already enabled",
+                                style("⚠").yellow(),
+                                name
+                            );
+                            return Ok(());
+                        }
+                    }
+                }
             }
         }
 
@@ -232,6 +246,7 @@ output = "pass_fail"
 [[plugin]]
 name = "already_enabled"
 version = "0.9.0"
+mode = "monitor"
             "#,
         )
         .ok();
@@ -257,6 +272,62 @@ output = "pass_fail"
 
 [[plugin]]
 name = "already_enabled"
+version = "0.9.0"
+mode = "monitor"
+        "#;
+
+        assert_eq!(config.document.to_string().trim(), expected.trim());
+    }
+
+    #[test]
+    fn test_enable_plugin_when_plugin_disabled() {
+        let (temp_dir, _) = sample_repo();
+        let temp_path = temp_dir.path().to_path_buf();
+
+        fs::create_dir_all(&temp_path.join(path_to_native_string(".qlty"))).ok();
+        fs::write(
+            &temp_path.join(path_to_native_string(".qlty/qlty.toml")),
+            r#"
+config_version = "0"
+
+[plugins.definitions.marked_disabled]
+file_types = ["ALL"]
+latest_version = "1.1.0"
+
+[plugins.definitions.marked_disabled.drivers.lint]
+script = "ls -l ${target}"
+success_codes = [0]
+output = "pass_fail"
+
+[[plugin]]
+name = "marked_disabled"
+version = "0.9.0"
+mode = "disabled"
+            "#,
+        )
+        .ok();
+
+        let workspace = Workspace {
+            root: temp_path.clone(),
+        };
+
+        let mut config = ConfigDocument::new(&workspace).unwrap();
+        config.enable_plugin("marked_disabled", "1.2.1").unwrap();
+
+        let expected = r#"
+config_version = "0"
+
+[plugins.definitions.marked_disabled]
+file_types = ["ALL"]
+latest_version = "1.1.0"
+
+[plugins.definitions.marked_disabled.drivers.lint]
+script = "ls -l ${target}"
+success_codes = [0]
+output = "pass_fail"
+
+[[plugin]]
+name = "marked_disabled"
 version = "0.9.0"
         "#;
 

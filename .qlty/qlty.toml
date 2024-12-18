@@ -14,34 +14,11 @@
 config_version = "0"
 
 exclude_patterns = [
-    "*_min.*",
-    "*-min.*",
-    "*.min.*",
-    "**/.yarn/**",
-    "**/*.d.ts",
-    "**/assets/**",
-    "**/bower_components/**",
-    "**/build/**",
-    "**/cache/**",
-    "**/config/**",
-    "**/db/**",
-    "**/deps/**",
-    "**/dist/**",
-    "**/extern/**",
-    "**/external/**",
     "**/fixtures/**",
-    "**/generated/**",
-    "**/Godeps/**",
-    "**/gradlew/**",
-    "**/linters/**",
-    "**/mvnw/**",
-    "**/node_modules/**",
     "**/protos/**",
-    "**/seed/**",
-    "**/target/**",
-    "**/testdata/**",
-    "**/tests/lang/**",
-    "**/vendor/**",
+    "**/*.in/**",
+    "**/*.test.ts/**",
+    "plugins/**",
 ]
 
 test_patterns = [
@@ -80,6 +57,8 @@ version = "0.41.0"
 
 [[plugin]]
 name = "osv-scanner"
+# Disable during Git hooks because it is slow and requires network
+triggers = ["manual", "build"] 
 
 [[plugin]]
 name = "prettier"
@@ -102,3 +81,9 @@ name = "trufflehog"
 
 [[plugin]]
 name = "yamllint"
+
+# Disable linters which are likely to produce false positives
+# on our test fixtures directories
+[[ignore]]
+plugins = ["osv-scanner", "trufflehog"]
+file_patterns = ["qlty-cli/tests/**"]

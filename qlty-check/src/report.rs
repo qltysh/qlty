@@ -1,10 +1,7 @@
 use crate::{results::FixedResult, InvocationResult};
 use itertools::Itertools;
 use qlty_analysis::IssueCount;
-use qlty_types::{
-    analysis::v1::{Issue, Level, Message},
-    level_from_str,
-};
+use qlty_types::analysis::v1::{ExecutionVerb, Issue, Message};
 use std::{
     collections::{HashMap, HashSet},
     path::PathBuf,
@@ -12,6 +9,7 @@ use std::{
 
 #[derive(Clone, Debug)]
 pub struct Report {
+    pub verb: ExecutionVerb,
     pub messages: Vec<Message>,
     pub invocations: Vec<InvocationResult>,
     pub issues: Vec<Issue>,
@@ -22,39 +20,6 @@ pub struct Report {
 }
 
 impl Report {
-    pub fn new(
-        messages: Vec<Message>,
-        invocations: Vec<InvocationResult>,
-        issues: Vec<Issue>,
-        formatted: Vec<PathBuf>,
-        fixed: HashSet<FixedResult>,
-        fixable: HashSet<FixedResult>,
-        fail_level: Level,
-    ) -> Self {
-        let mut counts = IssueCount {
-            total_issues: issues.len(),
-            ..IssueCount::default()
-        };
-
-        for issue in &issues {
-            if issue.level
-                >= level_from_str(fail_level.as_str_name().to_lowercase().as_str()) as i32
-            {
-                counts.failure_issues += 1;
-            }
-        }
-
-        Self {
-            messages,
-            issues,
-            formatted,
-            fixed,
-            fixable,
-            invocations,
-            counts,
-        }
-    }
-
     pub fn issues_by_path(&self) -> HashMap<Option<PathBuf>, Vec<Issue>> {
         // Sort issues by start line before grouping them by path.
         // They will stay sorted in the group

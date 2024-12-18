@@ -30,6 +30,7 @@ use rand::thread_rng;
 use rayon::prelude::*;
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::{
     sync::{Arc, Mutex},
     time::Instant,
@@ -43,6 +44,7 @@ const MAX_ISSUES_PER_FILE: usize = 100;
 pub struct Executor {
     plan: Plan,
     progress: Progress,
+    total_issues: Arc<AtomicUsize>,
 }
 
 impl Executor {
@@ -51,6 +53,7 @@ impl Executor {
         Self {
             plan: plan.clone(),
             progress,
+            total_issues: Arc::new(AtomicUsize::new(0)),
         }
     }
 
@@ -405,13 +408,31 @@ impl Executor {
         pool.install(|| {
             invocations
                 .into_par_iter()
-                .map(|plan| {
-                    run_invocation(
+                .filter_map(|plan| {
+                    if self.total_issues.load(Ordering::SeqCst) > MAX_ISSUES {
+                        warn!(
+                            "Stopping invocations: Maximum total issue count of {} was reached",
+                            MAX_ISSUES
+                        );
+
+                        return None;
+                    }
+
+                    let invocation_result = run_invocation(
                         plan.clone(),
                         self.plan.issue_cache.clone(),
                         self.progress.clone(),
                         transformers,
-                    )
+                    );
+
+                    if let Ok(invocation_result) = &invocation_result {
+                        self.total_issues.fetch_add(
+                            invocation_result.invocation.issues_count as usize,
+                            Ordering::SeqCst,
+                        );
+                    }
+
+                    Some(invocation_result)
                 })
                 .collect::<Vec<_>>()
         })
@@ -557,10 +578,10 @@ fn run_invocation(
     transformers: &[Box<dyn IssueTransformer>],
 ) -> Result<InvocationResult> {
     let task = progress.task(&plan.plugin_name, &plan.description());
-    let mut invocation = plan.driver.run(&plan, &task)?;
+    let mut result = plan.driver.run(&plan, &task)?;
     let mut issue_limit_reached = HashSet::<PathBuf>::new();
 
-    if let Some(file_results) = invocation.file_results.as_mut() {
+    if let Some(file_results) = result.file_results.as_mut() {
         for file_result in file_results {
             if file_result.issues.len() >= MAX_ISSUES_PER_FILE {
                 warn!(
@@ -594,14 +615,14 @@ fn run_invocation(
     }
 
     if plan.driver.cache_results {
-        invocation.cache_issues(&cache)?;
+        result.cache_issues(&cache)?;
     }
 
     progress.increment(plan.workspace_entries.len() as u64);
     task.clear();
 
     if !issue_limit_reached.is_empty() {
-        invocation.push_message(
+        result.push_message(
             MessageLevel::Error,
             "invocation.limit.issue_count".to_string(),
             format!(
@@ -615,7 +636,7 @@ fn run_invocation(
         );
     }
 
-    Ok(invocation)
+    Ok(result)
 }
 
 fn walk_collect_entries_parallel(builder: &WalkBuilder) -> Vec<DirEntry> {

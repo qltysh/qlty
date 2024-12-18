@@ -1,9 +1,9 @@
 use crate::{Arguments, CommandError, CommandSuccess};
-use anyhow::Result;
+use anyhow::{bail, Result};
 use clap::Args;
-use qlty_config::Workspace;
+use qlty_config::{config::IssueMode, Workspace};
 use std::fs;
-use toml_edit::{DocumentMut, Item};
+use toml_edit::{DocumentMut, value};
 
 #[derive(Args, Debug)]
 pub struct Disable {
@@ -28,14 +28,19 @@ impl ConfigDocument {
     }
 
     pub fn disable_plugin(&mut self, name: &str) -> Result<()> {
-        if let Some(plugins) = self.document["plugin"].as_array_of_tables_mut() {
-            plugins.retain(|plugin| {
-                if let Some(plugin_name) = plugin.get("name").and_then(Item::as_str) {
-                    plugin_name != name
-                } else {
-                    true // Do not modify unknown data
+        let mut updated = false;
+
+        if let Some(plugin_tables) = self.document["plugin"].as_array_of_tables_mut() {
+            for plugin_table in plugin_tables.iter_mut() {
+                if plugin_table["name"].as_str() == Some(name) {
+                    updated = true;
+                    plugin_table["mode"] = value(IssueMode::Disabled.to_str());
                 }
-            });
+            }
+        }
+
+        if !updated {
+            bail!("Plugin '{}' not found in qlty.toml", name);
         }
 
         Ok(())
@@ -111,10 +116,41 @@ name = "stays"
 version = "1.0.0"
 
 [[plugin]]
+name = "to_disable"
+version = "1.0.0"
+mode = "disabled"
+
+[[plugin]]
 name = "also_stays"
 version = "1.0.0"
         "#;
 
         assert_eq!(config.document.to_string().trim(), expected.trim());
+    }
+
+    #[test]
+    fn test_disable_plugin_wrong_name() {
+        let (temp_dir, _) = sample_repo();
+        let temp_path = temp_dir.path().to_path_buf();
+
+        let workspace = Workspace {
+            root: temp_path.clone(),
+        };
+        fs::create_dir_all(&temp_path.join(path_to_native_string(".qlty"))).ok();
+
+        fs::write(
+            &temp_path.join(path_to_native_string(".qlty/qlty.toml")),
+            r#"
+config_version = "0"
+
+[[plugin]]
+name = "disableme"
+version = "1.0.0"
+            "#,
+        )
+        .ok();
+        let mut config = ConfigDocument::new(&workspace).unwrap();
+
+        assert!(config.disable_plugin("typo-command").is_err());
     }
 }

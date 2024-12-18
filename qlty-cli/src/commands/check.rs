@@ -15,8 +15,10 @@ use qlty_config::Workspace;
 use qlty_types::analysis::v1::ExecutionVerb;
 use qlty_types::analysis::v1::Level;
 use qlty_types::level_from_str;
+use std::io::BufRead as _;
 use std::io::{self, Read};
 use std::path::PathBuf;
+use std::thread;
 use tracing::debug;
 
 static LOOKING_GLASS: Emoji<'_, '_> = Emoji("🔍  ", "");
@@ -123,12 +125,21 @@ impl Check {
         let settings = self.build_settings()?;
         let num_steps = if settings.fix { 3 } else { 1 };
         let mut steps = Steps::new(self.no_progress, num_steps);
-        steps.start(THINKING, "Planning... ");
+
+        if self.verbose >= 1 {
+            steps.start(THINKING, "Planning... ");
+        }
 
         let plan = Planner::new(ExecutionVerb::Check, &settings)?.compute()?;
 
-        steps.start(LOOKING_GLASS, format!("Analyzing{}...", plan.description()));
-        eprintln!();
+        if self.verbose >= 1 {
+            steps.start(LOOKING_GLASS, format!("Analyzing{}...", plan.description()));
+            eprintln!();
+        }
+
+        if self.trigger == Trigger::PreCommit || self.trigger == Trigger::PrePush {
+            self.spawn_exit_on_enter_thread();
+        }
 
         let executor = Executor::new(&plan);
         let results = executor.install_and_invoke()?;
@@ -160,6 +171,23 @@ impl Check {
                 fail: report.is_failure(),
             })
         }
+    }
+
+    fn spawn_exit_on_enter_thread(&self) {
+        eprintln!("Tap {} to skip...", style("enter").bold(),);
+
+        thread::spawn(move || loop {
+            let mut input = String::new();
+
+            if let Ok(tty) = std::fs::File::open("/dev/tty") {
+                let mut tty_reader = io::BufReader::new(tty);
+                tty_reader.read_line(&mut input).ok();
+
+                if input == "\n" {
+                    std::process::exit(0);
+                }
+            }
+        });
     }
 
     fn format_after_fix(&self, settings: &Settings, report: &Report) -> Result<Report> {

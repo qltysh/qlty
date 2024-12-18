@@ -4,7 +4,7 @@ use qlty_analysis::utils::fs::path_to_string;
 use qlty_check::Report;
 use qlty_check::{executor::InvocationStatus, results::FixedResult};
 use qlty_cloud::format::Formatter;
-use qlty_types::analysis::v1::{Issue, Level};
+use qlty_types::analysis::v1::{ExecutionVerb, Issue, Level};
 use std::io::Write;
 use tabwriter::TabWriter;
 
@@ -28,11 +28,21 @@ impl Formatter for TextFormatter {
         print_issues(writer, &self.report)?;
         print_invocations(writer, &self.report, self.verbose)?;
 
-        if self.report.targets_count() > 0 {
+        if self.verbose >= 1 && self.report.targets_count() > 0 {
             writeln!(
                 writer,
-                "{}",
-                style(format!("Checked {} files", self.report.targets_count()))
+                "{} {} {}",
+                match self.report.verb {
+                    ExecutionVerb::Check => "Checked",
+                    ExecutionVerb::Fmt => "Formatted",
+                    _ => "Processed",
+                },
+                self.report.targets_count(),
+                if self.report.targets_count() == 1 {
+                    "file"
+                } else {
+                    "files"
+                },
             )?;
         }
 

@@ -468,27 +468,27 @@ pub enum OutputFormat {
     #[serde(rename = "sarif")]
     Sarif,
     #[serde(rename = "actionlint")]
-    Actionlint,    
+    Actionlint,
     #[serde(rename = "bandit")]
     Bandit,
     #[serde(rename = "biome")]
-    Biome,    
+    Biome,
     #[serde(rename = "clippy")]
-    Clippy,    
+    Clippy,
     #[serde(rename = "coffeelint")]
-    Coffeelint,    
+    Coffeelint,
     #[serde(rename = "eslint")]
     Eslint,
     #[serde(rename = "golangci_lint")]
-    GolangciLint,    
+    GolangciLint,
     #[serde(rename = "hadolint")]
     Hadolint,
     #[serde(rename = "knip")]
-    Knip,    
+    Knip,
     #[serde(rename = "markdownlint")]
     Markdownlint,
     #[serde(rename = "mypy")]
-    Mypy,    
+    Mypy,
     #[serde(rename = "pylint")]
     Pylint,
     #[serde(rename = "php_codesniffer")]
@@ -506,7 +506,7 @@ pub enum OutputFormat {
     #[serde(rename = "rubocop")]
     Rubocop,
     #[serde(rename = "ruff")]
-    Ruff,    
+    Ruff,
     #[serde(rename = "shellcheck")]
     Shellcheck,
     #[serde(rename = "sqlfluff")]
@@ -716,6 +716,15 @@ pub enum IssueMode {
 }
 
 impl IssueMode {
+    pub fn to_str(&self) -> &'static str {
+        match self {
+            IssueMode::Block => "block",
+            IssueMode::Comment => "comment",
+            IssueMode::Monitor => "monitor",
+            IssueMode::Disabled => "disabled",
+        }
+    }
+
     pub fn extract_issue_mode_from_smells(
         language: &Language,
         qlty_config: &QltyConfig,

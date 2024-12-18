@@ -58,6 +58,8 @@ pub struct Fmt {
 
 impl Fmt {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
+        self.validate_options()?;
+
         let workspace = Workspace::require_initialized()?;
         workspace.fetch_sources()?;
 
@@ -84,6 +86,17 @@ impl Fmt {
                 ..Default::default()
             })
         }
+    }
+
+    fn validate_options(&self) -> Result<(), CommandError> {
+        for path in &self.paths {
+            if !path.exists() {
+                let message = format!("path '{}' does not exist", path.display());
+                return Err(CommandError::InvalidOptions { message });
+            }
+        }
+
+        Ok(())
     }
 
     fn git_add(&self, paths: &[PathBuf]) -> Result<()> {

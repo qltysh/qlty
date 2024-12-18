@@ -1,10 +1,28 @@
 # Changelog
 
+## Week of December 15th, 2024
+
+### New
+
+- Add ability to skip Git hooks executon by pressing enter key
+
+### Improved
+
+- Stop running plugins when we exceed the total maximum issue limit of 10k
+- Disable plugins by adding `mode = "disabled"` instead of removing them from `qlty.toml`
+- Reduce output when running without `--verbose`
+- Minor improvements to output content
+
+### Fixed
+
+- Fix panic when running `qlty fmt` with a non-existent path argument
+
 ## Week of December 8th, 2024
 
 ### New
 
 - Major change: Compile official plugin definitions into CLI binaries
+- Add kube-linter plugin
 - Automtically run `qlty fmt` if `qlty check --fix` applies autofixes
 
 ### Improved
@@ -12,9 +30,13 @@
 - Detect and use Biome version from `package.json` if present
 - Target more file types for Biome. Thank you @lamualfa for this contribution!
 - Add operating system, CPU architecture, and build date to `qlty version` output
+- Limit amount of results data processed to 100 MB
+- Limit the maximum number of issues per file to 100
+- Improve documentation for writing a new plugin
 
 ### Fixed
 
+- Add targetting for `\*.mts`, `\*.cts`, `\*.mtsx`, and `\*.ctsx` extensions
 - Prevent stack overflow panics when analyzing deeply nested ASTs
 
 ## Week of December 1st, 2024
