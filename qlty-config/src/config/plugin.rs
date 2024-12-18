@@ -113,8 +113,6 @@ pub struct DriverDef {
 
     #[serde(default)]
     pub missing_output_as_error: bool,
-
-    pub supported_platforms: Option<Vec<Platform>>,
 }
 
 fn default_driver_timeout() -> u64 {
@@ -786,25 +784,4 @@ pub enum CheckTrigger {
     PrePush,
     #[serde(rename = "build")]
     Build,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize, Serialize)]
-pub enum Platform {
-    #[serde(rename = "linux")]
-    Linux,
-    #[serde(rename = "macos")]
-    MacOS,
-    #[serde(rename = "windows")]
-    Windows,
-}
-
-impl fmt::Display for Platform {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let name = match self {
-            Platform::Windows => "windows",
-            Platform::MacOS => "macos",
-            Platform::Linux => "linux",
-        };
-        write!(f, "{}", name)
-    }
 }
