@@ -3,7 +3,8 @@ use anyhow::Result;
 use qlty_types::analysis::v1::{Category, Issue, Level, Location, Range};
 use serde::{Deserialize, Serialize};
 
-const DEFAULT_MARKDOWNLINT_URL_FORMAT: &str = "https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md#${rule}";
+const DEFAULT_MARKDOWNLINT_URL_FORMAT: &str =
+    "https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md#${rule}";
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MarkdownlintMessage {
@@ -37,16 +38,17 @@ impl Parser for Markdownlint {
 
         for message in messages {
             let line = message.line_number.unwrap_or(1);
-            let rule_key = message.rule_names.join(" - ");
+            let rule_key = message
+                .rule_names
+                .first()
+                .map(|s| s.to_string())
+                .unwrap_or_default();
 
             let issue = Issue {
                 tool: "markdownlint".into(),
-                message: format!(
-                    "{} ({})",
-                    message.rule_description, message.rule_information
-                ),
+                message: message.rule_description,
                 category: Category::Style.into(),
-                level: Level::Fmt.into(),
+                level: Level::Medium.into(),
                 documentation_url: generate_document_url(rule_key.clone()),
                 rule_key,
                 location: Some(Location {
@@ -67,14 +69,9 @@ impl Parser for Markdownlint {
 }
 
 fn generate_document_url(rule_key: String) -> String {
-    DEFAULT_MARKDOWNLINT_URL_FORMAT
-        .to_string()
-        .replace(
+    DEFAULT_MARKDOWNLINT_URL_FORMAT.to_string().replace(
         "${rule}",
-        rule_key
-            .split(' ')
-            .next()
-            .unwrap_or_else(|| &rule_key)
+        rule_key.split(' ').next().unwrap_or_else(|| &rule_key),
     )
 }
 
@@ -85,7 +82,9 @@ mod test {
     #[test]
     fn test_basic_replacement() {
         let rule_key = "rule-name - some other text".to_string();
-        let expected = "https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md#rule-name".to_string();
+        let expected =
+            "https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md#rule-name"
+                .to_string();
 
         assert_eq!(generate_document_url(rule_key), expected);
     }
