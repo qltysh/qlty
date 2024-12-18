@@ -38,7 +38,7 @@ impl Formatter for TextFormatter {
                     ExecutionVerb::Fmt => "Formatted",
                     _ => "Processed",
                 },
-                self.report.targets_count(),
+                self.report.targets_count().to_formatted_string(&Locale::en),
                 if self.report.targets_count() == 1 {
                     "file"
                 } else {
@@ -97,7 +97,7 @@ pub fn print_issues(writer: &mut dyn std::io::Write, report: &Report) -> Result<
                     ))
                     .dim(),
                     formatted_level(issue.level()),
-                    issue.message.replace('\n', " "),
+                    issue.message.replace('\n', " ").trim(),
                     formatted_source(issue),
                     formatted_fix_message(report, issue),
                 )
@@ -131,7 +131,15 @@ pub fn print_invocations(
 
     if verbose >= 1 {
         writeln!(writer)?;
-        writeln!(writer, "{}", style(" RESULTS ").bold().reverse())?;
+        writeln!(
+            writer,
+            "{}{}{}",
+            style(" JOBS: ").bold().reverse(),
+            style(report.invocations.len().to_formatted_string(&Locale::en))
+                .bold()
+                .reverse(),
+            style(" ").bold().reverse()
+        )?;
         writeln!(writer)?;
     }
 
