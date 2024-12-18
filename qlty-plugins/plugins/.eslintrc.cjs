@@ -1,7 +1,6 @@
 /** @type {import('eslint').Linter.Config} */
 module.exports = {
   root: true,
-  ignorePatterns: ["/linters"],
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
