@@ -1,5 +1,6 @@
 use anyhow::Result;
 use console::style;
+use num_format::{Locale, ToFormattedString as _};
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_check::Report;
 use qlty_check::{executor::InvocationStatus, results::FixedResult};
@@ -57,7 +58,15 @@ pub fn print_issues(writer: &mut dyn std::io::Write, report: &Report) -> Result<
 
     if !paths.is_empty() {
         writeln!(writer)?;
-        writeln!(writer, "{}", style(" ISSUES ").bold().reverse())?;
+        writeln!(
+            writer,
+            "{}{}{}",
+            style(" ISSUES: ").bold().reverse(),
+            style(report.issues.len().to_formatted_string(&Locale::en))
+                .bold()
+                .reverse(),
+            style(" ").bold().reverse()
+        )?;
         writeln!(writer)?;
     }
 
