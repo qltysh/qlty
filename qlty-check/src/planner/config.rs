@@ -9,12 +9,6 @@ use tracing::{debug, trace, warn};
 
 const ALL: &str = "ALL";
 
-#[cfg(not(windows))]
-const PLATFORM_DISABLED_PLUGINS: &[&str] = &[];
-
-#[cfg(windows)]
-const PLATFORM_DISABLED_PLUGINS: &[&str] = &["semgrep"];
-
 pub fn enabled_plugins(planner: &Planner) -> Result<Vec<ActivePlugin>> {
     let active_plugins = configure_plugins(planner)?;
 
@@ -54,12 +48,26 @@ fn configure_plugins(planner: &Planner) -> Result<Vec<ActivePlugin>> {
             continue;
         }
 
-        if PLATFORM_DISABLED_PLUGINS.contains(&enabled_plugin.name.as_str()) {
-            debug!(
-                "Plugin {} is disabled on this platform, skipping.",
-                enabled_plugin.name
-            );
-            continue;
+        let current_platform = if cfg!(target_os = "windows") {
+            "windows"
+        } else if cfg!(target_os = "macos") {
+            "macos"
+        } else if cfg!(target_os = "linux") {
+            "linux"
+        } else {
+            "unknown"
+        };
+
+        if let Some(plugin_def) = planner.config.plugins.definitions.get(enabled_plugin.name.as_str()) {
+            if !plugin_def.supported_platforms.is_empty() {
+                if !&plugin_def.supported_platforms.iter().any(|platform| platform.to_string() == current_platform) {
+                    debug!(
+                        "Plugin {} is not supported on this platform, skipping.",
+                        enabled_plugin.name
+                    );
+                    continue;
+                }
+            }
         }
 
         if let Some(TargetMode::UpstreamDiff(_)) = &planner.target_mode {
