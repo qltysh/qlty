@@ -1,5 +1,7 @@
 use anyhow::{Context as _, Result};
 use console::{style, Style};
+use dialoguer::theme::ColorfulTheme;
+use dialoguer::Input;
 use diffy::Patch;
 use num_format::{Locale, ToFormattedString as _};
 use qlty_analysis::utils::fs::path_to_string;
@@ -11,7 +13,7 @@ use qlty_types::analysis::v1::{ExecutionVerb, Issue, Level, SuggestionSource};
 use similar::{ChangeTag, TextDiff};
 use std::collections::HashSet;
 use std::fmt;
-use std::io::Write;
+use std::io::{IsTerminal as _, Write};
 use tabwriter::TabWriter;
 use tracing::warn;
 
@@ -106,8 +108,15 @@ struct PatchCandidate {
     issue: Issue,
     source: SuggestionSource,
     path: String,
+    patch: String,
     original_code: String,
     modified_code: String,
+}
+
+enum AskMode {
+    All,
+    None,
+    Ask,
 }
 
 impl TextFormatter {
@@ -130,6 +139,7 @@ impl TextFormatter {
                                 source: SuggestionSource::try_from(suggestion.source)
                                     .unwrap_or_default(),
                                 path: location.path.clone(),
+                                patch: suggestion.patch.clone(),
                                 original_code,
                                 modified_code,
                             });
@@ -158,6 +168,8 @@ impl TextFormatter {
             style(" ").bold().reverse()
         )?;
         writeln!(writer)?;
+
+        let mut ask_mode = AskMode::Ask;
 
         for candidate in patch_candidates {
             let diff = TextDiff::from_lines(&candidate.original_code, &candidate.modified_code);
@@ -229,11 +241,138 @@ impl TextFormatter {
                     }
                 )?;
                 writeln!(writer)?;
+
+                if std::io::stdin().is_terminal() {
+                    match ask_mode {
+                        AskMode::None => {} // Skip and don't ask
+                        AskMode::All => {
+                            if let Ok(patch) = Patch::from_str(&candidate.patch) {
+                                if let Ok(modified_code) =
+                                    diffy::apply(&candidate.original_code, &patch)
+                                {
+                                    std::fs::write(&candidate.path, &modified_code).with_context(
+                                        || {
+                                            format!(
+                                                "Failed to apply path to file: {}",
+                                                candidate.path
+                                            )
+                                        },
+                                    )?;
+
+                                    eprintln!(
+                                        "{} {}",
+                                        style("✔ Fixed:").green().bold(),
+                                        style(&candidate.path).underlined()
+                                    );
+                                } else {
+                                    warn!("Failed to apply patch: {}", candidate.patch);
+                                    writeln!(
+                                        writer,
+                                        "{} {}",
+                                        style("Failed to apply patch:").red(),
+                                        style(&candidate.path).underlined()
+                                    )?;
+                                }
+                            } else {
+                                warn!("Failed to parse patch: {}", candidate.patch);
+                                writeln!(
+                                    writer,
+                                    "{} {}",
+                                    style("Failed to parse patch:").red(),
+                                    style(&candidate.path).underlined()
+                                )?;
+                            }
+                        }
+                        AskMode::Ask => {
+                            let mut answered = false;
+
+                            while !answered {
+                                if let Ok(answer) = apply_prompt() {
+                                    match answer.as_str() {
+                                        "Y" | "y" | "yes" => {
+                                            answered = true;
+
+                                            if let Ok(patch) = Patch::from_str(&candidate.patch) {
+                                                if let Ok(modified_code) =
+                                                    diffy::apply(&candidate.original_code, &patch)
+                                                {
+                                                    std::fs::write(&candidate.path, &modified_code)
+                                                        .with_context(|| {
+                                                            format!(
+                                                                "Failed to apply path to file: {}",
+                                                                candidate.path
+                                                            )
+                                                        })?;
+
+                                                    eprintln!(
+                                                        "{} {}",
+                                                        style("✔ Fixed:").green().bold(),
+                                                        style(&candidate.path).underlined()
+                                                    );
+                                                } else {
+                                                    warn!(
+                                                        "Failed to apply patch: {}",
+                                                        candidate.patch
+                                                    );
+                                                    writeln!(
+                                                        writer,
+                                                        "{} {}",
+                                                        style("Failed to apply patch:").red(),
+                                                        style(&candidate.path).underlined()
+                                                    )?;
+                                                }
+                                            } else {
+                                                warn!("Failed to parse patch: {}", candidate.patch);
+                                                writeln!(
+                                                    writer,
+                                                    "{} {}",
+                                                    style("Failed to parse patch:").red(),
+                                                    style(&candidate.path).underlined()
+                                                )?;
+                                            }
+                                        }
+                                        "A" | "a" | "all" => {
+                                            answered = true;
+                                            ask_mode = AskMode::All;
+
+                                            std::fs::write(
+                                                &candidate.path,
+                                                &candidate.modified_code,
+                                            )
+                                            .with_context(|| {
+                                                format!("Failed to write file: {}", candidate.path)
+                                            })?;
+                                        }
+                                        "N" | "n" | "no" => {
+                                            answered = true;
+                                        }
+                                        "none" => {
+                                            answered = true;
+                                            ask_mode = AskMode::None;
+                                        }
+                                        _ => {}
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                writeln!(writer)?;
             }
         }
 
         Ok(())
     }
+}
+
+fn apply_prompt() -> Result<String> {
+    Ok(Input::<String>::with_theme(&ColorfulTheme::default())
+        .with_prompt("Apply this fix? [Yes/no/all/none]")
+        .default("Y".to_string())
+        .show_default(false)
+        .allow_empty(true)
+        .interact_text()?)
 }
 
 pub fn print_unformatted(writer: &mut dyn std::io::Write, report: &Report) -> Result<()> {
