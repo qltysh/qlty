@@ -1,33 +1,53 @@
 use anyhow::Result;
-use console::style;
+use console::{style, Style};
+use diffy::Patch;
 use num_format::{Locale, ToFormattedString as _};
 use qlty_analysis::utils::fs::path_to_string;
+use qlty_check::executor::staging_area::StagingArea;
+use qlty_check::source_reader::SourceReader as _;
 use qlty_check::Report;
 use qlty_check::{executor::InvocationStatus, results::FixedResult};
 use qlty_cloud::format::Formatter;
 use qlty_types::analysis::v1::{ExecutionVerb, Issue, Level};
+use similar::{ChangeTag, TextDiff};
 use std::collections::HashSet;
+use std::fmt;
 use std::io::Write;
 use tabwriter::TabWriter;
 
 #[derive(Debug)]
 pub struct TextFormatter {
     report: Report,
+    staging_area: StagingArea,
     verbose: usize,
 }
 
 impl<'a> TextFormatter {
-    pub fn new(report: &Report, verbose: usize) -> Box<dyn Formatter> {
+    // qlty-ignore: clippy:new_ret_no_self
+    pub fn new(report: &Report, staging_area: &StagingArea, verbose: usize) -> Box<dyn Formatter> {
         Box::new(Self {
             report: report.clone(),
+            staging_area: staging_area.clone(),
             verbose,
         })
+    }
+}
+
+struct Line(Option<usize>);
+
+impl fmt::Display for Line {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self.0 {
+            None => write!(f, "    "),
+            Some(idx) => write!(f, "{:<4}", idx + 1),
+        }
     }
 }
 
 impl Formatter for TextFormatter {
     fn write_to(&self, writer: &mut dyn std::io::Write) -> anyhow::Result<()> {
         print_unformatted(writer, &self.report)?;
+        self.print_fixes(writer)?;
         print_issues(writer, &self.report)?;
         print_invocations(writer, &self.report, self.verbose)?;
 
@@ -66,6 +86,69 @@ impl Formatter for TextFormatter {
                 ))
                 .dim()
             )?;
+        }
+
+        Ok(())
+    }
+}
+
+impl TextFormatter {
+    pub fn print_fixes(&self, writer: &mut dyn std::io::Write) -> Result<()> {
+        writeln!(writer)?;
+        writeln!(
+            writer,
+            "{}{}{}",
+            style(" AUTOFIXES: ").bold().reverse(),
+            style(123.to_formatted_string(&Locale::en)).bold().reverse(),
+            style(" ").bold().reverse()
+        )?;
+        writeln!(writer)?;
+
+        for issue in &self.report.issues {
+            if let Some(location) = &issue.location {
+                let path = &location.path;
+                writeln!(writer, "{}", style(path).underlined())?;
+
+                for suggestion in &issue.suggestions {
+                    let patch = Patch::from_str(&suggestion.patch).unwrap();
+                    let original_code = self.staging_area.read(path.into())?;
+
+                    if let Ok(modified_code) = diffy::apply(&original_code, &patch) {
+                        let diff = TextDiff::from_lines(&original_code, &modified_code);
+
+                        for (idx, group) in diff.grouped_ops(3).iter().enumerate() {
+                            if idx > 0 {
+                                println!("{:-^1$}", "-", 80);
+                            }
+                            for op in group {
+                                for change in diff.iter_inline_changes(op) {
+                                    let (sign, s) = match change.tag() {
+                                        ChangeTag::Delete => ("-", Style::new().red()),
+                                        ChangeTag::Insert => ("+", Style::new().green()),
+                                        ChangeTag::Equal => (" ", Style::new().dim()),
+                                    };
+                                    print!(
+                                        "{}{} |{}",
+                                        style(Line(change.old_index())).dim(),
+                                        style(Line(change.new_index())).dim(),
+                                        s.apply_to(sign).bold(),
+                                    );
+                                    for (emphasized, value) in change.iter_strings_lossy() {
+                                        if emphasized {
+                                            print!("{}", s.apply_to(value).underlined().on_black());
+                                        } else {
+                                            print!("{}", s.apply_to(value));
+                                        }
+                                    }
+                                    if change.missing_newline() {
+                                        println!();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         Ok(())
