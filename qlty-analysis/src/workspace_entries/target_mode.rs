@@ -25,12 +25,12 @@ impl TargetMode {
     }
 
     pub fn is_diff(&self) -> bool {
-        match self {
+        matches!(
+            self,
             TargetMode::Index
-            | TargetMode::IndexFile(_)
-            | TargetMode::HeadDiff
-            | TargetMode::UpstreamDiff(_) => true,
-            _ => false,
-        }
+                | TargetMode::IndexFile(_)
+                | TargetMode::HeadDiff
+                | TargetMode::UpstreamDiff(_)
+        )
     }
 }
