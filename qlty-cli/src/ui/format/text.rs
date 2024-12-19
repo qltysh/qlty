@@ -14,6 +14,7 @@ use std::collections::HashSet;
 use std::fmt;
 use std::io::Write;
 use tabwriter::TabWriter;
+use tracing::warn;
 
 #[derive(Debug)]
 pub struct TextFormatter {
@@ -92,63 +93,101 @@ impl Formatter for TextFormatter {
     }
 }
 
+struct PatchCandidate {
+    issue: Issue,
+    path: String,
+    original_code: String,
+    modified_code: String,
+}
+
 impl TextFormatter {
     pub fn print_fixes(&self, writer: &mut dyn std::io::Write) -> Result<()> {
+        let mut patch_candidates = vec![];
+
+        for issue in &self.report.issues {
+            if let Some(location) = &issue.location {
+                if let Some(suggestion) = issue.suggestions.first() {
+                    if let Ok(patch) = Patch::from_str(&suggestion.patch) {
+                        let original_code = self.staging_area.read(location.path.clone().into())?;
+
+                        if let Ok(modified_code) = diffy::apply(&original_code, &patch) {
+                            patch_candidates.push(PatchCandidate {
+                                issue: issue.clone(),
+                                path: location.path.clone(),
+                                original_code,
+                                modified_code,
+                            });
+                        } else {
+                            warn!("Failed to apply patch: {}", suggestion.patch);
+                        }
+                    } else {
+                        warn!("Failed to parse patch: {}", suggestion.patch);
+                    }
+                }
+            }
+        }
+
+        if patch_candidates.is_empty() {
+            return Ok(());
+        }
+
         writeln!(writer)?;
         writeln!(
             writer,
             "{}{}{}",
             style(" AUTOFIXES: ").bold().reverse(),
-            style(123.to_formatted_string(&Locale::en)).bold().reverse(),
+            style(patch_candidates.len().to_formatted_string(&Locale::en))
+                .bold()
+                .reverse(),
             style(" ").bold().reverse()
         )?;
         writeln!(writer)?;
 
-        for issue in &self.report.issues {
-            if let Some(location) = &issue.location {
-                let path = &location.path;
-                writeln!(writer, "{}", style(path).underlined())?;
+        for candidate in patch_candidates {
+            writeln!(writer, "{}", style(&candidate.path).underlined())?;
 
-                for suggestion in &issue.suggestions {
-                    let patch = Patch::from_str(&suggestion.patch).unwrap();
-                    let original_code = self.staging_area.read(path.into())?;
+            writeln!(
+                writer,
+                "{} {} {}",
+                formatted_level(candidate.issue.level()),
+                style(candidate.issue.message.replace('\n', " ").trim()),
+                style(formatted_source(&candidate.issue)).dim()
+            )?;
 
-                    if let Ok(modified_code) = diffy::apply(&original_code, &patch) {
-                        let diff = TextDiff::from_lines(&original_code, &modified_code);
+            let diff = TextDiff::from_lines(&candidate.original_code, &candidate.modified_code);
 
-                        for (idx, group) in diff.grouped_ops(3).iter().enumerate() {
-                            if idx > 0 {
-                                println!("{:-^1$}", "-", 80);
+            for (idx, group) in diff.grouped_ops(3).iter().enumerate() {
+                if idx > 0 {
+                    println!("{:-^1$}", "-", 80);
+                }
+                for op in group {
+                    for change in diff.iter_inline_changes(op) {
+                        let (sign, s) = match change.tag() {
+                            ChangeTag::Delete => ("-", Style::new().red()),
+                            ChangeTag::Insert => ("+", Style::new().green()),
+                            ChangeTag::Equal => (" ", Style::new().dim()),
+                        };
+                        print!(
+                            "{}{} |{}",
+                            style(Line(change.old_index())).dim(),
+                            style(Line(change.new_index())).dim(),
+                            s.apply_to(sign).bold(),
+                        );
+                        for (emphasized, value) in change.iter_strings_lossy() {
+                            if emphasized {
+                                print!("{}", s.apply_to(value).underlined().on_black());
+                            } else {
+                                print!("{}", s.apply_to(value));
                             }
-                            for op in group {
-                                for change in diff.iter_inline_changes(op) {
-                                    let (sign, s) = match change.tag() {
-                                        ChangeTag::Delete => ("-", Style::new().red()),
-                                        ChangeTag::Insert => ("+", Style::new().green()),
-                                        ChangeTag::Equal => (" ", Style::new().dim()),
-                                    };
-                                    print!(
-                                        "{}{} |{}",
-                                        style(Line(change.old_index())).dim(),
-                                        style(Line(change.new_index())).dim(),
-                                        s.apply_to(sign).bold(),
-                                    );
-                                    for (emphasized, value) in change.iter_strings_lossy() {
-                                        if emphasized {
-                                            print!("{}", s.apply_to(value).underlined().on_black());
-                                        } else {
-                                            print!("{}", s.apply_to(value));
-                                        }
-                                    }
-                                    if change.missing_newline() {
-                                        println!();
-                                    }
-                                }
-                            }
+                        }
+                        if change.missing_newline() {
+                            println!();
                         }
                     }
                 }
             }
+
+            writeln!(writer)?;
         }
 
         Ok(())
