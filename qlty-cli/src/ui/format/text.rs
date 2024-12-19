@@ -5,6 +5,7 @@ use qlty_check::Report;
 use qlty_check::{executor::InvocationStatus, results::FixedResult};
 use qlty_cloud::format::Formatter;
 use qlty_types::analysis::v1::{ExecutionVerb, Issue, Level};
+use std::collections::HashSet;
 use std::io::Write;
 use tabwriter::TabWriter;
 
@@ -25,6 +26,7 @@ impl<'a> TextFormatter {
 
 impl Formatter for TextFormatter {
     fn write_to(&self, writer: &mut dyn std::io::Write) -> anyhow::Result<()> {
+        print_unformatted(writer, &self.report)?;
         print_issues(writer, &self.report)?;
         print_invocations(writer, &self.report, self.verbose)?;
 
@@ -48,6 +50,39 @@ impl Formatter for TextFormatter {
 
         Ok(())
     }
+}
+
+pub fn print_unformatted(writer: &mut dyn std::io::Write, report: &Report) -> Result<()> {
+    let issues = report
+        .issues
+        .iter()
+        .filter(|issue| issue.level() == Level::Fmt)
+        .collect::<Vec<_>>();
+
+    let paths = issues
+        .iter()
+        .map(|issue| issue.path().clone())
+        .collect::<HashSet<_>>();
+
+    let mut paths: Vec<_> = paths.iter().collect();
+    paths.sort();
+
+    if !paths.is_empty() {
+        writeln!(writer)?;
+        writeln!(writer, "{}", style(" UNFORMATTED FILES ").bold().reverse())?;
+        writeln!(writer)?;
+    }
+
+    for path in paths {
+        writeln!(
+            writer,
+            "{} {}",
+            style("✖").red().bold(),
+            style(path_to_string(path.clone().unwrap_or_default())).underlined(),
+        )?;
+    }
+
+    Ok(())
 }
 
 pub fn print_issues(writer: &mut dyn std::io::Write, report: &Report) -> Result<()> {
