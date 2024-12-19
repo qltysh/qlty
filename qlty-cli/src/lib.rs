@@ -136,21 +136,6 @@ fn handle_result(
                         );
                     }
                 }
-
-                if fixed_count == 0 && command_success.fixable_count > 0 {
-                    eprintln!();
-                    eprintln!(
-                        "{} Detected {} fixable {}, run with {} to apply them.",
-                        style("ℹ").yellow().bold(),
-                        style(format!("{}", command_success.fixable_count)).yellow(),
-                        if command_success.fixable_count == 1 {
-                            "issue"
-                        } else {
-                            "issues"
-                        },
-                        style("--fix").yellow()
-                    );
-                }
             }
 
             std::process::exit(command_success.exit_code());
