@@ -147,21 +147,12 @@ impl TextFormatter {
         writeln!(writer)?;
 
         for candidate in patch_candidates {
-            writeln!(writer, "{}", style(&candidate.path).underlined())?;
-
-            writeln!(
-                writer,
-                "{} {} {}",
-                formatted_level(candidate.issue.level()),
-                style(candidate.issue.message.replace('\n', " ").trim()),
-                style(formatted_source(&candidate.issue)).dim()
-            )?;
-
             let diff = TextDiff::from_lines(&candidate.original_code, &candidate.modified_code);
+            let mut patch_writer = vec![];
 
             for (idx, group) in diff.grouped_ops(3).iter().enumerate() {
                 if idx > 0 {
-                    println!("{:-^1$}", "-", 80);
+                    writeln!(patch_writer, "{:-^1$}", "-", 80)?;
                 }
                 for op in group {
                     for change in diff.iter_inline_changes(op) {
@@ -170,27 +161,47 @@ impl TextFormatter {
                             ChangeTag::Insert => ("+", Style::new().green()),
                             ChangeTag::Equal => (" ", Style::new().dim()),
                         };
-                        print!(
+                        write!(
+                            patch_writer,
                             "{}{} |{}",
                             style(Line(change.old_index())).dim(),
                             style(Line(change.new_index())).dim(),
                             s.apply_to(sign).bold(),
-                        );
+                        )?;
                         for (emphasized, value) in change.iter_strings_lossy() {
                             if emphasized {
-                                print!("{}", s.apply_to(value).underlined().on_black());
+                                write!(
+                                    patch_writer,
+                                    "{}",
+                                    s.apply_to(value).underlined().on_black()
+                                )?;
                             } else {
-                                print!("{}", s.apply_to(value));
+                                write!(patch_writer, "{}", s.apply_to(value))?;
                             }
                         }
                         if change.missing_newline() {
-                            println!();
+                            writeln!(patch_writer)?;
                         }
                     }
                 }
             }
 
-            writeln!(writer)?;
+            // For a reason that I haven't figured out yet, sometimes we print
+            // empty patches. This is a workaround to skip those issues.
+            if !patch_writer.is_empty() {
+                writeln!(writer, "{}", style(&candidate.path).underlined())?;
+
+                writeln!(
+                    writer,
+                    "{} {} {}",
+                    formatted_level(candidate.issue.level()),
+                    style(candidate.issue.message.replace('\n', " ").trim()),
+                    style(formatted_source(&candidate.issue)).dim()
+                )?;
+
+                writeln!(writer, "{}", String::from_utf8_lossy(&patch_writer))?;
+                writeln!(writer)?;
+            }
         }
 
         Ok(())
