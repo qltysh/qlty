@@ -246,102 +246,23 @@ impl TextFormatter {
                     match ask_mode {
                         AskMode::None => {} // Skip and don't ask
                         AskMode::All => {
-                            if let Ok(patch) = Patch::from_str(&candidate.patch) {
-                                if let Ok(modified_code) =
-                                    diffy::apply(&candidate.original_code, &patch)
-                                {
-                                    std::fs::write(&candidate.path, &modified_code).with_context(
-                                        || {
-                                            format!(
-                                                "Failed to apply path to file: {}",
-                                                candidate.path
-                                            )
-                                        },
-                                    )?;
-
-                                    eprintln!(
-                                        "{} {}",
-                                        style("✔ Fixed:").green().bold(),
-                                        style(&candidate.path).underlined()
-                                    );
-                                } else {
-                                    warn!("Failed to apply patch: {}", candidate.patch);
-                                    writeln!(
-                                        writer,
-                                        "{} {}",
-                                        style("Failed to apply patch:").red(),
-                                        style(&candidate.path).underlined()
-                                    )?;
-                                }
-                            } else {
-                                warn!("Failed to parse patch: {}", candidate.patch);
-                                writeln!(
-                                    writer,
-                                    "{} {}",
-                                    style("Failed to parse patch:").red(),
-                                    style(&candidate.path).underlined()
-                                )?;
-                            }
+                            apply_fix(writer, &candidate)?;
                         }
                         AskMode::Ask => {
                             let mut answered = false;
 
+                            // Loop until we get a valid answer
                             while !answered {
-                                if let Ok(answer) = apply_prompt() {
+                                if let Ok(answer) = prompt_apply_this_fix() {
                                     match answer.as_str() {
                                         "Y" | "y" | "yes" => {
                                             answered = true;
-
-                                            if let Ok(patch) = Patch::from_str(&candidate.patch) {
-                                                if let Ok(modified_code) =
-                                                    diffy::apply(&candidate.original_code, &patch)
-                                                {
-                                                    std::fs::write(&candidate.path, &modified_code)
-                                                        .with_context(|| {
-                                                            format!(
-                                                                "Failed to apply path to file: {}",
-                                                                candidate.path
-                                                            )
-                                                        })?;
-
-                                                    eprintln!(
-                                                        "{} {}",
-                                                        style("✔ Fixed:").green().bold(),
-                                                        style(&candidate.path).underlined()
-                                                    );
-                                                } else {
-                                                    warn!(
-                                                        "Failed to apply patch: {}",
-                                                        candidate.patch
-                                                    );
-                                                    writeln!(
-                                                        writer,
-                                                        "{} {}",
-                                                        style("Failed to apply patch:").red(),
-                                                        style(&candidate.path).underlined()
-                                                    )?;
-                                                }
-                                            } else {
-                                                warn!("Failed to parse patch: {}", candidate.patch);
-                                                writeln!(
-                                                    writer,
-                                                    "{} {}",
-                                                    style("Failed to parse patch:").red(),
-                                                    style(&candidate.path).underlined()
-                                                )?;
-                                            }
+                                            apply_fix(writer, &candidate)?;
                                         }
                                         "A" | "a" | "all" => {
                                             answered = true;
                                             ask_mode = AskMode::All;
-
-                                            std::fs::write(
-                                                &candidate.path,
-                                                &candidate.modified_code,
-                                            )
-                                            .with_context(|| {
-                                                format!("Failed to write file: {}", candidate.path)
-                                            })?;
+                                            apply_fix(writer, &candidate)?;
                                         }
                                         "N" | "n" | "no" => {
                                             answered = true;
@@ -366,13 +287,46 @@ impl TextFormatter {
     }
 }
 
-fn apply_prompt() -> Result<String> {
+fn prompt_apply_this_fix() -> Result<String> {
     Ok(Input::<String>::with_theme(&ColorfulTheme::default())
         .with_prompt("Apply this fix? [Yes/no/all/none]")
         .default("Y".to_string())
         .show_default(false)
         .allow_empty(true)
         .interact_text()?)
+}
+
+fn apply_fix(writer: &mut dyn std::io::Write, candidate: &PatchCandidate) -> Result<()> {
+    if let Ok(patch) = Patch::from_str(&candidate.patch) {
+        if let Ok(modified_code) = diffy::apply(&candidate.original_code, &patch) {
+            std::fs::write(&candidate.path, &modified_code)
+                .with_context(|| format!("Failed to apply path to file: {}", candidate.path))?;
+
+            eprintln!(
+                "{} {}",
+                style("✔ Fixed:").green().bold(),
+                style(&candidate.path).underlined()
+            );
+        } else {
+            warn!("Failed to apply patch: {}", candidate.patch);
+            writeln!(
+                writer,
+                "{} {}",
+                style("Failed to apply patch:").red(),
+                style(&candidate.path).underlined()
+            )?;
+        }
+    } else {
+        warn!("Failed to parse patch: {}", candidate.patch);
+        writeln!(
+            writer,
+            "{} {}",
+            style("Failed to parse patch:").red(),
+            style(&candidate.path).underlined()
+        )?;
+    }
+
+    Ok(())
 }
 
 pub fn print_unformatted(writer: &mut dyn std::io::Write, report: &Report) -> Result<()> {
