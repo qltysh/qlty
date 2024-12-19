@@ -9,6 +9,7 @@ use anyhow::Result;
 use autofix::autofix;
 use clap::Args;
 use console::{style, Emoji};
+use qlty_check::planner::Plan;
 use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Report, Settings};
 use qlty_cloud::format::JsonFormatter;
 use qlty_config::Workspace;
@@ -160,7 +161,7 @@ impl Check {
             );
         }
 
-        self.write_stdout(&report, &settings)?;
+        self.write_stdout(&report, &plan, &settings)?;
         self.write_stderr(&report)?;
 
         if !self.no_error && !self.skip_errored_plugins && report.has_errors() {
@@ -311,11 +312,11 @@ impl Check {
         }
     }
 
-    fn write_stdout(&self, report: &Report, settings: &Settings) -> Result<()> {
+    fn write_stdout(&self, report: &Report, plan: &Plan, settings: &Settings) -> Result<()> {
         let formatter = if self.json {
             JsonFormatter::new(report.issues.clone())
         } else {
-            TextFormatter::new(report, settings.verbose, self.summary)
+            TextFormatter::new(report, &plan.workspace, settings.verbose, self.summary)
         };
 
         formatter.write_to(&mut std::io::stdout())
