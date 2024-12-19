@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context as _, Result};
 use console::{style, Style};
 use diffy::Patch;
 use num_format::{Locale, ToFormattedString as _};
@@ -108,7 +108,10 @@ impl TextFormatter {
             if let Some(location) = &issue.location {
                 if let Some(suggestion) = issue.suggestions.first() {
                     if let Ok(patch) = Patch::from_str(&suggestion.patch) {
-                        let original_code = self.staging_area.read(location.path.clone().into())?;
+                        let original_code = self
+                            .staging_area
+                            .read(location.path.clone().into())
+                            .with_context(|| format!("Failed to read file: {}", location.path))?;
 
                         if let Ok(modified_code) = diffy::apply(&original_code, &patch) {
                             patch_candidates.push(PatchCandidate {
