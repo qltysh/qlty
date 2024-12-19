@@ -18,6 +18,7 @@ pub struct TextFormatter {
 }
 
 impl<'a> TextFormatter {
+    // qlty-ignore: clippy:new_ret_no_self
     pub fn new(report: &Report, verbose: usize, summary: bool) -> Box<dyn Formatter> {
         Box::new(Self {
             report: report.clone(),
