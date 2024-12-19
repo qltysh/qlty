@@ -90,11 +90,6 @@ pub enum Commands {
     /// Manage plugins
     Plugins(plugins::Arguments),
 
-    #[cfg(feature = "skills")]
-    #[command(hide = true)]
-    /// Resolve an issue
-    Resolve(Resolve),
-
     /// Check code quality
     Smells(Smells),
 
@@ -141,8 +136,6 @@ impl Arguments {
             Commands::Parse(command) => command.execute(self),
             Commands::Patch(command) => command.execute(self),
             Commands::Plugins(command) => command.execute(self),
-            #[cfg(feature = "skills")]
-            Commands::Resolve(command) => command.execute(self),
             Commands::Smells(command) => command.execute(self),
             Commands::Telemetry(command) => command.execute(self),
             Commands::Upgrade(command) => command.execute(self),

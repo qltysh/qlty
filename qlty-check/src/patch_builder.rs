@@ -16,6 +16,9 @@ pub struct PatchBuilder {
 impl IssueTransformer for PatchBuilder {
     fn transform(&self, mut issue: Issue) -> Option<Issue> {
         for suggestion in issue.suggestions.iter_mut() {
+            if suggestion.replacements.is_empty() {
+                continue;
+            }
             let replacements = suggestion.replacements.clone();
             suggestion.replacements = self.sorted_replacements(replacements).collect();
             suggestion.patch = self.build_patch(&suggestion.replacements, &issue.location);

@@ -88,8 +88,6 @@ impl Init {
             })?;
 
             initializer.prepare()?;
-            self.print_check("Fetched plugins definitions");
-
             initializer.compute()?;
 
             if self.dry_run {
@@ -99,7 +97,6 @@ impl Init {
                 initializer.write()?;
             }
 
-            self.print_check("Created .gitignore in .qlty/");
             self.print_check(&format!(
                 "Created qlty.toml config file with {} plugins",
                 initializer.plugins.len()
@@ -108,8 +105,6 @@ impl Init {
             if !self.skip_plugins {
                 self.print_enabled_plugins(&initializer)?;
             }
-
-            self.print_check("Set up qlty in the current directory");
 
             if !self.skip_plugins {
                 self.plugins_post_init(&initializer)?;

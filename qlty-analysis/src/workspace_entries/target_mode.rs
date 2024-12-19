@@ -23,4 +23,14 @@ impl TargetMode {
             _ => panic!("diff_mode() called on {:?}", self),
         }
     }
+
+    pub fn is_diff(&self) -> bool {
+        matches!(
+            self,
+            TargetMode::Index
+                | TargetMode::IndexFile(_)
+                | TargetMode::HeadDiff
+                | TargetMode::UpstreamDiff(_)
+        )
+    }
 }

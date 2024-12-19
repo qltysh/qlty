@@ -456,12 +456,7 @@ impl InvocationResult {
     }
 
     fn outfile_directory(&self) -> PathBuf {
-        self.plan
-            .workspace
-            .root
-            .join(".qlty")
-            .join("out")
-            .join("invocations")
+        self.plan.workspace.root.join(".qlty").join("out")
     }
 
     pub fn status(&self) -> InvocationStatus {

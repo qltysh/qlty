@@ -30,8 +30,3 @@ pub use {
     panic::Panic, parse::Parse, patch::Patch, smells::Smells, telemetry::Telemetry,
     upgrade::Upgrade, validate::Validate, version::Version,
 };
-
-#[cfg(feature = "skills")]
-mod resolve;
-#[cfg(feature = "skills")]
-pub use resolve::Resolve;

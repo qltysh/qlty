@@ -14,7 +14,7 @@ pub struct Upload {
 
 impl Upload {
     pub fn prepare(token: &str, report: &mut Report) -> Result<Self> {
-        let client = QltyClient::new(token);
+        let client = QltyClient::new(Some(token.into()));
 
         let response = client
             .post("/coverage")

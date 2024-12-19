@@ -37,7 +37,6 @@ pub struct Check {
     pub fix: bool,
 
     /// Generate AI fixes (requires OpenAI API key)
-    #[cfg(feature = "llm")]
     #[arg(long)]
     pub ai: bool,
 
@@ -143,13 +142,7 @@ impl Check {
 
         let executor = Executor::new(&plan);
         let results = executor.install_and_invoke()?;
-        let results = autofix(
-            &results,
-            &settings,
-            &workspace,
-            &plan.staging_area,
-            Some(&mut steps),
-        )?;
+        let results = autofix(&results, &settings, &plan.staging_area, Some(&mut steps))?;
 
         let mut processor = Processor::new(&plan, results);
         let report = processor.compute()?;
@@ -260,10 +253,7 @@ impl Check {
         settings.sample = self.sample;
         settings.all = self.all;
         settings.fix = self.fix;
-        #[cfg(feature = "llm")]
-        {
-            settings.ai = self.ai;
-        }
+        settings.ai = self.ai;
         settings.r#unsafe = self.r#unsafe;
         settings.jobs = self.jobs;
         settings.progress = !self.no_progress;

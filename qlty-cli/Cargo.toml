@@ -29,8 +29,6 @@ path = "tests/tests.rs"
 [features]
 default = ["alpha"]
 alpha = []
-llm = []
-skills = []
 
 [dependencies]
 anyhow.workspace = true
@@ -61,8 +59,6 @@ qlty-check.workspace = true
 qlty-cloud.workspace = true
 qlty-config.workspace = true
 qlty-coverage.workspace = true
-qlty-llm.workspace = true
-qlty-skills.workspace = true
 qlty-smells.workspace = true
 qlty-test-utilities.workspace = true
 qlty-types.workspace = true

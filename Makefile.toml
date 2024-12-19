@@ -1,0 +1,37 @@
+[tasks.default]
+alias = "test"
+
+[tasks.test]
+command = "cargo"
+args = [
+  "llvm-cov",
+  "--all-features",
+  "--lcov",
+  "--output-path",
+  "target/lcov.info",
+  "--",
+  "--include-ignored",
+  "${@}",
+]
+
+[tasks.create-bin-dir]
+script = "mkdir -p ~/.qlty/bin"
+
+[tasks.create-bin-dir.windows]
+script = "if not exist %USERPROFILE%\\.qlty\\bin ( md %USERPROFILE%\\.qlty\\bin )"
+
+[tasks.symlink-release]
+dependencies = ["create-bin-dir"]
+script = "ln -sf $PWD/cli/target/release/qlty $HOME/.qlty/bin/qlty"
+
+[tasks.symlink-release.windows]
+dependencies = ["create-bin-dir"]
+script = "copy /y %CD%\\cli\\target\\release\\qlty*.exe %USERPROFILE%\\.qlty\\bin"
+
+[tasks.symlink-debug]
+dependencies = ["create-bin-dir"]
+script = "ln -sf $PWD/cli/target/debug/qlty ~/.qlty/bin/qlty"
+
+[tasks.symlink-debug.windows]
+dependencies = ["create-bin-dir"]
+script = "copy /y %CD%\\cli\\target\\debug\\qlty*.exe %USERPROFILE%\\.qlty\\bin"

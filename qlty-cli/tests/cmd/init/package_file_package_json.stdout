@@ -52,6 +52,9 @@ test_patterns = [
   "**/spec_*.*",
 ]
 
+[smells]
+mode = "comment"
+
 [[source]]
 name = "local"
 directory = "../plugins"

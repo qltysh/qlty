@@ -286,6 +286,8 @@ pub struct Suggestion {
     pub description: ::prost::alloc::string::String,
     #[prost(string, tag="5")]
     pub patch: ::prost::alloc::string::String,
+    #[prost(bool, tag="8")]
+    pub r#unsafe: bool,
     #[prost(enumeration="SuggestionSource", tag="7")]
     pub source: i32,
     #[prost(message, repeated, tag="6")]

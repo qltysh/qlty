@@ -1,10 +1,12 @@
 use anyhow::Result;
 use console::style;
+use num_format::{Locale, ToFormattedString as _};
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_check::Report;
 use qlty_check::{executor::InvocationStatus, results::FixedResult};
 use qlty_cloud::format::Formatter;
 use qlty_types::analysis::v1::{ExecutionVerb, Issue, Level};
+use std::collections::HashSet;
 use std::io::Write;
 use tabwriter::TabWriter;
 
@@ -25,29 +27,82 @@ impl<'a> TextFormatter {
 
 impl Formatter for TextFormatter {
     fn write_to(&self, writer: &mut dyn std::io::Write) -> anyhow::Result<()> {
+        print_unformatted(writer, &self.report)?;
         print_issues(writer, &self.report)?;
         print_invocations(writer, &self.report, self.verbose)?;
 
         if self.verbose >= 1 && self.report.targets_count() > 0 {
             writeln!(
                 writer,
-                "{} {} {}",
+                "{} {} {}{}",
                 match self.report.verb {
                     ExecutionVerb::Check => "Checked",
                     ExecutionVerb::Fmt => "Formatted",
                     _ => "Processed",
                 },
-                self.report.targets_count(),
+                self.report.targets_count().to_formatted_string(&Locale::en),
+                if self.report.target_mode.is_diff() {
+                    "modified "
+                } else {
+                    ""
+                },
                 if self.report.targets_count() == 1 {
                     "file"
                 } else {
                     "files"
                 },
             )?;
+        } else if self.report.targets_count() == 0 && self.report.target_mode.is_diff() {
+            writeln!(
+                writer,
+                "{}",
+                style("No modified files for linting were found on your branch.").dim()
+            )?;
         }
 
         Ok(())
     }
+}
+
+pub fn print_unformatted(writer: &mut dyn std::io::Write, report: &Report) -> Result<()> {
+    let issues = report
+        .issues
+        .iter()
+        .filter(|issue| issue.level() == Level::Fmt)
+        .collect::<Vec<_>>();
+
+    let paths = issues
+        .iter()
+        .map(|issue| issue.path().clone())
+        .collect::<HashSet<_>>();
+
+    let mut paths: Vec<_> = paths.iter().collect();
+    paths.sort();
+
+    if !paths.is_empty() {
+        writeln!(writer)?;
+        writeln!(
+            writer,
+            "{}{}{}",
+            style(" UNFORMATTED FILES: ").bold().reverse(),
+            style(paths.len().to_formatted_string(&Locale::en))
+                .bold()
+                .reverse(),
+            style(" ").bold().reverse()
+        )?;
+        writeln!(writer)?;
+    }
+
+    for path in paths {
+        writeln!(
+            writer,
+            "{} {}",
+            style("✖").red().bold(),
+            style(path_to_string(path.clone().unwrap_or_default())).underlined(),
+        )?;
+    }
+
+    Ok(())
 }
 
 pub fn print_issues(writer: &mut dyn std::io::Write, report: &Report) -> Result<()> {
@@ -57,7 +112,15 @@ pub fn print_issues(writer: &mut dyn std::io::Write, report: &Report) -> Result<
 
     if !paths.is_empty() {
         writeln!(writer)?;
-        writeln!(writer, "{}", style(" ISSUES ").bold().reverse())?;
+        writeln!(
+            writer,
+            "{}{}{}",
+            style(" ISSUES: ").bold().reverse(),
+            style(report.issues.len().to_formatted_string(&Locale::en))
+                .bold()
+                .reverse(),
+            style(" ").bold().reverse()
+        )?;
         writeln!(writer)?;
     }
 
@@ -88,7 +151,7 @@ pub fn print_issues(writer: &mut dyn std::io::Write, report: &Report) -> Result<
                     ))
                     .dim(),
                     formatted_level(issue.level()),
-                    issue.message.replace('\n', " "),
+                    issue.message.replace('\n', " ").trim(),
                     formatted_source(issue),
                     formatted_fix_message(report, issue),
                 )
@@ -113,16 +176,23 @@ pub fn print_invocations(
     for formatted_path in &report.formatted {
         writeln!(
             writer,
-            "{} {} {}",
+            "{} Formatted {}",
             style("✔").green().bold(),
-            style("Formatted").bold(),
-            path_to_string(formatted_path)
+            style(path_to_string(formatted_path)).underlined()
         )?;
     }
 
     if verbose >= 1 {
         writeln!(writer)?;
-        writeln!(writer, "{}", style(" RESULTS ").bold().reverse())?;
+        writeln!(
+            writer,
+            "{}{}{}",
+            style(" JOBS: ").bold().reverse(),
+            style(report.invocations.len().to_formatted_string(&Locale::en))
+                .bold()
+                .reverse(),
+            style(" ").bold().reverse()
+        )?;
         writeln!(writer)?;
     }
 

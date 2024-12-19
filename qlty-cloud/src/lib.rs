@@ -16,13 +16,13 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn new(token: &str) -> Self {
+    pub fn new(token: Option<String>) -> Self {
         Self {
             base_url: match std::env::var("QLTY_API_URL") {
                 Ok(url) => url,
                 Err(_) => QLTY_API_URL.to_string(),
             },
-            token: Some(token.to_string()),
+            token,
         }
     }
 
