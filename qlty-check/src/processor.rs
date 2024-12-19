@@ -53,6 +53,7 @@ impl Processor {
 
         Ok(Report {
             verb: self.plan.verb,
+            target_mode: self.plan.target_mode.clone(),
             messages: self.results.messages.clone(),
             invocations: self.results.invocations.clone(),
             formatted: self.results.formatted.clone(),

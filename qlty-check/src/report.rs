@@ -1,6 +1,6 @@
 use crate::{results::FixedResult, InvocationResult};
 use itertools::Itertools;
-use qlty_analysis::IssueCount;
+use qlty_analysis::{workspace_entries::TargetMode, IssueCount};
 use qlty_types::analysis::v1::{ExecutionVerb, Issue, Message};
 use std::{
     collections::{HashMap, HashSet},
@@ -10,6 +10,7 @@ use std::{
 #[derive(Clone, Debug)]
 pub struct Report {
     pub verb: ExecutionVerb,
+    pub target_mode: TargetMode,
     pub messages: Vec<Message>,
     pub invocations: Vec<InvocationResult>,
     pub issues: Vec<Issue>,
