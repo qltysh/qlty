@@ -47,7 +47,7 @@ impl Parser for Markdownlint {
                     message.rule_description, message.rule_information
                 ),
                 category: Category::Style.into(),
-                level: Level::Low.into(),
+                level: Level::Medium.into(),
                 documentation_url: generate_document_url(rule_key.clone()),
                 rule_key,
                 location: Some(Location {
