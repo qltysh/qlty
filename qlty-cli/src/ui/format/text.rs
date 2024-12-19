@@ -81,7 +81,15 @@ pub fn print_unformatted(writer: &mut dyn std::io::Write, report: &Report) -> Re
 
     if !paths.is_empty() {
         writeln!(writer)?;
-        writeln!(writer, "{}", style(" UNFORMATTED FILES ").bold().reverse())?;
+        writeln!(
+            writer,
+            "{}{}{}",
+            style(" UNFORMATTED FILES: ").bold().reverse(),
+            style(paths.len().to_formatted_string(&Locale::en))
+                .bold()
+                .reverse(),
+            style(" ").bold().reverse()
+        )?;
         writeln!(writer)?;
     }
 
