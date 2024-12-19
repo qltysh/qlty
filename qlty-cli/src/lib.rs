@@ -98,7 +98,7 @@ fn handle_result(
                     eprintln!(
                         "{}",
                         style(format!(
-                            "✖ {} total {}",
+                            "✖ {} {}",
                             count,
                             if count == 1 { "issue" } else { "issues" }
                         ))
