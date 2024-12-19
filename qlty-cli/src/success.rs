@@ -23,6 +23,7 @@ impl From<Trigger> for CheckTrigger {
 #[derive(Default, Copy, Clone, Debug)]
 pub struct CommandSuccess {
     pub trigger: Option<Trigger>,
+    pub unformatted_count: Option<usize>,
     pub issues_count: Option<usize>,
     pub fixed_count: usize,
     pub fixable_count: usize,

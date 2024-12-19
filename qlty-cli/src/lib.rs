@@ -69,28 +69,70 @@ fn handle_result(
                     eprintln!("{}", style("✔ No issues").green().bold());
                 } else if fixed_count > 0 {
                     let remaining = count - fixed_count;
+
                     if remaining > 0 {
                         eprintln!(
                             "{}",
-                            style(format!("✖ {}/{} fixed issues", fixed_count, count))
-                                .red()
-                                .bold()
+                            style(format!(
+                                "✖ {}/{} fixed {}",
+                                fixed_count,
+                                count,
+                                if count == 1 { "issue" } else { "issues" }
+                            ))
+                            .red()
+                            .bold()
                         );
                     } else {
                         eprintln!(
                             "{}",
-                            style(format!("✔ {} fixed issues", count)).green().bold()
+                            style(format!(
+                                "✔ {} fixed {}",
+                                count,
+                                if count == 1 { "issue" } else { "issues" }
+                            ))
+                            .green()
+                            .bold()
                         );
                     }
                 } else {
-                    eprintln!("{}", style(format!("✖ {} issues", count)).red().bold());
+                    eprintln!(
+                        "{}",
+                        style(format!(
+                            "✖ {} {}",
+                            count,
+                            if count == 1 { "issue" } else { "issues" }
+                        ))
+                        .red()
+                        .bold()
+                    );
+                }
+
+                if let Some(count) = command_success.unformatted_count {
+                    if count > 0 {
+                        eprintln!(
+                            "{}",
+                            style(format!(
+                                "✖ {} unformatted {}",
+                                count,
+                                if count == 1 { "file" } else { "files" }
+                            ))
+                            .red()
+                            .bold()
+                        );
+                    }
                 }
 
                 if fixed_count == 0 && command_success.fixable_count > 0 {
+                    eprintln!();
                     eprintln!(
-                        "{} Detected {} fixable issues, run with {} to apply them.",
+                        "{} Detected {} fixable {}, run with {} to apply them.",
                         style("ℹ").yellow().bold(),
                         style(format!("{}", command_success.fixable_count)).yellow(),
+                        if command_success.fixable_count == 1 {
+                            "issue"
+                        } else {
+                            "issues"
+                        },
                         style("--fix").yellow()
                     );
                 }

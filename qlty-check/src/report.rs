@@ -1,7 +1,7 @@
 use crate::{results::FixedResult, InvocationResult};
 use itertools::Itertools;
 use qlty_analysis::{workspace_entries::TargetMode, IssueCount};
-use qlty_types::analysis::v1::{ExecutionVerb, Issue, Message};
+use qlty_types::analysis::v1::{ExecutionVerb, Issue, Level, Message};
 use std::{
     collections::{HashMap, HashSet},
     path::PathBuf,
@@ -50,5 +50,27 @@ impl Report {
             .iter()
             .map(|invocation| invocation.plan.targets.len())
             .sum::<usize>()
+    }
+
+    pub fn unformatted_count(&self) -> usize {
+        self.unformatted_paths().len()
+    }
+
+    pub fn unformatted_paths(&self) -> Vec<PathBuf> {
+        let issues = self
+            .issues
+            .iter()
+            .filter(|issue| issue.level() == Level::Fmt)
+            .collect::<Vec<_>>();
+
+        let mut paths: Vec<PathBuf> = issues
+            .iter()
+            .filter_map(|issue| issue.path().map(PathBuf::from))
+            .collect::<HashSet<_>>()
+            .into_iter()
+            .collect();
+
+        paths.sort();
+        paths
     }
 }

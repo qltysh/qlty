@@ -164,6 +164,11 @@ impl Check {
         } else {
             Ok(CommandSuccess {
                 trigger: Some(self.trigger),
+                unformatted_count: if self.no_formatters {
+                    None
+                } else {
+                    Some(report.unformatted_count())
+                },
                 issues_count: Some(report.counts.total_issues),
                 fixed_count: report.fixed.len(),
                 fixable_count: report.fixable.len(),
