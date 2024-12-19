@@ -50,6 +50,12 @@ impl Formatter for TextFormatter {
                     "files"
                 },
             )?;
+        } else if self.report.targets_count() == 0 && self.report.target_mode.is_diff() {
+            writeln!(
+                writer,
+                "{}",
+                style("No modified files for linting were found on your branch.").dim()
+            )?;
         }
 
         Ok(())
