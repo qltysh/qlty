@@ -2,7 +2,7 @@ use super::{ActivePlugin, Planner};
 use anyhow::bail;
 use anyhow::{anyhow, Result};
 use qlty_analysis::workspace_entries::TargetMode;
-use qlty_config::config::{DriverDef, EnabledPlugin, IssueMode, PluginDef};
+use qlty_config::config::{DriverDef, EnabledPlugin, IssueMode, PluginDef, Platform};
 use semver::{Version, VersionReq};
 use std::path::{Path, PathBuf};
 use tracing::{debug, trace, warn};
@@ -48,25 +48,13 @@ fn configure_plugins(planner: &Planner) -> Result<Vec<ActivePlugin>> {
             continue;
         }
 
-        let current_platform = if cfg!(target_os = "windows") {
-            "windows"
-        } else if cfg!(target_os = "macos") {
-            "macos"
-        } else if cfg!(target_os = "linux") {
-            "linux"
-        } else {
-            "unknown"
-        };
-
         if let Some(plugin_def) = planner.config.plugins.definitions.get(enabled_plugin.name.as_str()) {
-            if !plugin_def.supported_platforms.is_empty() {
-                if !&plugin_def.supported_platforms.iter().any(|platform| platform.to_string() == current_platform) {
-                    debug!(
-                        "Plugin {} is not supported on this platform, skipping.",
-                        enabled_plugin.name
-                    );
-                    continue;
-                }
+            if !plugin_def.supported_platforms.is_empty() && !plugin_def.supported_platforms.contains(&Platform::current()) {
+                debug!(
+                    "Plugin {} is not supported on this platform, skipping.",
+                    enabled_plugin.name
+                );
+                continue;
             }
         }
 
@@ -546,6 +534,47 @@ mod test {
         assert_eq!(plugins[1].name, "enabled");
         assert_eq!(plugins[1].plugin.prefix, Some("".to_string()));
     }
+
+    #[test]
+    fn test_disable_plugin_if_unsupported_platform() {
+        let supported_platforms = Platform::all_values()
+            .into_iter()
+            .filter(|&x| x != Platform::current())
+            .collect();
+
+        let mut plugin_defs = HashMap::new();
+        plugin_defs.insert(
+            "enabled".to_string(),
+            PluginDef {
+                drivers: vec![("test".to_string(), DriverDef::default())]
+                    .into_iter()
+                    .collect(),
+                supported_platforms: supported_platforms,
+                ..Default::default()
+            },
+        );
+
+        let planner = build_planner(QltyConfig {
+            plugin: vec![
+                EnabledPlugin {
+                    name: "enabled".to_string(),
+                    prefix: Some("prefix".to_string()),
+                    drivers: vec![ALL.to_string()],
+                    ..Default::default()
+                },
+            ],
+            plugins: PluginsConfig {
+                downloads: HashMap::new(),
+                releases: HashMap::new(),
+                definitions: plugin_defs,
+            },
+            ..Default::default()
+        });
+
+        let plugins: Vec<ActivePlugin> = enabled_plugins(&planner).unwrap();
+
+        assert!(plugins.is_empty());
+    }    
 
     #[test]
     fn test_config_plugin_prefix_package_file() {

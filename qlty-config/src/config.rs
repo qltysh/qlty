@@ -22,7 +22,7 @@ pub use language::Language;
 pub use plugin::{
     CheckTrigger, DriverBatchBy, DriverDef, DriverType, EnabledPlugin, ExtraPackage,
     InvocationDirectoryDef, InvocationDirectoryType, IssueMode, OutputDestination, OutputFormat,
-    PackageFileCandidate, PluginDef, PluginEnvironment, PluginFetch, Runtime, SuggestionMode,
+    PackageFileCandidate, Platform, PluginDef, PluginEnvironment, PluginFetch, Runtime, SuggestionMode,
     TargetDef, TargetType,
 };
 pub use release::ReleaseDef;

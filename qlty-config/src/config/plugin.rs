@@ -799,6 +799,24 @@ pub enum Platform {
     Windows,
 }
 
+impl Platform {
+    pub fn all_values() -> Vec<Platform> {
+        vec![Platform::Linux, Platform::MacOS, Platform::Windows]
+    }
+
+    pub fn current () -> Platform {
+        if cfg!(target_os = "linux") {
+            Platform::Linux
+        } else if cfg!(target_os = "macos") {
+            Platform::MacOS
+        } else if cfg!(target_os = "windows") {
+            Platform::Windows
+        } else {
+            panic!("Unsupported platform")
+        }
+    }
+}
+
 impl fmt::Display for Platform {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let name = match self {
