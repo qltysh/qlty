@@ -2,7 +2,6 @@ use anyhow::Result;
 use console::style;
 use num_format::{Locale, ToFormattedString as _};
 use qlty_analysis::utils::fs::path_to_string;
-use qlty_analysis::workspace_entries::TargetMode;
 use qlty_check::Report;
 use qlty_check::{executor::InvocationStatus, results::FixedResult};
 use qlty_cloud::format::Formatter;
@@ -40,11 +39,10 @@ impl Formatter for TextFormatter {
                     _ => "Processed",
                 },
                 self.report.targets_count().to_formatted_string(&Locale::en),
-                match self.report.target_mode {
-                    TargetMode::All => "",
-                    TargetMode::Sample(_) => "",
-                    TargetMode::Paths(_) => "",
-                    _ => "modified ",
+                if self.report.target_mode.is_diff() {
+                    "modified "
+                } else {
+                    ""
                 },
                 if self.report.targets_count() == 1 {
                     "file"
