@@ -2,6 +2,7 @@ pub mod cache;
 mod command;
 pub mod executor;
 mod issue_muter;
+pub mod llm;
 pub mod parser;
 mod patch_builder;
 pub mod patcher;

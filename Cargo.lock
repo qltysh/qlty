@@ -2220,8 +2220,6 @@ dependencies = [
  "qlty-cloud",
  "qlty-config",
  "qlty-coverage",
- "qlty-llm",
- "qlty-skills",
  "qlty-smells",
  "qlty-test-utilities",
  "qlty-types",
@@ -2319,6 +2317,7 @@ dependencies = [
  "path-absolutize",
  "prost",
  "qlty-analysis",
+ "qlty-cloud",
  "qlty-config",
  "qlty-test-utilities",
  "qlty-types",
@@ -2419,19 +2418,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "qlty-llm"
-version = "0.463.0"
-
-[[package]]
 name = "qlty-plugins"
 version = "0.463.0"
 dependencies = [
  "rust-embed",
 ]
-
-[[package]]
-name = "qlty-skills"
-version = "0.463.0"
 
 [[package]]
 name = "qlty-smells"

@@ -38,6 +38,7 @@ once_cell.workspace = true
 path-absolutize.workspace = true
 prost.workspace = true
 qlty-analysis.workspace = true
+qlty-cloud.workspace = true
 qlty-config.workspace = true
 qlty-types.workspace = true
 rand.workspace = true
