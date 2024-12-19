@@ -7,7 +7,7 @@ use qlty_check::Report;
 use qlty_check::{executor::InvocationStatus, results::FixedResult};
 use qlty_cloud::format::Formatter;
 use qlty_config::Workspace;
-use qlty_types::analysis::v1::{ExecutionVerb, Issue, Level};
+use qlty_types::analysis::v1::{ExecutionVerb, Issue, Level, SuggestionSource};
 use similar::{ChangeTag, TextDiff};
 use std::collections::HashSet;
 use std::fmt;
@@ -94,6 +94,7 @@ impl Formatter for TextFormatter {
 
 struct PatchCandidate {
     issue: Issue,
+    source: SuggestionSource,
     path: String,
     original_code: String,
     modified_code: String,
@@ -116,6 +117,8 @@ impl TextFormatter {
                         if let Ok(modified_code) = diffy::apply(&original_code, &patch) {
                             patch_candidates.push(PatchCandidate {
                                 issue: issue.clone(),
+                                source: SuggestionSource::try_from(suggestion.source)
+                                    .unwrap_or_default(),
                                 path: location.path.clone(),
                                 original_code,
                                 modified_code,
@@ -189,17 +192,32 @@ impl TextFormatter {
             // For a reason that I haven't figured out yet, sometimes we print
             // empty patches. This is a workaround to skip those issues.
             if !patch_writer.is_empty() {
-                writeln!(writer, "{}", style(&candidate.path).underlined())?;
+                let start_line = candidate.issue.range().unwrap_or_default().start_line;
 
                 writeln!(
                     writer,
-                    "{} {} {}",
-                    formatted_level(candidate.issue.level()),
-                    style(candidate.issue.message.replace('\n', " ").trim()),
-                    style(formatted_source(&candidate.issue)).dim()
+                    "{}{}",
+                    style(&candidate.path).underlined(),
+                    style(format!(":{}", start_line)).dim()
                 )?;
 
-                writeln!(writer, "{}", String::from_utf8_lossy(&patch_writer))?;
+                writeln!(
+                    writer,
+                    "{} {}",
+                    formatted_level(candidate.issue.level()),
+                    style(candidate.issue.message.replace('\n', " ").trim())
+                )?;
+
+                write!(writer, "{}", String::from_utf8_lossy(&patch_writer))?;
+                writeln!(
+                    writer,
+                    "{} {}",
+                    formatted_source(&candidate.issue),
+                    match candidate.source {
+                        SuggestionSource::Llm => format!("[{}]", style("ai fix").cyan()),
+                        _ => "".to_string(),
+                    }
+                )?;
                 writeln!(writer)?;
             }
         }
