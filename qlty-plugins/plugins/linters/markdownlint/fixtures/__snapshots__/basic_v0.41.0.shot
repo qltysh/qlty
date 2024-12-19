@@ -6,7 +6,7 @@ exports[`linter=markdownlint fixture=basic version=0.41.0 1`] = `
     {
       "category": "CATEGORY_STYLE",
       "documentationUrl": "https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md#MD001",
-      "level": "LEVEL_FMT",
+      "level": "LEVEL_MEDIUM",
       "location": {
         "path": "basic.in.md",
         "range": {
@@ -27,7 +27,7 @@ exports[`linter=markdownlint fixture=basic version=0.41.0 1`] = `
     {
       "category": "CATEGORY_STYLE",
       "documentationUrl": "https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md#MD041",
-      "level": "LEVEL_FMT",
+      "level": "LEVEL_MEDIUM",
       "location": {
         "path": "basic.in.md",
         "range": {
