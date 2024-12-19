@@ -38,7 +38,8 @@ impl NodeWithFile {
     }
 
     pub fn snippet_with_context(&self) -> String {
-        let file_contents_str = std::str::from_utf8(self.source_file.contents.as_bytes()).unwrap_or("");
+        let file_contents_str =
+            std::str::from_utf8(self.source_file.contents.as_bytes()).unwrap_or("");
         if file_contents_str.is_empty() {
             return "".to_string();
         }

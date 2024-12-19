@@ -25,9 +25,7 @@ impl Login {
                 token.set(&access_token)?;
                 CommandSuccess::ok()
             }
-            Err(e) => {
-                CommandError::err(&format!("Failed to authenticate: {}", e))
-            }
+            Err(e) => CommandError::err(&format!("Failed to authenticate: {}", e)),
         }
     }
 }

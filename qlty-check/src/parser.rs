@@ -16,6 +16,7 @@ pub mod php_codesniffer;
 pub mod phpstan;
 pub mod pylint;
 pub mod radarlint;
+pub mod reek;
 pub mod regex;
 pub mod ripgrep;
 pub mod rubocop;
@@ -28,7 +29,6 @@ pub mod taplo;
 pub mod trivy_sarif;
 pub mod trufflehog;
 pub mod tsc;
-pub mod reek;
 
 pub trait Parser {
     fn parse(&self, plugin_name: &str, output: &str) -> Result<Vec<Issue>>;

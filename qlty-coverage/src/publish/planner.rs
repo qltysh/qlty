@@ -104,8 +104,7 @@ impl Planner {
         let mut report_files: Vec<ReportFile> = vec![];
 
         for path in paths {
-            let (path, format) =
-                extract_path_and_format(&path, self.settings.report_format)?;
+            let (path, format) = extract_path_and_format(&path, self.settings.report_format)?;
 
             report_files.push(ReportFile {
                 path: path.to_string_lossy().into_owned(),

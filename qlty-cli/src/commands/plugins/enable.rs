@@ -56,11 +56,7 @@ impl ConfigDocument {
                             return Ok(());
                         }
                         Some(_) | None => {
-                            eprintln!(
-                                "{} Plugin {} is already enabled",
-                                style("⚠").yellow(),
-                                name
-                            );
+                            eprintln!("{} Plugin {} is already enabled", style("⚠").yellow(), name);
                             return Ok(());
                         }
                     }
