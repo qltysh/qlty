@@ -107,6 +107,21 @@ fn handle_result(
                     );
                 }
 
+                if let Some(count) = command_success.security_issues_count {
+                    if count > 0 {
+                        eprintln!(
+                            "{}",
+                            style(format!(
+                                "✖ {} security {}",
+                                count,
+                                if count == 1 { "issue" } else { "issues" }
+                            ))
+                            .red()
+                            .bold()
+                        );
+                    }
+                }
+
                 if let Some(count) = command_success.unformatted_count {
                     if count > 0 {
                         eprintln!(

@@ -170,6 +170,7 @@ impl Check {
                     Some(report.unformatted_count())
                 },
                 issues_count: Some(report.counts.total_issues),
+                security_issues_count: Some(report.counts.total_security_issues),
                 fixed_count: report.fixed.len(),
                 fixable_count: report.fixable.len(),
                 fail: report.is_failure(),
