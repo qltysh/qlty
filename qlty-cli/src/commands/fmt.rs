@@ -83,6 +83,11 @@ impl Fmt {
         } else {
             Ok(CommandSuccess {
                 trigger: Some(self.trigger),
+                issues_count: if self.verbose >= 1 && report.formatted.is_empty() {
+                    Some(0)
+                } else {
+                    None // Skip printing summary
+                },
                 ..Default::default()
             })
         }

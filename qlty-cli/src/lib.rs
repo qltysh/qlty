@@ -66,7 +66,7 @@ fn handle_result(
             if let Some(count) = command_success.issues_count {
                 let fixed_count = command_success.fixed_count;
                 if count == 0 {
-                    eprintln!("{}", style("✔ 0 issues").green().bold());
+                    eprintln!("{}", style("✔ No issues").green().bold());
                 } else if fixed_count > 0 {
                     let remaining = count - fixed_count;
                     if remaining > 0 {
