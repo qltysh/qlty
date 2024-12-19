@@ -122,10 +122,9 @@ pub fn print_invocations(
     for formatted_path in &report.formatted {
         writeln!(
             writer,
-            "{} {} {}",
+            "{} Formatted {}",
             style("✔").green().bold(),
-            style("Formatted").bold(),
-            path_to_string(formatted_path)
+            style(path_to_string(formatted_path)).underlined()
         )?;
     }
 
