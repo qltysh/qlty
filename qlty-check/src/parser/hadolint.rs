@@ -74,7 +74,7 @@ fn level_to_level(level: &str) -> Level {
         "error" => Level::High,
         "warning" => Level::Medium,
         "info" => Level::Low,
-        "style" => Level::Fmt,
+        "style" => Level::Low,
         _ => Level::Low,
     }
 }
