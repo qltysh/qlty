@@ -312,7 +312,7 @@ impl Check {
         let formatter = if self.json {
             JsonFormatter::new(report.issues.clone())
         } else {
-            TextFormatter::new(report, &plan.staging_area, settings.verbose)
+            TextFormatter::new(report, &plan.workspace, settings.verbose)
         };
 
         formatter.write_to(&mut std::io::stdout())

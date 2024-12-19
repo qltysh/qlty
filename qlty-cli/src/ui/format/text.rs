@@ -3,11 +3,10 @@ use console::{style, Style};
 use diffy::Patch;
 use num_format::{Locale, ToFormattedString as _};
 use qlty_analysis::utils::fs::path_to_string;
-use qlty_check::executor::staging_area::StagingArea;
-use qlty_check::source_reader::SourceReader as _;
 use qlty_check::Report;
 use qlty_check::{executor::InvocationStatus, results::FixedResult};
 use qlty_cloud::format::Formatter;
+use qlty_config::Workspace;
 use qlty_types::analysis::v1::{ExecutionVerb, Issue, Level};
 use similar::{ChangeTag, TextDiff};
 use std::collections::HashSet;
@@ -19,16 +18,16 @@ use tracing::warn;
 #[derive(Debug)]
 pub struct TextFormatter {
     report: Report,
-    staging_area: StagingArea,
+    workspace: Workspace,
     verbose: usize,
 }
 
 impl<'a> TextFormatter {
     // qlty-ignore: clippy:new_ret_no_self
-    pub fn new(report: &Report, staging_area: &StagingArea, verbose: usize) -> Box<dyn Formatter> {
+    pub fn new(report: &Report, workspace: &Workspace, verbose: usize) -> Box<dyn Formatter> {
         Box::new(Self {
             report: report.clone(),
-            staging_area: staging_area.clone(),
+            workspace: workspace.clone(),
             verbose,
         })
     }
@@ -108,10 +107,11 @@ impl TextFormatter {
             if let Some(location) = &issue.location {
                 if let Some(suggestion) = issue.suggestions.first() {
                     if let Ok(patch) = Patch::from_str(&suggestion.patch) {
-                        let original_code = self
-                            .staging_area
-                            .read(location.path.clone().into())
-                            .with_context(|| format!("Failed to read file: {}", location.path))?;
+                        let full_path = self.workspace.root.join(location.path.clone());
+                        let original_code =
+                            std::fs::read_to_string(&full_path).with_context(|| {
+                                format!("Failed to read file: {}", full_path.display())
+                            })?;
 
                         if let Ok(modified_code) = diffy::apply(&original_code, &patch) {
                             patch_candidates.push(PatchCandidate {
