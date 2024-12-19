@@ -56,7 +56,15 @@ impl Formatter for TextFormatter {
             writeln!(
                 writer,
                 "{}",
-                style("No modified files for linting were found on your branch.").dim()
+                style(format!(
+                    "No modified files for {} were found on your branch.",
+                    if self.report.verb == ExecutionVerb::Fmt {
+                        "formatting"
+                    } else {
+                        "checks"
+                    }
+                ))
+                .dim()
             )?;
         }
 
