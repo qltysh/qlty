@@ -220,7 +220,7 @@ impl Fixer {
         }
 
         if let Some(path) = issue.path() {
-            let client = Client::new(None);
+            let client = Client::default();
             let content = self.staging_area.read(issue.path().unwrap().into())?;
             let response = client.post("/fixes").send_json(ureq::json!(&FixRequest {
                 issue: issue.clone(),

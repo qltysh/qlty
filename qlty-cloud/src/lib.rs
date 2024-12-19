@@ -9,18 +9,28 @@ use ureq::Request;
 const QLTY_API_URL: &str = "https://api.qlty.sh";
 const USER_AGENT_PREFIX: &str = "qlty";
 
-#[derive(Default, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct Client {
     pub base_url: String,
     pub token: Option<String>,
 }
 
+impl Default for Client {
+    fn default() -> Self {
+        Self::new(None, None)
+    }
+}
+
 impl Client {
-    pub fn new(token: Option<String>) -> Self {
+    pub fn new(base_url: Option<&str>, token: Option<String>) -> Self {
         Self {
-            base_url: match std::env::var("QLTY_API_URL") {
-                Ok(url) => url,
-                Err(_) => QLTY_API_URL.to_string(),
+            base_url: if let Some(url) = base_url {
+                url.to_string()
+            } else {
+                match std::env::var("QLTY_API_URL") {
+                    Ok(url) => url,
+                    Err(_) => QLTY_API_URL.to_string(),
+                }
             },
             token,
         }
