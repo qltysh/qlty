@@ -50,7 +50,7 @@ fn configure_plugins(planner: &Planner) -> Result<Vec<ActivePlugin>> {
 
         if let Some(plugin_def) = planner.config.plugins.definitions.get(enabled_plugin.name.as_str()) {
             if !plugin_def.supported_platforms.is_empty() && !plugin_def.supported_platforms.contains(&Platform::current()) {
-                debug!(
+                warn!(
                     "Plugin {} is not supported on this platform, skipping.",
                     enabled_plugin.name
                 );
