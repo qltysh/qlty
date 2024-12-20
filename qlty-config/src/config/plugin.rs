@@ -804,7 +804,7 @@ impl Platform {
         vec![Platform::Linux, Platform::MacOS, Platform::Windows]
     }
 
-    pub fn current () -> Platform {
+    pub fn current() -> Platform {
         if cfg!(target_os = "linux") {
             Platform::Linux
         } else if cfg!(target_os = "macos") {

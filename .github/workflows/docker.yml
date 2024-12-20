@@ -1,0 +1,37 @@
+name: Docker
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "qlty-*/**"
+      - "Cargo.*"
+      - ".github/workflows/docker.yml"
+  pull_request:
+    paths:
+      - "qlty-*/**"
+      - "Cargo.*"
+      - ".github/workflows/docker.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker Build
+        uses: docker/build-push-action@v6
+        with:
+          tags: qltysh/qlty:latest
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
