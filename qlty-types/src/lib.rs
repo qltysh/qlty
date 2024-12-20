@@ -376,8 +376,6 @@ impl Add for tests::v1::CoverageSummary {
     }
 }
 
-impl Copy for tests::v1::CoverageSummary {}
-
 impl AddAssign for tests::v1::CoverageSummary {
     fn add_assign(&mut self, other: Self) {
         *self = *self + other;
