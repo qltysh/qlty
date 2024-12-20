@@ -56,7 +56,7 @@ impl fmt::Display for Line {
 impl Formatter for TextFormatter {
     fn write_to(&self, writer: &mut dyn std::io::Write) -> anyhow::Result<()> {
         if !self.summary {
-            print_unformatted(writer, &self.report)?;
+            self.print_unformatted(writer)?;
             self.print_fixes(writer)?;
             print_issues(writer, &self.report)?;
         }
@@ -83,6 +83,48 @@ enum AskMode {
 }
 
 impl TextFormatter {
+    pub fn print_unformatted(&self, writer: &mut dyn std::io::Write) -> Result<()> {
+        let issues = self
+            .report
+            .issues
+            .iter()
+            .filter(|issue| issue.level() == Level::Fmt)
+            .collect::<Vec<_>>();
+
+        let paths = issues
+            .iter()
+            .map(|issue| issue.path().clone())
+            .collect::<HashSet<_>>();
+
+        let mut paths: Vec<_> = paths.iter().collect();
+        paths.sort();
+
+        if !paths.is_empty() {
+            writeln!(writer)?;
+            writeln!(
+                writer,
+                "{}{}{}",
+                style(" UNFORMATTED FILES: ").bold().reverse(),
+                style(paths.len().to_formatted_string(&Locale::en))
+                    .bold()
+                    .reverse(),
+                style(" ").bold().reverse()
+            )?;
+            writeln!(writer)?;
+        }
+
+        for path in paths {
+            writeln!(
+                writer,
+                "{} {}",
+                style("✖").red().bold(),
+                style(path_to_string(path.clone().unwrap_or_default())).underlined(),
+            )?;
+        }
+
+        Ok(())
+    }
+
     pub fn print_invocations(&self, writer: &mut dyn std::io::Write) -> Result<()> {
         for formatted_path in &self.report.formatted {
             writeln!(
@@ -455,47 +497,6 @@ fn apply_fix(writer: &mut dyn std::io::Write, candidate: &PatchCandidate) -> Res
             "{} {}",
             style("Failed to parse patch:").red(),
             style(&candidate.path).underlined()
-        )?;
-    }
-
-    Ok(())
-}
-
-pub fn print_unformatted(writer: &mut dyn std::io::Write, report: &Report) -> Result<()> {
-    let issues = report
-        .issues
-        .iter()
-        .filter(|issue| issue.level() == Level::Fmt)
-        .collect::<Vec<_>>();
-
-    let paths = issues
-        .iter()
-        .map(|issue| issue.path().clone())
-        .collect::<HashSet<_>>();
-
-    let mut paths: Vec<_> = paths.iter().collect();
-    paths.sort();
-
-    if !paths.is_empty() {
-        writeln!(writer)?;
-        writeln!(
-            writer,
-            "{}{}{}",
-            style(" UNFORMATTED FILES: ").bold().reverse(),
-            style(paths.len().to_formatted_string(&Locale::en))
-                .bold()
-                .reverse(),
-            style(" ").bold().reverse()
-        )?;
-        writeln!(writer)?;
-    }
-
-    for path in paths {
-        writeln!(
-            writer,
-            "{} {}",
-            style("✖").red().bold(),
-            style(path_to_string(path.clone().unwrap_or_default())).underlined(),
         )?;
     }
 
