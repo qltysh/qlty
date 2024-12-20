@@ -1,5 +1,6 @@
 pub mod autofix;
 
+use crate::ui::format::ApplyMode;
 use crate::ui::format::ErrorsFormatter;
 use crate::ui::format::TextFormatter;
 use crate::ui::Steps;
@@ -24,7 +25,6 @@ use tracing::debug;
 
 static LOOKING_GLASS: Emoji<'_, '_> = Emoji("🔍  ", "");
 static THINKING: Emoji<'_, '_> = Emoji("🤔  ", "");
-static FIXING: Emoji<'_, '_> = Emoji("🛠️  ", "");
 static FORMATTING: Emoji<'_, '_> = Emoji("📝  ", "");
 
 #[derive(Args, Clone, Debug)]
@@ -34,8 +34,12 @@ pub struct Check {
     pub all: bool,
 
     /// Apply all auto-fix suggestions
-    #[arg(long)]
+    #[arg(long, conflicts_with = "no_fix")]
     pub fix: bool,
+
+    /// Do not apply auto-fix suggestions
+    #[arg(long, conflicts_with = "fix")]
+    pub no_fix: bool,
 
     /// Generate AI fixes (requires OpenAI API key)
     #[arg(long)]
@@ -147,18 +151,23 @@ impl Check {
 
         let executor = Executor::new(&plan);
         let results = executor.install_and_invoke()?;
-        let results = autofix(&results, &settings, &plan.staging_area, Some(&mut steps))?;
+        let results = autofix(
+            &results,
+            &settings,
+            &plan.staging_area,
+            Some(&mut steps),
+            self.verbose,
+        )?;
 
         let mut processor = Processor::new(&plan, results);
         let report = processor.compute()?;
 
         if !report.fixed.is_empty() {
-            steps.start(FIXING, format!("Fixed {} issues", report.fixed.len()));
-            let format_report = self.format_after_fix(&settings, &report)?;
-            steps.start(
-                FORMATTING,
-                format!("Formatted {} files", format_report.formatted.len()),
-            );
+            if self.verbose >= 1 {
+                steps.start(FORMATTING, "Formatting...");
+            }
+
+            self.format_after_fix(&settings, &report)?;
         }
 
         self.write_stdout(&report, &plan, &settings)?;
@@ -317,8 +326,21 @@ impl Check {
             let formatter = JsonFormatter::new(report.issues.clone());
             formatter.write_to(&mut std::io::stdout())
         } else {
-            let formatter =
-                TextFormatter::new(report, &plan.workspace, settings.verbose, self.summary);
+            let apply_mode = if self.fix {
+                ApplyMode::All
+            } else if self.no_fix {
+                ApplyMode::None
+            } else {
+                ApplyMode::Ask
+            };
+
+            let mut formatter = TextFormatter::new(
+                report,
+                &plan.workspace,
+                settings.verbose,
+                self.summary,
+                apply_mode,
+            );
             formatter.write_to(&mut std::io::stdout())
         }
     }

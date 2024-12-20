@@ -22,15 +22,23 @@ pub struct TextFormatter {
     workspace: Workspace,
     verbose: usize,
     summary: bool,
+    apply_mode: ApplyMode,
 }
 
 impl TextFormatter {
-    pub fn new(report: &Report, workspace: &Workspace, verbose: usize, summary: bool) -> Self {
+    pub fn new(
+        report: &Report,
+        workspace: &Workspace,
+        verbose: usize,
+        summary: bool,
+        apply_mode: ApplyMode,
+    ) -> Self {
         Self {
             report: report.clone(),
             workspace: workspace.clone(),
             verbose,
             summary,
+            apply_mode,
         }
     }
 }
@@ -47,7 +55,7 @@ impl fmt::Display for Line {
 }
 
 impl TextFormatter {
-    pub fn write_to(&self, writer: &mut dyn std::io::Write) -> anyhow::Result<()> {
+    pub fn write_to(&mut self, writer: &mut dyn std::io::Write) -> anyhow::Result<()> {
         if !self.summary {
             self.print_unformatted(writer)?;
             self.print_fixes(writer)?;
@@ -69,7 +77,8 @@ struct PatchCandidate {
     modified_code: String,
 }
 
-enum AskMode {
+#[derive(Debug, Clone)]
+pub enum ApplyMode {
     All,
     None,
     Ask,
@@ -297,7 +306,7 @@ impl TextFormatter {
         Ok(())
     }
 
-    pub fn print_fixes(&self, writer: &mut dyn std::io::Write) -> Result<()> {
+    pub fn print_fixes(&mut self, writer: &mut dyn std::io::Write) -> Result<()> {
         let mut patch_candidates = vec![];
 
         for issue in &self.report.issues {
@@ -345,8 +354,6 @@ impl TextFormatter {
             style(" ").bold().reverse()
         )?;
         writeln!(writer)?;
-
-        let mut ask_mode = AskMode::Ask;
 
         for candidate in patch_candidates {
             let diff = TextDiff::from_lines(&candidate.original_code, &candidate.modified_code);
@@ -420,12 +427,12 @@ impl TextFormatter {
                 writeln!(writer)?;
 
                 if std::io::stdin().is_terminal() {
-                    match ask_mode {
-                        AskMode::None => {} // Skip and don't ask
-                        AskMode::All => {
+                    match self.apply_mode {
+                        ApplyMode::None => {} // Skip and don't ask
+                        ApplyMode::All => {
                             apply_fix(writer, &candidate)?;
                         }
-                        AskMode::Ask => {
+                        ApplyMode::Ask => {
                             let mut answered = false;
 
                             // Loop until we get a valid answer
@@ -438,7 +445,7 @@ impl TextFormatter {
                                         }
                                         "A" | "a" | "all" => {
                                             answered = true;
-                                            ask_mode = AskMode::All;
+                                            self.apply_mode = ApplyMode::All;
                                             apply_fix(writer, &candidate)?;
                                         }
                                         "N" | "n" | "no" => {
@@ -446,7 +453,7 @@ impl TextFormatter {
                                         }
                                         "none" => {
                                             answered = true;
-                                            ask_mode = AskMode::None;
+                                            self.apply_mode = ApplyMode::None;
                                         }
                                         _ => {}
                                     }

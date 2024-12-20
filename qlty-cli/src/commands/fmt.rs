@@ -1,4 +1,4 @@
-use crate::ui::format::TextFormatter;
+use crate::ui::format::{ApplyMode, TextFormatter};
 use crate::{Arguments, CommandError, CommandSuccess, Trigger};
 use anyhow::Result;
 use clap::Args;
@@ -75,7 +75,13 @@ impl Fmt {
             self.git_add(&report.formatted)?;
         }
 
-        let formatter = TextFormatter::new(&report, &plan.workspace, settings.verbose, false);
+        let mut formatter = TextFormatter::new(
+            &report,
+            &plan.workspace,
+            settings.verbose,
+            false,
+            ApplyMode::None,
+        );
         formatter.write_to(&mut std::io::stdout())?;
 
         if !self.no_error && report.has_errors() {
