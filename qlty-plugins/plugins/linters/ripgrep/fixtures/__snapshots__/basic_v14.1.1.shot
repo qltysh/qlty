@@ -5,7 +5,7 @@ exports[`linter=ripgrep fixture=basic version=14.1.1 1`] = `
   "issues": [
     {
       "category": "CATEGORY_LINT",
-      "level": "LEVEL_MEDIUM",
+      "level": "LEVEL_NOTE",
       "location": {
         "path": "basic.in.rs",
         "range": {
@@ -32,7 +32,7 @@ exports[`linter=ripgrep fixture=basic version=14.1.1 1`] = `
     },
     {
       "category": "CATEGORY_LINT",
-      "level": "LEVEL_MEDIUM",
+      "level": "LEVEL_NOTE",
       "location": {
         "path": "basic.in.rs",
         "range": {
@@ -59,7 +59,7 @@ exports[`linter=ripgrep fixture=basic version=14.1.1 1`] = `
     },
     {
       "category": "CATEGORY_LINT",
-      "level": "LEVEL_MEDIUM",
+      "level": "LEVEL_NOTE",
       "location": {
         "path": "basic.in.rs",
         "range": {
@@ -86,7 +86,7 @@ exports[`linter=ripgrep fixture=basic version=14.1.1 1`] = `
     },
     {
       "category": "CATEGORY_LINT",
-      "level": "LEVEL_MEDIUM",
+      "level": "LEVEL_NOTE",
       "location": {
         "path": "basic.in.rs",
         "range": {
@@ -113,7 +113,7 @@ exports[`linter=ripgrep fixture=basic version=14.1.1 1`] = `
     },
     {
       "category": "CATEGORY_LINT",
-      "level": "LEVEL_MEDIUM",
+      "level": "LEVEL_NOTE",
       "location": {
         "path": "basic.in.rs",
         "range": {
