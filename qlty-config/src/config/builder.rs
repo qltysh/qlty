@@ -86,8 +86,7 @@ impl Builder {
             }
         }
 
-        // Check if neither sources nor source were found
-        if new_toml.get("sources").is_none() && new_toml.get("source").is_none() {
+        if new_toml.get("source").is_none() {
             bail!("No sources found");
         }
 
