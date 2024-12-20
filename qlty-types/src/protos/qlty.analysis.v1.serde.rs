@@ -595,6 +595,7 @@ impl serde::Serialize for Invocation {
         }
         if let Some(v) = self.exit_code.as_ref() {
             #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser.serialize_field("exitCode", ToString::to_string(&v).as_str())?;
         }
         if !self.stdout.is_empty() {
@@ -1885,6 +1886,7 @@ impl serde::Serialize for Level {
     {
         let variant = match self {
             Self::Unspecified => "LEVEL_UNSPECIFIED",
+            Self::Note => "LEVEL_NOTE",
             Self::Fmt => "LEVEL_FMT",
             Self::Low => "LEVEL_LOW",
             Self::Medium => "LEVEL_MEDIUM",
@@ -1901,6 +1903,7 @@ impl<'de> serde::Deserialize<'de> for Level {
     {
         const FIELDS: &[&str] = &[
             "LEVEL_UNSPECIFIED",
+            "LEVEL_NOTE",
             "LEVEL_FMT",
             "LEVEL_LOW",
             "LEVEL_MEDIUM",
@@ -1946,6 +1949,7 @@ impl<'de> serde::Deserialize<'de> for Level {
             {
                 match value {
                     "LEVEL_UNSPECIFIED" => Ok(Level::Unspecified),
+                    "LEVEL_NOTE" => Ok(Level::Note),
                     "LEVEL_FMT" => Ok(Level::Fmt),
                     "LEVEL_LOW" => Ok(Level::Low),
                     "LEVEL_MEDIUM" => Ok(Level::Medium),

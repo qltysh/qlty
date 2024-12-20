@@ -629,18 +629,22 @@ impl serde::Serialize for CoverageSummary {
         let mut struct_ser = serializer.serialize_struct("qlty.tests.v1.CoverageSummary", len)?;
         if self.covered != 0 {
             #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser.serialize_field("covered", ToString::to_string(&self.covered).as_str())?;
         }
         if self.missed != 0 {
             #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser.serialize_field("missed", ToString::to_string(&self.missed).as_str())?;
         }
         if self.omit != 0 {
             #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser.serialize_field("omit", ToString::to_string(&self.omit).as_str())?;
         }
         if self.total != 0 {
             #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser.serialize_field("total", ToString::to_string(&self.total).as_str())?;
         }
         struct_ser.end()
@@ -1152,6 +1156,7 @@ impl serde::Serialize for ReportFile {
         }
         if self.size != 0 {
             #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser.serialize_field("size", ToString::to_string(&self.size).as_str())?;
         }
         if let Some(v) = self.project_id.as_ref() {
