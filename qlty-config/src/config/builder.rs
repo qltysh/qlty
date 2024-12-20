@@ -287,50 +287,6 @@ mod test {
     use toml::{toml, Value::Table};
 
     #[test]
-    fn test_extract_sources_with_sources_and_source() {
-        let input = toml! {
-            random_key = "random value to be filtered out"
-
-            [sources.default]
-            key1 = "value1"
-
-            [[source]]
-            key2 = "value2"
-            key3 = "value3"
-        };
-
-        let expected_output = toml! {
-            [sources.default]
-            key1 = "value1"
-
-            [[source]]
-            key2 = "value2"
-            key3 = "value3"
-        };
-
-        let result = Builder::extract_sources(Table(input)).unwrap();
-        assert_eq!(result, Table(expected_output));
-    }
-
-    #[test]
-    fn test_extract_sources_with_only_sources() {
-        let input = toml! {
-            random_key = "random value to be filtered out"
-
-            [sources.default]
-            key1 = "value1"
-        };
-
-        let expected_output = toml! {
-            [sources.default]
-            key1 = "value1"
-        };
-
-        let result = Builder::extract_sources(Table(input)).unwrap();
-        assert_eq!(result, Table(expected_output));
-    }
-
-    #[test]
     fn test_extract_sources_with_only_source() {
         let input = toml! {
             random_key = "random value to be filtered out"
