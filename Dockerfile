@@ -21,3 +21,7 @@ FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 COPY --from=builder /app/qlty /usr/local/bin/
 ENTRYPOINT ["/usr/local/bin/qlty"]
+
+# Example usage:
+#
+# docker run --rm -it -v "$(pwd):/app" qltysh/qlty metrics --all
