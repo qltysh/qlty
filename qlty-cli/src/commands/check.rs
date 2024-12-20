@@ -1,9 +1,8 @@
 pub mod autofix;
-
-use crate::ui::format::ApplyMode;
-use crate::ui::format::ErrorsFormatter;
-use crate::ui::format::TextFormatter;
+use crate::ui::ApplyMode;
+use crate::ui::ErrorsFormatter;
 use crate::ui::Steps;
+use crate::ui::TextFormatter;
 use crate::{Arguments, CommandError, CommandSuccess, Trigger};
 use anyhow::bail;
 use anyhow::Result;
