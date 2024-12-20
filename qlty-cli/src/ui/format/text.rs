@@ -58,7 +58,7 @@ impl Formatter for TextFormatter {
         if !self.summary {
             self.print_unformatted(writer)?;
             self.print_fixes(writer)?;
-            print_issues(writer, &self.report)?;
+            self.print_issues(writer)?;
         }
 
         self.print_invocations(writer)?;
@@ -120,6 +120,69 @@ impl TextFormatter {
                 style("✖").red().bold(),
                 style(path_to_string(path.clone().unwrap_or_default())).underlined(),
             )?;
+        }
+
+        Ok(())
+    }
+
+    pub fn print_issues(&self, writer: &mut dyn std::io::Write) -> Result<()> {
+        let issues_by_path = self.report.issues_by_path();
+        let mut paths: Vec<_> = issues_by_path.keys().collect();
+        paths.sort();
+
+        if !paths.is_empty() {
+            writeln!(writer)?;
+            writeln!(
+                writer,
+                "{}{}{}",
+                style(" ISSUES: ").bold().reverse(),
+                style(self.report.issues.len().to_formatted_string(&Locale::en))
+                    .bold()
+                    .reverse(),
+                style(" ").bold().reverse()
+            )?;
+            writeln!(writer)?;
+        }
+
+        for path in paths {
+            let issues = issues_by_path.get(path).unwrap();
+
+            let first_issue = issues.first().unwrap();
+            let start_line = first_issue.range().unwrap_or_default().start_line;
+            let end_line = first_issue.range().unwrap_or_default().end_line;
+
+            writeln!(
+                writer,
+                "{}{}",
+                style(path_to_string(path.clone().unwrap_or_default())).underlined(),
+                style(format!(":{}:{}", start_line, end_line)).dim()
+            )?;
+
+            let mut tw = TabWriter::new(vec![]);
+
+            for issue in issues {
+                tw.write_all(
+                    format!(
+                        "{:>7}\t{}\t{}\t{}{}\n",
+                        style(format!(
+                            "{}:{}",
+                            issue.range().unwrap_or_default().start_line,
+                            issue.range().unwrap_or_default().end_line,
+                        ))
+                        .dim(),
+                        formatted_level(issue.level()),
+                        issue.message.replace('\n', " ").trim(),
+                        formatted_source(issue),
+                        formatted_fix_message(&self.report, issue),
+                    )
+                    .as_bytes(),
+                )
+                .unwrap();
+            }
+
+            tw.flush().unwrap();
+            let written = String::from_utf8(tw.into_inner().unwrap()).unwrap();
+            writeln!(writer, "{}", written)?;
         }
 
         Ok(())
@@ -498,69 +561,6 @@ fn apply_fix(writer: &mut dyn std::io::Write, candidate: &PatchCandidate) -> Res
             style("Failed to parse patch:").red(),
             style(&candidate.path).underlined()
         )?;
-    }
-
-    Ok(())
-}
-
-pub fn print_issues(writer: &mut dyn std::io::Write, report: &Report) -> Result<()> {
-    let issues_by_path = report.issues_by_path();
-    let mut paths: Vec<_> = issues_by_path.keys().collect();
-    paths.sort();
-
-    if !paths.is_empty() {
-        writeln!(writer)?;
-        writeln!(
-            writer,
-            "{}{}{}",
-            style(" ISSUES: ").bold().reverse(),
-            style(report.issues.len().to_formatted_string(&Locale::en))
-                .bold()
-                .reverse(),
-            style(" ").bold().reverse()
-        )?;
-        writeln!(writer)?;
-    }
-
-    for path in paths {
-        let issues = issues_by_path.get(path).unwrap();
-
-        let first_issue = issues.first().unwrap();
-        let start_line = first_issue.range().unwrap_or_default().start_line;
-        let end_line = first_issue.range().unwrap_or_default().end_line;
-
-        writeln!(
-            writer,
-            "{}{}",
-            style(path_to_string(path.clone().unwrap_or_default())).underlined(),
-            style(format!(":{}:{}", start_line, end_line)).dim()
-        )?;
-
-        let mut tw = TabWriter::new(vec![]);
-
-        for issue in issues {
-            tw.write_all(
-                format!(
-                    "{:>7}\t{}\t{}\t{}{}\n",
-                    style(format!(
-                        "{}:{}",
-                        issue.range().unwrap_or_default().start_line,
-                        issue.range().unwrap_or_default().end_line,
-                    ))
-                    .dim(),
-                    formatted_level(issue.level()),
-                    issue.message.replace('\n', " ").trim(),
-                    formatted_source(issue),
-                    formatted_fix_message(report, issue),
-                )
-                .as_bytes(),
-            )
-            .unwrap();
-        }
-
-        tw.flush().unwrap();
-        let written = String::from_utf8(tw.into_inner().unwrap()).unwrap();
-        writeln!(writer, "{}", written)?;
     }
 
     Ok(())
