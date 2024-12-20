@@ -274,6 +274,7 @@ impl analysis::v1::Level {
     pub fn as_lower_str_name(&self) -> &'static str {
         match self {
             analysis::v1::Level::Unspecified => "unspecified",
+            analysis::v1::Level::Note => "note",
             analysis::v1::Level::Fmt => "fmt",
             analysis::v1::Level::Low => "low",
             analysis::v1::Level::Medium => "medium",
@@ -374,8 +375,6 @@ impl Add for tests::v1::CoverageSummary {
         }
     }
 }
-
-impl Copy for tests::v1::CoverageSummary {}
 
 impl AddAssign for tests::v1::CoverageSummary {
     fn add_assign(&mut self, other: Self) {
