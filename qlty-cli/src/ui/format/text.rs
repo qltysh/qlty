@@ -7,7 +7,6 @@ use num_format::{Locale, ToFormattedString as _};
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_check::Report;
 use qlty_check::{executor::InvocationStatus, results::FixedResult};
-use qlty_cloud::format::Formatter;
 use qlty_config::Workspace;
 use qlty_types::analysis::v1::{ExecutionVerb, Issue, Level, SuggestionSource};
 use similar::{ChangeTag, TextDiff};
@@ -25,20 +24,14 @@ pub struct TextFormatter {
     summary: bool,
 }
 
-impl<'a> TextFormatter {
-    // qlty-ignore: clippy:new_ret_no_self
-    pub fn new(
-        report: &Report,
-        workspace: &Workspace,
-        verbose: usize,
-        summary: bool,
-    ) -> Box<dyn Formatter> {
-        Box::new(Self {
+impl TextFormatter {
+    pub fn new(report: &Report, workspace: &Workspace, verbose: usize, summary: bool) -> Self {
+        Self {
             report: report.clone(),
             workspace: workspace.clone(),
             verbose,
             summary,
-        })
+        }
     }
 }
 
@@ -53,8 +46,8 @@ impl fmt::Display for Line {
     }
 }
 
-impl Formatter for TextFormatter {
-    fn write_to(&self, writer: &mut dyn std::io::Write) -> anyhow::Result<()> {
+impl TextFormatter {
+    pub fn write_to(&self, writer: &mut dyn std::io::Write) -> anyhow::Result<()> {
         if !self.summary {
             self.print_unformatted(writer)?;
             self.print_fixes(writer)?;

@@ -313,13 +313,14 @@ impl Check {
     }
 
     fn write_stdout(&self, report: &Report, plan: &Plan, settings: &Settings) -> Result<()> {
-        let formatter = if self.json {
-            JsonFormatter::new(report.issues.clone())
+        if self.json {
+            let formatter = JsonFormatter::new(report.issues.clone());
+            formatter.write_to(&mut std::io::stdout())
         } else {
-            TextFormatter::new(report, &plan.workspace, settings.verbose, self.summary)
-        };
-
-        formatter.write_to(&mut std::io::stdout())
+            let formatter =
+                TextFormatter::new(report, &plan.workspace, settings.verbose, self.summary);
+            formatter.write_to(&mut std::io::stdout())
+        }
     }
 
     fn write_stderr(&self, report: &Report) -> Result<()> {
