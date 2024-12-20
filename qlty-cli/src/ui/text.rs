@@ -10,11 +10,12 @@ use qlty_check::{executor::InvocationStatus, results::FixedResult};
 use qlty_config::Workspace;
 use qlty_types::analysis::v1::{ExecutionVerb, Issue, Level, SuggestionSource};
 use similar::{ChangeTag, TextDiff};
-use std::collections::HashSet;
 use std::fmt;
 use std::io::{IsTerminal as _, Write};
 use tabwriter::TabWriter;
 use tracing::warn;
+
+use super::unformatted::print_unformatted;
 
 #[derive(Debug)]
 pub struct TextFormatter {
@@ -57,7 +58,7 @@ impl fmt::Display for Line {
 impl TextFormatter {
     pub fn write_to(&mut self, writer: &mut dyn std::io::Write) -> anyhow::Result<()> {
         if !self.summary {
-            self.print_unformatted(writer)?;
+            print_unformatted(writer, &self.report.issues)?;
             self.print_fixes(writer)?;
             self.print_issues(writer)?;
         }
@@ -85,48 +86,6 @@ pub enum ApplyMode {
 }
 
 impl TextFormatter {
-    pub fn print_unformatted(&self, writer: &mut dyn std::io::Write) -> Result<()> {
-        let issues = self
-            .report
-            .issues
-            .iter()
-            .filter(|issue| issue.level() == Level::Fmt)
-            .collect::<Vec<_>>();
-
-        let paths = issues
-            .iter()
-            .map(|issue| issue.path().clone())
-            .collect::<HashSet<_>>();
-
-        let mut paths: Vec<_> = paths.iter().collect();
-        paths.sort();
-
-        if !paths.is_empty() {
-            writeln!(writer)?;
-            writeln!(
-                writer,
-                "{}{}{}",
-                style(" UNFORMATTED FILES: ").bold().reverse(),
-                style(paths.len().to_formatted_string(&Locale::en))
-                    .bold()
-                    .reverse(),
-                style(" ").bold().reverse()
-            )?;
-            writeln!(writer)?;
-        }
-
-        for path in paths {
-            writeln!(
-                writer,
-                "{} {}",
-                style("✖").red().bold(),
-                style(path_to_string(path.clone().unwrap_or_default())).underlined(),
-            )?;
-        }
-
-        Ok(())
-    }
-
     pub fn print_issues(&self, writer: &mut dyn std::io::Write) -> Result<()> {
         let issues_by_path = self.report.issues_by_path();
         let mut paths: Vec<_> = issues_by_path.keys().collect();
