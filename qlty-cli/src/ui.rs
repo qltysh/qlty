@@ -1,6 +1,10 @@
-pub mod format;
+mod errors;
 mod highlight;
 mod steps;
+mod text;
+
+pub use errors::ErrorsFormatter;
+pub use text::{ApplyMode, TextFormatter};
 
 pub use highlight::Highlighter;
 pub use steps::Steps;

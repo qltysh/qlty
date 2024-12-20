@@ -1,4 +1,4 @@
-use crate::ui::format::{ApplyMode, TextFormatter};
+use crate::ui::{ApplyMode, TextFormatter};
 use crate::{Arguments, CommandError, CommandSuccess, Trigger};
 use anyhow::Result;
 use clap::Args;
