@@ -1,7 +1,7 @@
-use super::fixes::print_fixes;
 use super::invocations::print_invocations;
 use super::issues::print_issues;
 use super::unformatted::print_unformatted;
+use super::{fixes::print_fixes, ApplyMode};
 use anyhow::Result;
 use console::style;
 use num_format::{Locale, ToFormattedString as _};
@@ -53,13 +53,6 @@ impl TextFormatter {
         self.print_conclusion(writer)?;
         Ok(())
     }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum ApplyMode {
-    All,
-    None,
-    Ask,
 }
 
 impl TextFormatter {

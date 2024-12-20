@@ -10,7 +10,7 @@ mod text;
 mod unformatted;
 
 pub use errors::ErrorsFormatter;
-pub use text::{ApplyMode, TextFormatter};
-
+pub use fixes::ApplyMode;
 pub use highlight::Highlighter;
 pub use steps::Steps;
+pub use text::TextFormatter;

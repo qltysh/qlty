@@ -1,5 +1,4 @@
 pub mod autofix;
-
 use crate::ui::ApplyMode;
 use crate::ui::ErrorsFormatter;
 use crate::ui::Steps;

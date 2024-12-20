@@ -1,4 +1,4 @@
-use super::{level::formatted_level, source::formatted_source, ApplyMode};
+use super::{level::formatted_level, source::formatted_source};
 use anyhow::{Context as _, Result};
 use console::{style, Style};
 use dialoguer::{theme::ColorfulTheme, Input};
@@ -9,6 +9,13 @@ use similar::{ChangeTag, TextDiff};
 use std::io::Write as _;
 use std::{fmt, io::IsTerminal as _, path::Path};
 use tracing::warn;
+
+#[derive(Debug, Clone, Copy)]
+pub enum ApplyMode {
+    All,
+    None,
+    Ask,
+}
 
 struct PatchCandidate {
     issue: Issue,
