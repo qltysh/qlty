@@ -6,7 +6,8 @@ pub fn formatted_level(level: Level) -> String {
         Level::High => style("high  ").red().to_string(),
         Level::Medium => style("medium").magenta().to_string(),
         Level::Low => style("low   ").yellow().to_string(),
-        Level::Fmt => style("fmt   ").dim().to_string(),
+        Level::Fmt => style("fmt   ").yellow().dim().to_string(),
+        Level::Note => style("note  ").dim().to_string(),
         _ => format!("{:?}", level),
     }
 }

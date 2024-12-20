@@ -93,7 +93,7 @@ impl Parser for Ripgrep {
                         tool: "ripgrep".into(),
                         message: text.trim().to_string(),
                         category: Category::Lint.into(),
-                        level: Level::Medium.into(),
+                        level: Level::Note.into(),
                         rule_key: submatch.rg_match.text.clone(),
                         location: Some(Location {
                             path: path.text.clone(),
