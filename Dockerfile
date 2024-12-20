@@ -1,4 +1,3 @@
-# https://www.reddit.com/r/rust/comments/16bswvl/looking_for_the_perfect_dockerfile_for_rust/
 FROM lukemathwalker/cargo-chef:latest AS chef
 WORKDIR /app
 
