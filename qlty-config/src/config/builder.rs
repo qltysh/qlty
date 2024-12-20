@@ -8,7 +8,7 @@ use anyhow::{anyhow, bail, Context as _, Result};
 use config::{Config, File, FileFormat};
 use console::style;
 use toml::Value;
-use tracing::{trace, warn};
+use tracing::trace;
 
 const EXPECTED_CONFIG_VERSION: &str = "0";
 
