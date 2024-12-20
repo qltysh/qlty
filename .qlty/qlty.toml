@@ -95,11 +95,6 @@ name = "yamllint"
 plugins = ["osv-scanner", "trufflehog"]
 file_patterns = ["qlty-cli/tests/**"]
 
-# Disable ripgrep from analyzing the ripgrep parser
-[[ignore]]
-plugins = ["ripgrep"]
-file_patterns = ["**/ripgrep.rs"]
-
 [[ignore]]
 rules = ["markdownlint/MD024"]
 file_patterns = ["CHANGELOG.md"]

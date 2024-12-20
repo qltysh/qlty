@@ -1,3 +1,4 @@
+// qlty-ignore: +ripgrep
 use super::Parser;
 use anyhow::Result;
 use qlty_types::analysis::v1::{Category, Issue, Level, Location, Range};

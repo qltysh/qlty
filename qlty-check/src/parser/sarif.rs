@@ -280,6 +280,7 @@ impl Parser for Sarif {
     }
 }
 
+// qlty-ignore: +ripgrep
 #[cfg(test)]
 mod test {
     use super::*;
