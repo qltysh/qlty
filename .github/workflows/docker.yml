@@ -8,12 +8,12 @@ on:
     paths:
       - "qlty-*/**"
       - "Cargo.*"
-      - ".github/workflows/cli.yml"
+      - ".github/workflows/docker.yml"
   pull_request:
     paths:
       - "qlty-*/**"
       - "Cargo.*"
-      - ".github/workflows/cli.yml"
+      - ".github/workflows/docker.yml"
 
 permissions:
   contents: read
