@@ -15,6 +15,7 @@ pub use self::ignore::{Ignore, ALL_WILDCARD};
 pub use self::overrides::Override;
 use self::smells::Smells;
 pub use builder::Builder;
+use console::style;
 pub use coverage::Coverage;
 pub use download::{Cpu, DownloadDef, DownloadFileType, OperatingSystem, System};
 pub use file_type::FileType;
@@ -27,7 +28,6 @@ pub use plugin::{
 };
 pub use release::ReleaseDef;
 pub use source::SourceDef;
-use console::style;
 
 use crate::config::plugin::EnabledRuntimes;
 pub use crate::config::plugin::PluginsConfig;
@@ -141,22 +141,32 @@ impl QltyConfig {
     }
 
     pub fn default_source(&self) -> Option<&SourceDef> {
-        self.source.iter().find(|s| s.name.as_deref() == Some("default"))
+        self.source
+            .iter()
+            .find(|s| s.name.as_deref() == Some("default"))
     }
 
     pub fn print_deprecation_warnings(&self) {
         match self.default_source() {
             Some(source) => {
-                if source.repository.is_some() && source.repository.as_ref().unwrap().starts_with(OLD_DEFAULT_SOURCE_REPOSITORY)
+                if source.repository.is_some()
+                    && source
+                        .repository
+                        .as_ref()
+                        .unwrap()
+                        .starts_with(OLD_DEFAULT_SOURCE_REPOSITORY)
                 {
                     warn!("qlty.toml default source is a repository-style reference to qltysh.");
-                    eprintln!(r#"
+                    eprintln!(
+                        r#"
 {} Warning: your qlty.toml is using a deprecated, repository-based, default source. Please change your default source in your qlty.toml to:
 
 [[source]]
 name = "default"
 default = true
-"#, style("⚠").yellow());
+"#,
+                        style("⚠").yellow()
+                    );
                 }
             }
             None => {
