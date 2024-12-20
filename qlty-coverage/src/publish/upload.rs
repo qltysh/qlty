@@ -3,6 +3,8 @@ use anyhow::{Context, Result};
 use qlty_cloud::{export::CoverageExport, Client as QltyClient};
 use std::path::PathBuf;
 
+const LEGACY_API_URL: &str = "https://qlty.sh/api";
+
 #[derive(Default, Clone, Debug)]
 pub struct Upload {
     pub id: String,
@@ -14,7 +16,7 @@ pub struct Upload {
 
 impl Upload {
     pub fn prepare(token: &str, report: &mut Report) -> Result<Self> {
-        let client = QltyClient::new(Some(token.into()));
+        let client = QltyClient::new(Some(LEGACY_API_URL), Some(token.into()));
 
         let response = client
             .post("/coverage")

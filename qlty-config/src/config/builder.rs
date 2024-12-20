@@ -8,7 +8,7 @@ use anyhow::{anyhow, bail, Context as _, Result};
 use config::{Config, File, FileFormat};
 use console::style;
 use toml::Value;
-use tracing::{trace, warn};
+use tracing::trace;
 
 const EXPECTED_CONFIG_VERSION: &str = "0";
 
@@ -67,21 +67,6 @@ impl Builder {
     fn extract_sources(mut toml: Value) -> Result<Value> {
         let mut new_toml = Value::Table(Default::default());
 
-        // Extract and process the "sources" section
-        {
-            let sources = toml.get_mut("sources");
-            if let Some(sources) = sources {
-                if let Some(table) = sources.as_table_mut() {
-                    warn!("The `sources` field in qlty.toml is deprecated. Please use `source` instead.");
-
-                    // should be a safe unwrap()
-                    let new_table = new_toml.as_table_mut().unwrap();
-                    new_table.insert("sources".to_string(), Value::Table(table.clone()));
-                }
-            }
-        }
-
-        // Extract and process the "source" section
         {
             let source = toml.get_mut("source");
             if let Some(source) = source {
@@ -101,8 +86,7 @@ impl Builder {
             }
         }
 
-        // Check if neither sources nor source were found
-        if new_toml.get("sources").is_none() && new_toml.get("source").is_none() {
+        if new_toml.get("source").is_none() {
             bail!("No sources found");
         }
 
@@ -301,50 +285,6 @@ impl Builder {
 mod test {
     use super::*;
     use toml::{toml, Value::Table};
-
-    #[test]
-    fn test_extract_sources_with_sources_and_source() {
-        let input = toml! {
-            random_key = "random value to be filtered out"
-
-            [sources.default]
-            key1 = "value1"
-
-            [[source]]
-            key2 = "value2"
-            key3 = "value3"
-        };
-
-        let expected_output = toml! {
-            [sources.default]
-            key1 = "value1"
-
-            [[source]]
-            key2 = "value2"
-            key3 = "value3"
-        };
-
-        let result = Builder::extract_sources(Table(input)).unwrap();
-        assert_eq!(result, Table(expected_output));
-    }
-
-    #[test]
-    fn test_extract_sources_with_only_sources() {
-        let input = toml! {
-            random_key = "random value to be filtered out"
-
-            [sources.default]
-            key1 = "value1"
-        };
-
-        let expected_output = toml! {
-            [sources.default]
-            key1 = "value1"
-        };
-
-        let result = Builder::extract_sources(Table(input)).unwrap();
-        assert_eq!(result, Table(expected_output));
-    }
 
     #[test]
     fn test_extract_sources_with_only_source() {

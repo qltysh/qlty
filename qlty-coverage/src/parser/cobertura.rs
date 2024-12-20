@@ -71,9 +71,7 @@ impl Parser for Cobertura {
                             .push(line.clone());
                     }
                 } else {
-                    lines_by_filename
-                        .entry(class.filename.clone())
-                        .or_default();
+                    lines_by_filename.entry(class.filename.clone()).or_default();
                 }
             }
         }

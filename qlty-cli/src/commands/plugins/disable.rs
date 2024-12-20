@@ -3,7 +3,7 @@ use anyhow::{bail, Result};
 use clap::Args;
 use qlty_config::{config::IssueMode, Workspace};
 use std::fs;
-use toml_edit::{DocumentMut, value};
+use toml_edit::{value, DocumentMut};
 
 #[derive(Args, Debug)]
 pub struct Disable {

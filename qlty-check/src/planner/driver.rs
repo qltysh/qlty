@@ -218,7 +218,7 @@ impl DriverPlanner {
             workspace_root: self.workspace.root.clone(),
         };
 
-        for driver_target_batch in target_batcher.compute(&self.targets)? {
+        for driver_target_batch in target_batcher.compute(&targets)? {
             let plugin_configs = if driver_target_batch.config_file.is_some() {
                 vec![driver_target_batch.config_file.unwrap().clone()]
             } else {

@@ -9,7 +9,7 @@ use crate::{
 use anyhow::Result;
 use qlty_analysis::IssueCount;
 use qlty_types::{
-    analysis::v1::{ExecutionVerb, Issue},
+    analysis::v1::{Category, ExecutionVerb, Issue},
     level_from_str,
 };
 use tracing::info;
@@ -67,13 +67,20 @@ impl Processor {
     fn compute_counts(&mut self) {
         self.counts.total_issues = self.issues.len();
 
-        if let Some(fail_level) = self.plan.fail_level {
-            for issue in &self.issues {
+        for issue in &self.issues {
+            if let Some(fail_level) = self.plan.fail_level {
                 if issue.level
                     >= level_from_str(fail_level.as_str_name().to_lowercase().as_str()) as i32
                 {
                     self.counts.failure_issues += 1;
                 }
+            }
+
+            if issue.category == Category::Vulnerability as i32
+                || issue.category == Category::Secret as i32
+                || issue.category == Category::DependencyAlert as i32
+            {
+                self.counts.total_security_issues += 1;
             }
         }
     }

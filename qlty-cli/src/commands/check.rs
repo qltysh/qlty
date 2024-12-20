@@ -1,5 +1,6 @@
 pub mod autofix;
 
+use crate::ui::format::ApplyMode;
 use crate::ui::format::ErrorsFormatter;
 use crate::ui::format::TextFormatter;
 use crate::ui::Steps;
@@ -9,6 +10,7 @@ use anyhow::Result;
 use autofix::autofix;
 use clap::Args;
 use console::{style, Emoji};
+use qlty_check::planner::Plan;
 use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Report, Settings};
 use qlty_cloud::format::JsonFormatter;
 use qlty_config::Workspace;
@@ -23,7 +25,6 @@ use tracing::debug;
 
 static LOOKING_GLASS: Emoji<'_, '_> = Emoji("🔍  ", "");
 static THINKING: Emoji<'_, '_> = Emoji("🤔  ", "");
-static FIXING: Emoji<'_, '_> = Emoji("🛠️  ", "");
 static FORMATTING: Emoji<'_, '_> = Emoji("📝  ", "");
 
 #[derive(Args, Clone, Debug)]
@@ -33,8 +34,12 @@ pub struct Check {
     pub all: bool,
 
     /// Apply all auto-fix suggestions
-    #[arg(long)]
+    #[arg(long, conflicts_with = "no_fix")]
     pub fix: bool,
+
+    /// Do not apply auto-fix suggestions
+    #[arg(long, conflicts_with = "fix")]
+    pub no_fix: bool,
 
     /// Generate AI fixes (requires OpenAI API key)
     #[arg(long)]
@@ -82,6 +87,10 @@ pub struct Check {
     /// Print verbose output
     #[arg(short, long, action = clap::ArgAction::Count)]
     pub verbose: u8,
+
+    /// Print a summary of issues
+    #[arg(long)]
+    pub summary: bool,
 
     /// Upstream base ref to compare against
     #[arg(long)]
@@ -142,21 +151,26 @@ impl Check {
 
         let executor = Executor::new(&plan);
         let results = executor.install_and_invoke()?;
-        let results = autofix(&results, &settings, &plan.staging_area, Some(&mut steps))?;
+        let results = autofix(
+            &results,
+            &settings,
+            &plan.staging_area,
+            Some(&mut steps),
+            self.verbose,
+        )?;
 
         let mut processor = Processor::new(&plan, results);
         let report = processor.compute()?;
 
         if !report.fixed.is_empty() {
-            steps.start(FIXING, format!("Fixed {} issues", report.fixed.len()));
-            let format_report = self.format_after_fix(&settings, &report)?;
-            steps.start(
-                FORMATTING,
-                format!("Formatted {} files", format_report.formatted.len()),
-            );
+            if self.verbose >= 1 {
+                steps.start(FORMATTING, "Formatting...");
+            }
+
+            self.format_after_fix(&settings, &report)?;
         }
 
-        self.write_stdout(&report, &settings)?;
+        self.write_stdout(&report, &plan, &settings)?;
         self.write_stderr(&report)?;
 
         if !self.no_error && !self.skip_errored_plugins && report.has_errors() {
@@ -164,7 +178,13 @@ impl Check {
         } else {
             Ok(CommandSuccess {
                 trigger: Some(self.trigger),
+                unformatted_count: if self.no_formatters {
+                    None
+                } else {
+                    Some(report.unformatted_count())
+                },
                 issues_count: Some(report.counts.total_issues),
+                security_issues_count: Some(report.counts.total_security_issues),
                 fixed_count: report.fixed.len(),
                 fixable_count: report.fixable.len(),
                 fail: report.is_failure(),
@@ -301,14 +321,28 @@ impl Check {
         }
     }
 
-    fn write_stdout(&self, report: &Report, settings: &Settings) -> Result<()> {
-        let formatter = if self.json {
-            JsonFormatter::new(report.issues.clone())
+    fn write_stdout(&self, report: &Report, plan: &Plan, settings: &Settings) -> Result<()> {
+        if self.json {
+            let formatter = JsonFormatter::new(report.issues.clone());
+            formatter.write_to(&mut std::io::stdout())
         } else {
-            TextFormatter::new(report, settings.verbose)
-        };
+            let apply_mode = if self.fix {
+                ApplyMode::All
+            } else if self.no_fix {
+                ApplyMode::None
+            } else {
+                ApplyMode::Ask
+            };
 
-        formatter.write_to(&mut std::io::stdout())
+            let mut formatter = TextFormatter::new(
+                report,
+                &plan.workspace,
+                settings.verbose,
+                self.summary,
+                apply_mode,
+            );
+            formatter.write_to(&mut std::io::stdout())
+        }
     }
 
     fn write_stderr(&self, report: &Report) -> Result<()> {

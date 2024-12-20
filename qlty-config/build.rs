@@ -42,10 +42,6 @@ fn git_commit_oid(directory: &str) -> String {
 
 fn main() {
     println!("cargo:rustc-env=GIT_COMMIT_QLTY={}", git_commit_oid("."));
-    println!(
-        "cargo:rustc-env=GIT_COMMIT_QLTY_PRO={}",
-        git_commit_oid("..")
-    );
 
     println!(
         "cargo:rustc-env=BUILD_PROFILE={}",

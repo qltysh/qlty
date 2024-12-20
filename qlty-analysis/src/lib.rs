@@ -20,4 +20,5 @@ pub use workspace_entries::{
 pub struct IssueCount {
     pub total_issues: usize,
     pub failure_issues: usize,
+    pub total_security_issues: usize,
 }

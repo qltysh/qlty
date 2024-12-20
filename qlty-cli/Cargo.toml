@@ -8,14 +8,8 @@ homepage.workspace = true
 repository.workspace = true
 keywords.workspace = true
 categories.workspace = true
-license-file.workspace = true
 edition.workspace = true
 autotests = false
-
-[lib]
-name = "qlty"
-path = "src/lib.rs"
-doctest = false
 
 [[bin]]
 bench = false
@@ -41,6 +35,7 @@ clap.workspace = true
 cli-table.workspace = true
 console.workspace = true
 dialoguer.workspace = true
+diffy.workspace = true
 duct.workspace = true
 git2.workspace = true
 glob.workspace = true
@@ -71,6 +66,7 @@ serde_json.workspace = true
 serde_yaml.workspace = true
 serde-xml-rs.workspace = true
 serde.workspace = true
+similar.workspace = true
 supports-color.workspace = true
 syntect.workspace = true
 tabwriter.workspace = true

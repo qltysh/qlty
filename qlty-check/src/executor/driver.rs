@@ -242,8 +242,6 @@ impl Driver {
                     .map(|issue| self.fix_issue_path(issue, plan, &path_prefix))
                     .into_group_map_by(|issue| issue.path().map(PathBuf::from));
 
-                debug!("Issues by path: {:?}", issues_by_path);
-
                 let mut file_results = vec![];
 
                 let parent_with_file_results =

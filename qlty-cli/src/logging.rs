@@ -54,11 +54,18 @@ where
             tracing::Level::ERROR => styled_level.red(),
         };
         let styled_time = ansi(&writer, time).dim();
+
+        // ThreadIdsare formatted as ThreadId(1) in current Rust, which is verbose
+        let thread_id = format!("{:?}", thread::current().id());
+        let tid = thread_id
+            .trim_start_matches("ThreadId(")
+            .trim_end_matches(')');
+
         let styled_info = ansi(
             &writer,
             format!(
-                "[{:?}]::{} ({}):",
-                thread::current().id(),
+                "[T{}] {} ({}):",
+                tid,
                 metadata.module_path().unwrap_or_default(),
                 ByteSize(ALLOCATOR.allocated() as u64),
             ),

@@ -2,18 +2,12 @@ use super::{ActivePlugin, Planner};
 use anyhow::bail;
 use anyhow::{anyhow, Result};
 use qlty_analysis::workspace_entries::TargetMode;
-use qlty_config::config::{DriverDef, EnabledPlugin, IssueMode, PluginDef};
+use qlty_config::config::{DriverDef, EnabledPlugin, IssueMode, Platform, PluginDef};
 use semver::{Version, VersionReq};
 use std::path::{Path, PathBuf};
 use tracing::{debug, trace, warn};
 
 const ALL: &str = "ALL";
-
-#[cfg(not(windows))]
-const PLATFORM_DISABLED_PLUGINS: &[&str] = &[];
-
-#[cfg(windows)]
-const PLATFORM_DISABLED_PLUGINS: &[&str] = &["semgrep"];
 
 pub fn enabled_plugins(planner: &Planner) -> Result<Vec<ActivePlugin>> {
     let active_plugins = configure_plugins(planner)?;
@@ -54,12 +48,25 @@ fn configure_plugins(planner: &Planner) -> Result<Vec<ActivePlugin>> {
             continue;
         }
 
-        if PLATFORM_DISABLED_PLUGINS.contains(&enabled_plugin.name.as_str()) {
-            debug!(
-                "Plugin {} is disabled on this platform, skipping.",
-                enabled_plugin.name
-            );
-            continue;
+        if let Some(plugin_def) = planner
+            .config
+            .plugins
+            .definitions
+            .get(enabled_plugin.name.as_str())
+        {
+            if !plugin_def.supported_platforms.is_empty()
+                && !plugin_def
+                    .supported_platforms
+                    .contains(&Platform::current())
+            {
+                warn!(
+                    "Plugin {} is not supported on this platform ({}), skipping. (Supported platforms are: {})",
+                    enabled_plugin.name,
+                    Platform::current(),
+                    plugin_def.supported_platforms.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(", ")
+                );
+                continue;
+            }
         }
 
         if let Some(TargetMode::UpstreamDiff(_)) = &planner.target_mode {
@@ -537,6 +544,45 @@ mod test {
         assert_eq!(plugins[0].plugin.prefix, Some("prefix".to_string()));
         assert_eq!(plugins[1].name, "enabled");
         assert_eq!(plugins[1].plugin.prefix, Some("".to_string()));
+    }
+
+    #[test]
+    fn test_disable_plugin_if_unsupported_platform() {
+        let supported_platforms = Platform::all_values()
+            .into_iter()
+            .filter(|&x| x != Platform::current())
+            .collect();
+
+        let mut plugin_defs = HashMap::new();
+        plugin_defs.insert(
+            "enabled".to_string(),
+            PluginDef {
+                drivers: vec![("test".to_string(), DriverDef::default())]
+                    .into_iter()
+                    .collect(),
+                supported_platforms: supported_platforms,
+                ..Default::default()
+            },
+        );
+
+        let planner = build_planner(QltyConfig {
+            plugin: vec![EnabledPlugin {
+                name: "enabled".to_string(),
+                prefix: Some("prefix".to_string()),
+                drivers: vec![ALL.to_string()],
+                ..Default::default()
+            }],
+            plugins: PluginsConfig {
+                downloads: HashMap::new(),
+                releases: HashMap::new(),
+                definitions: plugin_defs,
+            },
+            ..Default::default()
+        });
+
+        let plugins: Vec<ActivePlugin> = enabled_plugins(&planner).unwrap();
+
+        assert!(plugins.is_empty());
     }
 
     #[test]

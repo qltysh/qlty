@@ -65,7 +65,8 @@ pub fn report_duplications(report: &Report, diff: bool) {
             if identical {
                 println!("{}", examples.first().unwrap());
             } else {
-                let diff = TextDiff::from_lines(examples.first().unwrap(), examples.get(1).unwrap());
+                let diff =
+                    TextDiff::from_lines(examples.first().unwrap(), examples.get(1).unwrap());
 
                 for change in diff.iter_all_changes() {
                     match change.tag() {

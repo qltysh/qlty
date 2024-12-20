@@ -10,12 +10,12 @@ pub struct Reek {}
 
 #[derive(Debug, Deserialize, Clone)]
 struct ReekSmell {
-  pub context: String,
-  pub lines: Vec<i32>,
-  pub message: String,
-  pub smell_type: String,
-  pub source: String,
-  pub documentation_link: String,
+    pub context: String,
+    pub lines: Vec<i32>,
+    pub message: String,
+    pub smell_type: String,
+    pub source: String,
+    pub documentation_link: String,
 }
 
 impl Parser for Reek {
@@ -24,26 +24,26 @@ impl Parser for Reek {
         let reek_smells: Vec<ReekSmell> = serde_json::from_str(output)?;
 
         for smell in reek_smells {
-          for line in smell.lines {
-            let issue = Issue {
-                tool: plugin_name.into(),
-                documentation_url: smell.documentation_link.clone(),
-                message: format!("{} {}", smell.context.trim(), smell.message.trim()),
-                category: Category::Lint.into(),
-                level: Level::Medium.into(),
-                rule_key: smell.smell_type.clone(),
-                location: Some(Location {
-                    path: smell.source.clone(),
-                    range: Some(Range {
-                        start_line: line as u32,
-                        ..Default::default()
+            for line in smell.lines {
+                let issue = Issue {
+                    tool: plugin_name.into(),
+                    documentation_url: smell.documentation_link.clone(),
+                    message: format!("{} {}", smell.context.trim(), smell.message.trim()),
+                    category: Category::Lint.into(),
+                    level: Level::Medium.into(),
+                    rule_key: smell.smell_type.clone(),
+                    location: Some(Location {
+                        path: smell.source.clone(),
+                        range: Some(Range {
+                            start_line: line as u32,
+                            ..Default::default()
+                        }),
                     }),
-                }),
-                ..Default::default()
-            };
+                    ..Default::default()
+                };
 
-            issues.push(issue);
-          }
+                issues.push(issue);
+            }
         }
 
         Ok(issues)

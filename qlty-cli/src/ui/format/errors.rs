@@ -1,23 +1,22 @@
 use anyhow::Result;
 use console::style;
 use qlty_check::Report;
-use qlty_cloud::format::Formatter;
 
 #[derive(Debug)]
 pub struct ErrorsFormatter {
     report: Report,
 }
 
-impl<'a> ErrorsFormatter {
-    pub fn new(report: &Report) -> Box<dyn Formatter> {
-        Box::new(Self {
+impl ErrorsFormatter {
+    pub fn new(report: &Report) -> Self {
+        Self {
             report: report.clone(),
-        })
+        }
     }
 }
 
-impl Formatter for ErrorsFormatter {
-    fn write_to(&self, writer: &mut dyn std::io::Write) -> Result<()> {
+impl ErrorsFormatter {
+    pub fn write_to(&self, writer: &mut dyn std::io::Write) -> Result<()> {
         let cwd = std::env::current_dir().expect("Unable to identify current directory");
 
         for invocation in &self.report.invocations {

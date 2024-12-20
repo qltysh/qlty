@@ -31,6 +31,7 @@ use std::env::join_paths;
 use std::env::split_paths;
 use std::time::Instant;
 use std::{collections::HashMap, fmt::Debug, path::PathBuf};
+use tracing::warn;
 use tracing::{debug, error, info};
 
 const MAX_TOOL_INSTALL_ATTEMPTS: u32 = 3;
@@ -399,11 +400,12 @@ pub trait Tool: Debug + Sync + Send {
 
                 Ok(Some(captured_version.to_string()))
             } else {
-                bail!(
+                warn!(
                     "Package version {:?} does not match regex {:?}",
                     declared_version,
                     self.version_regex()
                 );
+                Ok(None)
             }
         } else {
             Ok(None)

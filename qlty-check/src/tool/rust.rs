@@ -34,7 +34,13 @@ impl Tool for Rust {
     }
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
-        task.set_message(&format!("Installing Rust v{}", self.version().unwrap()));
+        let version = self.version().unwrap();
+        let version = if version.chars().next().unwrap().is_numeric() {
+            format!("v{}", version)
+        } else {
+            version // e.g. "nightly"
+        };
+        task.set_message(&format!("Installing Rust {}", version));
         self.download().install(self.directory(), self.name())?;
         Ok(())
     }

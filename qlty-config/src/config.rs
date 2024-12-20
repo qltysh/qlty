@@ -22,18 +22,18 @@ pub use language::Language;
 pub use plugin::{
     CheckTrigger, DriverBatchBy, DriverDef, DriverType, EnabledPlugin, ExtraPackage,
     InvocationDirectoryDef, InvocationDirectoryType, IssueMode, OutputDestination, OutputFormat,
-    PackageFileCandidate, PluginDef, PluginEnvironment, PluginFetch, Runtime, SuggestionMode,
-    TargetDef, TargetType,
+    PackageFileCandidate, Platform, PluginDef, PluginEnvironment, PluginFetch, Runtime,
+    SuggestionMode, TargetDef, TargetType,
 };
 pub use release::ReleaseDef;
 pub use source::SourceDef;
 
 use crate::config::plugin::EnabledRuntimes;
 pub use crate::config::plugin::PluginsConfig;
-use crate::sources::{Source, SourcesList};
+use crate::sources::SourcesList;
 use crate::version::QLTY_VERSION;
 use crate::Library;
-use anyhow::{anyhow, bail, Result};
+use anyhow::{bail, Result};
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -67,9 +67,6 @@ pub struct QltyConfig {
 
     #[serde(default)]
     pub plugins: PluginsConfig,
-
-    #[serde(default)]
-    pub sources: HashMap<String, SourceDef>,
 
     #[serde(default)]
     pub language: HashMap<String, Language>,
@@ -123,33 +120,10 @@ impl QltyConfig {
         true
     }
 
-    pub fn default_source(&self, library: &Library) -> Result<Box<dyn Source>> {
-        if let Some(source) = self
-            .source
-            .iter()
-            .find(|source_def| source_def.name.as_deref() == Some("default"))
-        {
-            return source.source(library);
-        }
-
-        let source_def = self.sources.get("default").ok_or_else(|| {
-            anyhow!(
-                "Could not find `sources.default` key in project config: {:#?}",
-                self
-            )
-        })?;
-
-        source_def.source(library)
-    }
-
     pub fn sources_list(&self, library: &Library) -> Result<SourcesList> {
         let mut sources_list = SourcesList::new();
 
         for source_def in self.source.iter() {
-            sources_list.sources.push(source_def.source(library)?);
-        }
-
-        for source_def in self.sources.values() {
             sources_list.sources.push(source_def.source(library)?);
         }
 
