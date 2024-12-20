@@ -1,6 +1,8 @@
 mod errors;
 mod fixes;
 mod highlight;
+mod invocations;
+mod issues;
 mod level;
 mod source;
 mod steps;
