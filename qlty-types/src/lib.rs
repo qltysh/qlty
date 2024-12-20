@@ -286,7 +286,7 @@ impl analysis::v1::Level {
 impl clap::ValueEnum for analysis::v1::Level {
     fn value_variants<'a>() -> &'a [Self] {
         &[
-            analysis::v1::Level::Unspecified,
+            analysis::v1::Level::Note,
             analysis::v1::Level::Fmt,
             analysis::v1::Level::Low,
             analysis::v1::Level::Medium,

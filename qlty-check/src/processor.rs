@@ -8,10 +8,7 @@ use crate::{
 };
 use anyhow::Result;
 use qlty_analysis::IssueCount;
-use qlty_types::{
-    analysis::v1::{Category, ExecutionVerb, Issue},
-    level_from_str,
-};
+use qlty_types::analysis::v1::{Category, ExecutionVerb, Issue};
 use tracing::info;
 
 pub struct Processor {
@@ -69,9 +66,7 @@ impl Processor {
 
         for issue in &self.issues {
             if let Some(fail_level) = self.plan.fail_level {
-                if issue.level
-                    >= level_from_str(fail_level.as_str_name().to_lowercase().as_str()) as i32
-                {
+                if issue.level >= fail_level as i32 {
                     self.counts.failure_issues += 1;
                 }
             }

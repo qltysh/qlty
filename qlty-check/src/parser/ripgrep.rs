@@ -93,7 +93,7 @@ impl Parser for Ripgrep {
                         tool: "ripgrep".into(),
                         message: text.trim().to_string(),
                         category: Category::Lint.into(),
-                        level: Level::Medium.into(),
+                        level: Level::Note.into(),
                         rule_key: submatch.rg_match.text.clone(),
                         location: Some(Location {
                             path: path.text.clone(),
@@ -136,11 +136,11 @@ mod test {
         "###;
 
         let issues = Ripgrep::default().parse("ripgrep", input);
-        insta::assert_yaml_snapshot!(issues.unwrap(), @r"
+        insta::assert_yaml_snapshot!(issues.unwrap(), @r###"
         - tool: ripgrep
           ruleKey: FIXME
           message: // FIXME TODO
-          level: LEVEL_MEDIUM
+          level: LEVEL_NOTE
           category: CATEGORY_LINT
           location:
             path: basic_e.in.rs
@@ -152,7 +152,7 @@ mod test {
         - tool: ripgrep
           ruleKey: TODO
           message: // FIXME TODO
-          level: LEVEL_MEDIUM
+          level: LEVEL_NOTE
           category: CATEGORY_LINT
           location:
             path: basic_e.in.rs
@@ -164,7 +164,7 @@ mod test {
         - tool: ripgrep
           ruleKey: NOTE
           message: // NOTE
-          level: LEVEL_MEDIUM
+          level: LEVEL_NOTE
           category: CATEGORY_LINT
           location:
             path: basic.in.rs
@@ -176,7 +176,7 @@ mod test {
         - tool: ripgrep
           ruleKey: FIXME
           message: // FIXME TODO
-          level: LEVEL_MEDIUM
+          level: LEVEL_NOTE
           category: CATEGORY_LINT
           location:
             path: basic.in.rs
@@ -188,7 +188,7 @@ mod test {
         - tool: ripgrep
           ruleKey: TODO
           message: // FIXME TODO
-          level: LEVEL_MEDIUM
+          level: LEVEL_NOTE
           category: CATEGORY_LINT
           location:
             path: basic.in.rs
@@ -200,7 +200,7 @@ mod test {
         - tool: ripgrep
           ruleKey: HACK
           message: // HACK
-          level: LEVEL_MEDIUM
+          level: LEVEL_NOTE
           category: CATEGORY_LINT
           location:
             path: basic.in.rs
@@ -209,7 +209,7 @@ mod test {
               startColumn: 7
               endLine: 4
               endColumn: 11
-        ");
+        "###);
     }
 
     #[test]
@@ -230,17 +230,17 @@ mod test {
         assert!(logs_contain("Failed to parse line number"));
         assert!(logs_contain("Failed to parse path"));
 
-        insta::assert_yaml_snapshot!(issues.unwrap(), @r"
+        insta::assert_yaml_snapshot!(issues.unwrap(), @r###"
         - tool: ripgrep
           ruleKey: NOTE
           message: // NOTE
-          level: LEVEL_MEDIUM
+          level: LEVEL_NOTE
           category: CATEGORY_LINT
           location:
             path: basic.in.rs
             range:
               startLine: 2
               endLine: 2
-        ");
+        "###);
     }
 }
