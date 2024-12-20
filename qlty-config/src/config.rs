@@ -27,6 +27,7 @@ pub use plugin::{
 };
 pub use release::ReleaseDef;
 pub use source::SourceDef;
+use console::style;
 
 use crate::config::plugin::EnabledRuntimes;
 pub use crate::config::plugin::PluginsConfig;
@@ -37,7 +38,7 @@ use anyhow::{bail, Result};
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use tracing::debug;
+use tracing::{debug, warn};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct QltyConfig {
@@ -85,6 +86,8 @@ pub struct QltyConfig {
     #[serde(default)]
     pub source: Vec<SourceDef>,
 }
+
+const OLD_DEFAULT_SOURCE_REPOSITORY: &str = "https://github.com/qltysh/qlty";
 
 impl QltyConfig {
     pub fn validate_cli_version(&self) -> Result<()> {
@@ -135,6 +138,31 @@ impl QltyConfig {
             .iter()
             .map(|(name, settings)| (name.clone(), f(settings)))
             .collect::<HashMap<_, _>>()
+    }
+
+    pub fn default_source(&self) -> Option<&SourceDef> {
+        self.source.iter().find(|s| s.name.as_deref() == Some("default"))
+    }
+
+    pub fn print_deprecation_warnings(&self) {
+        match self.default_source() {
+            Some(source) => {
+                if source.repository.is_some() && source.repository.as_ref().unwrap().starts_with(OLD_DEFAULT_SOURCE_REPOSITORY)
+                {
+                    warn!("qlty.toml default source is a repository-style reference to qltysh.");
+                    eprintln!(r#"
+{} Warning: your qlty.toml is using a deprecated, repository-based, default source. Please change your default source in your qlty.toml to:
+
+[[source]]
+name = "default"
+default = true
+"#, style("⚠").yellow());
+                }
+            }
+            None => {
+                warn!("No default source defined in qlty.toml.");
+            }
+        }
     }
 }
 
