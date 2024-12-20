@@ -64,40 +64,9 @@ impl Formatter for TextFormatter {
         print_invocations(writer, &self.report, self.verbose)?;
 
         if self.verbose >= 1 && self.report.targets_count() > 0 {
-            writeln!(
-                writer,
-                "{} {} {}{}",
-                match self.report.verb {
-                    ExecutionVerb::Check => "Checked",
-                    ExecutionVerb::Fmt => "Formatted",
-                    _ => "Processed",
-                },
-                self.report.targets_count().to_formatted_string(&Locale::en),
-                if self.report.target_mode.is_diff() {
-                    "modified "
-                } else {
-                    ""
-                },
-                if self.report.targets_count() == 1 {
-                    "file"
-                } else {
-                    "files"
-                },
-            )?;
+            self.print_processed_files(writer)?;
         } else if self.report.targets_count() == 0 && self.report.target_mode.is_diff() {
-            writeln!(
-                writer,
-                "{}",
-                style(format!(
-                    "No modified files for {} were found on your branch.",
-                    if self.report.verb == ExecutionVerb::Fmt {
-                        "formatting"
-                    } else {
-                        "checks"
-                    }
-                ))
-                .dim()
-            )?;
+            self.print_no_modified_files(writer)?;
         }
 
         Ok(())
@@ -282,6 +251,49 @@ impl TextFormatter {
                 writeln!(writer)?;
             }
         }
+
+        Ok(())
+    }
+
+    pub fn print_processed_files(&self, writer: &mut dyn std::io::Write) -> Result<()> {
+        writeln!(
+            writer,
+            "{} {} {}{}",
+            match self.report.verb {
+                ExecutionVerb::Check => "Checked",
+                ExecutionVerb::Fmt => "Formatted",
+                _ => "Processed",
+            },
+            self.report.targets_count().to_formatted_string(&Locale::en),
+            if self.report.target_mode.is_diff() {
+                "modified "
+            } else {
+                ""
+            },
+            if self.report.targets_count() == 1 {
+                "file"
+            } else {
+                "files"
+            },
+        )?;
+
+        Ok(())
+    }
+
+    pub fn print_no_modified_files(&self, writer: &mut dyn std::io::Write) -> Result<()> {
+        writeln!(
+            writer,
+            "{}",
+            style(format!(
+                "No modified files for {} were found on your branch.",
+                if self.report.verb == ExecutionVerb::Fmt {
+                    "formatting"
+                } else {
+                    "checks"
+                }
+            ))
+            .dim()
+        )?;
 
         Ok(())
     }
