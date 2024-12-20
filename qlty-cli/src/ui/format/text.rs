@@ -61,14 +61,8 @@ impl Formatter for TextFormatter {
             print_issues(writer, &self.report)?;
         }
 
-        print_invocations(writer, &self.report, self.verbose)?;
-
-        if self.verbose >= 1 && self.report.targets_count() > 0 {
-            self.print_processed_files(writer)?;
-        } else if self.report.targets_count() == 0 && self.report.target_mode.is_diff() {
-            self.print_no_modified_files(writer)?;
-        }
-
+        self.print_invocations(writer)?;
+        self.print_conclusion(writer)?;
         Ok(())
     }
 }
@@ -89,6 +83,122 @@ enum AskMode {
 }
 
 impl TextFormatter {
+    pub fn print_invocations(&self, writer: &mut dyn std::io::Write) -> Result<()> {
+        for formatted_path in &self.report.formatted {
+            writeln!(
+                writer,
+                "{} Formatted {}",
+                style("✔").green().bold(),
+                style(path_to_string(formatted_path)).underlined()
+            )?;
+        }
+
+        if self.verbose >= 1 {
+            writeln!(writer)?;
+            writeln!(
+                writer,
+                "{}{}{}",
+                style(" JOBS: ").bold().reverse(),
+                style(
+                    self.report
+                        .invocations
+                        .len()
+                        .to_formatted_string(&Locale::en)
+                )
+                .bold()
+                .reverse(),
+                style(" ").bold().reverse()
+            )?;
+            writeln!(writer)?;
+        }
+
+        let mut printed_summary = false;
+        let cwd = std::env::current_dir().expect("Unable to identify current directory");
+
+        for invocation in &self.report.invocations {
+            let absolute_outfile_path = invocation.outfile_path();
+            let outfile_path = pathdiff::diff_paths(absolute_outfile_path, &cwd).unwrap();
+
+            match invocation.status() {
+                InvocationStatus::Success => {
+                    if self.verbose >= 1 {
+                        writeln!(
+                            writer,
+                            "{} {} checked {} files in {:.2}s {}",
+                            style("Success").green(),
+                            invocation.invocation.plugin_name,
+                            invocation.plan.workspace_entries.len(),
+                            invocation.invocation.duration_secs,
+                            style(path_to_string(outfile_path)).dim(),
+                        )?;
+
+                        printed_summary = true;
+                    }
+                }
+                InvocationStatus::LintError => match invocation.invocation.exit_code {
+                    Some(code) => {
+                        writeln!(
+                            writer,
+                            "{} {}: Exited with code {:?} {}",
+                            style("Lint error").red(),
+                            style(&invocation.invocation.plugin_name).red().bold(),
+                            code,
+                            style(path_to_string(outfile_path)).dim(),
+                        )?;
+
+                        if invocation.invocation.stderr.is_empty() {
+                            if !invocation.invocation.stdout.is_empty() {
+                                let text: String =
+                                    invocation.invocation.stdout.chars().take(2048).collect();
+
+                                for line in text.lines() {
+                                    writeln!(writer, "        {}", style(line).red())?;
+                                }
+                            }
+                        } else {
+                            let text: String =
+                                invocation.invocation.stderr.chars().take(2048).collect();
+
+                            for line in text.lines() {
+                                writeln!(writer, "        {}", style(line).red())?;
+                            }
+                        }
+
+                        printed_summary = true;
+                    }
+                    None => {
+                        writeln!(
+                            writer,
+                            "{} {}: Exited with unknown status {}",
+                            style("Lint error").red(),
+                            style(&invocation.invocation.plugin_name).red().bold(),
+                            style(path_to_string(invocation.outfile_path())).dim(),
+                        )?;
+                        printed_summary = true;
+                    }
+                },
+                InvocationStatus::ParseError => {
+                    writeln!(
+                        writer,
+                        "{} {}: {} {}",
+                        style("Parse error").red(),
+                        invocation.invocation.plugin_name,
+                        invocation.invocation.parser_error.as_ref().unwrap(),
+                        style(path_to_string(outfile_path)).dim(),
+                    )?;
+
+                    printed_summary = true;
+                }
+            }
+        }
+
+        if printed_summary {
+            writeln!(writer)?;
+        }
+
+        Ok(())
+    }
+
     pub fn print_fixes(&self, writer: &mut dyn std::io::Write) -> Result<()> {
         let mut patch_candidates = vec![];
 
@@ -250,6 +360,16 @@ impl TextFormatter {
 
                 writeln!(writer)?;
             }
+        }
+
+        Ok(())
+    }
+
+    pub fn print_conclusion(&self, writer: &mut dyn std::io::Write) -> Result<()> {
+        if self.verbose >= 1 && self.report.targets_count() > 0 {
+            self.print_processed_files(writer)?;
+        } else if self.report.targets_count() == 0 && self.report.target_mode.is_diff() {
+            self.print_no_modified_files(writer)?;
         }
 
         Ok(())
@@ -440,121 +560,6 @@ pub fn print_issues(writer: &mut dyn std::io::Write, report: &Report) -> Result<
         tw.flush().unwrap();
         let written = String::from_utf8(tw.into_inner().unwrap()).unwrap();
         writeln!(writer, "{}", written)?;
-    }
-
-    Ok(())
-}
-
-pub fn print_invocations(
-    writer: &mut dyn std::io::Write,
-    report: &Report,
-    verbose: usize,
-) -> Result<()> {
-    for formatted_path in &report.formatted {
-        writeln!(
-            writer,
-            "{} Formatted {}",
-            style("✔").green().bold(),
-            style(path_to_string(formatted_path)).underlined()
-        )?;
-    }
-
-    if verbose >= 1 {
-        writeln!(writer)?;
-        writeln!(
-            writer,
-            "{}{}{}",
-            style(" JOBS: ").bold().reverse(),
-            style(report.invocations.len().to_formatted_string(&Locale::en))
-                .bold()
-                .reverse(),
-            style(" ").bold().reverse()
-        )?;
-        writeln!(writer)?;
-    }
-
-    let mut printed_summary = false;
-    let cwd = std::env::current_dir().expect("Unable to identify current directory");
-
-    for invocation in &report.invocations {
-        let absolute_outfile_path = invocation.outfile_path();
-        let outfile_path = pathdiff::diff_paths(absolute_outfile_path, &cwd).unwrap();
-
-        match invocation.status() {
-            InvocationStatus::Success => {
-                if verbose >= 1 {
-                    writeln!(
-                        writer,
-                        "{} {} checked {} files in {:.2}s {}",
-                        style("Success").green(),
-                        invocation.invocation.plugin_name,
-                        invocation.plan.workspace_entries.len(),
-                        invocation.invocation.duration_secs,
-                        style(path_to_string(outfile_path)).dim(),
-                    )?;
-
-                    printed_summary = true;
-                }
-            }
-            InvocationStatus::LintError => match invocation.invocation.exit_code {
-                Some(code) => {
-                    writeln!(
-                        writer,
-                        "{} {}: Exited with code {:?} {}",
-                        style("Lint error").red(),
-                        style(&invocation.invocation.plugin_name).red().bold(),
-                        code,
-                        style(path_to_string(outfile_path)).dim(),
-                    )?;
-
-                    if invocation.invocation.stderr.is_empty() {
-                        if !invocation.invocation.stdout.is_empty() {
-                            let text: String =
-                                invocation.invocation.stdout.chars().take(2048).collect();
-
-                            for line in text.lines() {
-                                writeln!(writer, "        {}", style(line).red())?;
-                            }
-                        }
-                    } else {
-                        let text: String =
-                            invocation.invocation.stderr.chars().take(2048).collect();
-
-                        for line in text.lines() {
-                            writeln!(writer, "        {}", style(line).red())?;
-                        }
-                    }
-
-                    printed_summary = true;
-                }
-                None => {
-                    writeln!(
-                        writer,
-                        "{} {}: Exited with unknown status {}",
-                        style("Lint error").red(),
-                        style(&invocation.invocation.plugin_name).red().bold(),
-                        style(path_to_string(invocation.outfile_path())).dim(),
-                    )?;
-                    printed_summary = true;
-                }
-            },
-            InvocationStatus::ParseError => {
-                writeln!(
-                    writer,
-                    "{} {}: {} {}",
-                    style("Parse error").red(),
-                    invocation.invocation.plugin_name,
-                    invocation.invocation.parser_error.as_ref().unwrap(),
-                    style(path_to_string(outfile_path)).dim(),
-                )?;
-
-                printed_summary = true;
-            }
-        }
-    }
-
-    if printed_summary {
-        writeln!(writer)?;
     }
 
     Ok(())
