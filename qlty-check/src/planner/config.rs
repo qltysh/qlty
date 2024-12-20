@@ -2,7 +2,7 @@ use super::{ActivePlugin, Planner};
 use anyhow::bail;
 use anyhow::{anyhow, Result};
 use qlty_analysis::workspace_entries::TargetMode;
-use qlty_config::config::{DriverDef, EnabledPlugin, IssueMode, PluginDef, Platform};
+use qlty_config::config::{DriverDef, EnabledPlugin, IssueMode, Platform, PluginDef};
 use semver::{Version, VersionReq};
 use std::path::{Path, PathBuf};
 use tracing::{debug, trace, warn};
@@ -48,8 +48,17 @@ fn configure_plugins(planner: &Planner) -> Result<Vec<ActivePlugin>> {
             continue;
         }
 
-        if let Some(plugin_def) = planner.config.plugins.definitions.get(enabled_plugin.name.as_str()) {
-            if !plugin_def.supported_platforms.is_empty() && !plugin_def.supported_platforms.contains(&Platform::current()) {
+        if let Some(plugin_def) = planner
+            .config
+            .plugins
+            .definitions
+            .get(enabled_plugin.name.as_str())
+        {
+            if !plugin_def.supported_platforms.is_empty()
+                && !plugin_def
+                    .supported_platforms
+                    .contains(&Platform::current())
+            {
                 warn!(
                     "Plugin {} is not supported on this platform ({}), skipping. (Supported platforms are: {})",
                     enabled_plugin.name,
@@ -557,14 +566,12 @@ mod test {
         );
 
         let planner = build_planner(QltyConfig {
-            plugin: vec![
-                EnabledPlugin {
-                    name: "enabled".to_string(),
-                    prefix: Some("prefix".to_string()),
-                    drivers: vec![ALL.to_string()],
-                    ..Default::default()
-                },
-            ],
+            plugin: vec![EnabledPlugin {
+                name: "enabled".to_string(),
+                prefix: Some("prefix".to_string()),
+                drivers: vec![ALL.to_string()],
+                ..Default::default()
+            }],
             plugins: PluginsConfig {
                 downloads: HashMap::new(),
                 releases: HashMap::new(),
@@ -576,7 +583,7 @@ mod test {
         let plugins: Vec<ActivePlugin> = enabled_plugins(&planner).unwrap();
 
         assert!(plugins.is_empty());
-    }    
+    }
 
     #[test]
     fn test_config_plugin_prefix_package_file() {
