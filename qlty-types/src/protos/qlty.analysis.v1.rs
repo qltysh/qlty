@@ -454,11 +454,11 @@ impl MessageLevel {
 #[repr(i32)]
 pub enum Level {
     Unspecified = 0,
-    Note = 5,
-    Fmt = 1,
-    Low = 2,
-    Medium = 3,
-    High = 4,
+    Note = 10,
+    Fmt = 20,
+    Low = 30,
+    Medium = 40,
+    High = 50,
 }
 impl Level {
     /// String value of the enum field names used in the ProtoBuf definition.
