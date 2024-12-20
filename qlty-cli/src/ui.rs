@@ -1,5 +1,8 @@
 mod errors;
+mod fixes;
 mod highlight;
+mod level;
+mod source;
 mod steps;
 mod text;
 mod unformatted;
