@@ -8,10 +8,7 @@ use crate::{
 };
 use anyhow::Result;
 use qlty_analysis::IssueCount;
-use qlty_types::{
-    analysis::v1::{Category, ExecutionVerb, Issue},
-    level_from_str,
-};
+use qlty_types::analysis::v1::{Category, ExecutionVerb, Issue};
 use tracing::info;
 
 pub struct Processor {

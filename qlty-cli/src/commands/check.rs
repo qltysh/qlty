@@ -15,7 +15,6 @@ use qlty_cloud::format::JsonFormatter;
 use qlty_config::Workspace;
 use qlty_types::analysis::v1::ExecutionVerb;
 use qlty_types::analysis::v1::Level;
-use qlty_types::level_from_str;
 use std::io::BufRead as _;
 use std::io::{self, Read};
 use std::path::PathBuf;
@@ -68,9 +67,9 @@ pub struct Check {
     #[arg(long, conflicts_with = "all")]
     pub sample: Option<usize>,
 
-    /// Minimum level of issues to show (high, medium, low)
-    #[arg(long)]
-    pub level: Option<String>,
+    /// Minimum level of issues to show
+    #[arg(long, value_enum, default_value = "note")]
+    pub level: Level,
 
     /// Maximum number of concurrent jobs
     #[arg(short, long)]
@@ -279,7 +278,7 @@ impl Check {
         settings.formatters = !self.no_formatters;
         settings.filters = CheckFilter::from_optional_list(self.filter.clone());
         settings.upstream = self.compute_upstream()?;
-        settings.level = level_from_str(&self.level.clone().unwrap_or("".to_string()));
+        settings.level = self.level;
         settings.fail_level = if self.no_fail {
             None
         } else {
