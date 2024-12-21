@@ -1,0 +1,30 @@
+config_version = "0"
+
+[plugins.releases.taplo]
+github = "tamasfe/taplo"
+download_type = "gz"
+
+[plugins.definitions.taplo]
+releases = ["taplo"]
+config_files = [".taplo.toml", "taplo.toml"]
+file_types = ["toml"]
+latest_version = "0.9.3"
+known_good_version = "0.9.3"
+version_command = "taplo --version"
+description = "A TOML toolkit written in Rust"
+
+[plugins.definitions.taplo.drivers.format]
+script = "taplo format ${target}"
+success_codes = [0]
+output = "rewrite"
+batch = true
+driver_type = "formatter"
+suggested = "targets"
+
+[plugins.definitions.taplo.drivers.lint]
+script = "taplo lint ${target}"
+success_codes = [0, 1]
+output = "stderr"
+output_format = "taplo"
+batch = true
+suggested = "targets"
