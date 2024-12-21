@@ -1,5 +1,5 @@
-use std::{collections::HashSet, io::IsTerminal as _, path::PathBuf};
-
+use super::{ApplyMode, TextFormatter};
+use crate::Trigger;
 use anyhow::Result;
 use console::style;
 use dialoguer::{theme::ColorfulTheme, Input};
@@ -8,10 +8,7 @@ use qlty_analysis::utils::fs::path_to_string;
 use qlty_check::{Executor, Planner, Processor, Settings};
 use qlty_config::Workspace;
 use qlty_types::analysis::v1::{ExecutionVerb, Issue, Level};
-
-use crate::Trigger;
-
-use super::{ApplyMode, TextFormatter};
+use std::{collections::HashSet, io::IsTerminal as _, path::PathBuf};
 
 pub fn print_unformatted(writer: &mut dyn std::io::Write, issues: &[Issue]) -> Result<()> {
     let issues = issues
