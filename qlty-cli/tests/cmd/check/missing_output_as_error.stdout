@@ -1,3 +1,4 @@
-Lint error exists: Exited with code 0 .qlty/out/invoke-[..].yaml
-[..]The plugin crashed for some reason[..]
+ ERRORS: 1 
 
+exists  Error  Exited with code 0 in [..].[..]s  .qlty/out/invoke-[..].yaml
+        The plugin crashed for some reason

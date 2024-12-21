@@ -1,2 +1,4 @@
-Lint error always_error: Exited with code 1 .qlty/out/invoke-[..].yaml
+ ERRORS: 1 
+
+always_error  Error  Exited with code 1 in [..].[..]s  .qlty/out/invoke-[..].yaml
 
