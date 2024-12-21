@@ -147,7 +147,7 @@ pub fn print_invocations(
                                     invocation.invocation.stdout.chars().take(2048).collect();
 
                                 for line in text.lines() {
-                                    tw.write(format!("        {}", style(line).red()).as_bytes())?;
+                                    tw.write_all(format!("\t{}", style(line).red()).as_bytes())?;
                                 }
                             }
                         } else {
@@ -155,20 +155,17 @@ pub fn print_invocations(
                                 invocation.invocation.stderr.chars().take(2048).collect();
 
                             for line in text.lines() {
-                                tw.write(format!("        {}", style(line).red()).as_bytes())?;
+                                tw.write_all(format!("\t{}", style(line).red()).as_bytes())?;
                             }
                         }
                     }
                     None => {
                         tw.write_all(
                             format!(
-                                "{}\t{}\t{}\t{}\n",
+                                "{}\t{}\tExited with unknown status in {:.2}s\t{}\n",
                                 invocation.invocation.plugin_name,
                                 style("Error").red(),
-                                format!(
-                                    "Exited with unknown status in {:.2}s",
-                                    invocation.invocation.duration_secs
-                                ),
+                                invocation.invocation.duration_secs,
                                 style(path_to_string(outfile_path)).dim().underlined(),
                             )
                             .as_bytes(),
