@@ -15,6 +15,7 @@ pub use self::ignore::{Ignore, ALL_WILDCARD};
 pub use self::overrides::Override;
 use self::smells::Smells;
 pub use builder::Builder;
+use console::style;
 pub use coverage::Coverage;
 pub use download::{Cpu, DownloadDef, DownloadFileType, OperatingSystem, System};
 pub use file_type::FileType;
@@ -37,7 +38,7 @@ use anyhow::{bail, Result};
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use tracing::debug;
+use tracing::{debug, warn};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct QltyConfig {
@@ -85,6 +86,8 @@ pub struct QltyConfig {
     #[serde(default)]
     pub source: Vec<SourceDef>,
 }
+
+const OLD_DEFAULT_SOURCE_REPOSITORY: &str = "https://github.com/qltysh/qlty";
 
 impl QltyConfig {
     pub fn validate_cli_version(&self) -> Result<()> {
@@ -135,6 +138,43 @@ impl QltyConfig {
             .iter()
             .map(|(name, settings)| (name.clone(), f(settings)))
             .collect::<HashMap<_, _>>()
+    }
+
+    pub fn default_source(&self) -> Option<&SourceDef> {
+        self.source
+            .iter()
+            .find(|s| s.name.as_deref() == Some("default"))
+    }
+
+    pub fn print_deprecation_warnings(&self) {
+        match self.default_source() {
+            Some(source) => {
+                if source.repository.is_some()
+                    && source
+                        .repository
+                        .as_ref()
+                        .unwrap()
+                        .starts_with(OLD_DEFAULT_SOURCE_REPOSITORY)
+                {
+                    warn!("qlty.toml default source is a repository-style reference to qltysh.");
+                    eprintln!(
+                        r#"
+{} Warning: qlty.toml is using a deprecated, repository-based, default source.
+
+Please change the default source in your qlty.toml to:
+
+[[source]]
+name = "default"
+default = true
+"#,
+                        style("⚠").yellow()
+                    );
+                }
+            }
+            None => {
+                warn!("No default source defined in qlty.toml.");
+            }
+        }
     }
 }
 
