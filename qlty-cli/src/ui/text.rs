@@ -37,7 +37,9 @@ impl TextFormatter {
 }
 
 impl TextFormatter {
-    pub fn write_to(&mut self, writer: &mut dyn std::io::Write) -> anyhow::Result<()> {
+    pub fn write_to(&mut self, writer: &mut dyn std::io::Write) -> anyhow::Result<bool> {
+        let mut dirty = false;
+
         if !self.summary {
             print_unformatted(writer, &self.report.issues)?;
             print_fixes(
@@ -51,7 +53,7 @@ impl TextFormatter {
 
         print_invocations(writer, &self.report, self.verbose)?;
         self.print_conclusion(writer)?;
-        Ok(())
+        Ok(dirty)
     }
 }
 
