@@ -42,6 +42,7 @@ impl TextFormatter {
 
         if !self.summary {
             print_unformatted(writer, &self.report.issues)?;
+
             dirty = print_fixes(
                 writer,
                 &self.report.issues,
