@@ -1,10 +1,17 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, io::IsTerminal as _, path::PathBuf};
 
 use anyhow::Result;
 use console::style;
+use dialoguer::{theme::ColorfulTheme, Input};
 use num_format::{Locale, ToFormattedString as _};
 use qlty_analysis::utils::fs::path_to_string;
-use qlty_types::analysis::v1::{Issue, Level};
+use qlty_check::{Executor, Planner, Processor, Settings};
+use qlty_config::Workspace;
+use qlty_types::analysis::v1::{ExecutionVerb, Issue, Level};
+
+use crate::Trigger;
+
+use super::{ApplyMode, TextFormatter};
 
 pub fn print_unformatted(writer: &mut dyn std::io::Write, issues: &[Issue]) -> Result<()> {
     let issues = issues
@@ -34,14 +41,77 @@ pub fn print_unformatted(writer: &mut dyn std::io::Write, issues: &[Issue]) -> R
         writeln!(writer)?;
     }
 
-    for path in paths {
-        writeln!(
-            writer,
-            "{} {}",
-            style("✖").red().bold(),
-            style(path_to_string(path.clone().unwrap_or_default())).underlined(),
-        )?;
+    for path in &paths {
+        if let Some(path) = path {
+            writeln!(
+                writer,
+                "{} {}",
+                style("✖").red().bold(),
+                style(path_to_string(path)).underlined(),
+            )?;
+        }
+    }
+
+    writeln!(writer)?;
+
+    if std::io::stdin().is_terminal() && !paths.is_empty() {
+        let mut answered = false;
+
+        // Loop until we get a valid answer
+        while !answered {
+            if let Ok(answer) = prompt_fmt() {
+                match answer.as_str() {
+                    "Y" | "y" | "yes" => {
+                        let workspace = Workspace::require_initialized()?;
+                        workspace.fetch_sources()?;
+
+                        let settings = Settings {
+                            root: workspace.root.clone(),
+                            progress: true,
+                            paths: paths
+                                .clone()
+                                .into_iter()
+                                .map(|p| PathBuf::from(p.clone().unwrap()))
+                                .collect(),
+                            trigger: Trigger::Manual.into(),
+                            ..Default::default()
+                        };
+
+                        let plan = Planner::new(ExecutionVerb::Fmt, &settings)?.compute()?;
+                        let executor = Executor::new(&plan);
+                        let results = executor.install_and_invoke()?;
+
+                        let mut processor = Processor::new(&plan, results);
+                        let report = processor.compute()?;
+
+                        let mut formatter = TextFormatter::new(
+                            &report,
+                            &plan.workspace,
+                            settings.verbose,
+                            false,
+                            ApplyMode::None,
+                        );
+                        formatter.write_to(writer)?;
+
+                        answered = true;
+                    }
+                    "N" | "n" | "no" => {
+                        answered = true;
+                    }
+                    _ => {}
+                }
+            }
+        }
     }
 
     Ok(())
+}
+
+fn prompt_fmt() -> Result<String> {
+    Ok(Input::<String>::with_theme(&ColorfulTheme::default())
+        .with_prompt("Format these files? [Yes/no]")
+        .default("Y".to_string())
+        .show_default(false)
+        .allow_empty(true)
+        .interact_text()?)
 }
