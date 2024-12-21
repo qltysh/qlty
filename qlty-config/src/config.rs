@@ -159,7 +159,9 @@ impl QltyConfig {
                     warn!("qlty.toml default source is a repository-style reference to qltysh.");
                     eprintln!(
                         r#"
-{} Warning: your qlty.toml is using a deprecated, repository-based, default source. Please change your default source in your qlty.toml to:
+{} Warning: qlty.toml is using a deprecated, repository-based, default source.
+
+Please change the default source in your qlty.toml to:
 
 [[source]]
 name = "default"
