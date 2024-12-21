@@ -42,17 +42,23 @@ impl TextFormatter {
 
         if !self.summary {
             print_unformatted(writer, &self.report.issues)?;
-            print_fixes(
+            dirty = print_fixes(
                 writer,
                 &self.report.issues,
                 &self.workspace.root,
                 self.apply_mode,
             )?;
-            print_issues(writer, &self.report)?;
+
+            if !dirty {
+                print_issues(writer, &self.report)?;
+            }
         }
 
-        print_invocations(writer, &self.report, self.verbose)?;
-        self.print_conclusion(writer)?;
+        if !dirty {
+            print_invocations(writer, &self.report, self.verbose)?;
+            self.print_conclusion(writer)?;
+        }
+
         Ok(dirty)
     }
 }

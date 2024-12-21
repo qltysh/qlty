@@ -42,7 +42,8 @@ pub fn print_fixes(
     issues: &[Issue],
     root: &Path,
     apply_mode: ApplyMode,
-) -> Result<()> {
+) -> Result<bool> {
+    let mut dirty = false;
     let mut apply_mode = apply_mode;
     let mut patch_candidates = vec![];
 
@@ -75,7 +76,7 @@ pub fn print_fixes(
     }
 
     if patch_candidates.is_empty() {
-        return Ok(());
+        return Ok(dirty);
     }
 
     writeln!(writer)?;
@@ -166,6 +167,7 @@ pub fn print_fixes(
                     ApplyMode::None => {} // Skip and don't ask
                     ApplyMode::All => {
                         apply_fix(writer, &candidate)?;
+                        dirty = true;
                     }
                     ApplyMode::Ask => {
                         let mut answered = false;
@@ -177,11 +179,13 @@ pub fn print_fixes(
                                     "Y" | "y" | "yes" => {
                                         answered = true;
                                         apply_fix(writer, &candidate)?;
+                                        dirty = true;
                                     }
                                     "A" | "a" | "all" => {
                                         answered = true;
                                         apply_mode = ApplyMode::All;
                                         apply_fix(writer, &candidate)?;
+                                        dirty = true;
                                     }
                                     "N" | "n" | "no" => {
                                         answered = true;
@@ -202,7 +206,7 @@ pub fn print_fixes(
         }
     }
 
-    Ok(())
+    Ok(dirty)
 }
 
 fn prompt_apply_this_fix() -> Result<String> {
