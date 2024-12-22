@@ -149,7 +149,12 @@ impl Language for Ruby {
     }
 
     fn if_nodes(&self) -> Vec<&str> {
-        vec![Self::IF, Self::UNLESS, Self::IF_MODIFIER, Self::UNLESS_MODIFIER]
+        vec![
+            Self::IF,
+            Self::UNLESS,
+            Self::IF_MODIFIER,
+            Self::UNLESS_MODIFIER,
+        ]
     }
 
     fn elsif_nodes(&self) -> Vec<&str> {
