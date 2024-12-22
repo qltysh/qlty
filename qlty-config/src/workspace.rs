@@ -59,9 +59,11 @@ impl Workspace {
 
     pub fn config(&self) -> Result<QltyConfig> {
         let config = Builder::full_config_for_workspace(self);
+
         if let Ok(config) = &config {
             config.print_deprecation_warnings();
         }
+
         config
     }
 
