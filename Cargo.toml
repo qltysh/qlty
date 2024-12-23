@@ -16,7 +16,7 @@ resolver = "2"
 members = ["qlty*"]
 
 [workspace.dependencies]
-anyhow = { version = "1.0.94", features = ["backtrace"] }
+anyhow = { version = "1.0.95", features = ["backtrace"] }
 ar = "0.9.0"
 assert-json-diff = "2.0.2"
 base64 = "0.22.1"
