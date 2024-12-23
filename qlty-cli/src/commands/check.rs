@@ -128,66 +128,83 @@ impl Check {
         let workspace = Workspace::require_initialized()?;
         workspace.fetch_sources()?;
 
-        let settings = self.build_settings()?;
-        let num_steps = if settings.fix { 3 } else { 1 };
-        let mut steps = Steps::new(self.no_progress, num_steps);
+        let mut counter = 0;
+        let mut dirty = true;
 
-        if self.verbose >= 1 {
-            steps.start(THINKING, "Planning... ");
-        }
-
-        let plan = Planner::new(ExecutionVerb::Check, &settings)?.compute()?;
-
-        if self.verbose >= 1 {
-            steps.start(LOOKING_GLASS, format!("Analyzing{}...", plan.description()));
-            eprintln!();
-        }
-
-        if self.trigger == Trigger::PreCommit || self.trigger == Trigger::PrePush {
-            self.spawn_exit_on_enter_thread();
-        }
-
-        let executor = Executor::new(&plan);
-        let results = executor.install_and_invoke()?;
-        let results = autofix(
-            &results,
-            &settings,
-            &plan.staging_area,
-            Some(&mut steps),
-            self.verbose,
-        )?;
-
-        let mut processor = Processor::new(&plan, results);
-        let report = processor.compute()?;
-
-        if !report.fixed.is_empty() {
-            if self.verbose >= 1 {
-                steps.start(FORMATTING, "Formatting...");
+        while dirty {
+            if counter > 0 {
+                eprintln!("{}", style("Changes applied. Re-checking...").bold());
+                eprintln!();
             }
 
-            self.format_after_fix(&settings, &report)?;
-        }
+            counter += 1;
 
-        self.write_stdout(&report, &plan, &settings)?;
-        self.write_stderr(&report)?;
+            let settings = self.build_settings()?;
+            let num_steps = if settings.fix { 3 } else { 1 };
+            let mut steps = Steps::new(self.no_progress, num_steps);
 
-        if !self.no_error && !self.skip_errored_plugins && report.has_errors() {
-            Err(CommandError::Lint)
-        } else {
-            Ok(CommandSuccess {
-                trigger: Some(self.trigger),
-                unformatted_count: if self.no_formatters {
-                    None
+            if self.verbose >= 1 {
+                steps.start(THINKING, "Planning... ");
+            }
+
+            let plan = Planner::new(ExecutionVerb::Check, &settings)?.compute()?;
+
+            if self.verbose >= 1 {
+                steps.start(LOOKING_GLASS, format!("Analyzing{}...", plan.description()));
+                eprintln!();
+            }
+
+            if self.trigger == Trigger::PreCommit || self.trigger == Trigger::PrePush {
+                self.spawn_exit_on_enter_thread();
+            }
+
+            let executor = Executor::new(&plan);
+            let results = executor.install_and_invoke()?;
+            let results = autofix(
+                &results,
+                &settings,
+                &plan.staging_area,
+                Some(&mut steps),
+                self.verbose,
+            )?;
+
+            let mut processor = Processor::new(&plan, results);
+            let report = processor.compute()?;
+
+            if !report.fixed.is_empty() {
+                if self.verbose >= 1 {
+                    steps.start(FORMATTING, "Formatting...");
+                }
+
+                self.format_after_fix(&settings, &report)?;
+            }
+
+            dirty = self.write_stdout(&report, &plan, &settings)?;
+            self.write_stderr(&report)?;
+
+            if !dirty {
+                // if let Some(report) = last_report {
+                if !self.no_error && !self.skip_errored_plugins && report.has_errors() {
+                    return Err(CommandError::Lint);
                 } else {
-                    Some(report.unformatted_count())
-                },
-                issues_count: Some(report.counts.total_issues),
-                security_issues_count: Some(report.counts.total_security_issues),
-                fixed_count: report.fixed.len(),
-                fixable_count: report.fixable.len(),
-                fail: report.is_failure(),
-            })
+                    return Ok(CommandSuccess {
+                        trigger: Some(self.trigger),
+                        unformatted_count: if self.no_formatters {
+                            None
+                        } else {
+                            Some(report.unformatted_count())
+                        },
+                        issues_count: Some(report.counts.total_issues),
+                        security_issues_count: Some(report.counts.total_security_issues),
+                        fixed_count: report.fixed.len(),
+                        fixable_count: report.fixable.len(),
+                        fail: report.is_failure(),
+                    });
+                }
+            }
         }
+
+        CommandSuccess::ok()
     }
 
     fn spawn_exit_on_enter_thread(&self) {
@@ -319,10 +336,11 @@ impl Check {
         }
     }
 
-    fn write_stdout(&self, report: &Report, plan: &Plan, settings: &Settings) -> Result<()> {
+    fn write_stdout(&self, report: &Report, plan: &Plan, settings: &Settings) -> Result<bool> {
         if self.json {
             let formatter = JsonFormatter::new(report.issues.clone());
-            formatter.write_to(&mut std::io::stdout())
+            formatter.write_to(&mut std::io::stdout())?;
+            Ok(false)
         } else {
             let apply_mode = if self.fix {
                 ApplyMode::All
@@ -339,6 +357,7 @@ impl Check {
                 self.summary,
                 apply_mode,
             );
+
             formatter.write_to(&mut std::io::stdout())
         }
     }
