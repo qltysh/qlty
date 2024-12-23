@@ -7,15 +7,8 @@ pub struct Whoami {}
 
 impl Whoami {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
-        let token = qlty_cloud::Token::default();
-
-        match token.get_with_interactive_prompt() {
-            Ok(token) => {
-                let client = Client {
-                    base_url: "https://api.qlty.sh".to_string(),
-                    token: Some(token),
-                };
-
+        match Client::authenticated() {
+            Ok(client) => {
                 let json = client
                     .get("/user")
                     .call()?

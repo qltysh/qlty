@@ -16,8 +16,9 @@ doctest = false
 test = false
 
 [dependencies]
+actix-web.workspace = true
 anyhow.workspace = true
-dialoguer.workspace = true
+console.workspace = true
 flate2.workspace = true
 keyring.workspace = true
 prost.workspace = true
@@ -26,6 +27,8 @@ qlty-analysis.workspace = true
 qlty-types.workspace = true
 serde_json.workspace = true
 serde.workspace = true
+tokio.workspace = true
 tracing.workspace = true
 ureq.workspace = true
+uuid.workspace = true
 webbrowser.workspace = true

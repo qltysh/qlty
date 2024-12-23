@@ -1,9 +1,10 @@
+mod auth;
 pub mod export;
 pub mod format;
-mod token;
 
+use anyhow::Result;
+pub use auth::{clear_auth_token, load_or_retrieve_auth_token};
 use qlty_config::version::QLTY_VERSION;
-pub use token::Token;
 use ureq::Request;
 
 const QLTY_API_URL: &str = "https://api.qlty.sh";
@@ -22,6 +23,10 @@ impl Default for Client {
 }
 
 impl Client {
+    pub fn authenticated() -> Result<Self> {
+        Ok(Self::new(None, Some(load_or_retrieve_auth_token()?)))
+    }
+
     pub fn new(base_url: Option<&str>, token: Option<String>) -> Self {
         Self {
             base_url: if let Some(url) = base_url {
