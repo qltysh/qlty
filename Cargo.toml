@@ -85,7 +85,7 @@ sentry = { version = "0.34.0", default-features = false, features = [
     "ureq",
 ] }
 sentry-backtrace = "0.34.0"
-serde = { version = "1.0.215", features = ["derive", "rc"] }
+serde = { version = "1.0.216", features = ["derive", "rc"] }
 serde_json = { version = "1.0.132", features = ["preserve_order"] }
 serde_with = "3.8.1"
 serde_yaml = "0.9.34"
