@@ -82,6 +82,9 @@ impl Ruby {
     pub const GLOBAL_VARIABLE: &'static str = "global_variable";
     pub const IDENTIFIER: &'static str = "identifier";
     pub const IF: &'static str = "if";
+    pub const UNLESS: &'static str = "unless";
+    pub const IF_MODIFIER: &'static str = "if_modifier"; // statement _modifier_ aka trailing if
+    pub const UNLESS_MODIFIER: &'static str = "unless_modifier"; // statement _modifier_ aka trailing unless
     pub const INITIALIZE: &'static str = "initialize";
     pub const INSTANCE_VARIABLE: &'static str = "instance_variable";
     pub const METHOD_CALL: &'static str = "method_call";
@@ -146,7 +149,12 @@ impl Language for Ruby {
     }
 
     fn if_nodes(&self) -> Vec<&str> {
-        vec![Self::IF]
+        vec![
+            Self::IF,
+            Self::UNLESS,
+            Self::IF_MODIFIER,
+            Self::UNLESS_MODIFIER,
+        ]
     }
 
     fn elsif_nodes(&self) -> Vec<&str> {
