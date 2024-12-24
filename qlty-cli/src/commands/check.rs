@@ -12,6 +12,7 @@ use console::{style, Emoji};
 use qlty_check::planner::Plan;
 use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Report, Settings};
 use qlty_cloud::format::JsonFormatter;
+use qlty_cloud::load_or_retrieve_auth_token;
 use qlty_config::Workspace;
 use qlty_types::analysis::v1::ExecutionVerb;
 use qlty_types::analysis::v1::Level;
@@ -129,6 +130,12 @@ impl Check {
         workspace.fetch_sources()?;
 
         let settings = self.build_settings()?;
+
+        if settings.ai {
+            // load the token early so that we can ask user to login first
+            load_or_retrieve_auth_token()?;
+        }
+
         let num_steps = if settings.fix { 3 } else { 1 };
         let mut steps = Steps::new(self.no_progress, num_steps);
 
