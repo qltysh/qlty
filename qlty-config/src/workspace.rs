@@ -58,7 +58,13 @@ impl Workspace {
     }
 
     pub fn config(&self) -> Result<QltyConfig> {
-        Builder::full_config_for_workspace(self)
+        let config = Builder::full_config_for_workspace(self);
+
+        if let Ok(config) = &config {
+            config.print_deprecation_warnings();
+        }
+
+        config
     }
 
     pub fn sources_list(&self) -> Result<SourcesList> {

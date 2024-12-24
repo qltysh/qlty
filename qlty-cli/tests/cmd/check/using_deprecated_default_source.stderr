@@ -1,0 +1,10 @@
+
+⚠ Warning: qlty.toml is using a deprecated, repository-based, default source.
+
+Please change the default source in your qlty.toml to:
+
+[[source]]
+name = "default"
+default = true
+
+✔ No issues
