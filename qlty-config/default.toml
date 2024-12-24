@@ -340,7 +340,7 @@ globs = [
   "**/.gclient",
 ]
 interpreters = ["python", "python3", "python2", "pypy"]
-duplication.filter_patterns = ["(import_statement _)"]
+smells.duplication.filter_patterns = ["(import_statement _)"]
 
 [language.rust]
 globs = ["*.rs"]
@@ -359,8 +359,8 @@ test_syntax_patterns = ["""
     (#eq? @meta_item "test")
   )
   """]
-duplication.filter_patterns = ["(use_declaration _)"]
-duplication.nodes_threshold = 50
+smells.duplication.filter_patterns = ["(use_declaration _)"]
+smells.duplication.nodes_threshold = 50
 
 [language.java]
 globs = ["*.java"]
@@ -378,7 +378,7 @@ interpreters = [
   "node",
   "d8",
 ]
-duplication.filter_patterns = [
+smells.duplication.filter_patterns = [
   "(import_statement _)",
   #  JavaScript requires: const name = require("name");
   """
@@ -427,7 +427,7 @@ interpreters = ["jruby", "rbx", "rake", "macruby", "ruby"]
 [language.typescript]
 globs = ["*.ts", "*.mts", "*.cts"]
 interpreters = ["ts-node", "deno"]
-duplication.filter_patterns = ["(import_statement _)"]
+smells.duplication.filter_patterns = ["(import_statement _)"]
 
 [language.tsx]
 globs = ["*.tsx", "*.mtsx", "*.ctsx"]
