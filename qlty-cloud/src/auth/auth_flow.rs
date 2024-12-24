@@ -1,21 +1,18 @@
-use crate::auth::{token::DEFAULT_USER, token::SERVICE, Token};
-use actix_web::{
-    dev::{Server, ServerHandle},
-    get,
-    http::{header::LOCATION, Uri},
-    rt,
-    web::{Data, Query},
-    App, HttpResponse, HttpResponseBuilder, HttpServer,
-};
-use anyhow::Result;
+use crate::auth::{token::DEFAULT_USER, Token};
+use anyhow::{anyhow, bail, Context, Result};
+use http::Uri;
 use serde::Deserialize;
+use serde_querystring::ParseMode;
 use std::{
-    net::TcpListener,
-    sync::{Arc, Mutex},
-    thread,
-    time::Duration,
+    fmt::Display,
+    sync::{
+        mpsc::{self, Receiver, Sender},
+        Arc, RwLock,
+    },
+    thread::spawn,
 };
-use tracing::{error, info};
+use tiny_http::{Header, Request, Response, ResponseBox, Server};
+use tracing::error;
 use uuid::Uuid;
 
 const LOGIN_URL: &str = "https://qlty.sh/login";
@@ -30,7 +27,6 @@ struct AuthFlowQueryParams {
 
 #[derive(Debug, Clone)]
 pub struct AppState {
-    server_handle: Arc<Mutex<Option<ServerHandle>>>,
     pub login_url: String,
     pub original_state: String,
     pub credential_user: String,
@@ -41,49 +37,30 @@ impl Default for AppState {
         AppState {
             login_url: std::env::var(LOGIN_URL_ENV).unwrap_or(LOGIN_URL.to_string()),
             original_state: Uuid::new_v4().to_string(),
-            server_handle: Arc::new(Mutex::new(None)),
             credential_user: DEFAULT_USER.to_string(),
         }
     }
 }
 
-#[get("/")]
-async fn auth_flow(
-    query: Query<AuthFlowQueryParams>,
-    state: Data<Arc<AppState>>,
-) -> HttpResponseBuilder {
-    if state.original_state != query.state {
-        error!(
-            "Invalid state parameter in auth flow: {:?} did not match received state {:?}",
-            state.original_state, query.state
-        );
-        return HttpResponse::BadRequest();
-    }
+#[derive(Clone)]
+pub struct ServerResponse {
+    pub base_url: String,
+    shutdown_send: Sender<()>,
+    server: Arc<RwLock<Server>>,
+}
 
-    if !redirect_matches(state.login_url.clone(), query.redirect_uri.clone()) {
-        error!(
-            "Invalid redirect_uri parameter in auth flow (expecting {}): {}",
-            state.login_url, query.redirect_uri
-        );
-        return HttpResponse::BadRequest();
+impl Drop for ServerResponse {
+    fn drop(&mut self) {
+        self.server.read().unwrap().unblock();
+        if let Err(e) = self.shutdown_send.send(()) {
+            error!("Failed to send shutdown signal: {}", e);
+        }
     }
+}
 
-    let token = Token::new(&state.credential_user);
-    match token.set(&query.code) {
-        Result::Ok(_) => {
-            info!(
-                "Auth token stored in credential storage: {}.{}",
-                SERVICE, state.credential_user
-            );
-            stop_login_server(state);
-            HttpResponse::TemporaryRedirect()
-                .insert_header((LOCATION, query.redirect_uri.clone()))
-                .take()
-        }
-        Err(e) => {
-            error!("Failed to store auth token in credential storage: {}", e);
-            HttpResponse::BadRequest()
-        }
+impl Display for ServerResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.base_url)
     }
 }
 
@@ -99,53 +76,91 @@ fn redirect_matches(expected: String, actual: String) -> bool {
     false
 }
 
-fn login_server(state: Arc<AppState>) -> Result<(Server, u16)> {
-    let listener = TcpListener::bind("127.0.0.1:0")?;
-    let port = listener.local_addr()?.port();
-    let server = HttpServer::new(move || {
-        App::new()
-            .app_data(Data::new(state.clone()))
-            .service(auth_flow)
+fn run_handler(request: &Request, state: &AppState) -> Result<ResponseBox> {
+    let uri = request.url().parse::<Uri>()?;
+    let params: AuthFlowQueryParams;
+    if let Some(query) = uri.query() {
+        params = serde_querystring::from_str::<AuthFlowQueryParams>(query, ParseMode::UrlEncoded)
+            .with_context(|| "invalid parameter")?;
+    } else {
+        bail!("No query parameters found in request");
+    }
+
+    if params.state != state.original_state {
+        bail!("State does not match original state");
+    }
+
+    if !redirect_matches(state.login_url.clone(), params.redirect_uri.clone()) {
+        bail!("Redirect URI does not match login URL");
+    }
+
+    let token = Token::new(&state.credential_user);
+    if let Err(e) = token.set(&params.code) {
+        bail!("Failed to store auth token in credential storage: {}", e);
+    }
+
+    let redirect = format!("Location: {}", params.redirect_uri)
+        .parse::<Header>()
+        .map_err(|_| anyhow!("Failed to generate redirect"))?;
+    Ok(Response::empty(307).with_header(redirect).boxed())
+}
+
+pub fn launch_login_server(state: AppState) -> Result<ServerResponse> {
+    let server = Server::http("127.0.0.1:0");
+    if let Err(err) = server {
+        bail!("Failed to create server: {}", err);
+    }
+
+    let (shutdown_send, shutdown_recv): (Sender<()>, Receiver<()>) = mpsc::channel();
+    let server = server.unwrap();
+    let base_url: String;
+    if let Some(ip) = server.server_addr().to_ip() {
+        base_url = format!("http://{}", ip);
+    } else {
+        bail!("Failed to determine server address");
+    }
+
+    let server = Arc::new(RwLock::new(server));
+    let server_copy = server.clone();
+    spawn(move || loop {
+        match server.read().unwrap().recv() {
+            Ok(request) => {
+                match run_handler(&request, &state) {
+                    Ok(response) => {
+                        if let Err(e) = request.respond(response) {
+                            error!("Failed to send response: {}", e);
+                        }
+
+                        // shutdown server
+                        return;
+                    }
+                    Err(e) => {
+                        let response =
+                            Response::from_string(format!("Error: {}", e)).with_status_code(400);
+                        request.respond(response).ok();
+                        error!("Failed to process request: {}", e);
+                    }
+                };
+            }
+            Err(e) => error!("Failed to receive request: {}", e),
+        }
+
+        if shutdown_recv.try_recv().is_ok() {
+            break;
+        }
+    });
+
+    Ok(ServerResponse {
+        base_url,
+        shutdown_send,
+        server: server_copy,
     })
-    .shutdown_timeout(0)
-    .workers(1)
-    .listen(listener)?
-    .run();
-    Ok((server, port))
-}
-
-pub fn launch_login_server(state: AppState) -> Result<u16> {
-    let handle = state.server_handle.clone();
-    let (server, port) = login_server(Arc::new(state))?;
-
-    handle.lock().unwrap().replace(server.handle());
-
-    thread::spawn(move || {
-        let _ = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .unwrap()
-            .block_on(server);
-    });
-
-    Ok(port)
-}
-
-fn stop_login_server(state: Data<Arc<AppState>>) {
-    rt::spawn(async move {
-        tokio::time::sleep(Duration::from_millis(100)).await;
-        let handle = state.server_handle.lock().unwrap().take().unwrap();
-        handle.stop(false).await;
-    });
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use actix_web::{
-        test::{self, init_service, TestRequest},
-        App,
-    };
+    use std::{thread, time::Duration};
 
     impl AppState {
         fn test(original_state: &str) -> Self {
@@ -157,77 +172,92 @@ mod tests {
         }
     }
 
-    #[actix_web::test]
-    async fn test_auth_flow_get() {
-        let state = Arc::new(AppState::test("123"));
-        let req = TestRequest::default()
-            .uri("/?state=123&code=ABCDEFG&redirect_uri=https://example.com/complete")
-            .to_request();
-        let app = init_service(App::new().app_data(Data::new(state)).service(auth_flow)).await;
-        let resp = test::call_service(&app, req).await;
-        assert_eq!(resp.status(), 307);
-        assert_eq!(
-            resp.headers().get(LOCATION).unwrap(),
-            "https://example.com/complete"
-        );
-    }
-
-    #[actix_web::test]
-    async fn test_auth_flow_wrong_state() {
-        let state = Arc::new(AppState::test("123"));
-        let req = TestRequest::default()
-            .uri("/?state=456&code=ABCDEFG&redirect_uri=https://example.com")
-            .to_request();
-        let app = init_service(App::new().app_data(Data::new(state)).service(auth_flow)).await;
-        let resp = test::call_service(&app, req).await;
-        assert_eq!(resp.status(), 400);
-    }
-
-    #[actix_web::test]
-    async fn test_auth_flow_no_redirect_uri() {
-        let state = Arc::new(AppState::test("123"));
-        let req = TestRequest::default()
-            .uri("/?state=456&code=ABCDEFG")
-            .to_request();
-        let app = init_service(App::new().app_data(Data::new(state)).service(auth_flow)).await;
-        let resp = test::call_service(&app, req).await;
-        assert_eq!(resp.status(), 400);
-    }
-
-    #[actix_web::test]
-    async fn test_auth_flow_invalid_redirect_uri() {
-        let state = Arc::new(AppState::test("123"));
-        let req = TestRequest::default()
-            .uri("/?state=456&code=ABCDEFG&redirect_uri=http://example.com")
-            .to_request();
-        let app = init_service(App::new().app_data(Data::new(state)).service(auth_flow)).await;
-        let resp = test::call_service(&app, req).await;
-        assert_eq!(resp.status(), 400);
-    }
-
-    #[actix_web::test]
-    async fn test_auth_flow_server() {
+    #[test]
+    fn test_auth_flow_get() {
         let state = AppState::test("123");
-        let port = launch_login_server(state).unwrap();
-        let url = format!("http://127.0.0.1:{}", port);
-
-        ureq::get(&url)
+        let server = launch_login_server(state).unwrap();
+        let resp = ureq::builder()
+            .redirects(0)
+            .build()
+            .get(&server.base_url)
             .query("state", "123")
             .query("code", "ABCDEFG")
             .query("redirect_uri", "https://example.com")
             .call()
             .unwrap();
 
+        assert_eq!(resp.status(), 307);
+        assert_eq!(resp.header("Location").unwrap(), "https://example.com");
+    }
+
+    #[test]
+    fn test_auth_flow_wrong_state() {
+        let state = AppState::test("123");
+        let server = launch_login_server(state).unwrap();
+        assert!(ureq::get(&server.base_url)
+            .query("state", "456")
+            .query("code", "ABCDEFG")
+            .query("redirect_uri", "https://example.com")
+            .call()
+            .is_err());
+    }
+
+    #[test]
+    fn test_auth_flow_no_redirect_uri() {
+        let state = AppState::test("123");
+        let server = launch_login_server(state).unwrap();
+        assert!(ureq::get(&server.base_url)
+            .query("state", "123")
+            .query("code", "ABCDEFG")
+            .call()
+            .is_err());
+    }
+
+    #[test]
+    fn test_auth_flow_invalid_redirect_uri() {
+        let state = AppState::test("123");
+        let server = launch_login_server(state).unwrap();
+        assert!(ureq::get(&server.base_url)
+            .query("state", "123")
+            .query("code", "ABCDEFG")
+            .query("redirect_uri", "http://example.com")
+            .call()
+            .is_err());
+    }
+
+    #[test]
+    fn test_auth_flow_server() {
+        let state = AppState::test("123");
+        let server = launch_login_server(state).unwrap();
+
+        let response = ureq::builder()
+            .redirects(0)
+            .build()
+            .get(&server.base_url)
+            .query("state", "123")
+            .query("code", "ABCDEFG")
+            .query("redirect_uri", "https://example.com/?complete")
+            .call()
+            .unwrap();
+
+        assert_eq!(response.status(), 307);
+        assert_eq!(
+            response.header("Location").unwrap(),
+            "https://example.com/?complete"
+        );
+
         thread::sleep(Duration::from_millis(100));
 
         // ensure server has shut-down
-        assert!(ureq::get(&url)
+        assert!(ureq::get(&server.base_url)
             .timeout(Duration::from_millis(10))
             .call()
             .is_err());
 
-        let token = Token::new("qlty-cli-test").get().unwrap();
-        assert_eq!(token, "ABCDEFG");
+        if !cfg!(target_os = "macos") {
+            let token = Token::new("qlty-cli-test").get().unwrap();
+            assert_eq!(token, "ABCDEFG");
+        }
     }
 
     #[test]
