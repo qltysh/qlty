@@ -29,6 +29,7 @@ use regex::Regex;
 use sha2::Digest;
 use std::env::join_paths;
 use std::env::split_paths;
+use std::path::Path;
 use std::time::Instant;
 use std::{collections::HashMap, fmt::Debug, path::PathBuf};
 use tracing::warn;
@@ -210,14 +211,25 @@ pub trait Tool: Debug + Sync + Send {
                         e
                     );
 
-                    Err(e).with_context(|| {
-                        format!(
-                            "Error installing {}@{}.\n\n    See more: {}",
-                            self.name(),
-                            self.version().unwrap_or_default(),
-                            self.install_log_path()
-                        )
-                    })
+                    let log_path = self.install_log_path();
+                    if Path::new(&log_path).exists() {
+                        Err(e).with_context(|| {
+                            format!(
+                                "Error installing {}@{}.\n\n    See more: {}",
+                                self.name(),
+                                self.version().unwrap_or_default(),
+                                log_path
+                            )
+                        })
+                    } else {
+                        Err(e).with_context(|| {
+                            format!(
+                                "Error installing {}@{}.\n",
+                                self.name(),
+                                self.version().unwrap_or_default(),
+                            )
+                        })
+                    }
                 }
             }
         }
