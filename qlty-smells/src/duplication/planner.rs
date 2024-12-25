@@ -194,7 +194,8 @@ impl Planner {
     }
 }
 
-mod tests {
+#[cfg(test)]
+mod test {
     use qlty_config::Workspace;
 
     #[test]
