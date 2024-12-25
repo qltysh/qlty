@@ -9,7 +9,7 @@ use anyhow::Result;
 use autofix::autofix;
 use clap::Args;
 use console::{style, Emoji};
-use duct::cmd;
+use git2::Repository;
 use qlty_check::planner::Plan;
 use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Report, Settings};
 use qlty_cloud::format::JsonFormatter;
@@ -21,6 +21,7 @@ use std::io::{self, Read};
 use std::path::PathBuf;
 use std::thread;
 use tracing::debug;
+use tracing::warn;
 
 static LOOKING_GLASS: Emoji<'_, '_> = Emoji("🔍  ", "");
 static THINKING: Emoji<'_, '_> = Emoji("🤔  ", "");
@@ -267,7 +268,10 @@ impl Check {
 
     fn build_settings(&self) -> Result<Settings> {
         let mut settings = Settings::default();
-        settings.root = Workspace::assert_within_git_directory()?;
+        let workspace_root = Workspace::assert_within_git_directory()?;
+
+        settings.upstream = self.compute_upstream(&workspace_root)?;
+        settings.root = workspace_root;
         settings.verbose = self.verbose as usize;
         settings.sample = self.sample;
         settings.all = self.all;
@@ -278,7 +282,6 @@ impl Check {
         settings.progress = !self.no_progress;
         settings.formatters = !self.no_formatters;
         settings.filters = CheckFilter::from_optional_list(self.filter.clone());
-        settings.upstream = self.compute_upstream()?;
         settings.level = self.level;
         settings.fail_level = if self.no_fail {
             None
@@ -293,7 +296,7 @@ impl Check {
         Ok(settings)
     }
 
-    fn compute_upstream(&self) -> Result<Option<String>> {
+    fn compute_upstream(&self, workspace_root: &PathBuf) -> Result<Option<String>> {
         if self.upstream_from_pre_push {
             let mut buffer = String::new();
             io::stdin().read_to_string(&mut buffer)?;
@@ -308,22 +311,25 @@ impl Check {
                 bail!("Missing remote commit ID from Git pre-push input")
             }
 
-            // Check if the remote commit ID is present locally
-            let remote_commit_present_locally = cmd!("git", "cat-file", "-e", remote_commit_id)
-                .run()
-                .is_ok();
-
-            // If the remote commit ID is not present locally, revert to the upstream branch.
-            if !remote_commit_present_locally {
-                return Ok(self.upstream.clone());
-            }
-
             // When pushing a new branch, the remote object name is 40 zeros.
             // In this case, revert to the upstream branch.
             if remote_commit_id.chars().all(|c| c == '0') {
                 Ok(self.upstream.clone())
             } else {
-                Ok(Some(remote_commit_id.to_string()))
+                // Check if the remote commit ID exists in the repository
+                let repo = Repository::open(workspace_root)?;
+                let remote_commit_present_locally = repo.revparse_single(remote_commit_id).is_ok();
+
+                // If the remote commit ID is not present locally, revert to the upstream branch.
+                if remote_commit_present_locally {
+                    Ok(Some(remote_commit_id.to_string()))
+                } else {
+                    warn!(
+                        "Remote commit ID {} is not present locally, reverting to upstream branch",
+                        remote_commit_id
+                    );
+                    Ok(self.upstream.clone())
+                }
             }
         } else {
             Ok(self.upstream.clone())
