@@ -9,6 +9,7 @@ use anyhow::Result;
 use autofix::autofix;
 use clap::Args;
 use console::{style, Emoji};
+use duct::cmd;
 use qlty_check::planner::Plan;
 use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Report, Settings};
 use qlty_cloud::format::JsonFormatter;
@@ -305,6 +306,16 @@ impl Check {
 
             if remote_commit_id.is_empty() {
                 bail!("Missing remote commit ID from Git pre-push input")
+            }
+
+            // Check if the remote commit ID is present locally
+            let remote_commit_present_locally = cmd!("git", "cat-file", "-e", remote_commit_id)
+                .run()
+                .is_ok();
+
+            // If the remote commit ID is not present locally, revert to the upstream branch.
+            if !remote_commit_present_locally {
+                return Ok(self.upstream.clone());
             }
 
             // When pushing a new branch, the remote object name is 40 zeros.
