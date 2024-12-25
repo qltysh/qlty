@@ -193,3 +193,23 @@ impl Planner {
         Ok(transformers)
     }
 }
+
+mod tests {
+    use qlty_config::Workspace;
+
+    #[test]
+    fn test_javascript_language_contains_filter_patterns_by_default() {
+        let workspace = Workspace::new().unwrap();
+        workspace.fetch_sources().unwrap();
+        let config = workspace.config().unwrap();
+        assert!(!&config.language["javascript"]
+            .smells
+            .as_ref()
+            .unwrap()
+            .duplication
+            .as_ref()
+            .unwrap()
+            .filter_patterns
+            .is_empty());
+    }
+}
