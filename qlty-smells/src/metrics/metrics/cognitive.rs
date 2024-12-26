@@ -270,6 +270,33 @@ mod test {
         }
 
         #[test]
+        fn count_statement_modifiers() {
+            let source_file = File::from_string(
+                "ruby",
+                r#"
+                def foo(bar)
+                    return 1 unless bar # +1
+                    return 2 if bar # +1
+                    if bar # +1
+                        return 3
+                    end
+                    unless bar # +1
+                        return 4
+                    end
+                end
+                "#,
+            );
+            assert_eq!(
+                4,
+                count(
+                    &source_file,
+                    &source_file.parse().root_node(),
+                    &NodeFilter::empty()
+                )
+            );
+        }
+
+        #[test]
         fn count_else_if() {
             let source_file = File::from_string(
                 "java",
