@@ -16,7 +16,7 @@ resolver = "2"
 members = ["qlty*"]
 
 [workspace.dependencies]
-anyhow = { version = "1.0.94", features = ["backtrace"] }
+anyhow = { version = "1.0.95", features = ["backtrace"] }
 ar = "0.9.0"
 assert-json-diff = "2.0.2"
 base64 = "0.22.1"
@@ -85,8 +85,8 @@ sentry = { version = "0.34.0", default-features = false, features = [
     "ureq",
 ] }
 sentry-backtrace = "0.34.0"
-serde = { version = "1.0.215", features = ["derive", "rc"] }
-serde_json = { version = "1.0.132", features = ["preserve_order"] }
+serde = { version = "1.0.216", features = ["derive", "rc"] }
+serde_json = { version = "1.0.134", features = ["preserve_order"] }
 serde_with = "3.8.1"
 serde_yaml = "0.9.34"
 serde-xml-rs = "0.6.0"
@@ -100,7 +100,7 @@ tabwriter = { version = "1.4.0", features = ["ansi_formatting"] }
 tar = "0.4.43"
 tempfile = "3.13.0"
 termbg = "0.6.0"
-thiserror = "2.0.7"
+thiserror = "2.0.9"
 time = { version = "0.3.37", features = [
     "serde-well-known",
     "formatting",
@@ -129,7 +129,7 @@ uuid = { version = "1.11.0", features = ["v4"] }
 walkdir = "2.5.0"
 webbrowser = "1.0.3"
 whoami = "1.5.2"
-zip = "2.2.1"
+zip = "2.2.2"
 
 # Config for 'cargo dist'
 [workspace.metadata.dist]

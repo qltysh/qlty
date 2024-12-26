@@ -143,7 +143,6 @@ mod test {
     use crate::Workspace;
 
     #[test]
-    #[ignore] // always requires network connection
     fn default() {
         let workspace = Workspace::new().unwrap();
         workspace.fetch_sources().unwrap();

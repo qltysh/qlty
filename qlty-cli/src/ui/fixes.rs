@@ -79,7 +79,6 @@ pub fn print_fixes(
         return Ok(dirty);
     }
 
-    writeln!(writer)?;
     writeln!(
         writer,
         "{}{}{}",
