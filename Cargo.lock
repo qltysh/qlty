@@ -2239,7 +2239,7 @@ dependencies = [
  "tabwriter",
  "tempfile",
  "termbg",
- "thiserror 2.0.7",
+ "thiserror 2.0.9",
  "time",
  "toml_edit",
  "tracing",
@@ -3242,7 +3242,7 @@ dependencies = [
  "mockall",
  "scopeguard",
  "simplelog",
- "thiserror 2.0.7",
+ "thiserror 2.0.9",
  "winapi",
 ]
 

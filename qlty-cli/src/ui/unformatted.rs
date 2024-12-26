@@ -49,7 +49,9 @@ pub fn print_unformatted(writer: &mut dyn std::io::Write, issues: &[Issue]) -> R
         }
     }
 
-    writeln!(writer)?;
+    if !paths.is_empty() {
+        writeln!(writer)?;
+    }
 
     if std::io::stdin().is_terminal() && !paths.is_empty() {
         let mut answered = false;
