@@ -9,7 +9,6 @@ use anyhow::Result;
 use autofix::autofix;
 use clap::Args;
 use console::{style, Emoji};
-use git2::Repository;
 use qlty_check::planner::Plan;
 use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Report, Settings};
 use qlty_cloud::format::JsonFormatter;
@@ -130,7 +129,7 @@ impl Check {
         let workspace = Workspace::require_initialized()?;
         workspace.fetch_sources()?;
 
-        let settings = self.build_settings()?;
+        let settings = self.build_settings(&workspace)?;
         let num_steps = if settings.fix { 3 } else { 1 };
         let mut steps = Steps::new(self.no_progress, num_steps);
 
@@ -266,12 +265,9 @@ impl Check {
         Ok(())
     }
 
-    fn build_settings(&self) -> Result<Settings> {
+    fn build_settings(&self, workspace: &Workspace) -> Result<Settings> {
         let mut settings = Settings::default();
-        let workspace_root = Workspace::assert_within_git_directory()?;
-
-        settings.upstream = self.compute_upstream(&workspace_root)?;
-        settings.root = workspace_root;
+        settings.root = Workspace::assert_within_git_directory()?;
         settings.verbose = self.verbose as usize;
         settings.sample = self.sample;
         settings.all = self.all;
@@ -282,6 +278,7 @@ impl Check {
         settings.progress = !self.no_progress;
         settings.formatters = !self.no_formatters;
         settings.filters = CheckFilter::from_optional_list(self.filter.clone());
+        settings.upstream = self.compute_upstream(&workspace)?;
         settings.level = self.level;
         settings.fail_level = if self.no_fail {
             None
@@ -296,7 +293,7 @@ impl Check {
         Ok(settings)
     }
 
-    fn compute_upstream(&self, workspace_root: &PathBuf) -> Result<Option<String>> {
+    fn compute_upstream(&self, workspace: &Workspace) -> Result<Option<String>> {
         if self.upstream_from_pre_push {
             let mut buffer = String::new();
             io::stdin().read_to_string(&mut buffer)?;
@@ -317,8 +314,8 @@ impl Check {
                 Ok(self.upstream.clone())
             } else {
                 // Check if the remote commit ID exists in the repository
-                let repo = Repository::open(workspace_root)?;
-                let remote_commit_present_locally = repo.revparse_single(remote_commit_id).is_ok();
+                let remote_commit_present_locally =
+                    workspace.repo()?.revparse_single(remote_commit_id).is_ok();
 
                 // If the remote commit ID is not present locally, revert to the upstream branch.
                 if remote_commit_present_locally {
