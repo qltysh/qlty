@@ -38,18 +38,20 @@ pub fn print_unformatted(writer: &mut dyn std::io::Write, issues: &[Issue]) -> R
         writeln!(writer)?;
     }
 
-    for path in &paths {
-        if let Some(path) = path {
-            writeln!(
-                writer,
-                "{} {}",
-                style("✖").red().bold(),
-                style(path_to_string(path)).underlined(),
-            )?;
-        }
+    let mut printed_output = false;
+
+    for path in paths.clone().into_iter().flatten() {
+        writeln!(
+            writer,
+            "{} {}",
+            style("✖").red().bold(),
+            style(path_to_string(path)).underlined(),
+        )?;
+
+        printed_output = true;
     }
 
-    if !paths.is_empty() {
+    if printed_output {
         writeln!(writer)?;
     }
 
