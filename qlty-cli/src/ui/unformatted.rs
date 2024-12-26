@@ -10,7 +10,7 @@ use qlty_config::Workspace;
 use qlty_types::analysis::v1::{ExecutionVerb, Issue, Level};
 use std::{collections::HashSet, io::IsTerminal as _, path::PathBuf};
 
-pub fn print_unformatted(writer: &mut dyn std::io::Write, issues: &[Issue]) -> Result<()> {
+pub fn print_unformatted(writer: &mut dyn std::io::Write, issues: &[Issue]) -> Result<bool> {
     let issues = issues
         .iter()
         .filter(|issue| issue.level() == Level::Fmt)
@@ -93,8 +93,7 @@ pub fn print_unformatted(writer: &mut dyn std::io::Write, issues: &[Issue]) -> R
                             ApplyMode::None,
                         );
                         formatter.write_to(writer)?;
-
-                        answered = true;
+                        return Ok(true);
                     }
                     "N" | "n" | "no" => {
                         answered = true;
@@ -105,7 +104,7 @@ pub fn print_unformatted(writer: &mut dyn std::io::Write, issues: &[Issue]) -> R
         }
     }
 
-    Ok(())
+    Ok(false)
 }
 
 fn prompt_fmt() -> Result<String> {

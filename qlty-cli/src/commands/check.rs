@@ -183,7 +183,6 @@ impl Check {
             self.write_stderr(&report)?;
 
             if !dirty {
-                // if let Some(report) = last_report {
                 if !self.no_error && !self.skip_errored_plugins && report.has_errors() {
                     return Err(CommandError::Lint);
                 } else {
