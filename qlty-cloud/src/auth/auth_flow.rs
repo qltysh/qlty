@@ -135,7 +135,7 @@ fn run_login_server_loop(
     loop {
         match server.read().unwrap().recv() {
             Ok(request) => {
-                match run_handler(&request, &state) {
+                match run_handler(&request, state) {
                     Ok(response) => {
                         if let Err(e) = request.respond(response) {
                             error!("Failed to send response: {}", e);
