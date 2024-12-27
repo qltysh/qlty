@@ -20,6 +20,7 @@ use std::io::{self, Read};
 use std::path::PathBuf;
 use std::thread;
 use tracing::debug;
+use tracing::warn;
 
 static LOOKING_GLASS: Emoji<'_, '_> = Emoji("🔍  ", "");
 static THINKING: Emoji<'_, '_> = Emoji("🤔  ", "");
@@ -139,7 +140,7 @@ impl Check {
 
             counter += 1;
 
-            let settings = self.build_settings()?;
+            let settings = self.build_settings(&workspace)?;
             let num_steps = if settings.fix { 3 } else { 1 };
             let mut steps = Steps::new(self.no_progress, num_steps);
 
@@ -280,7 +281,7 @@ impl Check {
         Ok(())
     }
 
-    fn build_settings(&self) -> Result<Settings> {
+    fn build_settings(&self, workspace: &Workspace) -> Result<Settings> {
         let mut settings = Settings::default();
         settings.root = Workspace::assert_within_git_directory()?;
         settings.verbose = self.verbose as usize;
@@ -293,7 +294,7 @@ impl Check {
         settings.progress = !self.no_progress;
         settings.formatters = !self.no_formatters;
         settings.filters = CheckFilter::from_optional_list(self.filter.clone());
-        settings.upstream = self.compute_upstream()?;
+        settings.upstream = self.compute_upstream(&workspace)?;
         settings.level = self.level;
         settings.fail_level = if self.no_fail {
             None
@@ -308,7 +309,7 @@ impl Check {
         Ok(settings)
     }
 
-    fn compute_upstream(&self) -> Result<Option<String>> {
+    fn compute_upstream(&self, workspace: &Workspace) -> Result<Option<String>> {
         if self.upstream_from_pre_push {
             let mut buffer = String::new();
             io::stdin().read_to_string(&mut buffer)?;
@@ -328,7 +329,20 @@ impl Check {
             if remote_commit_id.chars().all(|c| c == '0') {
                 Ok(self.upstream.clone())
             } else {
-                Ok(Some(remote_commit_id.to_string()))
+                // Check if the remote commit ID exists in the repository
+                let remote_commit_present_locally =
+                    workspace.repo()?.revparse_single(remote_commit_id).is_ok();
+
+                // If the remote commit ID is not present locally, revert to the upstream branch.
+                if remote_commit_present_locally {
+                    Ok(Some(remote_commit_id.to_string()))
+                } else {
+                    warn!(
+                        "Remote commit ID {} is not present locally, reverting to upstream branch",
+                        remote_commit_id
+                    );
+                    Ok(self.upstream.clone())
+                }
             }
         } else {
             Ok(self.upstream.clone())
