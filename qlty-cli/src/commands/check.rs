@@ -20,6 +20,7 @@ use std::io::{self, Read};
 use std::path::PathBuf;
 use std::thread;
 use tracing::debug;
+use tracing::warn;
 
 static LOOKING_GLASS: Emoji<'_, '_> = Emoji("🔍  ", "");
 static THINKING: Emoji<'_, '_> = Emoji("🤔  ", "");
@@ -128,66 +129,82 @@ impl Check {
         let workspace = Workspace::require_initialized()?;
         workspace.fetch_sources()?;
 
-        let settings = self.build_settings()?;
-        let num_steps = if settings.fix { 3 } else { 1 };
-        let mut steps = Steps::new(self.no_progress, num_steps);
+        let mut counter = 0;
+        let mut dirty = true;
 
-        if self.verbose >= 1 {
-            steps.start(THINKING, "Planning... ");
-        }
-
-        let plan = Planner::new(ExecutionVerb::Check, &settings)?.compute()?;
-
-        if self.verbose >= 1 {
-            steps.start(LOOKING_GLASS, format!("Analyzing{}...", plan.description()));
-            eprintln!();
-        }
-
-        if self.trigger == Trigger::PreCommit || self.trigger == Trigger::PrePush {
-            self.spawn_exit_on_enter_thread();
-        }
-
-        let executor = Executor::new(&plan);
-        let results = executor.install_and_invoke()?;
-        let results = autofix(
-            &results,
-            &settings,
-            &plan.staging_area,
-            Some(&mut steps),
-            self.verbose,
-        )?;
-
-        let mut processor = Processor::new(&plan, results);
-        let report = processor.compute()?;
-
-        if !report.fixed.is_empty() {
-            if self.verbose >= 1 {
-                steps.start(FORMATTING, "Formatting...");
+        while dirty {
+            if counter > 0 {
+                eprintln!("{}", style("Changes applied. Re-checking...").bold());
+                eprintln!();
             }
 
-            self.format_after_fix(&settings, &report)?;
-        }
+            counter += 1;
 
-        self.write_stdout(&report, &plan, &settings)?;
-        self.write_stderr(&report)?;
+            let settings = self.build_settings(&workspace)?;
+            let num_steps = if settings.fix { 3 } else { 1 };
+            let mut steps = Steps::new(self.no_progress, num_steps);
 
-        if !self.no_error && !self.skip_errored_plugins && report.has_errors() {
-            Err(CommandError::Lint)
-        } else {
-            Ok(CommandSuccess {
-                trigger: Some(self.trigger),
-                unformatted_count: if self.no_formatters {
-                    None
+            if self.verbose >= 1 {
+                steps.start(THINKING, "Planning... ");
+            }
+
+            let plan = Planner::new(ExecutionVerb::Check, &settings)?.compute()?;
+
+            if self.verbose >= 1 {
+                steps.start(LOOKING_GLASS, format!("Analyzing{}...", plan.description()));
+                eprintln!();
+            }
+
+            if self.trigger == Trigger::PreCommit || self.trigger == Trigger::PrePush {
+                self.spawn_exit_on_enter_thread();
+            }
+
+            let executor = Executor::new(&plan);
+            let results = executor.install_and_invoke()?;
+            let results = autofix(
+                &results,
+                &settings,
+                &plan.staging_area,
+                Some(&mut steps),
+                self.verbose,
+            )?;
+
+            let mut processor = Processor::new(&plan, results);
+            let report = processor.compute()?;
+
+            if !report.fixed.is_empty() {
+                if self.verbose >= 1 {
+                    steps.start(FORMATTING, "Formatting...");
+                }
+
+                self.format_after_fix(&settings, &report)?;
+            }
+
+            dirty = self.write_stdout(&report, &plan, &settings)?;
+            self.write_stderr(&report)?;
+
+            if !dirty {
+                if !self.no_error && !self.skip_errored_plugins && report.has_errors() {
+                    return Err(CommandError::Lint);
                 } else {
-                    Some(report.unformatted_count())
-                },
-                issues_count: Some(report.counts.total_issues),
-                security_issues_count: Some(report.counts.total_security_issues),
-                fixed_count: report.fixed.len(),
-                fixable_count: report.fixable.len(),
-                fail: report.is_failure(),
-            })
+                    return Ok(CommandSuccess {
+                        trigger: Some(self.trigger),
+                        unformatted_count: if self.no_formatters {
+                            None
+                        } else {
+                            Some(report.unformatted_count())
+                        },
+                        issues_count: Some(report.counts.total_issues),
+                        security_issues_count: Some(report.counts.total_security_issues),
+                        fixed_count: report.fixed.len(),
+                        fixable_count: report.fixable.len(),
+                        fail: report.is_failure(),
+                    });
+                }
+            }
         }
+
+        CommandSuccess::ok()
     }
 
     fn spawn_exit_on_enter_thread(&self) {
@@ -264,7 +281,7 @@ impl Check {
         Ok(())
     }
 
-    fn build_settings(&self) -> Result<Settings> {
+    fn build_settings(&self, workspace: &Workspace) -> Result<Settings> {
         let mut settings = Settings::default();
         settings.root = Workspace::assert_within_git_directory()?;
         settings.verbose = self.verbose as usize;
@@ -277,7 +294,7 @@ impl Check {
         settings.progress = !self.no_progress;
         settings.formatters = !self.no_formatters;
         settings.filters = CheckFilter::from_optional_list(self.filter.clone());
-        settings.upstream = self.compute_upstream()?;
+        settings.upstream = self.compute_upstream(&workspace)?;
         settings.level = self.level;
         settings.fail_level = if self.no_fail {
             None
@@ -292,7 +309,7 @@ impl Check {
         Ok(settings)
     }
 
-    fn compute_upstream(&self) -> Result<Option<String>> {
+    fn compute_upstream(&self, workspace: &Workspace) -> Result<Option<String>> {
         if self.upstream_from_pre_push {
             let mut buffer = String::new();
             io::stdin().read_to_string(&mut buffer)?;
@@ -312,17 +329,31 @@ impl Check {
             if remote_commit_id.chars().all(|c| c == '0') {
                 Ok(self.upstream.clone())
             } else {
-                Ok(Some(remote_commit_id.to_string()))
+                // Check if the remote commit ID exists in the repository
+                let remote_commit_present_locally =
+                    workspace.repo()?.revparse_single(remote_commit_id).is_ok();
+
+                // If the remote commit ID is not present locally, revert to the upstream branch.
+                if remote_commit_present_locally {
+                    Ok(Some(remote_commit_id.to_string()))
+                } else {
+                    warn!(
+                        "Remote commit ID {} is not present locally, reverting to upstream branch",
+                        remote_commit_id
+                    );
+                    Ok(self.upstream.clone())
+                }
             }
         } else {
             Ok(self.upstream.clone())
         }
     }
 
-    fn write_stdout(&self, report: &Report, plan: &Plan, settings: &Settings) -> Result<()> {
+    fn write_stdout(&self, report: &Report, plan: &Plan, settings: &Settings) -> Result<bool> {
         if self.json {
             let formatter = JsonFormatter::new(report.issues.clone());
-            formatter.write_to(&mut std::io::stdout())
+            formatter.write_to(&mut std::io::stdout())?;
+            Ok(false)
         } else {
             let apply_mode = if self.fix {
                 ApplyMode::All
@@ -339,6 +370,7 @@ impl Check {
                 self.summary,
                 apply_mode,
             );
+
             formatter.write_to(&mut std::io::stdout())
         }
     }

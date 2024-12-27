@@ -37,21 +37,28 @@ impl TextFormatter {
 }
 
 impl TextFormatter {
-    pub fn write_to(&mut self, writer: &mut dyn std::io::Write) -> anyhow::Result<()> {
+    pub fn write_to(&mut self, writer: &mut dyn std::io::Write) -> anyhow::Result<bool> {
         if !self.summary {
-            print_unformatted(writer, &self.report.issues)?;
-            print_fixes(
+            if print_unformatted(writer, &self.report.issues)? {
+                return Ok(true);
+            }
+
+            if print_fixes(
                 writer,
                 &self.report.issues,
                 &self.workspace.root,
                 self.apply_mode,
-            )?;
+            )? {
+                return Ok(true);
+            }
+
             print_issues(writer, &self.report)?;
         }
 
         print_invocations(writer, &self.report, self.verbose)?;
         self.print_conclusion(writer)?;
-        Ok(())
+
+        Ok(false)
     }
 }
 
