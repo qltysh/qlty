@@ -1,21 +1,58 @@
 # Changelog
 
+## Week of December 22nd, 2024
+
+### New
+
+- Prompt to format unformatted files when running `qlty check`
+- Re-run analysis when fixes are applied to ensure fresh results
+
+### Improved
+
+- Add a warning when a deprecated repository-based default source is detected
+
+### Fixed
+
+- Fix cognitive complexity calculation for Ruby conditionals
+- Don't print paths to non-existent install logs in error output
+- When running as a Git pre-push hook, fallback to comparing against upstream if the remote head is not present locally
+- Fix built-in duplication AST filters
+
 ## Week of December 15th, 2024
 
 ### New
 
+- Interactively prompt to apply fixes by default (override with `--fix` or `--no-fix` arguments)
+- Print fix suggestions diffs
+- Print list of any unformatted files before issues
 - Add ability to skip Git hooks executon by pressing enter key
+- Add new `note` level for issues and use it with ripgrep
+- Add `--summary` argument to `qlty check` to limit output to only counts
+- Add `--no-fix` argument to `qlty check` to skip applying fixes
+- Add plugin platform targetting via a new `supported_platforms` key
+- Print a count of securty issues at the end of the output
+- Experimental: Publish Docker images to GitHub Container Registry
 
 ### Improved
 
+- In newly-generated `qlty.toml` files from `qlty init`, emit smell issues in `comment` mode instead of `block`
 - Stop running plugins when we exceed the total maximum issue limit of 10k
 - Disable plugins by adding `mode = "disabled"` instead of removing them from `qlty.toml`
 - Reduce output when running without `--verbose`
-- Minor improvements to output content
+- Moved invocation files to be stored in `out/`
+- Automatically enable rustfmt if a rustfmt config file is found
+- Minor improvements and cleanups to command output
+- Shorted formatting of thread IDs printed to log files
 
 ### Fixed
 
+- Improve data qualty of output Markdownlint issues
+- Emit Hadolint style issues at `low` level (not `fmt`, which is reserved)
 - Fix panic when running `qlty fmt` with a non-existent path argument
+
+### Breaking
+
+- Removed support for configuring sources as a hash in `qlty.toml` in favor of array notation
 
 ## Week of December 8th, 2024
 

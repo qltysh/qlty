@@ -40,11 +40,11 @@ impl SourceDef {
             }))
         } else if self.repository.is_some() {
             if self.tag.is_some() && self.branch.is_some() {
-                bail!("Source defines both a tag and branch");
+                bail!("Repository source defines both a tag and branch");
             }
 
             if self.tag.is_none() && self.branch.is_none() {
-                bail!("Source defines neither a tag nor branch");
+                bail!("Repository source defines neither a tag nor branch");
             }
 
             let reference = if self.tag.is_some() {
