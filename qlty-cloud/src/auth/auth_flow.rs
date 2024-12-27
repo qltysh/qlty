@@ -106,19 +106,15 @@ fn run_handler(request: &Request, state: &AppState) -> Result<ResponseBox> {
 }
 
 pub fn launch_login_server(state: AppState) -> Result<ServerResponse> {
-    let server = Server::http("127.0.0.1:0");
-    if let Err(err) = server {
-        bail!("Failed to create server: {}", err);
-    }
+    let server =
+        Server::http("127.0.0.1:0").map_err(|e| anyhow!("Failed to start server: {}", e))?;
 
     let (shutdown_send, shutdown_recv): (Sender<()>, Receiver<()>) = mpsc::channel();
-    let server = server.unwrap();
-    let base_url: String;
-    if let Some(ip) = server.server_addr().to_ip() {
-        base_url = format!("http://{}", ip);
-    } else {
-        bail!("Failed to determine server address");
-    }
+    let ip = server
+        .server_addr()
+        .to_ip()
+        .ok_or_else(|| anyhow!("Failed to determine server address"))?;
+    let base_url = format!("http://{}", ip);
 
     let server = Arc::new(RwLock::new(server));
     let server_copy = server.clone();
