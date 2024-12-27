@@ -118,17 +118,31 @@ pub fn launch_login_server(state: AppState) -> Result<ServerResponse> {
 
     let server = Arc::new(RwLock::new(server));
     let server_copy = server.clone();
-    spawn(move || loop {
+    spawn(move || run_login_server_loop(server, &state, shutdown_recv));
+
+    Ok(ServerResponse {
+        base_url,
+        shutdown_send,
+        server: server_copy,
+    })
+}
+
+fn run_login_server_loop(
+    server: Arc<RwLock<Server>>,
+    state: &AppState,
+    shutdown_recv: Receiver<()>,
+) {
+    loop {
         match server.read().unwrap().recv() {
             Ok(request) => {
                 match run_handler(&request, &state) {
                     Ok(response) => {
                         if let Err(e) = request.respond(response) {
                             error!("Failed to send response: {}", e);
+                        } else {
+                            // shutdown server
+                            return;
                         }
-
-                        // shutdown server
-                        return;
                     }
                     Err(e) => {
                         let response =
@@ -144,13 +158,7 @@ pub fn launch_login_server(state: AppState) -> Result<ServerResponse> {
         if shutdown_recv.try_recv().is_ok() {
             break;
         }
-    });
-
-    Ok(ServerResponse {
-        base_url,
-        shutdown_send,
-        server: server_copy,
-    })
+    }
 }
 
 #[cfg(test)]
