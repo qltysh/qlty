@@ -69,7 +69,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn simple() {
+    fn test_simple() {
         let input = r#"
 SF:src/lib.rs
 DA:1,1
@@ -86,5 +86,66 @@ DA:5,10
             - "-1"
             - "10"
         "#);
+    }
+
+    #[test]
+    fn test_fixture() {
+        let input = include_str!("../../tests/fixtures/lcov/sample.lcov");
+        insta::assert_yaml_snapshot!(Lcov::new().parse_text(input).unwrap(), @r#"
+    - path: formatter.js
+      hits:
+        - "1"
+        - "1"
+        - "1"
+        - "1"
+        - "1"
+        - "1"
+        - "1"
+        - "1"
+        - "-1"
+        - "1"
+        - "1"
+        - "-1"
+        - "-1"
+        - "1"
+        - "5"
+        - "-1"
+        - "-1"
+        - "1"
+        - "2"
+        - "1"
+        - "1"
+        - "1"
+        - "-1"
+        - "0"
+        - "-1"
+        - "-1"
+        - "-1"
+        - "1"
+        - "2"
+        - "-1"
+        - "2"
+        - "2"
+        - "0"
+        - "-1"
+        - "-1"
+        - "2"
+        - "-1"
+        - "-1"
+        - "-1"
+        - "-1"
+        - "-1"
+        - "-1"
+        - "-1"
+        - "-1"
+        - "-1"
+        - "2"
+        - "-1"
+        - "-1"
+        - "-1"
+        - "-1"
+        - "-1"
+        - "2"
+    "#);
     }
 }

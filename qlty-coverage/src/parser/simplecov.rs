@@ -177,4 +177,53 @@ mod test {
             - "-1"
         "#);
     }
+
+    #[test]
+    fn simplecov_fixture() {
+        let input = include_str!("../../tests/fixtures/simplecov/sample.json");
+        let parsed_results = Simplecov::new().parse_text(input).unwrap();
+
+        insta::assert_yaml_snapshot!(parsed_results, @r#"
+    - path: sample.rb
+      hits:
+        - "-1"
+        - "1"
+        - "1"
+        - "1"
+        - "1"
+        - "-1"
+        - "-1"
+        - "1"
+        - "1"
+        - "-1"
+        - "-1"
+        - "1"
+        - "1"
+        - "0"
+        - "-1"
+        - "1"
+        - "-1"
+        - "-1"
+        - "-1"
+        - "-2"
+        - "-2"
+        - "-2"
+        - "-2"
+        - "-2"
+        - "-1"
+    - path: sample_2.rb
+      hits:
+        - "1"
+        - "1"
+        - "1"
+        - "0"
+        - "-1"
+        - "-1"
+        - "1"
+        - "0"
+        - "-1"
+        - "-1"
+        - "-1"
+    "#);
+    }
 }
