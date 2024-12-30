@@ -11,8 +11,12 @@ categories.workspace = true
 edition.workspace = true
 autotests = false
 
+[lib]
+doctest = false
+
 [[bin]]
 bench = false
+test = false
 path = "src/main.rs"
 name = "qlty"
 

@@ -27,8 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os:
-          [ubuntu-latest-16-cores, macos-latest-xlarge, windows-latest-16-cores]
+        os: [ubuntu-latest-16-cores, macos-15-xlarge, windows-latest]
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     concurrency:
@@ -51,7 +50,7 @@ jobs:
 
       - name: Setup PHP with PECL extension
         uses: shivammathur/setup-php@v2
-        if: matrix.os == 'macos-latest-xlarge'
+        if: matrix.os == 'macos-15-xlarge'
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
