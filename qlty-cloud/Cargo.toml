@@ -16,7 +16,6 @@ doctest = false
 test = false
 
 [dependencies]
-actix-web.workspace = true
 anyhow.workspace = true
 console.workspace = true
 flate2.workspace = true
