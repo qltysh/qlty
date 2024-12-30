@@ -53,9 +53,8 @@ fn auth_via_browser() -> Result<String> {
     let state = AppState::default();
     let user = &state.credential_user;
     let original_state = &state.original_state;
-    let port = launch_login_server(state.clone())?;
-    let local_url = format!("http://localhost:{}", port);
-    info!("Auth login server started on port {}", local_url);
+    let server = launch_login_server(state.clone())?;
+    info!("Auth login server started on port {}", server.base_url);
 
     eprintln!(
         "Launching {} in your browser. Once you've logged in, come back to the terminal.",
@@ -66,7 +65,7 @@ fn auth_via_browser() -> Result<String> {
     let open_url = ureq::get(&state.login_url)
         .query("state", original_state)
         .query("response_type", "token")
-        .query("redirect_uri", &local_url)
+        .query("redirect_uri", &server.base_url)
         .request_url()?
         .as_url()
         .to_string();
