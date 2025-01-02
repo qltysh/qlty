@@ -17,8 +17,8 @@ mod typescript;
 mod typescript_common;
 
 pub use {
-    c_sharp::*, go::*, java::*, javascript::*, kotlin::*, php::*, python::*, ruby::*, rust::*, tsx::*,
-    typescript::*,
+    c_sharp::*, go::*, java::*, javascript::*, kotlin::*, php::*, python::*, ruby::*, rust::*,
+    tsx::*, typescript::*,
 };
 
 #[allow(clippy::borrowed_box)]
