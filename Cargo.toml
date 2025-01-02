@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.465.0"
+version = "0.466.0"
 authors = ["Qlty Software Inc."]
 description = "Code quality toolkit"
 documentation = "https://docs.qlty.sh"
@@ -69,15 +69,15 @@ pathdiff = "0.2.3"
 pbjson = "0.7.0"
 pbjson-types = "0.7.0"
 prost = "0.13.4"
-qlty-analysis = { version = "0.465.0", path = "qlty-analysis" }
-qlty-check = { version = "0.465.0", path = "qlty-check" }
-qlty-cloud = { version = "0.465.0", path = "qlty-cloud" }
-qlty-config = { version = "0.465.0", path = "qlty-config" }
-qlty-coverage = { version = "0.465.0", path = "qlty-coverage" }
-qlty-plugins = { version = "0.465.0", path = "qlty-plugins" }
-qlty-smells = { version = "0.465.0", path = "qlty-smells" }
-qlty-test-utilities = { version = "0.465.0", path = "qlty-test-utilities" }
-qlty-types = { version = "0.465.0", path = "qlty-types" }
+qlty-analysis = { version = "0.466.0", path = "qlty-analysis" }
+qlty-check = { version = "0.466.0", path = "qlty-check" }
+qlty-cloud = { version = "0.466.0", path = "qlty-cloud" }
+qlty-config = { version = "0.466.0", path = "qlty-config" }
+qlty-coverage = { version = "0.466.0", path = "qlty-coverage" }
+qlty-plugins = { version = "0.466.0", path = "qlty-plugins" }
+qlty-smells = { version = "0.466.0", path = "qlty-smells" }
+qlty-test-utilities = { version = "0.466.0", path = "qlty-test-utilities" }
+qlty-types = { version = "0.466.0", path = "qlty-types" }
 rand = "0.8.5"
 rayon = "1.10.0"
 regex = "1.11.0"
