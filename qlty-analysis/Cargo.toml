@@ -37,6 +37,7 @@ tempfile.workspace = true
 time.workspace = true
 tracing.workspace = true
 tree-sitter.workspace = true
+tree-sitter-c-sharp.workspace = true
 tree-sitter-go.workspace = true
 tree-sitter-java.workspace = true
 tree-sitter-javascript.workspace = true

@@ -3,6 +3,7 @@ use core::fmt;
 use std::sync::Arc;
 use tree_sitter::{Node, Parser, Query};
 
+mod c_sharp;
 mod go;
 mod java;
 mod javascript;
@@ -16,7 +17,7 @@ mod typescript;
 mod typescript_common;
 
 pub use {
-    go::*, java::*, javascript::*, kotlin::*, php::*, python::*, ruby::*, rust::*, tsx::*,
+    c_sharp::*, go::*, java::*, javascript::*, kotlin::*, php::*, python::*, ruby::*, rust::*, tsx::*,
     typescript::*,
 };
 
@@ -30,6 +31,7 @@ use lazy_static::lazy_static;
 lazy_static! {
     pub static ref ALL_LANGS: Vec<Box<dyn Language + Sync>> = {
         vec![
+            Box::<c_sharp::CSharp>::default(),
             Box::<php::Php>::default(),
             Box::<kotlin::Kotlin>::default(),
             Box::<go::Go>::default(),
