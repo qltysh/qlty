@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-15-xlarge, ubuntu-latest-16-cores, windows-latest]
+        os: [macos-15, ubuntu-latest, windows-latest]
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     concurrency:
