@@ -2,7 +2,7 @@
   "metadata": {
     "buildId": "[..]",
     "result": "ANALYSIS_RESULT_SUCCESS",
-    "filesAnalyzed": 1,
+    "filesAnalyzed": 2,
     "startTime": "[..]",
     "finishTime": "[..]",
     "commitMessage": "initial/n",
@@ -42,12 +42,101 @@
         }
       },
       "mode": "MODE_BLOCK"
+    },
+    {
+      "buildId": "b02520fe-4947-4fad-9d84-5728dfba3399",
+      "analyzedAt": "2025-01-03T22:56:44.556091+00:00",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "file-complexity",
+      "message": "High total complexity (count = 55)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_SHARP",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "using System;/n/npublic class FileComplexity/n{/n    public static void Main(string[] args)/n    {/n        int foo = 42;/n        /n        if (foo > 0)/n        {/n            if (foo > 10)/n            {/n                if (foo < 20)/n                {/n                    if (foo % 2 == 0)/n                    {/n                        if (foo % 3 == 0)/n                        {/n                            if (foo % 5 == 0)/n                            {/n                                if (foo % 7 == 0)/n                                {/n                                    if (foo % 11 == 0)/n                                    {/n                                        if (foo % 13 == 0)/n                                        {/n                                            if (foo % 17 == 0)/n                                            {/n                                                Console.WriteLine(/"Nested!/");/n                                            }/n                                        }/n                                    }/n                                }/n                            }/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n",
+      "snippetWithContext": "using System;/n/npublic class FileComplexity/n{/n    public static void Main(string[] args)/n    {/n        int foo = 42;/n        /n        if (foo > 0)/n        {/n            if (foo > 10)/n            {/n                if (foo < 20)/n                {/n                    if (foo % 2 == 0)/n                    {/n                        if (foo % 3 == 0)/n                        {/n                            if (foo % 5 == 0)/n                            {/n                                if (foo % 7 == 0)/n                                {/n                                    if (foo % 11 == 0)/n                                    {/n                                        if (foo % 13 == 0)/n                                        {/n                                            if (foo % 17 == 0)/n                                            {/n                                                Console.WriteLine(/"Nested!/");/n                                            }/n                                        }/n                                    }/n                                }/n                            }/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "effortMinutes": 150,
+      "value": 55,
+      "valueDelta": 5,
+      "location": {
+        "path": "FileComplexity.cs",
+        "range": {
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 42,
+          "endColumn": 1,
+          "startByte": 0,
+          "endByte": 1201
+        }
+      },
+      "partialFingerprints": {
+        "file.path": "FileComplexity.cs"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "buildId": "b02520fe-4947-4fad-9d84-5728dfba3399",
+      "analyzedAt": "2025-01-03T22:56:44.556091+00:00",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 55): Main",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_SHARP",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "public static void Main(string[] args)/n    {/n        int foo = 42;/n        /n        if (foo > 0)/n        {/n            if (foo > 10)/n            {/n                if (foo < 20)/n                {/n                    if (foo % 2 == 0)/n                    {/n                        if (foo % 3 == 0)/n                        {/n                            if (foo % 5 == 0)/n                            {/n                                if (foo % 7 == 0)/n                                {/n                                    if (foo % 11 == 0)/n                                    {/n                                        if (foo % 13 == 0)/n                                        {/n                                            if (foo % 17 == 0)/n                                            {/n                                                Console.WriteLine(/"Nested!/");/n                                            }/n                                        }/n                                    }/n                                }/n                            }/n                        }/n                    }/n                }/n            }/n        }/n    }",
+      "snippetWithContext": "using System;/n/npublic class FileComplexity/n{/n    public static void Main(string[] args)/n    {/n        int foo = 42;/n        /n        if (foo > 0)/n        {/n            if (foo > 10)/n            {/n                if (foo < 20)/n                {/n                    if (foo % 2 == 0)/n                    {/n                        if (foo % 3 == 0)/n                        {/n                            if (foo % 5 == 0)/n                            {/n                                if (foo % 7 == 0)/n                                {/n                                    if (foo % 11 == 0)/n                                    {/n                                        if (foo % 13 == 0)/n                                        {/n                                            if (foo % 17 == 0)/n                                            {/n                                                Console.WriteLine(/"Nested!/");/n                                            }/n                                        }/n                                    }/n                                }/n                            }/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "effortMinutes": 195,
+      "value": 55,
+      "valueDelta": 37,
+      "location": {
+        "path": "FileComplexity.cs",
+        "range": {
+          "startLine": 5,
+          "startColumn": 5,
+          "endLine": 40,
+          "endColumn": 6,
+          "startByte": 49,
+          "endByte": 1198
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "Main"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "buildId": "b02520fe-4947-4fad-9d84-5728dfba3399",
+      "analyzedAt": "2025-01-03T22:56:44.556091+00:00",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_SHARP",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "if (foo % 3 == 0)/n                        {/n                            if (foo % 5 == 0)/n                            {/n                                if (foo % 7 == 0)/n                                {/n                                    if (foo % 11 == 0)/n                                    {/n                                        if (foo % 13 == 0)/n                                        {/n                                            if (foo % 17 == 0)/n                                            {/n                                                Console.WriteLine(/"Nested!/");/n                                            }/n                                        }/n                                    }/n                                }/n                            }/n                        }",
+      "snippetWithContext": "        int foo = 42;/n        /n        if (foo > 0)/n        {/n            if (foo > 10)/n            {/n                if (foo < 20)/n                {/n                    if (foo % 2 == 0)/n                    {/n                        if (foo % 3 == 0)/n                        {/n                            if (foo % 5 == 0)/n                            {/n                                if (foo % 7 == 0)/n                                {/n                                    if (foo % 11 == 0)/n                                    {/n                                        if (foo % 13 == 0)/n                                        {/n                                            if (foo % 17 == 0)/n                                            {/n                                                Console.WriteLine(/"Nested!/");/n                                            }/n                                        }/n                                    }/n                                }/n                            }/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "FileComplexity.cs",
+        "range": {
+          "startLine": 17,
+          "startColumn": 25,
+          "endLine": 35,
+          "endColumn": 26,
+          "startByte": 328,
+          "endByte": 1128
+        }
+      },
+      "mode": "MODE_BLOCK"
     }
   ],
   "stats": [
     {
-      "buildId": "[..]",
-      "analyzedAt": "[..]",
+      "buildId": "b02520fe-4947-4fad-9d84-5728dfba3399",
+      "analyzedAt": "2025-01-03T22:56:44.556091+00:00",
       "name": "BooleanLogic.cs",
       "fullyQualifiedName": "BooleanLogic.cs",
       "path": "BooleanLogic.cs",
@@ -63,6 +152,26 @@
       "blankLines": 6,
       "complexity": 2,
       "cyclomatic": 8,
+      "lcom4": 0
+    },
+    {
+      "buildId": "b02520fe-4947-4fad-9d84-5728dfba3399",
+      "analyzedAt": "2025-01-03T22:56:44.556091+00:00",
+      "name": "FileComplexity.cs",
+      "fullyQualifiedName": "FileComplexity.cs",
+      "path": "FileComplexity.cs",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C_SHARP",
+      "files": 1,
+      "classes": 1,
+      "functions": 1,
+      "fields": 0,
+      "lines": 41,
+      "codeLines": 29,
+      "commentLines": 0,
+      "blankLines": 12,
+      "complexity": 55,
+      "cyclomatic": 28,
       "lcom4": 0
     }
   ]
