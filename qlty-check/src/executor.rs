@@ -64,11 +64,17 @@ impl Executor {
     }
 
     pub fn install(&self) -> Result<()> {
+        Self::install_tools(self.plan.tools(), self.plan.jobs, self.progress.clone())
+    }
+
+    pub fn install_tools(
+        tools: Vec<(String, Box<dyn Tool>)>,
+        jobs: usize,
+        progress: Progress,
+    ) -> Result<()> {
         let timer = Instant::now();
-        let tools = self.plan.tools();
-        let progress = self.progress.clone();
         let pool = rayon::ThreadPoolBuilder::new()
-            .num_threads(self.plan.jobs)
+            .num_threads(jobs)
             .build()
             .unwrap();
         let tasks_count = tools.len();
