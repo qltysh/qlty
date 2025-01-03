@@ -41,33 +41,28 @@ pub struct CSharp {
 }
 
 impl CSharp {
-    pub const SELF: &'static str = "this";
     pub const BINARY: &'static str = "binary_expression";
     pub const BLOCK: &'static str = "block";
     pub const BREAK: &'static str = "break_statement";
     pub const CATCH: &'static str = "catch_clause";
-    pub const CASE: &'static str = "switch_block_statement_group";
-    pub const LINE_COMMENT: &'static str = "line_comment";
-    pub const BLOCK_COMMENT: &'static str = "block_comment";
+    pub const CASE: &'static str = "switch_section";
+    pub const COMMENT: &'static str = "comment";
     pub const CONTINUE: &'static str = "continue_statement";
     pub const DO: &'static str = "do_statement";
-    pub const FIELD_ACCESS: &'static str = "field_access";
     pub const FIELD_DECLARATION: &'static str = "field_declaration";
-    pub const FOR_IN: &'static str = "enhanced_for_statement";
+    pub const FIELD_ACCESS: &'static str = "member_access_expression";
     pub const FOR: &'static str = "for_statement";
     pub const METHOD_DECLARATION: &'static str = "method_declaration";
-    pub const METHOD_INVOCATION: &'static str = "method_invocation";
+    pub const METHOD_INVOCATION: &'static str = "invocation_expression";
     pub const IDENTIFIER: &'static str = "identifier";
     pub const IF: &'static str = "if_statement";
     pub const LAMBDA: &'static str = "lambda_expression";
-    pub const PROGRAM: &'static str = "program";
     pub const RETURN: &'static str = "return_statement";
+    pub const SELF: &'static str = "this";
     pub const STRING: &'static str = "string_literal";
     pub const SWITCH: &'static str = "switch_expression";
-    pub const TEMPLATE_STRING: &'static str = "template_expression";
-    pub const TERNARY: &'static str = "ternary_expression";
+    pub const TERNARY: &'static str = "conditional_expression";
     pub const TRY: &'static str = "try_statement";
-    pub const TRY_WITH_RESOURCES: &'static str = "try_with_resources_statement";
     pub const WHILE: &'static str = "while_statement";
 
     pub const AND: &'static str = "&&";
@@ -124,7 +119,7 @@ impl Language for CSharp {
     }
 
     fn invisible_container_nodes(&self) -> Vec<&str> {
-        vec![Self::PROGRAM]
+        vec![]
     }
 
     fn switch_nodes(&self) -> Vec<&str> {
@@ -140,7 +135,7 @@ impl Language for CSharp {
     }
 
     fn loop_nodes(&self) -> Vec<&str> {
-        vec![Self::FOR, Self::FOR_IN, Self::WHILE, Self::DO]
+        vec![Self::FOR, Self::WHILE, Self::DO]
     }
 
     fn except_nodes(&self) -> Vec<&str> {
@@ -148,7 +143,7 @@ impl Language for CSharp {
     }
 
     fn try_expression_nodes(&self) -> Vec<&str> {
-        vec![Self::TRY, Self::TRY_WITH_RESOURCES]
+        vec![Self::TRY]
     }
 
     fn jump_nodes(&self) -> Vec<&str> {
@@ -184,11 +179,11 @@ impl Language for CSharp {
     }
 
     fn comment_nodes(&self) -> Vec<&str> {
-        vec![Self::LINE_COMMENT, Self::BLOCK_COMMENT]
+        vec![Self::COMMENT]
     }
 
     fn string_nodes(&self) -> Vec<&str> {
-        vec![Self::STRING, Self::TEMPLATE_STRING]
+        vec![Self::STRING]
     }
 
     fn is_jump_label(&self, node: &Node) -> bool {
