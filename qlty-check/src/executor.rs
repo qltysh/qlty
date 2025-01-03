@@ -84,7 +84,7 @@ impl Executor {
         pool.install(|| {
             install_results = tools
                 .into_par_iter()
-                .map(|(name, tool)| Executor::install_tool(name, tool, progress.clone()))
+                .map(|(name, tool)| Self::install_tool(name, tool, progress.clone()))
                 .collect::<Vec<_>>();
         });
 
@@ -183,7 +183,7 @@ impl Executor {
         Ok(Results::new(messages, invocations, issues, formatted))
     }
 
-    pub fn install_tool(name: String, tool: Box<dyn Tool>, progress: Progress) -> Result<()> {
+    fn install_tool(name: String, tool: Box<dyn Tool>, progress: Progress) -> Result<()> {
         let task = progress.task(&name, "Installing...");
         info!("Installing tool {}", name);
         tool.pre_setup(&task)?;
