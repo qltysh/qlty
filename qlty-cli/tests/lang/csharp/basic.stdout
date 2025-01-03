@@ -2,7 +2,7 @@
   "metadata": {
     "buildId": "[..]",
     "result": "ANALYSIS_RESULT_SUCCESS",
-    "filesAnalyzed": 2,
+    "filesAnalyzed": 3,
     "startTime": "[..]",
     "finishTime": "[..]",
     "commitMessage": "initial/n",
@@ -44,8 +44,8 @@
       "mode": "MODE_BLOCK"
     },
     {
-      "buildId": "b02520fe-4947-4fad-9d84-5728dfba3399",
-      "analyzedAt": "2025-01-03T22:56:44.556091+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "file-complexity",
@@ -75,8 +75,8 @@
       "mode": "MODE_BLOCK"
     },
     {
-      "buildId": "b02520fe-4947-4fad-9d84-5728dfba3399",
-      "analyzedAt": "2025-01-03T22:56:44.556091+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-complexity",
@@ -106,8 +106,8 @@
       "mode": "MODE_BLOCK"
     },
     {
-      "buildId": "b02520fe-4947-4fad-9d84-5728dfba3399",
-      "analyzedAt": "2025-01-03T22:56:44.556091+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -131,12 +131,39 @@
         }
       },
       "mode": "MODE_BLOCK"
+    },
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_SHARP",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "if (bar % 3 == 0)/n                        {/n                            Console.WriteLine(/"Nested!/");/n                        }",
+      "snippetWithContext": "        int bar = 42;/n/n        if (bar > 0)/n        {/n            if (bar > 10)/n            {/n                if (bar < 20)/n                {/n                    if (bar % 2 == 0)/n                    {/n                        if (bar % 3 == 0)/n                        {/n                            Console.WriteLine(/"Nested!/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "FunctionComplexity.cs",
+        "range": {
+          "startLine": 21,
+          "startColumn": 25,
+          "endLine": 24,
+          "endColumn": 26,
+          "startByte": 345,
+          "endByte": 472
+        }
+      },
+      "mode": "MODE_BLOCK"
     }
   ],
   "stats": [
     {
-      "buildId": "b02520fe-4947-4fad-9d84-5728dfba3399",
-      "analyzedAt": "2025-01-03T22:56:44.556091+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "BooleanLogic.cs",
       "fullyQualifiedName": "BooleanLogic.cs",
       "path": "BooleanLogic.cs",
@@ -155,8 +182,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "b02520fe-4947-4fad-9d84-5728dfba3399",
-      "analyzedAt": "2025-01-03T22:56:44.556091+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "FileComplexity.cs",
       "fullyQualifiedName": "FileComplexity.cs",
       "path": "FileComplexity.cs",
@@ -172,6 +199,26 @@
       "blankLines": 12,
       "complexity": 55,
       "cyclomatic": 28,
+      "lcom4": 0
+    },
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "FunctionComplexity.cs",
+      "fullyQualifiedName": "FunctionComplexity.cs",
+      "path": "FunctionComplexity.cs",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C_SHARP",
+      "files": 1,
+      "classes": 1,
+      "functions": 2,
+      "fields": 0,
+      "lines": 30,
+      "codeLines": 21,
+      "commentLines": 0,
+      "blankLines": 9,
+      "complexity": 15,
+      "cyclomatic": 13,
       "lcom4": 0
     }
   ]
