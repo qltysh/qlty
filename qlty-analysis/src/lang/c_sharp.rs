@@ -20,13 +20,18 @@ const FUNCTION_DECLARATION_QUERY: &str = r#"
     (constructor_declaration
         name: (identifier) @name
         parameters: (_) @parameters)
+    (local_function_statement
+        name: (identifier) @name
+        parameters: (_) @parameters)
 ] @definition.function
 "#;
 
 const FIELD_QUERY: &str = r#"
-(field_declaration
-    declarator: (variable_declarator
-        name: (identifier) @name)) @field
+  (field_declaration 
+    (variable_declaration 
+      (variable_declarator name: (identifier) @name)
+    )
+  ) @field
 "#;
 
 pub struct CSharp {
