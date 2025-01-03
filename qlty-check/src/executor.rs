@@ -64,11 +64,17 @@ impl Executor {
     }
 
     pub fn install(&self) -> Result<()> {
+        Self::install_tools(self.plan.tools(), self.plan.jobs, self.progress.clone())
+    }
+
+    pub fn install_tools(
+        tools: Vec<(String, Box<dyn Tool>)>,
+        jobs: usize,
+        progress: Progress,
+    ) -> Result<()> {
         let timer = Instant::now();
-        let tools = self.plan.tools();
-        let progress = self.progress.clone();
         let pool = rayon::ThreadPoolBuilder::new()
-            .num_threads(self.plan.jobs)
+            .num_threads(jobs)
             .build()
             .unwrap();
         let tasks_count = tools.len();
@@ -78,7 +84,7 @@ impl Executor {
         pool.install(|| {
             install_results = tools
                 .into_par_iter()
-                .map(|(name, tool)| Self::install_tool(name, tool, progress.clone()))
+                .map(|(name, tool)| Executor::install_tool(name, tool, progress.clone()))
                 .collect::<Vec<_>>();
         });
 
@@ -177,7 +183,7 @@ impl Executor {
         Ok(Results::new(messages, invocations, issues, formatted))
     }
 
-    fn install_tool(name: String, tool: Box<dyn Tool>, progress: Progress) -> Result<()> {
+    pub fn install_tool(name: String, tool: Box<dyn Tool>, progress: Progress) -> Result<()> {
         let task = progress.task(&name, "Installing...");
         info!("Installing tool {}", name);
         tool.pre_setup(&task)?;
