@@ -1,0 +1,69 @@
+{
+  "metadata": {
+    "buildId": "[..]",
+    "result": "ANALYSIS_RESULT_SUCCESS",
+    "filesAnalyzed": 1,
+    "startTime": "[..]",
+    "finishTime": "[..]",
+    "commitMessage": "initial/n",
+    "committedAt": "2024-01-01T00:00:00+00:00",
+    "committerEmail": "test@codeclimate.com",
+    "committerName": "TEST",
+    "authorEmail": "test@codeclimate.com",
+    "authorName": "TEST",
+    "authoredAt": "2024-01-01T00:00:00+00:00"
+  },
+  "messages": [],
+  "invocations": [],
+  "issues": [
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "boolean-logic",
+      "message": "Complex binary expression",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_SHARP",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "foo && bar",
+      "snippetWithContext": "public class BooleanLogic1/n{/n    private bool foo;/n    private bool bar;/n    private bool baz;/n    private bool qux;/n    private bool zoo;/n/n    private void F1()/n    {/n        if (foo && bar && baz && qux && zoo)/n        {/n            return;/n        }/n    }/n}/n",
+      "effortMinutes": 10,
+      "value": 4,
+      "location": {
+        "path": "BooleanLogic.cs",
+        "range": {
+          "startLine": 22,
+          "startColumn": 13,
+          "endLine": 22,
+          "endColumn": 23,
+          "startByte": 319,
+          "endByte": 329
+        }
+      },
+      "mode": "MODE_BLOCK"
+    }
+  ],
+  "stats": [
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "BooleanLogic.cs",
+      "fullyQualifiedName": "BooleanLogic.cs",
+      "path": "BooleanLogic.cs",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C_SHARP",
+      "files": 1,
+      "classes": 2,
+      "functions": 2,
+      "fields": 5,
+      "lines": 28,
+      "codeLines": 22,
+      "commentLines": 0,
+      "blankLines": 6,
+      "complexity": 2,
+      "cyclomatic": 8,
+      "lcom4": 0
+    }
+  ]
+}

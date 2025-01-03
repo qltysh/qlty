@@ -88,7 +88,7 @@ impl Default for CSharp {
 
 impl Language for CSharp {
     fn name(&self) -> &str {
-        "c_sharp"
+        "csharp"
     }
 
     fn self_keyword(&self) -> Option<&str> {

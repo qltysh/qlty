@@ -1794,6 +1794,7 @@ impl serde::Serialize for Language {
             Self::Rust => "LANGUAGE_RUST",
             Self::Kotlin => "LANGUAGE_KOTLIN",
             Self::Php => "LANGUAGE_PHP",
+            Self::CSharp => "LANGUAGE_C_SHARP",
         };
         serializer.serialize_str(variant)
     }
@@ -1818,6 +1819,7 @@ impl<'de> serde::Deserialize<'de> for Language {
             "LANGUAGE_RUST",
             "LANGUAGE_KOTLIN",
             "LANGUAGE_PHP",
+            "LANGUAGE_C_SHARP",
         ];
 
         struct GeneratedVisitor;
@@ -1871,6 +1873,7 @@ impl<'de> serde::Deserialize<'de> for Language {
                     "LANGUAGE_RUST" => Ok(Language::Rust),
                     "LANGUAGE_KOTLIN" => Ok(Language::Kotlin),
                     "LANGUAGE_PHP" => Ok(Language::Php),
+                    "LANGUAGE_C_SHARP" => Ok(Language::CSharp),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }
