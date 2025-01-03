@@ -47,6 +47,7 @@ impl CSharp {
     pub const CATCH: &'static str = "catch_clause";
     pub const CASE: &'static str = "switch_section";
     pub const COMMENT: &'static str = "comment";
+    pub const COMPILATION_UNIT: &'static str = "complication_unit";
     pub const CONTINUE: &'static str = "continue_statement";
     pub const DO: &'static str = "do_statement";
     pub const FIELD_DECLARATION: &'static str = "field_declaration";
@@ -87,7 +88,7 @@ impl Default for CSharp {
 
 impl Language for CSharp {
     fn name(&self) -> &str {
-        "c#"
+        "c_sharp"
     }
 
     fn self_keyword(&self) -> Option<&str> {
@@ -119,7 +120,7 @@ impl Language for CSharp {
     }
 
     fn invisible_container_nodes(&self) -> Vec<&str> {
-        vec![]
+        vec![Self::COMPILATION_UNIT]
     }
 
     fn switch_nodes(&self) -> Vec<&str> {
