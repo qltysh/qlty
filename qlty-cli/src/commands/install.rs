@@ -38,7 +38,7 @@ impl Install {
             }
 
             if let Some(plugin_def) = config.plugins.definitions.get(&plugin.name) {
-                if !plugin_supported_on_platform(&plugin_def, &plugin.name) {
+                if !plugin_supported_on_platform(plugin_def, &plugin.name) {
                     continue;
                 }
 
