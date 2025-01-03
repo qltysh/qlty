@@ -205,31 +205,32 @@ impl Builder {
         let mut config = config.clone();
 
         for enabled_plugin in &mut config.plugin {
-            let name = &enabled_plugin.name;
-            if enabled_plugin.version == "latest" {
-                let plugin_definition = config
+            let plugin_definition =
+                config
                     .plugins
                     .definitions
-                    .get(name)
-                    .ok_or(anyhow!("Plugin definition not found for name: {}", name))?;
+                    .get(&enabled_plugin.name)
+                    .ok_or(anyhow!(
+                        "Plugin definition not found for {}",
+                        &enabled_plugin.name
+                    ))?;
 
-                let latest_version = plugin_definition
-                    .latest_version
-                    .as_ref()
-                    .ok_or(anyhow!("Latest version not found for plugin: {}", name))?;
+            if enabled_plugin.version == "latest" {
+                let latest_version = plugin_definition.latest_version.as_ref().ok_or(anyhow!(
+                    "The enabled plugin version is \"latest\", but the latest version is unknown: {}",
+                    &enabled_plugin.name
+                ))?;
 
                 enabled_plugin.version = latest_version.clone();
             } else if enabled_plugin.version == "known_good" {
-                let plugin_definition = config
-                    .plugins
-                    .definitions
-                    .get(name)
-                    .ok_or(anyhow!("Plugin definition not found for name: {}", name))?;
-
-                let known_good_version = plugin_definition
-                    .known_good_version
-                    .as_ref()
-                    .ok_or(anyhow!("Known good version not found for plugin: {}", name))?;
+                let known_good_version =
+                    plugin_definition
+                        .known_good_version
+                        .as_ref()
+                        .ok_or(anyhow!(
+                            "The enabled plugin version is \"known_good\", but the known good version is unknown: {}",
+                            &enabled_plugin.name
+                        ))?;
 
                 enabled_plugin.version = known_good_version.clone();
             }
