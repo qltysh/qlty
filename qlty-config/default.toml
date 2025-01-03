@@ -31,6 +31,9 @@ exclude_patterns = [
 [file_types.ALL]
 globs = ["*.*"]
 
+[file_types.c_sharp]
+globs = ["*.cs"]
+
 [file_types.css]
 globs = ["*.css"]
 
