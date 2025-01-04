@@ -677,6 +677,7 @@ pub enum Language {
     Rust = 10,
     Kotlin = 11,
     Php = 12,
+    CSharp = 13,
 }
 impl Language {
     /// String value of the enum field names used in the ProtoBuf definition.
@@ -698,6 +699,7 @@ impl Language {
             Self::Rust => "LANGUAGE_RUST",
             Self::Kotlin => "LANGUAGE_KOTLIN",
             Self::Php => "LANGUAGE_PHP",
+            Self::CSharp => "LANGUAGE_C_SHARP",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.
@@ -716,6 +718,7 @@ impl Language {
             "LANGUAGE_RUST" => Some(Self::Rust),
             "LANGUAGE_KOTLIN" => Some(Self::Kotlin),
             "LANGUAGE_PHP" => Some(Self::Php),
+            "LANGUAGE_C_SHARP" => Some(Self::CSharp),
             _ => None,
         }
     }
