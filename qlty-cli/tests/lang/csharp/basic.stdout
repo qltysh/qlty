@@ -2,7 +2,7 @@
   "metadata": {
     "buildId": "[..]",
     "result": "ANALYSIS_RESULT_SUCCESS",
-    "filesAnalyzed": 4,
+    "filesAnalyzed": 5,
     "startTime": "[..]",
     "finishTime": "[..]",
     "commitMessage": "initial/n",
@@ -321,6 +321,26 @@
       "blankLines": 19,
       "complexity": 4,
       "cyclomatic": 21,
+      "lcom4": 0
+    },
+    {
+      "buildId": "1e0563bf-7a4b-4bac-ad95-31e63a74a305",
+      "analyzedAt": "2025-01-04T06:11:47.862391+00:00",
+      "name": "Lines.cs",
+      "fullyQualifiedName": "Lines.cs",
+      "path": "Lines.cs",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C_SHARP",
+      "files": 1,
+      "classes": 1,
+      "functions": 5,
+      "fields": 0,
+      "lines": 57,
+      "codeLines": 32,
+      "commentLines": 7,
+      "blankLines": 18,
+      "complexity": 1,
+      "cyclomatic": 3,
       "lcom4": 0
     }
   ]
