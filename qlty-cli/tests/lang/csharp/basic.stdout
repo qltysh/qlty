@@ -2,7 +2,7 @@
   "metadata": {
     "buildId": "[..]",
     "result": "ANALYSIS_RESULT_SUCCESS",
-    "filesAnalyzed": 3,
+    "filesAnalyzed": 4,
     "startTime": "[..]",
     "finishTime": "[..]",
     "commitMessage": "initial/n",
@@ -16,6 +16,88 @@
   "messages": [],
   "invocations": [],
   "issues": [
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "tool": "qlty",
+      "driver": "duplication",
+      "ruleKey": "similar-code",
+      "message": "Found 25 lines of similar code in 2 locations (mass = 125)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_SHARP",
+      "category": "CATEGORY_DUPLICATION",
+      "snippet": "public static double[] f0(double[] numbers)/n    {/n        double sum = 0;/n        foreach (double num in numbers)/n        {/n            sum += num;/n        }/n        double mean = sum / numbers.Length;/n/n        double[] sortedNumbers = (double[])numbers.Clone();/n        Array.Sort(sortedNumbers);/n/n        double median;/n        int length = sortedNumbers.Length;/n        if (length % 2 == 0)/n        {/n            median = (sortedNumbers[length / 2 - 1] + sortedNumbers[length / 2]) / 2.0;/n        }/n        else/n        {/n            median = sortedNumbers[length / 2];/n        }/n/n        return new double[] { mean, median };/n    }",
+      "snippetWithContext": "using System;/n/npublic class Identical/n{/n    public static double[] f0(double[] numbers)/n    {/n        double sum = 0;/n        foreach (double num in numbers)/n        {/n            sum += num;/n        }/n        double mean = sum / numbers.Length;/n/n        double[] sortedNumbers = (double[])numbers.Clone();/n        Array.Sort(sortedNumbers);/n/n        double median;/n        int length = sortedNumbers.Length;/n        if (length % 2 == 0)/n        {/n            median = (sortedNumbers[length / 2 - 1] + sortedNumbers[length / 2]) / 2.0;/n        }/n        else/n        {/n            median = sortedNumbers[length / 2];/n        }/n/n        return new double[] { mean, median };/n    }/n/n    public static double[] f1(double[] numbers)/n    {/n        double sum = 0;/n        foreach (double num in numbers)/n        {/n            sum += num;/n        }/n        double mean = sum / numbers.Length;/n/n        double[] sortedNumbers = (double[])numbers.Clone();",
+      "effortMinutes": 60,
+      "value": 25,
+      "valueDelta": 10,
+      "location": {
+        "path": "Identical.cs",
+        "range": {
+          "startLine": 5,
+          "endLine": 29,
+          "startByte": 44,
+          "endByte": 679
+        }
+      },
+      "otherLocations": [
+        {
+          "path": "Identical.cs",
+          [..]
+          [..]
+          [..]
+          [..]
+        }
+      ],
+      "properties": {
+        [..]
+        [..]
+        [..]
+        [..]
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "tool": "qlty",
+      "driver": "duplication",
+      "ruleKey": "similar-code",
+      "message": "Found 25 lines of similar code in 2 locations (mass = 125)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_SHARP",
+      "category": "CATEGORY_DUPLICATION",
+      "snippet": "public static double[] f1(double[] numbers)/n    {/n        double sum = 0;/n        foreach (double num in numbers)/n        {/n            sum += num;/n        }/n        double mean = sum / numbers.Length;/n/n        double[] sortedNumbers = (double[])numbers.Clone();/n        Array.Sort(sortedNumbers);/n/n        double median;/n        int length = sortedNumbers.Length;/n        if (length % 2 == 0)/n        {/n            median = (sortedNumbers[length / 2 - 1] + sortedNumbers[length / 2]) / 2.0;/n        }/n        else/n        {/n            median = sortedNumbers[length / 2];/n        }/n/n        return new double[] { mean, median };/n    }",
+      "snippetWithContext": "        }/n        else/n        {/n            median = sortedNumbers[length / 2];/n        }/n/n        return new double[] { mean, median };/n    }/n/n    public static double[] f1(double[] numbers)/n    {/n        double sum = 0;/n        foreach (double num in numbers)/n        {/n            sum += num;/n        }/n        double mean = sum / numbers.Length;/n/n        double[] sortedNumbers = (double[])numbers.Clone();/n        Array.Sort(sortedNumbers);/n/n        double median;/n        int length = sortedNumbers.Length;/n        if (length % 2 == 0)/n        {/n            median = (sortedNumbers[length / 2 - 1] + sortedNumbers[length / 2]) / 2.0;/n        }/n        else/n        {/n            median = sortedNumbers[length / 2];/n        }/n/n        return new double[] { mean, median };/n    }/n}",
+      "effortMinutes": 60,
+      "value": 25,
+      "valueDelta": 10,
+      "location": {
+        "path": "Identical.cs",
+        "range": {
+          "startLine": 31,
+          "endLine": 55,
+          "startByte": 685,
+          "endByte": 1320
+        }
+      },
+      "otherLocations": [
+        {
+          "path": "Identical.cs",
+          [..]
+          [..]
+          [..]
+          [..]
+        }
+      ],
+      "properties": {
+        [..]
+        [..]
+        [..]
+        [..]
+      },
+      "mode": "MODE_BLOCK"
+    },
     {
       "buildId": "[..]",
       "analyzedAt": "[..]",
@@ -219,6 +301,26 @@
       "blankLines": 9,
       "complexity": 15,
       "cyclomatic": 13,
+      "lcom4": 0
+    },
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "Identical.cs",
+      "fullyQualifiedName": "Identical.cs",
+      "path": "Identical.cs",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C_SHARP",
+      "files": 1,
+      "classes": 1,
+      "functions": 2,
+      "fields": 0,
+      "lines": 56,
+      "codeLines": 37,
+      "commentLines": 0,
+      "blankLines": 19,
+      "complexity": 4,
+      "cyclomatic": 21,
       "lcom4": 0
     }
   ]
