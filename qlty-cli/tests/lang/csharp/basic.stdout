@@ -2,7 +2,7 @@
   "metadata": {
     "buildId": "[..]",
     "result": "ANALYSIS_RESULT_SUCCESS",
-    "filesAnalyzed": 10,
+    "filesAnalyzed": 11,
     "startTime": "[..]",
     "finishTime": "[..]",
     "commitMessage": "initial/n",
@@ -121,6 +121,33 @@
           "endColumn": 23,
           "startByte": 319,
           "endByte": 329
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "boolean-logic",
+      "message": "Complex binary expression",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_SHARP",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "false && true",
+      "snippetWithContext": "namespace cognitive/n{/n  class CountNonSequentialLogicalOperators {/n    public static boolean Main(String[] args) {/n      return true || false && true && false || true;/n    }/n  }/n}",
+      "effortMinutes": 10,
+      "value": 4,
+      "location": {
+        "path": "cognitive/CountNonSequentialLogicalOperators.cs",
+        "range": {
+          "startLine": 5,
+          "startColumn": 22,
+          "endLine": 5,
+          "endColumn": 35,
+          "startByte": 136,
+          "endByte": 149
         }
       },
       "mode": "MODE_BLOCK"
@@ -501,20 +528,40 @@
     {
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "name": "CountNonSequentialLogicalOperators.cs",
+      "fullyQualifiedName": "cognitive/CountNonSequentialLogicalOperators.cs",
+      "path": "cognitive/CountNonSequentialLogicalOperators.cs",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C_SHARP",
+      "files": 1,
+      "classes": 1,
+      "functions": 1,
+      "fields": 0,
+      "lines": 8,
+      "codeLines": 8,
+      "commentLines": 0,
+      "blankLines": 0,
+      "complexity": 3,
+      "cyclomatic": 5,
+      "lcom4": 0
+    },
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "cognitive",
       "fullyQualifiedName": "cognitive",
       "path": "cognitive",
       "kind": "COMPONENT_TYPE_DIRECTORY",
-      "files": 2,
-      "classes": 2,
-      "functions": 2,
+      "files": 3,
+      "classes": 3,
+      "functions": 3,
       "fields": 0,
-      "lines": 24,
-      "codeLines": 22,
+      "lines": 32,
+      "codeLines": 30,
       "commentLines": 0,
       "blankLines": 2,
-      "complexity": 4,
-      "cyclomatic": 11,
+      "complexity": 7,
+      "cyclomatic": 16,
       "lcom4": 0
     }
   ]
