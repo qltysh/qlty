@@ -1,4 +1,6 @@
-use crate::{Arguments, CommandError, CommandSuccess};
+use crate::{
+    initializer::Settings, Arguments, CommandError, CommandSuccess, Initializer, QltyRelease,
+};
 use anyhow::{Context, Result};
 use clap::Args;
 use console::style;
@@ -86,9 +88,33 @@ impl ConfigDocument {
 }
 
 impl Enable {
-    pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
-        let workspace = Workspace::require_initialized()?;
-        workspace.fetch_sources()?;
+    pub fn execute(&self, args: &Arguments) -> Result<CommandSuccess, CommandError> {
+        if !args.no_upgrade_check {
+            QltyRelease::upgrade_check().ok();
+        }
+
+        Workspace::assert_git_directory_root()?;
+
+        let workspace = Workspace::new()?;
+
+        if workspace.config_exists()? {
+            workspace.fetch_sources()?;
+        } else {
+            let library = workspace.library()?;
+            library.create()?;
+
+            let mut initializer = Initializer::new(Settings {
+                workspace: workspace.clone(),
+                skip_plugins: true,
+                ..Default::default()
+            })?;
+
+            initializer.prepare()?;
+            initializer.compute()?;
+            initializer.write()?;
+
+            eprintln!("{} Created .qlty/qlty.toml", style("✔").green());
+        }
 
         let mut config = ConfigDocument::new(&workspace)?;
 

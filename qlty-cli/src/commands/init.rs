@@ -133,7 +133,7 @@ impl Init {
     }
 
     fn print_check(&self, message: &str) {
-        eprintln!("{} {}", style("✔").green(), message,);
+        eprintln!("{} {}", style("✔").green(), message);
     }
 
     fn print_enabled_plugins(&self, initializer: &Initializer) -> Result<()> {
