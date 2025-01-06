@@ -2,7 +2,7 @@
   "metadata": {
     "buildId": "[..]",
     "result": "ANALYSIS_RESULT_SUCCESS",
-    "filesAnalyzed": 6,
+    "filesAnalyzed": 7,
     "startTime": "[..]",
     "finishTime": "[..]",
     "commitMessage": "initial/n",
@@ -184,6 +184,33 @@
       },
       "partialFingerprints": {
         "function.name": "Main"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-parameters",
+      "message": "Function with many parameters (count = 6): F2",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_SHARP",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "(object a, object b, object c, object d, object e, object f)",
+      "snippetWithContext": "public class Parameters/n{/n    public static void F0()/n    {/n    }/n/n    public static void F1(object dog, object cat)/n    {/n    }/n/n    public static void F2(object a, object b, object c, object d, object e, object f)/n    {/n    }/n/n    public static void F3()/n    {/n        object foo = Bar(1, 2, 3, 4);/n    }/n/n    public static object Bar(int a, int b, int c, int d)/n    {",
+      "effortMinutes": 15,
+      "value": 6,
+      "location": {
+        "path": "Parameters.cs",
+        "range": {
+          "startLine": 13,
+          "startColumn": 26,
+          "endLine": 13,
+          "endColumn": 86,
+          "startByte": 170,
+          "endByte": 230
+        }
       },
       "mode": "MODE_BLOCK"
     },
@@ -389,6 +416,26 @@
       "blankLines": 14,
       "complexity": 15,
       "cyclomatic": 24,
+      "lcom4": 0
+    },
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "Parameters.cs",
+      "fullyQualifiedName": "Parameters.cs",
+      "path": "Parameters.cs",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C_SHARP",
+      "files": 1,
+      "classes": 1,
+      "functions": 5,
+      "fields": 0,
+      "lines": 26,
+      "codeLines": 17,
+      "commentLines": 0,
+      "blankLines": 9,
+      "complexity": 0,
+      "cyclomatic": 1,
       "lcom4": 0
     }
   ]
