@@ -1,17 +1,17 @@
 mod auth_flow;
-mod token;
+mod credentials;
 
 use crate::Client;
 use anyhow::Result;
 use auth_flow::{launch_login_server, AppState};
 use console::style;
+use credentials::{delete_token, read_token};
 use std::{thread, time::Duration};
-use token::Token;
 use tracing::{info, warn};
 
 pub fn load_or_retrieve_auth_token() -> Result<String> {
     let mut has_token = false;
-    let auth_token = match Token::default().get() {
+    let auth_token = match read_token() {
         Ok(token) => {
             has_token = true;
             Ok(token)
@@ -33,7 +33,7 @@ pub fn load_or_retrieve_auth_token() -> Result<String> {
 }
 
 pub fn clear_auth_token() -> Result<()> {
-    Token::default().delete()
+    delete_token()
 }
 
 fn validate_auth_token(auth_token: &String) -> Result<()> {
@@ -51,7 +51,6 @@ fn validate_auth_token(auth_token: &String) -> Result<()> {
 
 fn auth_via_browser() -> Result<String> {
     let state = AppState::default();
-    let user = &state.credential_user;
     let original_state = &state.original_state;
     let server = launch_login_server(state.clone())?;
     info!("Auth login server started on port {}", server.base_url);
@@ -72,9 +71,8 @@ fn auth_via_browser() -> Result<String> {
     info!("Opening browser to {}", open_url);
     webbrowser::open(&open_url)?;
 
-    let token = Token::new(user);
     loop {
-        if let Result::Ok(value) = token.get() {
+        if let Result::Ok(value) = read_token() {
             eprintln!("Login successful! Your credentials have been stored for future use.");
             return Ok(value);
         }
