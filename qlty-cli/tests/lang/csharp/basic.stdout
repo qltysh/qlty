@@ -2,7 +2,7 @@
   "metadata": {
     "buildId": "[..]",
     "result": "ANALYSIS_RESULT_SUCCESS",
-    "filesAnalyzed": 5,
+    "filesAnalyzed": 6,
     "startTime": "[..]",
     "finishTime": "[..]",
     "commitMessage": "initial/n",
@@ -240,6 +240,34 @@
         }
       },
       "mode": "MODE_BLOCK"
+    },
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "return-statements",
+      "message": "Function with many returns (count = 10): F2",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_SHARP",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "public static string F2(int foo)/n    {/n        switch (foo)/n        {/n            case 1:/n                return /"bar1/";/n            case 2:/n                return /"bar2/";/n            case 3:/n                return /"bar3/";/n            case 4:/n                return /"bar4/";/n            case 5:/n                return /"bar5/";/n            case 6:/n                return /"bar6/";/n            case 7:/n                return /"bar7/";/n            case 8:/n                return /"bar8/";/n            case 9:/n                return /"bar9/";/n            case 10:/n                return /"bar10/";/n            default:/n                throw new ArgumentException(/"Invalid foo value/");/n        }/n    }",
+      "snippetWithContext": "                {/n                    if (quux)/n                    {/n                        Console.WriteLine(/"Not deeply nested enough!/");/n                    }/n                }/n            }/n        }/n    }/n/n    public static string F2(int foo)/n    {/n        switch (foo)/n        {/n            case 1:/n                return /"bar1/";/n            case 2:/n                return /"bar2/";/n            case 3:/n                return /"bar3/";/n            case 4:/n                return /"bar4/";/n            case 5:/n                return /"bar5/";/n            case 6:/n                return /"bar6/";/n            case 7:/n                return /"bar7/";/n            case 8:/n                return /"bar8/";/n            case 9:/n                return /"bar9/";/n            case 10:/n                return /"bar10/";/n            default:/n                throw new ArgumentException(/"Invalid foo value/");/n        }/n    }/n}",
+      "effortMinutes": 35,
+      "value": 10,
+      "valueDelta": 4,
+      "location": {
+        "path": "NestedControl.cs",
+        "range": {
+          "startLine": 34,
+          "startColumn": 5,
+          "endLine": 61,
+          "endColumn": 6,
+          "startByte": 714,
+          "endByte": 1398
+        }
+      },
+      "mode": "MODE_BLOCK"
     }
   ],
   "stats": [
@@ -341,6 +369,26 @@
       "blankLines": 18,
       "complexity": 1,
       "cyclomatic": 3,
+      "lcom4": 0
+    },
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "NestedControl.cs",
+      "fullyQualifiedName": "NestedControl.cs",
+      "path": "NestedControl.cs",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C_SHARP",
+      "files": 1,
+      "classes": 1,
+      "functions": 3,
+      "fields": 0,
+      "lines": 62,
+      "codeLines": 48,
+      "commentLines": 0,
+      "blankLines": 14,
+      "complexity": 15,
+      "cyclomatic": 24,
       "lcom4": 0
     }
   ]
