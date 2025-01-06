@@ -32,16 +32,17 @@ pub fn set_mock_entry(entry: Arc<Entry>) {
 
 fn entry() -> Result<Arc<Entry>> {
     let mut guard = ENTRY.lock().unwrap();
-    if let Some(entry) = &*guard {
-        return Ok(entry.clone());
+    match &*guard {
+        Some(entry) => Ok(entry.clone()),
+        None => {
+            let entry = Arc::new(Entry::new(SERVICE, DEFAULT_USER).with_context(|| {
+                format!(
+                    "Failed to create keyring entry for service '{}' and user '{}'",
+                    SERVICE, DEFAULT_USER
+                )
+            })?);
+            guard.replace(entry.clone());
+            Ok(entry)
+        }
     }
-
-    let entry = Arc::new(Entry::new(SERVICE, DEFAULT_USER).with_context(|| {
-        format!(
-            "Failed to create keyring entry for service '{}' and user '{}'",
-            SERVICE, DEFAULT_USER
-        )
-    })?);
-    guard.replace(entry.clone());
-    Ok(entry)
 }
