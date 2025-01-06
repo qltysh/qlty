@@ -105,7 +105,7 @@ syntect = "5.2.0"
 sysinfo = "0.31.4"
 tabwriter = { version = "1.4.0", features = ["ansi_formatting"] }
 tar = "0.4.43"
-tempfile = "3.13.0"
+tempfile = "3.15.0"
 termbg = "0.6.0"
 thiserror = "2.0.9"
 time = { version = "0.3.37", features = [
