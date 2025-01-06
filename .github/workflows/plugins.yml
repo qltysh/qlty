@@ -5,15 +5,15 @@ on:
     branches:
       - main
     paths:
-      - "plugins/**"
-      - "qlty-*/**"
-      - "Cargo.*"
+      - "qlty-plugins/**"
+      - "qlty-config/**"
+      - "qlty-check/src/tool/**"
       - ".github/workflows/plugins.yml"
   pull_request:
     paths:
-      - "plugins/**"
-      - "qlty-*/**"
-      - "Cargo.*"
+      - "qlty-plugins/**"
+      - "qlty-config/**"
+      - "qlty-check/src/tool/**"
       - ".github/workflows/plugins.yml"
 
 permissions:
