@@ -199,34 +199,32 @@ impl Language for CSharp {
     fn call_identifiers(&self, source_file: &File, node: &Node) -> (Option<String>, String) {
         match node.kind() {
             Self::METHOD_INVOCATION => {
-                let (receiver, object) = self.field_identifiers(source_file, node);
-
-                (Some(receiver), object)
+                let function_node = node.child_by_field_name("function");
+                match function_node {
+                    Some(f) => {
+                        if f.kind() == Self::FIELD_ACCESS {
+                            let (obj, property) = self.field_identifiers(source_file, &f);
+                            (Some(obj), property)
+                        } else {
+                            (Some(Self::SELF.to_owned()), get_node_source_or_default(Some(f), source_file))
+                        }
+                    },
+                    None => (Some("<UNKNOWN>".to_string()), "<UNKNOWN>".to_string())
+                }
             }
-            _ => (Some("<UNKNOWN>".to_string()), "<UNKNOWN>".to_string()),
+            _ => (Some("<UNKNOWN>".to_string()), "<UNKNOWN>".to_string())
         }
     }
 
     fn field_identifiers(&self, source_file: &File, node: &Node) -> (String, String) {
-        let object_node = node.child_by_field_name("object");
+        let object_node = node.child_by_field_name("expression");
         let property_node = node
-            .child_by_field_name("name")
-            .or_else(|| node.child_by_field_name("field"));
+            .child_by_field_name("name");
 
         match (&object_node, &property_node) {
-            (Some(obj), Some(prop)) if obj.kind() == Self::FIELD_ACCESS => {
-                let object_source =
-                    get_node_source_or_default(obj.child_by_field_name("field"), source_file);
-                let property_source = get_node_source_or_default(Some(*prop), source_file);
-                (object_source, property_source)
-            }
-            (Some(obj), Some(prop)) => (
-                get_node_source_or_default(Some(*obj), source_file),
-                get_node_source_or_default(Some(*prop), source_file),
-            ),
-            (None, Some(prop)) => (
-                Self::SELF.to_owned(),
-                get_node_source_or_default(Some(*prop), source_file),
+            (Some(o), Some(p)) => (
+                get_node_source_or_default(Some(*o), source_file),
+                get_node_source_or_default(Some(*p), source_file),
             ),
             _ => ("<UNKNOWN>".to_string(), "<UNKNOWN>".to_string()),
         }
@@ -241,4 +239,58 @@ fn get_node_source_or_default(node: Option<Node>, source_file: &File) -> String 
     node.as_ref()
         .map(|n| node_source(n, source_file))
         .unwrap_or("<UNKNOWN>".to_string())
+}
+
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use tree_sitter::Tree;
+
+    #[test]
+    fn call_identifier() {
+        let source_file = File::from_string("csharp", "foo()");
+        let tree = source_file.parse();
+        let call = root_node(&tree);
+        let language = CSharp::default();
+
+        assert_eq!(
+            language.call_identifiers(&source_file, &call),
+            (Some("this".to_string()), "foo".to_string())
+        );
+    }
+
+    #[test]
+    fn call_member() {
+        let source_file = File::from_string("csharp", "foo.bar()");
+        let tree = source_file.parse();
+        let call = root_node(&tree);
+        let language = CSharp::default();
+
+        assert_eq!(
+            language.call_identifiers(&source_file, &call),
+            (Some("foo".into()), "bar".into())
+        );
+    }
+
+    #[test]
+    fn call_with_custom_context() {
+        let source_file = File::from_string("csharp", "foo.bar(context)");
+        let tree = source_file.parse();
+        let root = root_node(&tree);
+        let call = root.child(0).unwrap();
+        let language = CSharp::default();
+
+        assert_eq!(
+            language.call_identifiers(&source_file, &call),
+            (Some("foo".into()), "bar".into())
+        );
+    }
+
+    // navigates down from "(compilation_unit (global statement ...))"
+    fn root_node(tree: &Tree) -> Node {
+        let root_node = tree.root_node();
+        let expression = root_node.named_child(0).unwrap();
+        expression.named_child(0).unwrap()
+    }
 }
