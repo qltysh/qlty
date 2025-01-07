@@ -1,4 +1,4 @@
-use crate::auth::{token::DEFAULT_USER, Token};
+use super::credentials::write_token;
 use anyhow::{anyhow, bail, Context, Result};
 use http::Uri;
 use serde::Deserialize;
@@ -29,7 +29,6 @@ struct AuthFlowQueryParams {
 pub struct AppState {
     pub login_url: String,
     pub original_state: String,
-    pub credential_user: String,
 }
 
 impl Default for AppState {
@@ -37,7 +36,6 @@ impl Default for AppState {
         AppState {
             login_url: std::env::var(LOGIN_URL_ENV).unwrap_or(LOGIN_URL.to_string()),
             original_state: Uuid::new_v4().to_string(),
-            credential_user: DEFAULT_USER.to_string(),
         }
     }
 }
@@ -94,8 +92,7 @@ fn run_handler(request: &Request, state: &AppState) -> Result<ResponseBox> {
         bail!("Redirect URI does not match login URL");
     }
 
-    let token = Token::new(&state.credential_user);
-    if let Err(e) = token.set(&params.code) {
+    if let Err(e) = write_token(&params.code) {
         bail!("Failed to store auth token in credential storage: {}", e);
     }
 
@@ -164,13 +161,19 @@ fn run_login_server_loop(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::auth::credentials::{read_token, set_mock_entry};
+    use keyring::{mock, set_default_credential_builder, Entry};
     use std::{thread, time::Duration};
 
     impl AppState {
         fn test(original_state: &str) -> Self {
+            set_default_credential_builder(mock::default_credential_builder());
+            set_mock_entry(Arc::new(
+                Entry::new("qlty-cli-test", "qlty-cli-test").unwrap(),
+            ));
+
             let mut state = AppState::default();
             state.original_state = original_state.to_string();
-            state.credential_user = "qlty-cli-test".to_string();
             state.login_url = "https://example.com".to_string();
             state
         }
@@ -258,10 +261,7 @@ mod tests {
             .call()
             .is_err());
 
-        if !cfg!(target_os = "macos") {
-            let token = Token::new("qlty-cli-test").get().unwrap();
-            assert_eq!(token, "ABCDEFG");
-        }
+        assert_eq!(read_token().unwrap(), "ABCDEFG");
     }
 
     #[test]

@@ -54,17 +54,7 @@ fn configure_plugins(planner: &Planner) -> Result<Vec<ActivePlugin>> {
             .definitions
             .get(enabled_plugin.name.as_str())
         {
-            if !plugin_def.supported_platforms.is_empty()
-                && !plugin_def
-                    .supported_platforms
-                    .contains(&Platform::current())
-            {
-                warn!(
-                    "Plugin {} is not supported on this platform ({}), skipping. (Supported platforms are: {})",
-                    enabled_plugin.name,
-                    Platform::current(),
-                    plugin_def.supported_platforms.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(", ")
-                );
+            if !plugin_supported_on_platform(plugin_def, enabled_plugin.name.as_str()) {
                 continue;
             }
         }
@@ -98,6 +88,29 @@ fn configure_plugins(planner: &Planner) -> Result<Vec<ActivePlugin>> {
     }
 
     Ok(enabled_plugins)
+}
+
+pub fn plugin_supported_on_platform(plugin_def: &PluginDef, plugin_name: &str) -> bool {
+    if !plugin_def.supported_platforms.is_empty()
+        && !plugin_def
+            .supported_platforms
+            .contains(&Platform::current())
+    {
+        warn!(
+            "Plugin {} is not supported on this platform ({}), skipping. (Supported platforms are: {})",
+            plugin_name,
+            Platform::current(),
+            plugin_def
+                .supported_platforms
+                .iter()
+                .map(|x| x.to_string())
+                .collect::<Vec<String>>()
+                .join(", ")
+        );
+        return false;
+    }
+
+    true
 }
 
 fn configure_plugin(

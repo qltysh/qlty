@@ -27,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest-16-cores, macos-15-xlarge, windows-latest]
+        os: [ubuntu-latest, macos-15, windows-latest]
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     concurrency:
@@ -47,10 +47,6 @@ jobs:
 
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
-
-      - name: Setup PHP with PECL extension
-        uses: shivammathur/setup-php@v2
-        if: matrix.os == 'macos-15-xlarge'
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2

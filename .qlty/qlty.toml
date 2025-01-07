@@ -47,11 +47,11 @@ name = "actionlint"
 
 [[plugin]]
 name = "clippy"
-version = "1.85.0" # Note: Clippy version is controlled by the rust version above
+version = "1.86.0" # Note: Clippy version is controlled by the rust version above
 
 [[plugin]]
 name = "rustfmt"
-version = "1.85.0" # Note: rustfmt version is controlled by the rust version above
+version = "1.86.0" # Note: rustfmt version is controlled by the rust version above
 
 [[plugin]]
 name = "eslint"

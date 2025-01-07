@@ -5,15 +5,15 @@ on:
     branches:
       - main
     paths:
-      - "plugins/**"
-      - "qlty-*/**"
-      - "Cargo.*"
+      - "qlty-plugins/**"
+      - "qlty-config/**"
+      - "qlty-check/src/tool/**"
       - ".github/workflows/plugins.yml"
   pull_request:
     paths:
-      - "plugins/**"
-      - "qlty-*/**"
-      - "Cargo.*"
+      - "qlty-plugins/**"
+      - "qlty-config/**"
+      - "qlty-check/src/tool/**"
       - ".github/workflows/plugins.yml"
 
 permissions:
@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-15-xlarge, ubuntu-latest-16-cores, windows-latest]
+        os: [macos-15, ubuntu-latest, windows-latest]
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     concurrency:
@@ -69,7 +69,7 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.3.0
-        if: matrix.os == 'windows-latest-16-cores'
+        if: contains(matrix.os, 'windows')
 
       - name: Install Rust toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1
