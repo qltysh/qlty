@@ -5,11 +5,22 @@ use crate::Client;
 use anyhow::Result;
 use auth_flow::{launch_login_server, AppState};
 use console::style;
-use credentials::{delete_token, read_token};
-use std::{thread, time::Duration};
+use credentials::read_token;
+pub use credentials::{delete_token as clear_auth_token, write_token as store_auth_token};
+use std::{env, thread, time::Duration};
 use tracing::{info, warn};
 
+const TOKEN_ENV_VAR: &str = "QLTY_TOKEN";
+
 pub fn load_or_retrieve_auth_token() -> Result<String> {
+    if let Ok(token) = env::var(TOKEN_ENV_VAR) {
+        let token = token.trim().to_string();
+        if !token.is_empty() {
+            // bypass validation when env var is set since this is an intentional override of credential lookup
+            return Ok(token);
+        }
+    }
+
     let mut has_token = false;
     let auth_token = match read_token() {
         Ok(token) => {
@@ -30,10 +41,6 @@ pub fn load_or_retrieve_auth_token() -> Result<String> {
             }
         }
     }
-}
-
-pub fn clear_auth_token() -> Result<()> {
-    delete_token()
 }
 
 fn validate_auth_token(auth_token: &String) -> Result<()> {
