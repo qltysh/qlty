@@ -217,9 +217,7 @@ mod tests {
                 omit: 3,
                 total: 13,
             }),
-            hits: vec![
-                -1, -1, 1, 1, 1, 1, -1, 1, 1, -1, 1
-            ],
+            hits: vec![-1, -1, 1, 1, 1, 1, -1, 1, 1, -1, 1],
             branch: "test-branch".to_string(),
             ..Default::default()
         };
