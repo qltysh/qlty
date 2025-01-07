@@ -53,6 +53,7 @@ impl CSharp {
     pub const FIELD_DECLARATION: &'static str = "field_declaration";
     pub const FIELD_ACCESS: &'static str = "member_access_expression";
     pub const FOR: &'static str = "for_statement";
+    pub const FOREACH: &'static str = "foreach_statement";
     pub const METHOD_DECLARATION: &'static str = "method_declaration";
     pub const METHOD_INVOCATION: &'static str = "invocation_expression";
     pub const IDENTIFIER: &'static str = "identifier";
@@ -136,7 +137,7 @@ impl Language for CSharp {
     }
 
     fn loop_nodes(&self) -> Vec<&str> {
-        vec![Self::FOR, Self::WHILE, Self::DO]
+        vec![Self::FOR, Self::FOREACH, Self::WHILE, Self::DO]
     }
 
     fn except_nodes(&self) -> Vec<&str> {
