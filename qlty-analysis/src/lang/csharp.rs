@@ -206,20 +206,22 @@ impl Language for CSharp {
                             let (obj, property) = self.field_identifiers(source_file, &f);
                             (Some(obj), property)
                         } else {
-                            (Some(Self::SELF.to_owned()), get_node_source_or_default(Some(f), source_file))
+                            (
+                                Some(Self::SELF.to_owned()),
+                                get_node_source_or_default(Some(f), source_file),
+                            )
                         }
-                    },
-                    None => (Some("<UNKNOWN>".to_string()), "<UNKNOWN>".to_string())
+                    }
+                    None => (Some("<UNKNOWN>".to_string()), "<UNKNOWN>".to_string()),
                 }
             }
-            _ => (Some("<UNKNOWN>".to_string()), "<UNKNOWN>".to_string())
+            _ => (Some("<UNKNOWN>".to_string()), "<UNKNOWN>".to_string()),
         }
     }
 
     fn field_identifiers(&self, source_file: &File, node: &Node) -> (String, String) {
         let object_node = node.child_by_field_name("expression");
-        let property_node = node
-            .child_by_field_name("name");
+        let property_node = node.child_by_field_name("name");
 
         match (&object_node, &property_node) {
             (Some(obj), Some(prop)) if obj.kind() == Self::FIELD_ACCESS => {
@@ -246,7 +248,6 @@ fn get_node_source_or_default(node: Option<Node>, source_file: &File) -> String 
         .map(|n| node_source(n, source_file))
         .unwrap_or("<UNKNOWN>".to_string())
 }
-
 
 #[cfg(test)]
 mod test {
