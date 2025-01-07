@@ -1,5 +1,11 @@
 # Changelog
 
+## Week of December 29th, 2024
+
+### New
+
+- Add browser-based flow to authenticate the CLI as a Qlty Cloud user
+
 ## Week of December 22nd, 2024
 
 ### New

@@ -48,10 +48,6 @@ jobs:
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
 
-      - name: Setup PHP with PECL extension
-        uses: shivammathur/setup-php@v2
-        if: matrix.os == 'macos-15-xlarge'
-
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
 

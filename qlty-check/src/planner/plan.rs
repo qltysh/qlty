@@ -69,6 +69,10 @@ impl Plan {
             .map(|i| i.tool.clone())
             .collect::<Vec<_>>();
 
+        Self::all_unique_sorted_tools(tools)
+    }
+
+    pub fn all_unique_sorted_tools(tools: Vec<Box<dyn Tool>>) -> Vec<(String, Box<dyn Tool>)> {
         // Collect the runtimes from the tools which use them
         let tool_runtimes = tools
             .iter()

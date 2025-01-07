@@ -42,6 +42,7 @@ pub mod source_extractor;
 pub mod target;
 mod target_batcher;
 
+pub use config::plugin_supported_on_platform;
 pub use invocation_plan::InvocationPlan;
 pub use plan::Plan;
 pub use plugin_workspace_entry_finder_builder::PluginWorkspaceEntryFinderBuilder;
@@ -316,7 +317,11 @@ impl Planner {
     }
 
     fn jobs(&self) -> usize {
-        match self.settings.jobs {
+        Self::jobs_count(self.settings.jobs)
+    }
+
+    pub fn jobs_count(jobs: Option<u32>) -> usize {
+        match jobs {
             Some(jobs) => {
                 info!("Overriding max threads to {}", jobs);
                 jobs as usize
