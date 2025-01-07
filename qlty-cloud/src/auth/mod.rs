@@ -7,10 +7,17 @@ use auth_flow::{launch_login_server, AppState};
 use console::style;
 use credentials::read_token;
 pub use credentials::{delete_token as clear_auth_token, write_token as store_auth_token};
-use std::{thread, time::Duration};
+use std::{env, thread, time::Duration};
 use tracing::{info, warn};
 
+const TOKEN_ENV_VAR: &str = "QLTY_TOKEN";
+
 pub fn load_or_retrieve_auth_token() -> Result<String> {
+    if let Ok(token) = env::var(TOKEN_ENV_VAR) {
+        // bypass validation when env var is set since this is an intentional override of credential lookup
+        return Ok(token);
+    }
+
     let mut has_token = false;
     let auth_token = match read_token() {
         Ok(token) => {
