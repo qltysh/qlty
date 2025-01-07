@@ -106,7 +106,7 @@ impl Init {
                 self.print_enabled_plugins(&initializer)?;
             }
 
-            // if !self.skip_migrate {
+            // if !self.skip_migrate && .codeclimate.yml exists{
             // self.maybe_migrate_config
             // }
 
