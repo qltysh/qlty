@@ -14,8 +14,11 @@ const TOKEN_ENV_VAR: &str = "QLTY_TOKEN";
 
 pub fn load_or_retrieve_auth_token() -> Result<String> {
     if let Ok(token) = env::var(TOKEN_ENV_VAR) {
-        // bypass validation when env var is set since this is an intentional override of credential lookup
-        return Ok(token);
+        let token = token.trim().to_string();
+        if !token.is_empty() {
+            // bypass validation when env var is set since this is an intentional override of credential lookup
+            return Ok(token);
+        }
     }
 
     let mut has_token = false;
