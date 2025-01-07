@@ -154,6 +154,25 @@ impl Library {
             .join(self.local_fingerprint()))
     }
 
+    pub fn prune(&self) -> Result<()> {
+        for dir in self.status_dirs()? {
+            if dir.exists() {
+                for entry in fs::read_dir(dir)? {
+                    // let entry = entry?;
+                    // let path = entry.path();
+
+                    // if path.is_file() {
+                    //     fs::remove_file(&path)?;
+                    // } else {
+                    //     fs::remove_dir_all(&path)?;
+                    // }
+                }
+            }
+        }
+
+        Ok(())
+    }
+
     pub fn clean(&self) -> Result<()> {
         for dir in self.status_dirs()? {
             if dir.exists() {
@@ -170,11 +189,6 @@ impl Library {
             }
         }
 
-        Ok(())
-    }
-
-    pub fn prune(&self) -> Result<()> {
-        // TODO
         Ok(())
     }
 
