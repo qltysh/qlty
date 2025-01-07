@@ -1,12 +1,7 @@
 use anyhow::Result;
 use globset::{Glob, GlobSet, GlobSetBuilder};
-use qlty_analysis::utils::fs::path_to_string;
 use qlty_types::tests::v1::{CoverageMetadata, CoverageSummary, FileCoverage};
-use std::{
-    env::current_dir,
-    fmt::Debug,
-    path::{PathBuf, MAIN_SEPARATOR},
-};
+use std::{env::current_dir, fmt::Debug, path::PathBuf};
 
 pub trait Transformer: Debug + Send + Sync + 'static {
     fn transform(&self, file_coverage: FileCoverage) -> Option<FileCoverage>;
@@ -153,31 +148,34 @@ impl Transformer for AddPrefix {
 
 #[derive(Debug, Clone)]
 pub struct StripPrefix {
-    prefix: String,
+    prefix: PathBuf,
 }
 
 impl Default for StripPrefix {
     fn default() -> Self {
         Self {
-            prefix: format!(
-                "{}{}",
-                path_to_string(current_dir().unwrap_or_else(|_| PathBuf::from("."))),
-                MAIN_SEPARATOR
-            ),
+            prefix: current_dir().unwrap_or_else(|_| PathBuf::from(".")),
         }
     }
 }
 
 impl StripPrefix {
     pub fn new(prefix: String) -> Self {
-        Self { prefix }
+        Self {
+            prefix: PathBuf::from(prefix),
+        }
     }
 }
 
 impl Transformer for StripPrefix {
     fn transform(&self, file_coverage: FileCoverage) -> Option<FileCoverage> {
         let mut file_coverage = file_coverage;
-        file_coverage.path = file_coverage.path.replacen(&self.prefix, "", 1);
+        let coverage_path = PathBuf::from(&file_coverage.path);
+
+        if let Ok(sanitized_path) = coverage_path.strip_prefix(&self.prefix) {
+            file_coverage.path = sanitized_path.to_string_lossy().to_string();
+        }
+
         Some(file_coverage)
     }
 
