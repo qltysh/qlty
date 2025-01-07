@@ -1,9 +1,8 @@
-use std::io::stdin;
-
 use crate::{Arguments, CommandError, CommandSuccess};
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::Args;
 use console::style;
+use dialoguer::Input;
 use qlty_cloud::{load_or_retrieve_auth_token, store_auth_token};
 
 #[derive(Args, Debug)]
@@ -17,15 +16,17 @@ impl Login {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
         if let Some(mut token) = self.token.clone() {
             if token == "" || token == "-" {
-                eprint!(
-                    "Generate a token from {} and paste it here.\nToken: ",
+                eprintln!(
+                    "Generate a token from {} and paste it here.",
                     style("https://qlty.sh/user/settings/cli")
                         .underlined()
                         .green()
                 );
-                let line = &mut String::new();
-                stdin().read_line(line)?;
-                token = line.trim().to_string();
+                token = Input::<String>::new()
+                    .with_prompt("Token")
+                    .interact_text()
+                    .map(|line| line.trim().to_string())
+                    .with_context(|| "Invalid input")?;
             }
 
             if !token.starts_with("qltyp_") || token.len() < 32 {
