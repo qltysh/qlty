@@ -2,7 +2,7 @@
   "metadata": {
     "buildId": "[..]",
     "result": "ANALYSIS_RESULT_SUCCESS",
-    "filesAnalyzed": 12,
+    "filesAnalyzed": 13,
     "startTime": "[..]",
     "finishTime": "[..]",
     "commitMessage": "initial/n",
@@ -595,6 +595,26 @@
     {
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "name": "CycloBasic.cs",
+      "fullyQualifiedName": "cyclomatic/CycloBasic.cs",
+      "path": "cyclomatic/CycloBasic.cs",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C_SHARP",
+      "files": 1,
+      "classes": 1,
+      "functions": 1,
+      "fields": 0,
+      "lines": 7,
+      "codeLines": 7,
+      "commentLines": 0,
+      "blankLines": 0,
+      "complexity": 0,
+      "cyclomatic": 1,
+      "lcom4": 0
+    },
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "cognitive",
       "fullyQualifiedName": "cognitive",
       "path": "cognitive",
@@ -609,6 +629,25 @@
       "blankLines": 3,
       "complexity": 14,
       "cyclomatic": 37,
+      "lcom4": 0
+    },
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "cyclomatic",
+      "fullyQualifiedName": "cyclomatic",
+      "path": "cyclomatic",
+      "kind": "COMPONENT_TYPE_DIRECTORY",
+      "files": 1,
+      "classes": 1,
+      "functions": 1,
+      "fields": 0,
+      "lines": 7,
+      "codeLines": 7,
+      "commentLines": 0,
+      "blankLines": 0,
+      "complexity": 0,
+      "cyclomatic": 1,
       "lcom4": 0
     }
   ]
