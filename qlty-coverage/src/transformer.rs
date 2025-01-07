@@ -200,3 +200,30 @@ impl Transformer for StripDotSlashPrefix {
         Box::new(Self)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_strip_prefix_transformer() {
+        let transformer = StripPrefix::new("/home/circleci/project".to_string());
+        let file_coverage = FileCoverage {
+            build_id: "1234".to_string(),
+            path: "/home/circleci/project/app/deep/nested/file.rb".to_string(),
+            summary: Some(CoverageSummary {
+                covered: 5,
+                missed: 5,
+                omit: 3,
+                total: 13,
+            }),
+            hits: vec![
+                -1, -1, 1, 1, 1, 1, -1, 1, 1, -1, 1
+            ],
+            branch: "test-branch".to_string(),
+            ..Default::default()
+        };
+        let file_coverage = transformer.transform(file_coverage).unwrap();
+        assert_eq!(file_coverage.path, "app/deep/nested/file.rb".to_string());
+    }
+}
