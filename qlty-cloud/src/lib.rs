@@ -3,7 +3,7 @@ pub mod export;
 pub mod format;
 
 use anyhow::Result;
-pub use auth::{clear_auth_token, load_or_retrieve_auth_token};
+pub use auth::{clear_auth_token, load_or_retrieve_auth_token, store_auth_token};
 use qlty_config::version::QLTY_VERSION;
 use ureq::Request;
 
