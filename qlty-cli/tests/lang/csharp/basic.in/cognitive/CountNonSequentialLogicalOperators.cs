@@ -1,7 +1,7 @@
 namespace cognitive
 {
   class CountNonSequentialLogicalOperators {
-    public static boolean Main(String[] args) {
+    public static boolean Main(string[] args) {
       return true || false && true && false || true;
     }
   }

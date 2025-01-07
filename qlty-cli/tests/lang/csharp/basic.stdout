@@ -2,7 +2,7 @@
   "metadata": {
     "buildId": "[..]",
     "result": "ANALYSIS_RESULT_SUCCESS",
-    "filesAnalyzed": 11,
+    "filesAnalyzed": 12,
     "startTime": "[..]",
     "finishTime": "[..]",
     "commitMessage": "initial/n",
@@ -136,7 +136,7 @@
       "language": "LANGUAGE_C_SHARP",
       "category": "CATEGORY_STRUCTURE",
       "snippet": "false && true",
-      "snippetWithContext": "namespace cognitive/n{/n  class CountNonSequentialLogicalOperators {/n    public static boolean Main(String[] args) {/n      return true || false && true && false || true;/n    }/n  }/n}",
+      "snippetWithContext": "namespace cognitive/n{/n  class CountNonSequentialLogicalOperators {/n    public static boolean Main(string[] args) {/n      return true || false && true && false || true;/n    }/n  }/n}",
       "effortMinutes": 10,
       "value": 4,
       "location": {
@@ -319,6 +319,33 @@
           "endColumn": 6,
           "startByte": 714,
           "endByte": 1398
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "return-statements",
+      "message": "Function with many returns (count = 6): Main",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_SHARP",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "public static string Main(int foo) {/n      if (foo >= 80 && foo <= 100) {/n        return /"Most complex!/";/n      } else if (foo >= 60 && foo <= 79) {/n        return /"Very complex/";/n      } else if (foo >= 40 && foo <= 59) {/n        return /"Somewhat complex/";/n      } else if (foo >= 20 && foo <= 39) {/n        return /"Not complex/";/n      } else if (foo >= 0 && foo <= 19) {/n        return /"Least complex!/";/n      } else {/n        return null;/n      }/n    }",
+      "snippetWithContext": "namespace cognitive/n{/n  class MultipleConditionals {/n    public static string Main(int foo) {/n      if (foo >= 80 && foo <= 100) {/n        return /"Most complex!/";/n      } else if (foo >= 60 && foo <= 79) {/n        return /"Very complex/";/n      } else if (foo >= 40 && foo <= 59) {/n        return /"Somewhat complex/";/n      } else if (foo >= 20 && foo <= 39) {/n        return /"Not complex/";/n      } else if (foo >= 0 && foo <= 19) {/n        return /"Least complex!/";/n      } else {/n        return null;/n      }/n    }/n  }/n}",
+      "effortMinutes": 15,
+      "value": 6,
+      "location": {
+        "path": "cognitive/MultipleConditionals.cs",
+        "range": {
+          "startLine": 4,
+          "startColumn": 5,
+          "endLine": 18,
+          "endColumn": 6,
+          "startByte": 57,
+          "endByte": 512
         }
       },
       "mode": "MODE_BLOCK"
@@ -548,20 +575,40 @@
     {
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "name": "MultipleConditionals.cs",
+      "fullyQualifiedName": "cognitive/MultipleConditionals.cs",
+      "path": "cognitive/MultipleConditionals.cs",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C_SHARP",
+      "files": 1,
+      "classes": 1,
+      "functions": 1,
+      "fields": 0,
+      "lines": 20,
+      "codeLines": 19,
+      "commentLines": 0,
+      "blankLines": 1,
+      "complexity": 7,
+      "cyclomatic": 21,
+      "lcom4": 0
+    },
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "cognitive",
       "fullyQualifiedName": "cognitive",
       "path": "cognitive",
       "kind": "COMPONENT_TYPE_DIRECTORY",
-      "files": 3,
-      "classes": 3,
-      "functions": 3,
+      "files": 4,
+      "classes": 4,
+      "functions": 4,
       "fields": 0,
-      "lines": 32,
-      "codeLines": 30,
+      "lines": 52,
+      "codeLines": 49,
       "commentLines": 0,
-      "blankLines": 2,
-      "complexity": 7,
-      "cyclomatic": 16,
+      "blankLines": 3,
+      "complexity": 14,
+      "cyclomatic": 37,
       "lcom4": 0
     }
   ]
