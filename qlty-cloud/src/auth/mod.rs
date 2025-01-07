@@ -5,7 +5,8 @@ use crate::Client;
 use anyhow::Result;
 use auth_flow::{launch_login_server, AppState};
 use console::style;
-use credentials::{delete_token, read_token};
+use credentials::read_token;
+pub use credentials::{delete_token as clear_auth_token, write_token as store_auth_token};
 use std::{thread, time::Duration};
 use tracing::{info, warn};
 
@@ -30,10 +31,6 @@ pub fn load_or_retrieve_auth_token() -> Result<String> {
             }
         }
     }
-}
-
-pub fn clear_auth_token() -> Result<()> {
-    delete_token()
 }
 
 fn validate_auth_token(auth_token: &String) -> Result<()> {
