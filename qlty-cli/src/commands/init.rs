@@ -106,6 +106,10 @@ impl Init {
                 self.print_enabled_plugins(&initializer)?;
             }
 
+            // if !self.skip_migrate {
+            // self.maybe_migrate_config
+            // }
+
             if !self.skip_plugins {
                 self.plugins_post_init(&initializer)?;
             }
