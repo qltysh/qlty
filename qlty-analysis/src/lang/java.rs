@@ -366,6 +366,7 @@ mod test {
         let source_file = File::from_string("java", "obj.nestedObj.foo();");
         let tree = source_file.parse();
         let call = call_node(&tree);
+        eprintln!("{:?}", call.to_sexp());
         let language = Java::default();
 
         assert_eq!(

@@ -222,6 +222,12 @@ impl Language for CSharp {
             .child_by_field_name("name");
 
         match (&object_node, &property_node) {
+            (Some(obj), Some(prop)) if obj.kind() == Self::FIELD_ACCESS => {
+                let object_source =
+                    get_node_source_or_default(obj.child_by_field_name("name"), source_file);
+                let property_source = get_node_source_or_default(Some(*prop), source_file);
+                (object_source, property_source)
+            }
             (Some(o), Some(p)) => (
                 get_node_source_or_default(Some(*o), source_file),
                 get_node_source_or_default(Some(*p), source_file),
@@ -284,6 +290,20 @@ mod test {
         assert_eq!(
             language.call_identifiers(&source_file, &call),
             (Some("foo".into()), "bar".into())
+        );
+    }
+
+    #[test]
+    fn method_call_on_nested_object() {
+        let source_file = File::from_string("csharp", "obj.nestedObj.foo()");
+        let tree = source_file.parse();
+        let root = root_node(&tree);
+        let call = root.child(0).unwrap();
+        let language = CSharp::default();
+
+        assert_eq!(
+            language.call_identifiers(&source_file, &call),
+            (Some("nestedObj".into()), "foo".into())
         );
     }
 
