@@ -1,8 +1,11 @@
 use crate::{walker::WalkerBuilder, WorkspaceEntry, WorkspaceEntryKind, WorkspaceEntrySource};
 use core::fmt;
+use ignore::WalkState;
 use path_absolutize::Absolutize;
-use rayon::prelude::*;
-use std::{path::PathBuf, sync::Arc};
+use std::{
+    path::PathBuf,
+    sync::{Arc, Mutex},
+};
 
 // qlty-ignore(semgrep/derive-debug): manual Debug impl below
 pub struct ArgsSource {
@@ -27,10 +30,11 @@ impl ArgsSource {
     }
 
     fn build(root: &PathBuf, paths: &Vec<PathBuf>) -> Vec<WorkspaceEntry> {
-        WalkerBuilder::new()
-            .build(paths)
-            .par_bridge()
-            .map(|entry| {
+        let workspace_entries = Arc::new(Mutex::new(vec![]));
+
+        WalkerBuilder::new().build(paths).run(|| {
+            let entries = workspace_entries.clone();
+            Box::new(move |entry| {
                 let entry = entry.unwrap();
                 let path = entry.path();
 
@@ -50,15 +54,20 @@ impl ArgsSource {
                     .to_path_buf();
                 let metadata = entry.metadata().ok().unwrap();
 
-                WorkspaceEntry {
+                entries.lock().unwrap().push(WorkspaceEntry {
                     path: clean_path,
                     content_modified: metadata.modified().ok().unwrap(),
                     contents_size: metadata.len(),
                     kind: workspace_entry_kind,
                     language_name: None,
-                }
+                });
+
+                WalkState::Continue
             })
-            .collect::<Vec<_>>()
+        });
+
+        let guard = workspace_entries.lock().unwrap();
+        guard.to_vec()
     }
 }
 

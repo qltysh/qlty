@@ -1,7 +1,7 @@
 use ignore::overrides::Override;
 use ignore::overrides::OverrideBuilder;
-pub use ignore::Walk;
 use ignore::WalkBuilder;
+pub use ignore::WalkParallel;
 use std::path::PathBuf;
 
 /// Maximum allowable file size (in bytes) for processing.
@@ -23,7 +23,7 @@ impl WalkerBuilder {
     }
 
     /// Constructs a `Walk` object based on the builder's paths and ignores.
-    pub fn build(&self, paths: &[PathBuf]) -> Walk {
+    pub fn build(&self, paths: &[PathBuf]) -> WalkParallel {
         let mut builder = WalkBuilder::new(&paths[0]);
 
         for path in &paths[1..] {
@@ -34,8 +34,9 @@ impl WalkerBuilder {
             .follow_links(false)
             .max_filesize(Some(MAX_FILE_SIZE as u64))
             .hidden(false)
-            .overrides(self.overrides());
-        builder.build()
+            .overrides(self.overrides())
+            .threads(num_cpus::get());
+        builder.build_parallel()
     }
 
     fn overrides(&self) -> Override {

@@ -2387,6 +2387,7 @@ dependencies = [
  "itertools",
  "lazy_static",
  "md5",
+ "num_cpus",
  "path-absolutize",
  "pbjson-types",
  "qlty-config",
