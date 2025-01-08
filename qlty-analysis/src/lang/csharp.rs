@@ -27,11 +27,12 @@ const FUNCTION_DECLARATION_QUERY: &str = r#"
 "#;
 
 const FIELD_QUERY: &str = r#"
-  (field_declaration 
-    (variable_declaration 
-      (variable_declarator name: (identifier) @name)
-    )
-  ) @field
+    [(field_declaration
+        (variable_declaration 
+        (variable_declarator name: (identifier) @name)
+        )
+    ) @field
+    (property_declaration name: (identifier) @name) @field]
 "#;
 
 pub struct CSharp {
