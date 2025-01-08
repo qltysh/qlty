@@ -1013,8 +1013,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "7d9708e2-e7ab-4b9c-8347-d2bef72927b0",
-      "analyzedAt": "2025-01-08T03:31:31.248192+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "Write.cs",
       "fullyQualifiedName": "fields/Write.cs",
       "path": "fields/Write.cs",
@@ -1033,8 +1033,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "7d9708e2-e7ab-4b9c-8347-d2bef72927b0",
-      "analyzedAt": "2025-01-08T03:31:31.248192+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "cognitive",
       "fullyQualifiedName": "cognitive",
       "path": "cognitive",
@@ -1052,8 +1052,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "7d9708e2-e7ab-4b9c-8347-d2bef72927b0",
-      "analyzedAt": "2025-01-08T03:31:31.248192+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "cyclomatic",
       "fullyQualifiedName": "cyclomatic",
       "path": "cyclomatic",
@@ -1071,8 +1071,8 @@
       "lcom4": 1
     },
     {
-      "buildId": "7d9708e2-e7ab-4b9c-8347-d2bef72927b0",
-      "analyzedAt": "2025-01-08T03:31:31.248192+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "fields",
       "fullyQualifiedName": "fields",
       "path": "fields",
