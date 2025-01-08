@@ -633,7 +633,7 @@ pub trait Tool: Debug + Sync + Send {
                 &path_to_native_string(join_path_string!(
                     std::env::current_dir().unwrap(),
                     ".qlty",
-                    "results"
+                    "plugin_cache"
                 )),
             );
         if let Some(runtime) = self.runtime() {
@@ -954,7 +954,7 @@ mod test {
                 path_to_native_string(path_to_string(join_path_string!(
                     std::env::current_dir().unwrap(),
                     ".qlty",
-                    "results"
+                    "plugin_cache"
                 ))),
                 var("PATH").unwrap()
             )

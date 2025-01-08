@@ -2,3 +2,4 @@ target/*
 !/target/doc
 flamegraph.svg
 .env
+**/plugin_cachedir

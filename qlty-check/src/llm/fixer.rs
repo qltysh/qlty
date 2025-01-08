@@ -9,10 +9,10 @@ use qlty_cloud::Client;
 use qlty_config::issue_transformer::IssueTransformer;
 use qlty_types::analysis::v1::{Issue, Suggestion};
 use rayon::prelude::*;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tracing::info;
 use tracing::{debug, warn};
+use ureq::json;
 
 const MAX_FIXES: usize = 500;
 const MAX_FIXES_PER_FILE: usize = 30;
@@ -201,33 +201,15 @@ impl Fixer {
     }
 
     fn try_fix(&self, issue: &Issue) -> Result<Issue> {
-        #[derive(Debug, Clone, Serialize, Deserialize)]
-        struct File {
-            content: String,
-            path: String,
-        }
-
-        #[derive(Debug, Clone, Serialize, Deserialize)]
-        struct Options {
-            r#unsafe: bool,
-        }
-
-        #[derive(Debug, Clone, Serialize, Deserialize)]
-        struct FixRequest {
-            issue: Issue,
-            files: Vec<File>,
-            options: Option<Options>,
-        }
-
         if let Some(path) = issue.path() {
             let client = Client::authenticated()?;
             let content = self.staging_area.read(issue.path().unwrap().into())?;
-            let response = client.post("/fixes").send_json(ureq::json!(&FixRequest {
-                issue: issue.clone(),
-                files: vec![File { content, path }],
-                options: Some(Options {
-                    r#unsafe: self.r#unsafe
-                }),
+            let response = client.post("/fixes").send_json(json!({
+                "issue": issue.clone(),
+                "files": [{ "content": content, "path": path }],
+                "options": {
+                    "unsafe": self.r#unsafe
+                },
             }))?;
 
             let suggestions: Vec<Suggestion> = response.into_json()?;

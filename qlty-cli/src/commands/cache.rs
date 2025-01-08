@@ -4,10 +4,12 @@ use clap::{Args, Subcommand};
 
 mod clean;
 mod dir;
+mod prune;
 mod status;
 
 pub use clean::Clean;
 pub use dir::Dir;
+pub use prune::Prune;
 pub use status::Status;
 
 #[derive(Debug, Args)]
@@ -19,6 +21,9 @@ pub struct Arguments {
 #[derive(Subcommand, Debug)]
 
 pub enum Commands {
+    /// Prune the cache
+    Prune(Prune),
+
     /// Delete the entire cache
     Clean(Clean),
 
@@ -34,6 +39,7 @@ impl Arguments {
         match &self.command {
             Commands::Clean(command) => command.execute(args),
             Commands::Dir(command) => command.execute(args),
+            Commands::Prune(command) => command.execute(args),
             Commands::Status(command) => command.execute(args),
         }
     }

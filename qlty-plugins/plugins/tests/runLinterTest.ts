@@ -26,7 +26,7 @@ type Target = {
 export const getVersionsForTarget = (
   dirname: string,
   linterName: string,
-  prefix: string,
+  prefix: string
 ) => {
   let matchExists = false;
   const snapshotsDir = path.resolve(dirname, FIXTURES_DIR, SNAPSHOTS_DIR);
@@ -59,7 +59,7 @@ export const getVersionsForTarget = (
       "Running test for ",
       linterName,
       " with known good version: ",
-      knownGoodVersion,
+      knownGoodVersion
     );
 
     return [knownGoodVersion];
@@ -69,7 +69,7 @@ export const getVersionsForTarget = (
     // Check if no snapshots exist yet. If this is the case, run with KnownGoodVersion and Latest, and print advisory text.
     if (!matchExists && !OPTIONS.linterVersion) {
       console.log(
-        `No snapshots detected for ${linterName} ${prefix} test. Running test against KnownGoodVersion. See tests/readme.md for more information.`,
+        `No snapshots detected for ${linterName} ${prefix} test. Running test against KnownGoodVersion. See tests/readme.md for more information.`
       );
       return [getKnownGoodVersion(dirname, linterName)];
     }
@@ -81,7 +81,7 @@ export const getVersionsForTarget = (
 export const getKnownGoodVersion = (dirname: string, linterName: string) => {
   const plugin_file = fs.readFileSync(
     path.resolve(dirname, "plugin.toml"),
-    "utf8",
+    "utf8"
   );
 
   const plugin_toml = toml.parse(plugin_file);
@@ -109,7 +109,7 @@ const detectTargets = (linterName: string, dirname: string): Target[] => {
           const linterVersions = getVersionsForTarget(
             dirname,
             linterName,
-            prefix,
+            prefix
           );
           accumulator.set(prefix, { prefix, input, linterVersions });
         }
@@ -124,7 +124,7 @@ const detectTargets = (linterName: string, dirname: string): Target[] => {
 export const runLinterTest = (
   linterName: string,
   dirname: string,
-  assertFunction: (testRunResult: any, snapshotPath: string) => void,
+  assertFunction: (testRunResult: any, snapshotPath: string) => void
 ) => {
   const targets = detectTargets(linterName, dirname);
 
@@ -158,10 +158,7 @@ export const runLinterTest = (
               Debug(`${namespace}:stderr`)(testRunResult.runResult.stderr);
 
               const files = await FastGlob(
-                `${driver.sandboxPath}/.qlty/out/invocations/*.yaml`.replaceAll(
-                  "\\",
-                  "/",
-                ),
+                `${driver.sandboxPath}/.qlty/out/*.yaml`.replaceAll("\\", "/")
               );
               for (const file of files) {
                 const invocationId = path
