@@ -255,6 +255,47 @@ mod test {
     use tree_sitter::Tree;
 
     #[test]
+    fn field_identifier_read() {
+        let source_file = File::from_string("csharp", "this.foo");
+        let tree = source_file.parse();
+        let root_node = root_node(&tree);
+        let language = CSharp::default();
+
+        assert_eq!(
+            language.field_identifiers(&source_file, &root_node),
+            ("this".to_string(), "foo".to_string())
+        );
+    }
+
+    #[test]
+    fn field_identifier_write() {
+        let source_file = File::from_string("csharp", "this.foo = 1");
+        let tree = source_file.parse();
+        let root_node = root_node(&tree);
+        let assignment = root_node.named_child(0).unwrap();
+        let field = assignment.named_child(0).unwrap();
+        let language = CSharp::default();
+
+        assert_eq!(
+            language.field_identifiers(&source_file, &field),
+            ("this".to_string(), "foo".to_string())
+        );
+    }
+
+    #[test]
+    fn field_identifier_collaborator() {
+        let source_file = File::from_string("csharp", "other.foo");
+        let tree = source_file.parse();
+        let root_node = root_node(&tree);
+        let language = CSharp::default();
+
+        assert_eq!(
+            language.field_identifiers(&source_file, &root_node),
+            ("other".to_string(), "foo".to_string())
+        );
+    }
+
+    #[test]
     fn call_identifier() {
         let source_file = File::from_string("csharp", "foo()");
         let tree = source_file.parse();
@@ -305,6 +346,19 @@ mod test {
         assert_eq!(
             language.call_identifiers(&source_file, &call),
             (Some("nestedObj".into()), "foo".into())
+        );
+    }
+
+    #[test]
+    fn nested_field_access() {
+        let source_file = File::from_string("csharp", "obj.nestedObj.oneMoreObj");
+        let tree = source_file.parse();
+        let root = root_node(&tree);
+        let language = CSharp::default();
+
+        assert_eq!(
+            language.field_identifiers(&source_file, &root),
+            ("nestedObj".to_string(), "oneMoreObj".to_string())
         );
     }
 
