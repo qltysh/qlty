@@ -55,8 +55,11 @@ impl CSharp {
     pub const FIELD_ACCESS: &'static str = "member_access_expression";
     pub const FOR: &'static str = "for_statement";
     pub const FOREACH: &'static str = "foreach_statement";
+    pub const GOTO: &'static str = "goto_statement";
+    pub const INTERPOLATED_STRING: &'static str = "interpolated_string_expression";
     pub const METHOD_DECLARATION: &'static str = "method_declaration";
     pub const METHOD_INVOCATION: &'static str = "invocation_expression";
+    pub const PROPERTY_DECLARATION: &'static str = "property_declaration";
     pub const IDENTIFIER: &'static str = "identifier";
     pub const IF: &'static str = "if_statement";
     pub const LAMBDA: &'static str = "lambda_expression";
@@ -150,7 +153,7 @@ impl Language for CSharp {
     }
 
     fn jump_nodes(&self) -> Vec<&str> {
-        vec![Self::BREAK, Self::CONTINUE]
+        vec![Self::BREAK, Self::CONTINUE, Self::GOTO]
     }
 
     fn return_nodes(&self) -> Vec<&str> {
@@ -166,7 +169,7 @@ impl Language for CSharp {
     }
 
     fn field_nodes(&self) -> Vec<&str> {
-        vec![Self::FIELD_DECLARATION]
+        vec![Self::FIELD_DECLARATION, Self::PROPERTY_DECLARATION]
     }
 
     fn call_nodes(&self) -> Vec<&str> {
@@ -186,7 +189,7 @@ impl Language for CSharp {
     }
 
     fn string_nodes(&self) -> Vec<&str> {
-        vec![Self::STRING]
+        vec![Self::STRING, Self::INTERPOLATED_STRING]
     }
 
     fn is_jump_label(&self, node: &Node) -> bool {
@@ -254,6 +257,36 @@ fn get_node_source_or_default(node: Option<Node>, source_file: &File) -> String 
 mod test {
     use super::*;
     use tree_sitter::Tree;
+    use std::collections::HashSet;
+
+    #[test]
+    fn mutually_exclusive() {
+        let lang = CSharp::default();
+        let mut kinds: Vec<&str> = vec![];
+
+        kinds.extend(lang.if_nodes());
+        kinds.extend(lang.conditional_assignment_nodes());
+        kinds.extend(lang.switch_nodes());
+        kinds.extend(lang.case_nodes());
+        kinds.extend(lang.ternary_nodes());
+        kinds.extend(lang.loop_nodes());
+        kinds.extend(lang.except_nodes());
+        kinds.extend(lang.try_expression_nodes());
+        kinds.extend(lang.jump_nodes());
+        kinds.extend(lang.return_nodes());
+        kinds.extend(lang.binary_nodes());
+        kinds.extend(lang.field_nodes());
+        kinds.extend(lang.call_nodes());
+        kinds.extend(lang.function_nodes());
+        kinds.extend(lang.closure_nodes());
+        kinds.extend(lang.comment_nodes());
+        kinds.extend(lang.string_nodes());
+        kinds.extend(lang.boolean_operator_nodes());
+        kinds.extend(lang.block_nodes());
+
+        let unique: HashSet<_> = kinds.iter().cloned().collect();
+        assert_eq!(unique.len(), kinds.len());
+    }
 
     #[test]
     fn field_identifier_read() {
