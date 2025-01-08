@@ -51,6 +51,6 @@ fn go_tests() {
 }
 
 #[test]
-fn c_sharp_tests() {
+fn csharp_tests() {
     setup_and_run_test_cases("tests/lang/csharp/**/*.toml");
 }

@@ -1,19 +1,14 @@
-package fields;
+namespace Fields
+{
+    public class GetterSetterDeclaration
+    {
+        public string Field { get; set; }
 
-public class GetterSetterDeclaration {
-  private String field;
-
-  public String getFieldName() {
-    return this.field;
-  }
-
-  public void setFieldName(String value) {
-    this.field = value;
-  }
-
-  public static void main(String[] args) {
-    GetterSetterDeclaration obj = new GetterSetterDeclaration();
-    obj.setFieldName("Hello");
-    System.out.println(obj.getFieldName());
-  }
+        public static void Main(string[] args)
+        {
+            GetterSetterDeclaration obj = new GetterSetterDeclaration();
+            obj.Field = "Hello";
+            System.Console.WriteLine(obj.Field);
+        }
+    }
 }
