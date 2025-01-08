@@ -256,8 +256,8 @@ fn get_node_source_or_default(node: Option<Node>, source_file: &File) -> String 
 #[cfg(test)]
 mod test {
     use super::*;
-    use tree_sitter::Tree;
     use std::collections::HashSet;
+    use tree_sitter::Tree;
 
     #[test]
     fn mutually_exclusive() {
