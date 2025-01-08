@@ -2,7 +2,7 @@
   "metadata": {
     "buildId": "[..]",
     "result": "ANALYSIS_RESULT_SUCCESS",
-    "filesAnalyzed": 24,
+    "filesAnalyzed": 25,
     "startTime": "[..]",
     "finishTime": "[..]",
     "commitMessage": "initial/n",
@@ -450,7 +450,7 @@
       "blankLines": 18,
       "complexity": 1,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 1
     },
     {
       "buildId": "[..]",
@@ -490,7 +490,7 @@
       "blankLines": 9,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 1
     },
     {
       "buildId": "[..]",
@@ -570,6 +570,26 @@
       "blankLines": 0,
       "complexity": 3,
       "cyclomatic": 5,
+      "lcom4": 0
+    },
+    {
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "CountRecursion.cs",
+      "fullyQualifiedName": "cognitive/CountRecursion.cs",
+      "path": "cognitive/CountRecursion.cs",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C_SHARP",
+      "files": 1,
+      "classes": 1,
+      "functions": 1,
+      "fields": 0,
+      "lines": 8,
+      "codeLines": 8,
+      "commentLines": 0,
+      "blankLines": 0,
+      "complexity": 1,
+      "cyclomatic": 1,
       "lcom4": 0
     },
     {
@@ -830,7 +850,7 @@
       "blankLines": 2,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 1
     },
     {
       "buildId": "[..]",
@@ -839,16 +859,16 @@
       "fullyQualifiedName": "cognitive",
       "path": "cognitive",
       "kind": "COMPONENT_TYPE_DIRECTORY",
-      "files": 4,
-      "classes": 4,
-      "functions": 4,
+      "files": 5,
+      "classes": 5,
+      "functions": 5,
       "fields": 0,
-      "lines": 52,
-      "codeLines": 49,
+      "lines": 60,
+      "codeLines": 57,
       "commentLines": 0,
       "blankLines": 3,
-      "complexity": 14,
-      "cyclomatic": 37,
+      "complexity": 15,
+      "cyclomatic": 38,
       "lcom4": 0
     },
     {
@@ -868,7 +888,7 @@
       "blankLines": 11,
       "complexity": 14,
       "cyclomatic": 31,
-      "lcom4": 0
+      "lcom4": 1
     }
   ]
 }
