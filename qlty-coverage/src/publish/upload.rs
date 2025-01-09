@@ -12,6 +12,7 @@ pub struct Upload {
     pub file_coverages_url: String,
     pub report_files_url: String,
     pub metadata_url: String,
+    pub raw_files_url: String,
 }
 
 impl Upload {
@@ -61,6 +62,18 @@ impl Upload {
             })
             .context("Failed to extract metadata URL from response")?;
 
+        let raw_files_url = response
+            .get("data")
+            .and_then(|data| data.get("raw_files.zip"))
+            .and_then(|upload_url| upload_url.as_str())
+            .with_context(|| {
+                format!(
+                    "Unable to find metadata URL in response body: {:?}",
+                    response
+                )
+            })
+            .context("Failed to extract metadata URL from response")?;
+
         let id = response
             .get("data")
             .and_then(|data| data.get("id"))
@@ -84,6 +97,7 @@ impl Upload {
             file_coverages_url: file_coverages_url.to_string(),
             report_files_url: report_files_url.to_string(),
             metadata_url: metadata_url.to_string(),
+            raw_files_url: raw_files_url.to_string(),
         })
     }
 
@@ -104,6 +118,12 @@ impl Upload {
             &self.metadata_url,
             "application/json",
             export.read_file(PathBuf::from("metadata.json"))?,
+        )?;
+
+        self.upload_data(
+            &self.raw_files_url,
+            "application/zip",
+            export.read_file(PathBuf::from("raw_files.zip"))?,
         )?;
 
         Ok(())

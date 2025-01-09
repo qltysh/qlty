@@ -33,3 +33,4 @@ tracing.workspace = true
 ureq.workspace = true
 uuid.workspace = true
 webbrowser.workspace = true
+zip.workspace = true

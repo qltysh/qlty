@@ -2484,6 +2484,7 @@ dependencies = [
  "ureq",
  "uuid",
  "webbrowser",
+ "zip",
 ]
 
 [[package]]
