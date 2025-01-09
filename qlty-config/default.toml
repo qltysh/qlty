@@ -368,7 +368,7 @@ smells.duplication.nodes_threshold = 50
 
 [language.java]
 globs = ["*.java"]
-# smells.duplication.filter_patterns = ["(import_declaration _)"]
+smells.duplication.filter_patterns = ["(import_declaration _)"]
 
 [language.javascript]
 globs = ["*.js", "*.mjs", "*.cjs", "*.jsx", "**/Jakefile"]
@@ -439,7 +439,7 @@ globs = ["*.tsx", "*.mtsx", "*.ctsx"]
 
 [language.csharp]
 globs = ["*.cs"]
-# smells.duplication.filter_patterns = ["(using_directive _)"]
+smells.duplication.filter_patterns = ["(using_directive _)"]
 
 [smells.boolean_logic]
 threshold = 4
