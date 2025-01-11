@@ -1,5 +1,5 @@
 logs
 out
-plugin_cachedir
+plugin_cache*
 results
 sources
