@@ -6,7 +6,7 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 use zip::{write::FileOptions, ZipWriter};
 
-fn compress_files(files: Vec<String>, output_file: &str) -> Result<()> {
+fn compress_files(files: Vec<String>, output_file: &Path) -> Result<()> {
     // Create the output ZIP file
     let zip_file = File::create(output_file)?;
     let mut zip = ZipWriter::new(zip_file);
@@ -70,7 +70,7 @@ impl CoverageExport {
             .cloned()
             .collect();
 
-        compress_files(raw_file_paths, "raw_files.zip")
+        compress_files(raw_file_paths, &directory.join("raw_files.zip"))
     }
 
     pub fn total_size_bytes(&self) -> Result<u64> {
