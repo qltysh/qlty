@@ -50,7 +50,7 @@ impl ArgsSource {
                     .unwrap()
                     .strip_prefix(root)
                     .ok()
-                    .unwrap()
+                    .unwrap_or(path)
                     .to_path_buf();
                 let metadata = entry.metadata().ok().unwrap();
 
