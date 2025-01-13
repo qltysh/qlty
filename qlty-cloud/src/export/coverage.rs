@@ -21,8 +21,8 @@ fn compress_files(files: Vec<String>, output_file: &Path) -> Result<()> {
 
         if path.is_file() {
             // Add the file to the archive
-            let file_name = path.file_name().unwrap().to_string_lossy();
-            zip.start_file(file_name, options)?;
+            // Use path as filename in case multiple files with same name
+            zip.start_file(path.to_string_lossy(), options)?;
 
             // Write the file content to the archive
             let mut file = File::open(path)?;
