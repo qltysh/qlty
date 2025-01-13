@@ -1,5 +1,4 @@
-logs
-out
-plugin_cache*
-results
-sources
+*
+!configs
+!hooks
+!qlty.toml
