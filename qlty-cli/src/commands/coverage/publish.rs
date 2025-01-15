@@ -76,8 +76,7 @@ pub struct Publish {
 impl Publish {
     // TODO: Use CommandSuccess and CommandError, which is not straight forward since those types aren't available here.
     pub fn execute(&self, _args: &crate::Arguments) -> Result<CommandSuccess, CommandError> {
-        let workspace = Workspace::require_initialized()?;
-        let root = path_to_string(workspace.root);
+        let root = path_to_string(Workspace::assert_within_git_directory()?);
         self.print_initial_messages();
 
         let token = match self.load_auth_token() {
