@@ -9,9 +9,9 @@ exports[`linter=ripgrep fixture=basic version=14.1.1 1`] = `
       "location": {
         "path": "basic.in.rs",
         "range": {
-          "endColumn": 12,
+          "endColumn": 13,
           "endLine": 3,
-          "startColumn": 7,
+          "startColumn": 8,
           "startLine": 3,
         },
       },
@@ -36,9 +36,9 @@ exports[`linter=ripgrep fixture=basic version=14.1.1 1`] = `
       "location": {
         "path": "basic.in.rs",
         "range": {
-          "endColumn": 12,
+          "endColumn": 13,
           "endLine": 7,
-          "startColumn": 7,
+          "startColumn": 8,
           "startLine": 7,
         },
       },
@@ -63,9 +63,9 @@ exports[`linter=ripgrep fixture=basic version=14.1.1 1`] = `
       "location": {
         "path": "basic.in.rs",
         "range": {
-          "endColumn": 11,
+          "endColumn": 12,
           "endLine": 4,
-          "startColumn": 7,
+          "startColumn": 8,
           "startLine": 4,
         },
       },
@@ -90,9 +90,9 @@ exports[`linter=ripgrep fixture=basic version=14.1.1 1`] = `
       "location": {
         "path": "basic.in.rs",
         "range": {
-          "endColumn": 11,
+          "endColumn": 12,
           "endLine": 2,
-          "startColumn": 7,
+          "startColumn": 8,
           "startLine": 2,
         },
       },
@@ -117,9 +117,9 @@ exports[`linter=ripgrep fixture=basic version=14.1.1 1`] = `
       "location": {
         "path": "basic.in.rs",
         "range": {
-          "endColumn": 17,
+          "endColumn": 18,
           "endLine": 3,
-          "startColumn": 13,
+          "startColumn": 14,
           "startLine": 3,
         },
       },

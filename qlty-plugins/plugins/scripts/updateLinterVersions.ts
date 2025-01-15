@@ -42,12 +42,17 @@ const getLintersList = async (): Promise<string[]> => {
   try {
     const dirContents = await fs.promises.readdir(LINTERS_PATH);
     const folders = await Promise.all(
-      dirContents.filter(async (dirContent) => {
-        const linterPath = path.join(LINTERS_PATH, dirContent);
-        return (await fs.promises.stat(linterPath)).isDirectory();
+      dirContents.map((dirContent) => {
+        return (async () => {
+          const linterPath = path.join(LINTERS_PATH, dirContent);
+          const stat = await fs.promises.stat(linterPath);
+          if (stat.isDirectory()) {
+            return linterPath;
+          }
+        })();
       }),
     );
-    return folders;
+    return folders.filter((folder) => folder !== undefined);
   } catch (err) {
     throw new Error(`Failed to read linters directory: ${err}`);
   }

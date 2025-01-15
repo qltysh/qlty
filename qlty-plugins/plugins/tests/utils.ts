@@ -32,7 +32,7 @@ export const OPTIONS: EnvOptions = {
   ),
 };
 
-const extractStructure = (obj: any): Record<string, unknown> => {
+const extractStructure = (obj: object): Record<string, unknown> => {
   const structure: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(obj)) {
     if (typeof value === "object" && value !== null) {
@@ -48,7 +48,7 @@ const extractStructure = (obj: any): Record<string, unknown> => {
   return structure;
 };
 
-export const serializeStructure = (obj: any) => {
+export const serializeStructure = (obj: object) => {
   const structure = extractStructure(obj);
   return JSON.stringify(structure, undefined, 2);
 };

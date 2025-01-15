@@ -5,8 +5,15 @@ import * as os from "os";
 import path from "path";
 import * as git from "simple-git";
 import * as util from "util";
-import { OPTIONS } from "./utils";
 import { getKnownGoodVersion } from "./runLinterTest";
+import { OPTIONS } from "./utils";
+
+interface Issue {
+  tool: string;
+  ruleKey: string;
+  path: string;
+  message: string;
+}
 
 const execFilePromise = util.promisify(execFile);
 
@@ -31,6 +38,10 @@ export const executionEnv = (sandbox: string) => {
     // This is necessary to prevent launcher collision of non-atomic operations
     TMPDIR: path.resolve(sandbox, TEMP_SUBDIR),
     TEMP: path.resolve(sandbox, TEMP_SUBDIR),
+    PATH: [
+      path.resolve(REPO_ROOT, "..", "..", "target", "debug"),
+      process.env.PATH,
+    ].join(path.delimiter),
   };
 };
 
@@ -179,12 +190,12 @@ export class QltyDriver {
       };
 
       output = await this.runQltyCmd(fullArgs, { env });
-    } catch (error: any) {
-      const err: {
+    } catch (error) {
+      const err = error as {
         code: number;
         stdout?: string;
         stderr?: string;
-      } = error;
+      };
       output = { stdout: err.stdout ?? "", stderr: err.stderr ?? "" };
       exitCode = err.code;
     }
@@ -240,7 +251,7 @@ export class QltyDriver {
     stdout: string;
     stderr: string;
     exitCode: number;
-    outputJson: any;
+    outputJson: Issue[];
   }) {
     return {
       success: [0].includes(runResult.exitCode),
@@ -252,14 +263,14 @@ export class QltyDriver {
     };
   }
 
-  tryParseDeterministicResults(sandboxPath: string, outputJson: any) {
+  tryParseDeterministicResults(sandboxPath: string, outputJson: Issue[]) {
     // return function to lazy evaluate sorting and skip if not needed
     return () => {
       if (!outputJson) {
         return undefined;
       }
 
-      outputJson.sort((a: any, b: any) => {
+      outputJson.sort((a, b) => {
         if (a.tool < b.tool) {
           return -1;
         }
@@ -288,7 +299,7 @@ export class QltyDriver {
       });
 
       // make results deterministic by removing the sandbox path
-      outputJson.forEach((issue: any) => {
+      outputJson.forEach((issue: Issue) => {
         if (issue.message.includes(sandboxPath)) {
           issue.message = issue.message.replace(sandboxPath, "");
         }

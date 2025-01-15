@@ -40,7 +40,7 @@ export const getVersionsForTarget = (
     .map((file) => {
       const fileMatch = file.match(getSnapshotRegex(prefix));
 
-      if (fileMatch) {
+      if (fileMatch?.groups?.version) {
         matchExists = true;
         return fileMatch.groups?.version;
       }
@@ -85,7 +85,8 @@ export const getKnownGoodVersion = (dirname: string, linterName: string) => {
   );
 
   const plugin_toml = toml.parse(plugin_file);
-  return plugin_toml.plugins.definitions[linterName].known_good_version;
+  return plugin_toml.plugins.definitions[linterName]
+    .known_good_version as string;
 };
 
 const getSnapshotRegex = (prefix: string) =>
