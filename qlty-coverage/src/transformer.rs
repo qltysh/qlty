@@ -1,5 +1,6 @@
 use anyhow::Result;
 use globset::{Glob, GlobSet, GlobSetBuilder};
+use qlty_config::Workspace;
 use qlty_types::tests::v1::{CoverageMetadata, CoverageSummary, FileCoverage};
 use std::{fmt::Debug, path::PathBuf};
 
@@ -156,6 +157,12 @@ impl StripPrefix {
         Self {
             prefix: PathBuf::from(prefix),
         }
+    }
+
+    pub fn new_from_git_root() -> Result<Self> {
+        Ok(Self {
+            prefix: Workspace::assert_within_git_directory()?,
+        })
     }
 }
 

@@ -124,9 +124,13 @@ impl Planner {
         let mut transformers: Vec<Box<dyn Transformer>> = vec![];
 
         transformers.push(Box::new(ComputeSummary::new()));
-        transformers.push(Box::new(StripPrefix::new(
-            self.settings.strip_prefix.clone(),
-        )));
+
+        if let Some(prefix) = self.settings.strip_prefix.clone() {
+            transformers.push(Box::new(StripPrefix::new(prefix)));
+        } else {
+            transformers.push(Box::new(StripPrefix::new_from_git_root()?));
+        }
+
         transformers.push(Box::new(StripDotSlashPrefix));
 
         if self.config.coverage.ignores.is_some() {
