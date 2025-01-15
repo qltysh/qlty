@@ -100,9 +100,9 @@ impl Parser for Ripgrep {
                             path: path.text.clone(),
                             range: Some(Range {
                                 start_line: line_number,
-                                start_column: submatch.start + 1,
+                                start_column: submatch.start + 1, // submatch uses 1-based indexing
                                 end_line: line_number,
-                                end_column: submatch.end + 1,
+                                end_column: submatch.end + 1, // submatch uses 1-based indexing
                                 ..Default::default()
                             }),
                         }),
