@@ -15,5 +15,5 @@ pub struct Settings {
     pub report_format: Option<Formats>,
 
     pub add_prefix: Option<String>,
-    pub strip_prefix: Option<String>,
+    pub strip_prefix: String,
 }

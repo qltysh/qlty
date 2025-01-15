@@ -2,6 +2,7 @@ use anyhow::Result;
 use clap::Args;
 use console::style;
 use indicatif::HumanBytes;
+use qlty_analysis::utils::fs::path_to_string;
 use qlty_config::version::LONG_VERSION;
 use qlty_config::{QltyConfig, Workspace};
 use qlty_coverage::eprintln_unless;
@@ -75,6 +76,8 @@ pub struct Publish {
 impl Publish {
     // TODO: Use CommandSuccess and CommandError, which is not straight forward since those types aren't available here.
     pub fn execute(&self, _args: &crate::Arguments) -> Result<CommandSuccess, CommandError> {
+        let workspace = Workspace::require_initialized()?;
+        let root = path_to_string(workspace.root);
         self.print_initial_messages();
 
         let token = match self.load_auth_token() {
@@ -94,7 +97,7 @@ impl Publish {
                 override_branch: self.override_branch.clone(),
                 override_pull_request_number: self.override_pr_number.clone(),
                 add_prefix: self.transform_add_prefix.clone(),
-                strip_prefix: self.transform_strip_prefix.clone(),
+                strip_prefix: self.transform_strip_prefix.clone().unwrap_or(root),
                 tag: self.tag.clone(),
                 report_format: self.report_format,
                 paths: self.paths.clone(),

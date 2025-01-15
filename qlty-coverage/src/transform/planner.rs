@@ -41,12 +41,9 @@ impl Planner {
     fn compute_transformers(&self) -> Result<Vec<Box<dyn Transformer>>> {
         let mut transformers: Vec<Box<dyn Transformer>> = vec![];
 
-        if let Some(prefix) = self.settings.strip_prefix.clone() {
-            transformers.push(Box::new(StripPrefix::new(prefix)));
-        } else {
-            transformers.push(Box::<StripPrefix>::default());
-        }
-
+        transformers.push(Box::new(StripPrefix::new(
+            self.settings.strip_prefix.clone(),
+        )));
         transformers.push(Box::new(StripDotSlashPrefix));
 
         if let Some(prefix) = self.settings.add_prefix.clone() {

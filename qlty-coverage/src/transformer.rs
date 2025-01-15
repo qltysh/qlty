@@ -1,7 +1,7 @@
 use anyhow::Result;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use qlty_types::tests::v1::{CoverageMetadata, CoverageSummary, FileCoverage};
-use std::{env::current_dir, fmt::Debug, path::PathBuf};
+use std::{fmt::Debug, path::PathBuf};
 
 pub trait Transformer: Debug + Send + Sync + 'static {
     fn transform(&self, file_coverage: FileCoverage) -> Option<FileCoverage>;
@@ -149,14 +149,6 @@ impl Transformer for AddPrefix {
 #[derive(Debug, Clone)]
 pub struct StripPrefix {
     prefix: PathBuf,
-}
-
-impl Default for StripPrefix {
-    fn default() -> Self {
-        Self {
-            prefix: current_dir().unwrap_or_else(|_| PathBuf::from(".")),
-        }
-    }
 }
 
 impl StripPrefix {

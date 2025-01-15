@@ -2,8 +2,9 @@ use crate::{CommandError, CommandSuccess};
 use anyhow::Result;
 use clap::Args;
 use console::style;
+use qlty_analysis::utils::fs::path_to_string;
 use qlty_cloud::format::JsonEachRowFormatter;
-use qlty_config::version::LONG_VERSION;
+use qlty_config::{version::LONG_VERSION, Workspace};
 use qlty_coverage::{
     eprintln_unless,
     formats::Formats,
@@ -53,6 +54,8 @@ pub struct Transform {
 
 impl Transform {
     pub fn execute(&self, _args: &crate::Arguments) -> Result<CommandSuccess, CommandError> {
+        let workspace = Workspace::require_initialized()?;
+        let root = path_to_string(workspace.root);
         self.print_initial_messages();
 
         if !self.quiet {
@@ -62,7 +65,7 @@ impl Transform {
         let settings = Settings {
             report_format: self.report_format,
             add_prefix: self.add_prefix.clone(),
-            strip_prefix: self.strip_prefix.clone(),
+            strip_prefix: self.strip_prefix.clone().unwrap_or(root),
             path: self.path.clone(),
         };
 
