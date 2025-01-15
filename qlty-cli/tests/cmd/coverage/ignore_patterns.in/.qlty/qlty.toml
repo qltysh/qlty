@@ -1,5 +1,0 @@
-config_version = "0"
-exclude_patterns = ["**/ignore.js"]
-
-[coverage]
-paths = ["lcov.info"]
