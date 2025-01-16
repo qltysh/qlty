@@ -47,3 +47,4 @@ output_format = "sarif"
 output_category = "vulnerability"
 output_level = "medium"
 missing_output_as_error = true
+target = { type = "literal", path = "." }
