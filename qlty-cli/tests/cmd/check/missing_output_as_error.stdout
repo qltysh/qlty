@@ -1,5 +1,5 @@
  ERRORS: 1 
 
 Plugin  Result  Message                      Debug File
-exists  Error   Exited with code 0 in 0.01s  .qlty/out/invoke-fldEiJ.yaml
+exists  Error   Exited with code 0 in 0.01s  .qlty/out/invoke-[..].yaml
         [..]The plugin crashed for some reason[..]
