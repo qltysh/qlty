@@ -7,5 +7,5 @@
  ERRORS: 1 
 
 Plugin        Result  Message                      Debug File
-always_error  Error   Exited with code 1 in 0.01s  .qlty/out/invoke-[..].yaml
+always_error  Error   Exited with code 1 in [..].[..]s  .qlty/out/invoke-[..].yaml
 
