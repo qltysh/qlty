@@ -48,7 +48,7 @@ pub struct RuleDefaultConfiguration {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct OriginalUriBaseIds {
-    #[serde(alias = "ROOTPATH")]
+    #[serde(alias = "ROOTPATH", alias = "%SRCROOT%")]
     pub root_path: RootPath,
 }
 
@@ -546,6 +546,111 @@ mod test {
               startColumn: 1
               endLine: 1
               endColumn: 18
+        "#);
+    }
+
+    #[test]
+    fn parse_srcroot_root_path() {
+        let input = r###"
+            {
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "version": "2.1.0",
+            "runs": [
+                {
+                "originalUriBaseIds": {
+                    "%SRCROOT%": {
+                    "uri": "file:///path/to/test"
+                    }
+                },
+                "results": [
+                    {
+                    "level": "error",
+                    "locations": [
+                        {
+                        "physicalLocation": {
+                            "artifactLocation": {
+                            "uri": "/path/to/src/Main.kt",
+                            "uriBaseId": "%SRCROOT%"
+                            },
+                            "region": {
+                            "startColumn": 37,
+                            "startLine": 1
+                            }
+                        }
+                        }
+                    ],
+                    "message": {
+                        "text": "First line of body expression fits on same line as function signature"
+                    },
+                    "ruleId": "standard:function-signature"
+                    },
+                    {
+                    "level": "error",
+                    "locations": [
+                        {
+                        "physicalLocation": {
+                            "artifactLocation": {
+                            "uri": "/path/to/src/Main.kt",
+                            "uriBaseId": "%SRCROOT%"
+                            },
+                            "region": {
+                            "startColumn": 1,
+                            "startLine": 5
+                            }
+                        }
+                        }
+                    ],
+                    "message": {
+                        "text": "Class body should not start with blank line"
+                    },
+                    "ruleId": "standard:no-empty-first-line-in-class-body"
+                    }
+                ],
+                "tool": {
+                    "driver": {
+                    "downloadUri": "https://github.com/pinterest/ktlint/releases/tag/1.5.0",
+                    "fullName": "ktlint",
+                    "informationUri": "https://github.com/pinterest/ktlint/",
+                    "language": "en",
+                    "name": "ktlint",
+                    "organization": "pinterest",
+                    "rules": [
+                    ],
+                    "semanticVersion": "1.5.0",
+                    "version": "1.5.0"
+                    }
+                }
+                }
+            ]
+        }
+        "###;
+
+        let issues = Sarif::default().parse("sarif", input);
+        insta::assert_yaml_snapshot!(issues.unwrap(), @r#"
+        - tool: sarif
+          ruleKey: "standard:function-signature"
+          message: First line of body expression fits on same line as function signature
+          level: LEVEL_HIGH
+          category: CATEGORY_LINT
+          location:
+            path: /path/to/test/path/to/src/Main.kt
+            range:
+              startLine: 1
+              startColumn: 37
+              endLine: 1
+              endColumn: 37
+        - tool: sarif
+          ruleKey: "standard:no-empty-first-line-in-class-body"
+          message: Class body should not start with blank line
+          level: LEVEL_HIGH
+          category: CATEGORY_LINT
+          location:
+            path: /path/to/test/path/to/src/Main.kt
+            range:
+              startLine: 5
+              startColumn: 1
+              endLine: 5
+              endColumn: 1
         "#);
     }
 
