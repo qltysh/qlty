@@ -105,16 +105,16 @@ To specify a directory that is direct parent of a sub-folder, specify a `target_
 target = { type = "parent_with", path = "app" }
 ```
 
-target = { type = "parent_with", path = "Cargo.toml" }
+Or, for a file's parent:
 
+```
+target = { type = "parent_with", path = "Cargo.toml" }
 ```
 
 To specify the unique parent directories of files being analyzed, use `parent`:
 
 ```
-
 target = { type = "parent" }
-
 ```
 
 ## Creating a Parser
@@ -135,9 +135,7 @@ Typically, you'll update the input of the test by hand to match the tool's outpu
 And you can use `insta` to write the test output for you automatically, which helps prevents test failures from small character deltas in manually written output. Install `insta` with:
 
 ```
-
 cargo install cargo-insta
-
 ```
 
 Run `cargo insta review` to display and accept/reject test output.
@@ -161,9 +159,7 @@ Create the "fixtures" directory structure if one does not exist as well as:
 Once that is setup you can run `npm test` to run the test suite or `npm test MY_PLUGIN` to run tests for a specific plugin.
 
 ```
-
 npm test ${PLUGIN_NAME}
-
 ```
 
 e.g. `npm test reek`
@@ -195,4 +191,3 @@ NOTE: It will add snapshots in .shot files, but will not validate with older sna
 - If the output in invocations txt file is correct and something is still broken, you may want to check the CLI and parser of the plugin's output.
 
 - Some plugins such as `Trivy` download their own specific databases independent of their versions which can cause conflict in local tests (which may be using an older db) and github action tests (which doesn't cache them).
-```
