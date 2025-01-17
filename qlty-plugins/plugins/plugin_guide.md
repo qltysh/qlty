@@ -105,8 +105,6 @@ To specify a directory that is direct parent of a sub-folder, specify a `target_
 target = { type = "parent_with", path = "app" }
 ```
 
-
-```
 target = { type = "parent_with", path = "Cargo.toml" }
 ```
 
@@ -116,9 +114,7 @@ To specify the unique parent directories of files being analyzed, use `parent`:
 target = { type = "parent" }
 ```
 
-
 ## Creating a Parser
-
 If the plugin supports a standard format, like SARIF, you are set, and do not need to create a parser. Many tools output structured (like JSON), but not standardized, output, which requires a Rust parser to translate that structure into Qlty issues.
 
 Parsers can be found in `qlty_check/source/parser/*` and are the best source for learning how to write a parser. Writing a parser involves:
