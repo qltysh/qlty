@@ -99,7 +99,7 @@ serde_yaml = "0.9.34"
 serde-xml-rs = "0.6.0"
 sha2 = "0.10.6"
 shell-escape = "0.1.5"
-similar = { version = "2.6.0", features = ["inline"] }
+similar = { version = "2.7.0", features = ["inline"] }
 supports-color = "3.0.1"
 syntect = "5.2.0"
 sysinfo = "0.31.4"
