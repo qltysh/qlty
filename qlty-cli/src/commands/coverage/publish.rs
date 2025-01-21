@@ -259,7 +259,7 @@ impl Publish {
         value
             .split('/')
             .last()
-            .map(|s| s.to_string())
+            .map(|s| s.strip_suffix(".git").unwrap_or(s).to_string())
             .take_if(|v| !v.is_empty())
     }
 
@@ -326,9 +326,13 @@ mod tests {
         let token = publish(None).expand_token("qltcw_123".to_string())?;
         assert_eq!(token, "qltcw_123/qlty");
 
-        std::env::set_var("GITHUB_REPOSITORY", "a/b");
+        std::env::set_var("GITHUB_REPOSITORY", "a/b.git");
         let token = publish(None).expand_token("qltcw_123".to_string())?;
         assert_eq!(token, "qltcw_123/b");
+
+        std::env::set_var("GITHUB_REPOSITORY", "b/c");
+        let token = publish(None).expand_token("qltcw_123".to_string())?;
+        assert_eq!(token, "qltcw_123/c");
 
         Ok(())
     }
