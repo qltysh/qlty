@@ -272,15 +272,9 @@ impl Publish {
     }
 
     fn load_config() -> QltyConfig {
-        if let Ok(workspace) = Workspace::new() {
-            if let Ok(cfg) = workspace.config() {
-                cfg
-            } else {
-                QltyConfig::default()
-            }
-        } else {
-            QltyConfig::default()
-        }
+        Workspace::new()
+            .and_then(|workspace| workspace.config())
+            .unwrap_or_default()
     }
 }
 
