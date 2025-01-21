@@ -1,6 +1,8 @@
-use anyhow::Result;
+use crate::{CommandError, CommandSuccess};
+use anyhow::{bail, Result};
 use clap::Args;
 use console::style;
+use git2::Repository;
 use indicatif::HumanBytes;
 use qlty_config::version::LONG_VERSION;
 use qlty_config::{QltyConfig, Workspace};
@@ -11,7 +13,7 @@ use qlty_coverage::publish::{Planner, Processor, Reader, Report, Settings, Uploa
 use std::path::PathBuf;
 use std::time::Instant;
 
-use crate::{CommandError, CommandSuccess};
+const COVERAGE_TOKEN_WORKSPACE_PREFIX: &str = "qltcw_";
 
 #[derive(Debug, Args)]
 pub struct Publish {
@@ -57,6 +59,11 @@ pub struct Publish {
     #[arg(long, short)]
     /// The token to use for authentication when uploading the report. By default, it retrieves the token from the QLTY_COVERAGE_TOKEN environment variable.
     pub token: Option<String>,
+
+    #[arg(long)]
+    /// The name of the project to associate the coverage report with. Only needed when coverage token represents a
+    /// workspace and if it cannot be inferred from the git origin.
+    pub project_name: Option<String>,
 
     #[arg(long)]
     /// Print coverage
@@ -200,12 +207,53 @@ impl Publish {
     }
 
     fn load_auth_token(&self) -> Result<String> {
-        match &self.token {
+        self.expand_token(match &self.token {
             Some(token) => Ok(token.to_owned()),
             None => std::env::var("QLTY_COVERAGE_TOKEN").map_err(|_| {
                 anyhow::Error::msg("QLTY_COVERAGE_TOKEN environment variable is required.")
             }),
+        }?)
+    }
+
+    /// Appends repository name to token if it is a workspace token
+    fn expand_token(&self, token: String) -> Result<String> {
+        if token.starts_with(COVERAGE_TOKEN_WORKSPACE_PREFIX) {
+            let project_name = if let Some(project_name) = &self.project_name {
+                project_name.clone()
+            } else if let Some(repository) = self.find_repository_name_from_env() {
+                repository
+            } else if let Ok(repository) = self.find_repository_name_from_repository() {
+                repository
+            } else {
+                bail!("Could not infer project name from environment, please provide it using --project-name")
+            };
+            Ok(format!("{}/{}", token, project_name))
+        } else {
+            Ok(token)
         }
+    }
+
+    fn find_repository_name_from_env(&self) -> Option<String> {
+        if let Ok(repository) = std::env::var("GITHUB_REPOSITORY") {
+            self.extract_repository_name(&repository)
+        } else {
+            None
+        }
+    }
+
+    fn find_repository_name_from_repository(&self) -> Result<String> {
+        let root = Workspace::assert_within_git_directory()?;
+        let repo = Repository::open(root)?;
+        let remote = repo.find_remote("origin")?;
+        if let Some(name) = self.extract_repository_name(remote.url().unwrap_or_default()) {
+            Ok(name)
+        } else {
+            bail!("Could not find repository name from git remote")
+        }
+    }
+
+    fn extract_repository_name(&self, value: &str) -> Option<String> {
+        value.split('/').last().map(|s| s.to_string())
     }
 
     fn show_report(&self, report: &Report) -> Result<()> {
