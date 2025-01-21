@@ -253,7 +253,11 @@ impl Publish {
     }
 
     fn extract_repository_name(&self, value: &str) -> Option<String> {
-        value.split('/').last().map(|s| s.to_string())
+        value
+            .split('/')
+            .last()
+            .map(|s| s.to_string())
+            .take_if(|v| !v.is_empty())
     }
 
     fn show_report(&self, report: &Report) -> Result<()> {
@@ -274,5 +278,61 @@ impl Publish {
         } else {
             QltyConfig::default()
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn publish(project_name: Option<&str>) -> Publish {
+        Publish {
+            dry_run: true,
+            report_format: None,
+            output_dir: None,
+            tag: None,
+            override_build_id: None,
+            override_branch: None,
+            override_commit_sha: None,
+            override_pr_number: None,
+            transform_add_prefix: None,
+            transform_strip_prefix: None,
+            token: None,
+            project_name: project_name.map(|s| s.to_string()),
+            print: false,
+            json: false,
+            quiet: true,
+            paths: vec![],
+        }
+    }
+
+    #[test]
+    fn test_expand_token_project() -> Result<()> {
+        let token = publish(None).expand_token("qltcp_123".to_string())?;
+        assert_eq!(token, "qltcp_123");
+        Ok(())
+    }
+
+    #[test]
+    fn test_expand_token_workspace_with_project_name() -> Result<()> {
+        let token = publish(Some("test")).expand_token("qltcw_123".to_string())?;
+        assert_eq!(token, "qltcw_123/test");
+        Ok(())
+    }
+
+    #[test]
+    fn test_expand_token_workspace_with_env() -> Result<()> {
+        let token = publish(None).expand_token("qltcw_123".to_string())?;
+        assert_eq!(token, "qltcw_123/qlty");
+
+        std::env::set_var("GITHUB_REPOSITORY", "");
+        let token = publish(None).expand_token("qltcw_123".to_string())?;
+        assert_eq!(token, "qltcw_123/qlty");
+
+        std::env::set_var("GITHUB_REPOSITORY", "a/b");
+        let token = publish(None).expand_token("qltcw_123".to_string())?;
+        assert_eq!(token, "qltcw_123/b");
+
+        Ok(())
     }
 }
