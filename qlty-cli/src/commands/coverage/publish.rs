@@ -218,6 +218,9 @@ impl Publish {
     /// Appends repository name to token if it is a workspace token
     fn expand_token(&self, token: String) -> Result<String> {
         if token.starts_with(COVERAGE_TOKEN_WORKSPACE_PREFIX) {
+            if token.contains("/") {
+                return Ok(token);
+            }
             let project_name = if let Some(project_name) = &self.project_name {
                 project_name.clone()
             } else if let Some(repository) = self.find_repository_name_from_env() {
@@ -333,6 +336,13 @@ mod tests {
         let token = publish(None).expand_token("qltcw_123".to_string())?;
         assert_eq!(token, "qltcw_123/b");
 
+        Ok(())
+    }
+
+    #[test]
+    fn test_expand_token_already_expanded() -> Result<()> {
+        let token = publish(Some("test")).expand_token("qltcw_123/abc".to_string())?;
+        assert_eq!(token, "qltcw_123/abc");
         Ok(())
     }
 }
