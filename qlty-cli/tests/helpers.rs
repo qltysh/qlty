@@ -12,50 +12,23 @@ use trycmd::TestCases;
 const MANIFEST_DIR: &str = env!("CARGO_MANIFEST_DIR");
 const DEFAULT_TEST_TIMEOUT: u64 = 600;
 
-#[cfg(target_family = "unix")]
 const GIT_SETUP_SCRIPT: &str = r#"
   git init --initial-branch=main &&
   git add . &&
   git config user.email test@codeclimate.com &&
   git config user.name TEST &&
-  GIT_COMMITTER_DATE="2024-01-01T00:00:00+00:00" git commit --no-gpg-sign --date="2024-01-01T00:00:00+00:00" --message initial
-"#;
-
-#[cfg(target_family = "windows")]
-const GIT_SETUP_SCRIPT: &str = r#"
-  git init --initial-branch=main &&
-  git add . &&
-  git config user.email test@codeclimate.com &&
-  git config user.name TEST &&
-  set GIT_COMMITTER_DATE=2024-01-01T00:00:00+00:00 &&
   git commit --no-gpg-sign --date="2024-01-01T00:00:00+00:00" --message initial
 "#;
 
-#[cfg(target_family = "unix")]
 const GIT_DIFF_SETUP_SCRIPT: &str = r#"
   git init --initial-branch=main &&
   git add . &&
-  git reset -- diff/* &&
+  git reset -- diff &&
   git config user.email test@codeclimate.com &&
   git config user.name TEST &&
-  GIT_COMMITTER_DATE="2024-01-01T00:00:00+00:00" git commit --no-gpg-sign --date="2024-01-01T00:00:00+00:00" --message initial &&
-  git checkout -b test_branch &&
-  git add . &&
-  GIT_COMMITTER_DATE="2024-01-01T00:00:00+00:00" git commit --no-gpg-sign --date="2024-01-01T00:00:00+00:00" --message initial
-"#;
-
-#[cfg(target_family = "windows")]
-const GIT_DIFF_SETUP_SCRIPT: &str = r#"
-  git init --initial-branch=main &&
-  git add . &&
-  git reset -- diff/* &&
-  git config user.email test@codeclimate.com &&
-  git config user.name TEST &&
-  set GIT_COMMITTER_DATE=2024-01-01T00:00:00+00:00 &&
   git commit --no-gpg-sign --date="2024-01-01T00:00:00+00:00" --message initial &&
   git checkout -b test_branch &&
   git add . &&
-  set GIT_COMMITTER_DATE=2024-01-01T00:00:00+00:00 &&
   git commit --no-gpg-sign --date="2024-01-01T00:00:00+00:00" --message initial
 "#;
 

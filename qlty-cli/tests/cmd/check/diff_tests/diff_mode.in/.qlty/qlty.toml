@@ -6,7 +6,7 @@ file_types = ["ALL"]
 [plugins.definitions.exists.drivers.lint]
 prepare_script = "mkdir ${linter} || echo dir %2 > ${linter}/ls.cmd"
 script = "ls -l ${target}"
-success_codes = [1]
+success_codes = [0]
 output = "pass_fail"
 
 [[plugin]]
