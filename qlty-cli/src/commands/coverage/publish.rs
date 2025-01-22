@@ -6,12 +6,14 @@ use git2::Repository;
 use indicatif::HumanBytes;
 use qlty_config::version::LONG_VERSION;
 use qlty_config::{QltyConfig, Workspace};
+use qlty_coverage::ci::{GitHub, CI};
 use qlty_coverage::eprintln_unless;
 use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
 use qlty_coverage::publish::{Planner, Processor, Reader, Report, Settings, Upload};
 use std::path::PathBuf;
 use std::time::Instant;
+use tracing::debug;
 
 const COVERAGE_TOKEN_WORKSPACE_PREFIX: &str = "qltcw_";
 
@@ -63,7 +65,7 @@ pub struct Publish {
     #[arg(long)]
     /// The name of the project to associate the coverage report with. Only needed when coverage token represents a
     /// workspace and if it cannot be inferred from the git origin.
-    pub project_name: Option<String>,
+    pub project: Option<String>,
 
     #[arg(long)]
     /// Print coverage
@@ -221,26 +223,31 @@ impl Publish {
             if token.contains("/") {
                 return Ok(token);
             }
-            let project_name = if let Some(project_name) = &self.project_name {
-                project_name.clone()
+            let project = if let Some(project) = &self.project {
+                project.clone()
             } else if let Some(repository) = self.find_repository_name_from_env() {
                 repository
-            } else if let Ok(repository) = self.find_repository_name_from_repository() {
-                repository
             } else {
-                bail!("Could not infer project name from environment, please provide it using --project-name")
+                match self.find_repository_name_from_repository() {
+                    Ok(repository) => repository,
+                    Err(err) => {
+                        debug!("Find repository name: {}", err);
+                        bail!("Could not infer project name from environment, please provide it using --project")
+                    }
+                }
             };
-            Ok(format!("{}/{}", token, project_name))
+            Ok(format!("{}/{}", token, project))
         } else {
             Ok(token)
         }
     }
 
     fn find_repository_name_from_env(&self) -> Option<String> {
-        if let Ok(repository) = std::env::var("GITHUB_REPOSITORY") {
-            self.extract_repository_name(&repository)
-        } else {
+        let repository = GitHub::default().repository_name();
+        if repository.is_empty() {
             None
+        } else {
+            Self::extract_repository_name(&repository)
         }
     }
 
@@ -248,14 +255,17 @@ impl Publish {
         let root = Workspace::assert_within_git_directory()?;
         let repo = Repository::open(root)?;
         let remote = repo.find_remote("origin")?;
-        if let Some(name) = self.extract_repository_name(remote.url().unwrap_or_default()) {
+        if let Some(name) = Self::extract_repository_name(remote.url().unwrap_or_default()) {
             Ok(name)
         } else {
-            bail!("Could not find repository name from git remote")
+            bail!(
+                "Could not find repository name from git remote: {:?}",
+                remote.url()
+            )
         }
     }
 
-    fn extract_repository_name(&self, value: &str) -> Option<String> {
+    fn extract_repository_name(value: &str) -> Option<String> {
         value
             .split('/')
             .last()
@@ -282,7 +292,7 @@ impl Publish {
 mod tests {
     use super::*;
 
-    fn publish(project_name: Option<&str>) -> Publish {
+    fn publish(project: Option<&str>) -> Publish {
         Publish {
             dry_run: true,
             report_format: None,
@@ -295,7 +305,7 @@ mod tests {
             transform_add_prefix: None,
             transform_strip_prefix: None,
             token: None,
-            project_name: project_name.map(|s| s.to_string()),
+            project: project.map(|s| s.to_string()),
             print: false,
             json: false,
             quiet: true,
@@ -311,7 +321,7 @@ mod tests {
     }
 
     #[test]
-    fn test_expand_token_workspace_with_project_name() -> Result<()> {
+    fn test_expand_token_workspace_with_project() -> Result<()> {
         let token = publish(Some("test")).expand_token("qltcw_123".to_string())?;
         assert_eq!(token, "qltcw_123/test");
         Ok(())
@@ -342,5 +352,23 @@ mod tests {
         let token = publish(Some("test")).expand_token("qltcw_123/abc".to_string())?;
         assert_eq!(token, "qltcw_123/abc");
         Ok(())
+    }
+
+    #[test]
+    fn test_extract_repository_name() {
+        assert_eq!(Publish::extract_repository_name(""), None);
+        assert_eq!(Publish::extract_repository_name("a/"), None);
+        assert_eq!(
+            Publish::extract_repository_name("git@example.org:a/b"),
+            Some("b".into())
+        );
+        assert_eq!(
+            Publish::extract_repository_name("ssh://x@example.org:a/b"),
+            Some("b".into())
+        );
+        assert_eq!(
+            Publish::extract_repository_name("https://x:y@example.org/a/b"),
+            Some("b".into())
+        );
     }
 }
