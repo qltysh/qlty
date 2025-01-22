@@ -505,8 +505,7 @@ impl Driver {
             .dir(dir)
             .full_env(plan.tool.env())
             .stderr_capture()
-            .stdout_capture()
-            .unchecked();
+            .stdout_capture();
 
         debug!("Running prepare_script: {}", &rerun);
         let timer = Instant::now();
