@@ -36,7 +36,7 @@ impl IssueTransformer for IssueMuter {
         self.parse_issue_file(&issue);
 
         if let Some(ref location) = issue.location {
-            let map = self.files.write().unwrap();
+            let map = self.files.read().unwrap();
             if let Some(file) = map.get::<PathBuf>(&issue.path().unwrap_or_default().into()) {
                 if let Some(range) = location.range() {
                     if Self::rule_key_is_ignored(
@@ -84,12 +84,9 @@ impl IssueMuter {
             return; // file is already parsed, skip reparsing
         }
 
-        if let Ok(language) = filename_to_language(path.to_str().unwrap()) {
-            if let Ok(source) = self.source_reader.read(path.clone()) {
-                files.insert(path.clone(), Box::new(IgnoreParser::new(source, language)));
-            }
-        } else {
-            debug!("Failed to detect language: {}", path.display());
+        let language = filename_to_language(path.to_str().unwrap()).unwrap_or_default();
+        if let Ok(source) = self.source_reader.read(path.clone()) {
+            files.insert(path.clone(), Box::new(IgnoreParser::new(source, language)));
         }
     }
 }
@@ -189,11 +186,10 @@ impl IgnoreParser {
     }
 
     fn parse_apply_rules(&mut self, comment: Option<&Comment>, line: &str, index: usize) {
-        if let Some(comment) = comment {
-            if comment.is_full_line {
-                return; // never apply rules to full line comments
-            }
-        }
+        let clear_rules_after_use = match comment {
+            Some(comment) => !comment.is_full_line,
+            None => true,
+        };
         if line.trim().is_empty() {
             return; // never apply rules to empty lines
         }
@@ -213,7 +209,9 @@ impl IgnoreParser {
                 }
             })
             .collect::<Vec<_>>();
-        self.matching_indent_rules.clear();
+        if clear_rules_after_use {
+            self.matching_indent_rules.clear();
+        }
         self.matching_indent_rules.extend(new_matching_indent_rules);
 
         let mut rules: HashSet<_> = self
@@ -224,7 +222,9 @@ impl IgnoreParser {
             .cloned()
             .collect();
         for rule in &self.once_remove_rules {
-            rules.remove(rule);
+            if clear_rules_after_use {
+                rules.remove(rule);
+            }
         }
         if !rules.is_empty() {
             let adjusted_line = index + 1;
@@ -232,8 +232,10 @@ impl IgnoreParser {
             self.lines.insert(adjusted_line, rules);
         }
 
-        self.once_add_rules.clear();
-        self.once_remove_rules.clear();
+        if clear_rules_after_use {
+            self.once_add_rules.clear();
+            self.once_remove_rules.clear();
+        }
     }
 
     fn extract_comment_nodes(source: &str, language: &str) -> HashMap<usize, Comment> {
@@ -365,7 +367,6 @@ mod test {
     use itertools::Itertools;
     use qlty_config::issue_transformer::IssueTransformer;
     use std::collections::{HashMap, HashSet};
-    use tracing_test::traced_test;
 
     fn parser_rules<'a>(parser: &'a IgnoreParser) -> Vec<(usize, Vec<&'a str>)> {
         parser
@@ -439,8 +440,11 @@ mod test {
         assert_eq!(
             parser_rules(&parser),
             vec![
+                (1, vec!["rule1", "rule2"]),
+                (2, vec!["rule1", "rule2", "rule3", "rule5"]),
                 (5, vec!["rule1", "rule2", "rule3", "rule5"]),
                 (6, vec!["rule2", "rule5", "rule6", "rule8"]),
+                (7, vec!["rule2", "rule4", "rule5"]),
                 (8, vec!["rule2", "rule4", "rule5"]),
                 (9, vec!["rule2", "rule5"]),
                 (10, vec!["rule2", "rule5"]),
@@ -476,8 +480,13 @@ mod test {
         assert_eq!(
             parser_rules(&parser),
             vec![
+                (1, vec!["rule1", "rule2"]),
+                (2, vec!["rule1", "rule2"]),
+                (3, vec!["rule1", "rule2", "rule3", "rule5"]),
+                (4, vec!["rule1", "rule2", "rule3", "rule5"]),
                 (5, vec!["rule1", "rule2", "rule3", "rule5"]),
                 (6, vec!["rule2", "rule5", "rule6", "rule8"]),
+                (7, vec!["rule2", "rule4", "rule5"]),
                 (8, vec!["rule2", "rule4", "rule5"]),
                 (9, vec!["rule2", "rule5"]),
                 (10, vec!["rule2", "rule5"]),
@@ -509,7 +518,11 @@ mod test {
         assert_eq!(
             parser_rules(&parser),
             vec![
+                (1, vec!["rule1"]),
+                (2, vec!["rule1", "rule2"]),
+                (3, vec!["rule1", "rule2", "rule3"]),
                 (4, vec!["rule1", "rule2", "rule3"]),
+                (5, vec!["rule1", "rule2", "rule3", "rule5"]),
                 (6, vec!["rule5"]),
                 (7, vec!["rule5"]),
                 (8, vec!["rule5"])
@@ -548,15 +561,24 @@ mod test {
     }
 
     #[test]
-    #[traced_test]
     fn test_issue_muter_unknown_source_language() {
-        let source_reader =
-            SourceReaderFs::with_cache(HashMap::from([("example.unknown".into(), "".into())]));
+        let source_reader = SourceReaderFs::with_cache(HashMap::from([(
+            "example.unknown".into(),
+            "A\n# qlty-ignore: clippy\nB".into(),
+        )]));
 
         let ignorer = IssueMuter::new(source_reader);
-        let mut issue = make_issue("any_rule", 2);
+
+        let mut issue = make_issue("any_rule", 1);
         issue.location.as_mut().unwrap().path = "example.unknown".into();
         assert_eq!(ignorer.transform(issue.clone()), Some(issue));
-        assert!(logs_contain("Failed to detect language: example.unknown"));
+
+        let mut issue = make_issue("any_rule", 2);
+        issue.location.as_mut().unwrap().path = "example.unknown".into();
+        assert_eq!(ignorer.transform(issue), None);
+
+        let mut issue = make_issue("any_rule", 3);
+        issue.location.as_mut().unwrap().path = "example.unknown".into();
+        assert_eq!(ignorer.transform(issue), None);
     }
 }
