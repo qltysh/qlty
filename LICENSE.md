@@ -19,7 +19,7 @@ Change Date: 2028-01-22
 Change License: GNU General Public License, Version 3
 
 For information about alternative licensing arrangements for the Software,
-please visit: https://qlty.sh/
+please visit: <https://qlty.sh/>
 
 ### Notice
 
