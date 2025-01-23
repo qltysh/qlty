@@ -3,3 +3,6 @@ target/*
 flamegraph.svg
 .env
 **/plugin_cachedir
+/.markdownlint.json
+/.rustfmt.toml
+/.yamllint.yaml

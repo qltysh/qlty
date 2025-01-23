@@ -1,17 +1,21 @@
-use anyhow::Result;
+use crate::{CommandError, CommandSuccess};
+use anyhow::{bail, Result};
 use clap::Args;
 use console::style;
+use git2::Repository;
 use indicatif::HumanBytes;
 use qlty_config::version::LONG_VERSION;
 use qlty_config::{QltyConfig, Workspace};
+use qlty_coverage::ci::{GitHub, CI};
 use qlty_coverage::eprintln_unless;
 use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
 use qlty_coverage::publish::{Planner, Processor, Reader, Report, Settings, Upload};
 use std::path::PathBuf;
 use std::time::Instant;
+use tracing::debug;
 
-use crate::{CommandError, CommandSuccess};
+const COVERAGE_TOKEN_WORKSPACE_PREFIX: &str = "qltcw_";
 
 #[derive(Debug, Args)]
 pub struct Publish {
@@ -57,6 +61,11 @@ pub struct Publish {
     #[arg(long, short)]
     /// The token to use for authentication when uploading the report. By default, it retrieves the token from the QLTY_COVERAGE_TOKEN environment variable.
     pub token: Option<String>,
+
+    #[arg(long)]
+    /// The name of the project to associate the coverage report with. Only needed when coverage token represents a
+    /// workspace and if it cannot be inferred from the git origin.
+    pub project: Option<String>,
 
     #[arg(long)]
     /// Print coverage
@@ -200,12 +209,68 @@ impl Publish {
     }
 
     fn load_auth_token(&self) -> Result<String> {
-        match &self.token {
+        self.expand_token(match &self.token {
             Some(token) => Ok(token.to_owned()),
             None => std::env::var("QLTY_COVERAGE_TOKEN").map_err(|_| {
                 anyhow::Error::msg("QLTY_COVERAGE_TOKEN environment variable is required.")
             }),
+        }?)
+    }
+
+    /// Appends repository name to token if it is a workspace token
+    fn expand_token(&self, token: String) -> Result<String> {
+        if token.starts_with(COVERAGE_TOKEN_WORKSPACE_PREFIX) {
+            if token.contains("/") {
+                return Ok(token);
+            }
+            let project = if let Some(project) = &self.project {
+                project.clone()
+            } else if let Some(repository) = self.find_repository_name_from_env() {
+                repository
+            } else {
+                match self.find_repository_name_from_repository() {
+                    Ok(repository) => repository,
+                    Err(err) => {
+                        debug!("Find repository name: {}", err);
+                        bail!("Could not infer project name from environment, please provide it using --project")
+                    }
+                }
+            };
+            Ok(format!("{}/{}", token, project))
+        } else {
+            Ok(token)
         }
+    }
+
+    fn find_repository_name_from_env(&self) -> Option<String> {
+        let repository = GitHub::default().repository_name();
+        if repository.is_empty() {
+            None
+        } else {
+            Self::extract_repository_name(&repository)
+        }
+    }
+
+    fn find_repository_name_from_repository(&self) -> Result<String> {
+        let root = Workspace::assert_within_git_directory()?;
+        let repo = Repository::open(root)?;
+        let remote = repo.find_remote("origin")?;
+        if let Some(name) = Self::extract_repository_name(remote.url().unwrap_or_default()) {
+            Ok(name)
+        } else {
+            bail!(
+                "Could not find repository name from git remote: {:?}",
+                remote.url()
+            )
+        }
+    }
+
+    fn extract_repository_name(value: &str) -> Option<String> {
+        value
+            .split('/')
+            .last()
+            .map(|s| s.strip_suffix(".git").unwrap_or(s).to_string())
+            .take_if(|v| !v.is_empty())
     }
 
     fn show_report(&self, report: &Report) -> Result<()> {
@@ -217,14 +282,93 @@ impl Publish {
     }
 
     fn load_config() -> QltyConfig {
-        if let Ok(workspace) = Workspace::new() {
-            if let Ok(cfg) = workspace.config() {
-                cfg
-            } else {
-                QltyConfig::default()
-            }
-        } else {
-            QltyConfig::default()
+        Workspace::new()
+            .and_then(|workspace| workspace.config())
+            .unwrap_or_default()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn publish(project: Option<&str>) -> Publish {
+        Publish {
+            dry_run: true,
+            report_format: None,
+            output_dir: None,
+            tag: None,
+            override_build_id: None,
+            override_branch: None,
+            override_commit_sha: None,
+            override_pr_number: None,
+            transform_add_prefix: None,
+            transform_strip_prefix: None,
+            token: None,
+            project: project.map(|s| s.to_string()),
+            print: false,
+            json: false,
+            quiet: true,
+            paths: vec![],
         }
+    }
+
+    #[test]
+    fn test_expand_token_project() -> Result<()> {
+        let token = publish(None).expand_token("qltcp_123".to_string())?;
+        assert_eq!(token, "qltcp_123");
+        Ok(())
+    }
+
+    #[test]
+    fn test_expand_token_workspace_with_project() -> Result<()> {
+        let token = publish(Some("test")).expand_token("qltcw_123".to_string())?;
+        assert_eq!(token, "qltcw_123/test");
+        Ok(())
+    }
+
+    #[test]
+    fn test_expand_token_workspace_with_env() -> Result<()> {
+        let token = publish(None).expand_token("qltcw_123".to_string())?;
+        assert_eq!(token, "qltcw_123/qlty");
+
+        std::env::set_var("GITHUB_REPOSITORY", "");
+        let token = publish(None).expand_token("qltcw_123".to_string())?;
+        assert_eq!(token, "qltcw_123/qlty");
+
+        std::env::set_var("GITHUB_REPOSITORY", "a/b.git");
+        let token = publish(None).expand_token("qltcw_123".to_string())?;
+        assert_eq!(token, "qltcw_123/b");
+
+        std::env::set_var("GITHUB_REPOSITORY", "b/c");
+        let token = publish(None).expand_token("qltcw_123".to_string())?;
+        assert_eq!(token, "qltcw_123/c");
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_expand_token_already_expanded() -> Result<()> {
+        let token = publish(Some("test")).expand_token("qltcw_123/abc".to_string())?;
+        assert_eq!(token, "qltcw_123/abc");
+        Ok(())
+    }
+
+    #[test]
+    fn test_extract_repository_name() {
+        assert_eq!(Publish::extract_repository_name(""), None);
+        assert_eq!(Publish::extract_repository_name("a/"), None);
+        assert_eq!(
+            Publish::extract_repository_name("git@example.org:a/b"),
+            Some("b".into())
+        );
+        assert_eq!(
+            Publish::extract_repository_name("ssh://x@example.org:a/b"),
+            Some("b".into())
+        );
+        assert_eq!(
+            Publish::extract_repository_name("https://x:y@example.org/a/b"),
+            Some("b".into())
+        );
     }
 }
