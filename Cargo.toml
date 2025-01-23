@@ -82,7 +82,7 @@ rand = "0.8.5"
 rayon = "1.10.0"
 regex = "1.11.0"
 rust-embed = { version = "8.5.0", features = ["include-exclude"] }
-semver = "1.0.24"
+semver = "1.0.25"
 sentry = { version = "0.34.0", default-features = false, features = [
     "backtrace",
     "contexts",
