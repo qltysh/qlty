@@ -127,7 +127,7 @@ pub struct FileCoverage {
     pub pull_request_number: ::core::option::Option<::prost::alloc::string::String>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct CoverageSummary {
     #[prost(int64, tag="1")]
     pub covered: i64,
