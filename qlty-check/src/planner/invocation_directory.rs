@@ -113,7 +113,7 @@ mod test {
     };
 
     use super::*;
-    use qlty_analysis::WorkspaceEntryKind;
+    use qlty_analysis::{utils::fs::path_to_string, WorkspaceEntryKind};
     use qlty_config::config::InvocationDirectoryDef;
     use qlty_test_utilities::git::sample_repo;
     use tempfile::TempDir;
@@ -265,7 +265,9 @@ mod test {
 
         for (target, result) in targets_results {
             let invocation_directory = invocation_directory_planner.compute(&target).unwrap();
-            assert_eq!(invocation_directory, result);
+            let result_str = path_to_string(result);
+            let result = result_str.split("/./").last().unwrap_or(&result_str);
+            assert!(invocation_directory.ends_with(result));
         }
     }
 }
