@@ -8,7 +8,7 @@ use std::{
 };
 use tracing::debug;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct DiffSource {
     entries: Arc<Vec<WorkspaceEntry>>,
 }
@@ -55,5 +55,11 @@ impl DiffSource {
 impl WorkspaceEntrySource for DiffSource {
     fn entries(&self) -> Arc<Vec<WorkspaceEntry>> {
         self.entries.clone()
+    }
+}
+
+impl std::fmt::Debug for DiffSource {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "DiffSource[{} entries]", self.entries.len())
     }
 }

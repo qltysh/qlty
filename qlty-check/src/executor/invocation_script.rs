@@ -4,7 +4,7 @@ use itertools::Itertools;
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_analysis::{join_path_string, utils::fs::path_to_native_string};
 use qlty_config::config::InvocationDirectoryType;
-use tracing::{debug, error};
+use tracing::{error, trace};
 
 #[cfg(unix)]
 use shell_escape::unix::escape;
@@ -12,7 +12,7 @@ use shell_escape::unix::escape;
 use shell_escape::windows::escape;
 
 pub fn compute_invocation_script(plan: &InvocationPlan) -> Result<String> {
-    debug!("Driver script (original): {}", plan.driver.script);
+    trace!("Driver script (original): {}", plan.driver.script);
     let mut base_script = plan.driver.script.clone();
 
     // Autoload script first in case it has variables that need to be interpolated
@@ -22,7 +22,7 @@ pub fn compute_invocation_script(plan: &InvocationPlan) -> Result<String> {
     base_script = replace_tmpfile_variable(plan, base_script);
     base_script = replace_config_file(plan, base_script);
 
-    debug!("Driver script (interpolated): {}", base_script);
+    trace!("Driver script (interpolated): {}", base_script);
     Ok(base_script)
 }
 

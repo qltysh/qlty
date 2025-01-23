@@ -14,7 +14,7 @@ use std::{
     path::PathBuf,
     sync::{Arc, RwLock},
 };
-use tracing::debug;
+use tracing::{debug, trace};
 
 #[derive(Debug)]
 pub struct IssueMuter {
@@ -228,7 +228,7 @@ impl IgnoreParser {
         }
         if !rules.is_empty() {
             let adjusted_line = index + 1;
-            debug!("Applying rules to line {}: {:?}", adjusted_line, rules);
+            trace!("Applying rules to line {}: {:?}", adjusted_line, rules);
             self.lines.insert(adjusted_line, rules);
         }
 
