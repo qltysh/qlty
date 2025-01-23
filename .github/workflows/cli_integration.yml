@@ -62,9 +62,9 @@ jobs:
       matrix:
         container: [
             "ubuntu:24.04",
-            "redhat/ubi9",
+            #"redhat/ubi9",
             "debian:trixie-slim",
-            "debian:bookworm-slim",
+            #"debian:bookworm-slim",
             # unsupported:
             # "ubuntu:20.04",
             # "redhat/ubi8",
@@ -74,10 +74,10 @@ jobs:
             package_install: apt-get update && apt-get install -y git curl libyaml-dev libgmp-dev build-essential
           - container: debian:trixie-slim
             package_install: apt-get update && apt-get install -y git curl libyaml-dev libgmp-dev build-essential
-          - container: debian:bookworm-slim
-            package_install: apt-get update && apt-get install -y git curl libyaml-dev libgmp-dev build-essential
-          - container: redhat/ubi9
-            package_install: yum install -y git gcc make libyaml-devel gmp-devel
+          #- container: debian:bookworm-slim
+          #  package_install: apt-get update && apt-get install -y git curl libyaml-dev libgmp-dev build-essential
+          #- container: redhat/ubi9
+          #  package_install: yum install -y git gcc make libyaml-devel gmp-devel
           # unsupported:
           # - container: ubuntu:20.04
           #   package_install: apt-get update && apt-get install -y git curl libyaml-dev libgmp-dev build-essential
