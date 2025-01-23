@@ -200,7 +200,7 @@ mod test {
                 "install_name_tool",
                 "-change",
                 format!(
-                    "/Users/runner/hostedtoolcache/Ruby/128.128.0/{}/lib/libruby.128.128.dylib",
+                    "/Users/runner/hostedtoolcache/Ruby/128.128.128/{}/lib/libruby.128.128.dylib",
                     ARCH
                 )
                 .as_str(),
