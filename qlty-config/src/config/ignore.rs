@@ -3,11 +3,12 @@ use std::sync::RwLock;
 use crate::config::issue_transformer::IssueTransformer;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use qlty_types::analysis::v1::Issue;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 pub const ALL_WILDCARD: &'static str = "ALL";
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
 pub struct Ignore {
     #[serde(default = "default_ignore_file_patterns")]
     pub file_patterns: Vec<String>,

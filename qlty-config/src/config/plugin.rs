@@ -3,6 +3,7 @@ use crate::config::DownloadDef;
 use crate::QltyConfig;
 use anyhow::{Context, Result};
 use qlty_types::analysis::v1::{Category, Level};
+use schemars::JsonSchema;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 use std::fmt;
@@ -13,7 +14,7 @@ use std::path::PathBuf;
 const SEMVER_REGEX: &str = r"(\d+\.\d+\.\d+)";
 const ALL: &str = "ALL";
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default, JsonSchema)]
 pub struct PluginsConfig {
     #[serde(default)]
     pub downloads: HashMap<String, DownloadDef>,
@@ -29,7 +30,7 @@ fn semver_regex() -> String {
     SEMVER_REGEX.to_string()
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
 pub struct DriverDef {
     #[serde(default)]
     pub script: String,
@@ -123,7 +124,7 @@ fn default_max_batch() -> usize {
     64
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]
 pub enum DriverBatchBy {
     #[default]
     #[serde(rename = "none")]
@@ -136,7 +137,7 @@ pub enum DriverBatchBy {
     ConfigFile,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]
 pub enum InvocationDirectoryType {
     #[default]
     #[serde(rename = "root")]
@@ -155,7 +156,7 @@ pub enum InvocationDirectoryType {
     ToolDir,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]
 pub struct InvocationDirectoryDef {
     #[serde(default)]
     #[serde(rename = "type")]
@@ -165,7 +166,7 @@ pub struct InvocationDirectoryDef {
     pub path: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]
 pub struct TargetDef {
     #[serde(default)]
     #[serde(rename = "type")]
@@ -174,7 +175,7 @@ pub struct TargetDef {
     pub path: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]
 pub enum TargetType {
     #[default]
     #[serde(rename = "file")]
@@ -190,7 +191,7 @@ pub enum TargetType {
     Parent,
 }
 
-#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]
 pub enum OutputLevel {
     #[serde(rename = "high")]
     High,
@@ -217,7 +218,7 @@ impl Into<Level> for OutputLevel {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]
 pub enum OutputCategory {
     #[default]
     #[serde(rename = "bug")]
@@ -288,7 +289,7 @@ impl Into<Category> for OutputCategory {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Default, JsonSchema)]
 pub struct PluginDef {
     pub runtime: Option<Runtime>,
 
@@ -385,7 +386,7 @@ fn default_idempotent() -> bool {
     true
 }
 
-#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Default)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Default, JsonSchema)]
 pub enum PackageFileCandidate {
     #[default]
     #[serde(rename = "package.json")]
@@ -403,7 +404,7 @@ impl std::fmt::Display for PackageFileCandidate {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Default, Eq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Default, Eq, JsonSchema)]
 pub struct PluginEnvironment {
     #[serde(default)]
     pub name: String,
@@ -427,7 +428,7 @@ impl PartialOrd for PluginEnvironment {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]
 pub enum SuggestionMode {
     #[default]
     #[serde(rename = "never")]
@@ -438,7 +439,7 @@ pub enum SuggestionMode {
     Targets,
 }
 
-#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]
 pub enum OutputDestination {
     #[default]
     #[serde(rename = "stdout")]
@@ -465,7 +466,7 @@ impl std::fmt::Display for OutputDestination {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]
 pub enum OutputFormat {
     #[default]
     #[serde(rename = "sarif")]
@@ -561,7 +562,7 @@ impl std::fmt::Display for OutputFormat {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]
 pub enum DriverType {
     #[default]
     #[serde(rename = "linter")]
@@ -572,7 +573,7 @@ pub enum DriverType {
     Validator,
 }
 
-#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]
 pub enum Runtime {
     #[default]
     #[serde(rename = "go")]
@@ -605,14 +606,14 @@ impl std::fmt::Display for Runtime {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default, JsonSchema)]
 #[allow(unused)]
 pub struct EnabledRuntimes {
     #[serde(default)]
     pub enabled: HashMap<Runtime, String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq, JsonSchema)]
 pub struct EnabledPlugin {
     pub name: String,
 
@@ -653,7 +654,7 @@ pub struct EnabledPlugin {
     pub prefix: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, JsonSchema)]
 pub struct PluginFetch {
     pub url: String,
     pub path: String,
@@ -705,7 +706,7 @@ impl PluginFetch {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default, PartialEq, JsonSchema)]
 pub enum IssueMode {
     #[default]
     #[serde(rename = "block")]
@@ -748,7 +749,7 @@ impl IssueMode {
     }
 }
 
-#[derive(Debug, Serialize, Clone, Default, PartialEq)]
+#[derive(Debug, Serialize, Clone, Default, PartialEq, JsonSchema)]
 pub struct ExtraPackage {
     pub name: String,
     pub version: String,
@@ -777,7 +778,7 @@ fn default_plugin_drivers() -> Vec<String> {
     vec![ALL.to_string()]
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize, JsonSchema)]
 pub enum CheckTrigger {
     #[serde(rename = "manual")]
     Manual,
@@ -789,7 +790,7 @@ pub enum CheckTrigger {
     Build,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize, Serialize, JsonSchema)]
 pub enum Platform {
     #[serde(rename = "linux")]
     Linux,

@@ -3,10 +3,11 @@ use crate::config::issue_transformer::IssueTransformer;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use qlty_types::category_from_str;
 use qlty_types::{analysis::v1::Issue, level_from_str};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::sync::RwLock;
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
 pub struct Override {
     #[serde(default)]
     pub level: Option<String>,
