@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.474.0"
+version = "0.475.0"
 authors = ["Qlty Software Inc."]
 description = "Code quality toolkit"
 documentation = "https://docs.qlty.sh"
@@ -69,20 +69,21 @@ pathdiff = "0.2.3"
 pbjson = "0.7.0"
 pbjson-types = "0.7.0"
 prost = "0.13.4"
-qlty-analysis = { version = "0.474.0", path = "qlty-analysis" }
-qlty-check = { version = "0.474.0", path = "qlty-check" }
-qlty-cloud = { version = "0.474.0", path = "qlty-cloud" }
-qlty-config = { version = "0.474.0", path = "qlty-config" }
-qlty-coverage = { version = "0.474.0", path = "qlty-coverage" }
-qlty-plugins = { version = "0.474.0", path = "qlty-plugins" }
-qlty-smells = { version = "0.474.0", path = "qlty-smells" }
-qlty-test-utilities = { version = "0.474.0", path = "qlty-test-utilities" }
-qlty-types = { version = "0.474.0", path = "qlty-types" }
+qlty-analysis = { version = "0.475.0", path = "qlty-analysis" }
+qlty-check = { version = "0.475.0", path = "qlty-check" }
+qlty-cloud = { version = "0.475.0", path = "qlty-cloud" }
+qlty-config = { version = "0.475.0", path = "qlty-config" }
+qlty-coverage = { version = "0.475.0", path = "qlty-coverage" }
+qlty-plugins = { version = "0.475.0", path = "qlty-plugins" }
+qlty-smells = { version = "0.475.0", path = "qlty-smells" }
+qlty-test-utilities = { version = "0.475.0", path = "qlty-test-utilities" }
+qlty-types = { version = "0.475.0", path = "qlty-types" }
 rand = "0.8.5"
 rayon = "1.10.0"
 regex = "1.11.0"
 rust-embed = { version = "8.5.0", features = ["include-exclude"] }
-semver = "1.0.24"
+schemars = "0.8.21"
+semver = "1.0.25"
 sentry = { version = "0.34.0", default-features = false, features = [
     "backtrace",
     "contexts",
@@ -92,7 +93,7 @@ sentry = { version = "0.34.0", default-features = false, features = [
 ] }
 sentry-backtrace = "0.34.0"
 serde = { version = "1.0.217", features = ["derive", "rc"] }
-serde_json = { version = "1.0.135", features = ["preserve_order"] }
+serde_json = { version = "1.0.137", features = ["preserve_order"] }
 serde-querystring = "0.2.1"
 serde_with = "3.12.0"
 serde_yaml = "0.9.34"
@@ -134,7 +135,7 @@ tree-sitter-typescript = "0.21.2"
 trycmd = "0.15.8"
 ureq = { version = "2.12.1", features = ["json"] }
 url = "2.5.4"
-uuid = { version = "1.11.1", features = ["v4"] }
+uuid = { version = "1.12.1", features = ["v4"] }
 walkdir = "2.5.0"
 webbrowser = "1.0.3"
 whoami = "1.5.2"

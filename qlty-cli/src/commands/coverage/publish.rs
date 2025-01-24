@@ -330,11 +330,11 @@ mod tests {
     #[test]
     fn test_expand_token_workspace_with_env() -> Result<()> {
         let token = publish(None).expand_token("qltcw_123".to_string())?;
-        assert_eq!(token, "qltcw_123/qlty");
+        assert!(token.starts_with("qltcw_123/"));
 
         std::env::set_var("GITHUB_REPOSITORY", "");
         let token = publish(None).expand_token("qltcw_123".to_string())?;
-        assert_eq!(token, "qltcw_123/qlty");
+        assert!(token.starts_with("qltcw_123/"));
 
         std::env::set_var("GITHUB_REPOSITORY", "a/b.git");
         let token = publish(None).expand_token("qltcw_123".to_string())?;

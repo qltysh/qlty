@@ -35,12 +35,13 @@ use crate::sources::SourcesList;
 use crate::version::QLTY_VERSION;
 use crate::Library;
 use anyhow::{bail, Result};
+use schemars::JsonSchema;
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tracing::{debug, warn};
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default, JsonSchema)]
 pub struct QltyConfig {
     pub config_version: Option<String>,
     pub cli_version: Option<String>,

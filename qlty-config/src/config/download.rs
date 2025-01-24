@@ -1,7 +1,8 @@
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]
 #[serde(rename_all = "lowercase")]
 pub enum DownloadFileType {
     #[default]
@@ -33,7 +34,7 @@ impl std::fmt::Display for DownloadFileType {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]
 pub enum OperatingSystem {
     #[default]
     #[serde(rename = "linux")]
@@ -54,7 +55,7 @@ impl OperatingSystem {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]
 pub enum Cpu {
     #[default]
     #[serde(rename = "x86_64")]
@@ -72,14 +73,14 @@ impl Cpu {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]
 pub struct System {
     pub url: String,
     pub cpu: Cpu,
     pub os: OperatingSystem,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, JsonSchema)]
 pub struct DownloadDef {
     pub binary_name: Option<String>,
 

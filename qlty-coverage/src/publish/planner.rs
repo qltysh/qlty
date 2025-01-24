@@ -11,6 +11,7 @@ use crate::utils::extract_path_and_format;
 use crate::Transformer;
 use anyhow::Result;
 use pbjson_types::Timestamp;
+use qlty_config::version::LONG_VERSION;
 use qlty_config::QltyConfig;
 use qlty_types::tests::v1::CoverageMetadata;
 use qlty_types::tests::v1::ReportFile;
@@ -52,6 +53,7 @@ impl Planner {
                 ..CoverageMetadata::default()
             }
         };
+        metadata.cli_version = LONG_VERSION.to_string();
 
         metadata.uploaded_at = Some(Timestamp {
             seconds: now.unix_timestamp(),

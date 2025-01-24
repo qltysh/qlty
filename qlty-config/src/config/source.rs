@@ -1,10 +1,11 @@
 use crate::sources::{DefaultSource, GitSource, GitSourceReference, LocalSource, Source};
 use crate::Library;
 use anyhow::{anyhow, bail, Result};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default, JsonSchema)]
 pub struct SourceDef {
     #[serde(default)]
     pub default: Option<bool>,
