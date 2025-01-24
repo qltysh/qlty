@@ -13,7 +13,8 @@
     "commitTime": "2024-01-01T00:00:00+00:00",
     "pullRequestNumber": "99",
     "tag": "rails",
-    "uploadedAt": "[..]"
+    "uploadedAt": "[..]",
+    "cliVersion": "[..]"
   },
   "report_files": [
     {

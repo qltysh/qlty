@@ -1,7 +1,8 @@
 use super::smells::Smells;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default, JsonSchema)]
 #[allow(unused)]
 pub struct Language {
     #[serde(default = "_default_true")]

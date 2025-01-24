@@ -595,7 +595,6 @@ impl serde::Serialize for Invocation {
         }
         if let Some(v) = self.exit_code.as_ref() {
             #[allow(clippy::needless_borrow)]
-            #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser.serialize_field("exitCode", ToString::to_string(&v).as_str())?;
         }
         if !self.stdout.is_empty() {

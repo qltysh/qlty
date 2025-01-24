@@ -1,7 +1,8 @@
 use super::IssueMode;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default, JsonSchema)]
 pub struct BooleanLogic {
     #[serde(default = "_default_true")]
     pub enabled: bool,
@@ -10,7 +11,7 @@ pub struct BooleanLogic {
     pub threshold: Option<usize>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default, JsonSchema)]
 pub struct NestedControlFlow {
     #[serde(default = "_default_true")]
     pub enabled: bool,
@@ -19,7 +20,7 @@ pub struct NestedControlFlow {
     pub threshold: Option<usize>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default, JsonSchema)]
 pub struct FunctionParameters {
     #[serde(default = "_default_true")]
     pub enabled: bool,
@@ -28,7 +29,7 @@ pub struct FunctionParameters {
     pub threshold: Option<usize>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default, JsonSchema)]
 pub struct ReturnStatements {
     #[serde(default = "_default_true")]
     pub enabled: bool,
@@ -37,7 +38,7 @@ pub struct ReturnStatements {
     pub threshold: Option<usize>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default, JsonSchema)]
 pub struct FileComplexity {
     #[serde(default = "_default_true")]
     pub enabled: bool,
@@ -46,7 +47,7 @@ pub struct FileComplexity {
     pub threshold: Option<usize>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default, JsonSchema)]
 pub struct FunctionComplexity {
     #[serde(default = "_default_true")]
     pub enabled: bool,
@@ -55,7 +56,7 @@ pub struct FunctionComplexity {
     pub threshold: Option<usize>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default, JsonSchema)]
 pub struct IdenticalCode {
     #[serde(default = "_default_true")]
     pub enabled: bool,
@@ -64,7 +65,7 @@ pub struct IdenticalCode {
     pub threshold: Option<usize>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default, JsonSchema)]
 pub struct SimilarCode {
     #[serde(default = "_default_true")]
     pub enabled: bool,
@@ -73,7 +74,7 @@ pub struct SimilarCode {
     pub threshold: Option<usize>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default, JsonSchema)]
 pub struct Duplication {
     #[serde(default)]
     pub filter_patterns: Vec<String>,
@@ -82,7 +83,7 @@ pub struct Duplication {
     pub nodes_threshold: Option<usize>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default, JsonSchema)]
 pub struct Smells {
     #[serde(default)]
     pub mode: Option<IssueMode>,

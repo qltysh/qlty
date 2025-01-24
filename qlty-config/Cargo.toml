@@ -11,6 +11,10 @@ categories.workspace = true
 license-file.workspace = true
 edition.workspace = true
 
+[[bin]]
+name = "qlty-config-generate-schema"
+path = "src/bin/generate_schema.rs"
+
 [lib]
 doctest = false
 
@@ -30,8 +34,10 @@ lazy_static.workspace = true
 md5.workspace = true
 qlty-plugins.workspace = true
 qlty-types.workspace = true
+schemars.workspace = true
 semver.workspace = true
 serde_with.workspace = true
+serde_json.workspace = true
 serde_yaml.workspace = true
 serde.workspace = true
 tempfile.workspace = true
