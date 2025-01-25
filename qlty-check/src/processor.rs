@@ -43,8 +43,8 @@ impl Processor {
         self.issues.sort();
 
         info!(
-            "Processed results from {} invocations in {:.2}s",
-            self.results.invocations.len(),
+            "Processed {} issue results in {:.2}s",
+            self.results.issues.len(),
             timer.elapsed().as_secs_f32()
         );
 

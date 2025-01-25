@@ -93,7 +93,7 @@ impl Executor {
         }
 
         info!(
-            "All {} tasks complete in {:.2}s",
+            "All {} install tasks complete in {:.2}s",
             tasks_count,
             timer.elapsed().as_secs_f32()
         );
@@ -185,7 +185,6 @@ impl Executor {
 
     fn install_tool(name: String, tool: Box<dyn Tool>, progress: Progress) -> Result<()> {
         let task = progress.task(&name, "Installing...");
-        info!("Installing tool {}", name);
         tool.pre_setup(&task)?;
         tool.setup(&task)?;
         progress.increment(1);
@@ -464,12 +463,12 @@ impl Executor {
         formatters.shuffle(&mut thread_rng());
 
         let timer = Instant::now();
-        info!("Running {} invocations", linters.len());
+        info!("Running {} invocations...", linters.len());
 
         let mut invocation_results = self.run_invocation_pools(linters, transformers);
         invocation_results.extend(self.run_invocation_pools(formatters, transformers));
 
-        info!(
+        debug!(
             "All {} invocation tasks complete in {:.2}s",
             self.plan.invocations.len(),
             timer.elapsed().as_secs_f32()

@@ -229,8 +229,7 @@ impl EslintExtraPackages {
     }
 
     // gracefully return empty string when unknown package/rule is detected
-    fn missing_rule_url_format(rule: String) -> String {
-        debug!("No URL format found for rule: {}", rule);
+    fn missing_rule_url_format(_rule: String) -> String {
         "".to_string()
     }
 }
