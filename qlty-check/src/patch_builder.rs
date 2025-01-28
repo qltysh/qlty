@@ -168,7 +168,11 @@ fn replace_in_range(
         end -= 1;
     }
 
-    if start < mdata.len() && end < mdata.len() {
+    if start < mdata.len()
+        && end < mdata.len()
+        && mdata.is_char_boundary(start)
+        && mdata.is_char_boundary(end)
+    {
         mdata.replace_range(start..end, replacement);
         true
     } else {
