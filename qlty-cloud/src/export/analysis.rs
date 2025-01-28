@@ -1,6 +1,7 @@
-use crate::format::{GzFormatter, JsonEachRowFormatter, JsonFormatter};
+use crate::format::{CopyFormatter, GzFormatter, JsonEachRowFormatter, JsonFormatter};
 use anyhow::Result;
 use qlty_analysis::Report;
+use qlty_config::Workspace;
 use std::path::{Path, PathBuf};
 use tracing::info;
 
@@ -45,7 +46,12 @@ impl AnalysisExport {
             .write_to_file(&self.path.join("issues.jsonl"))?;
 
         JsonEachRowFormatter::new(self.report.stats.clone())
-            .write_to_file(&self.path.join("stats.jsonl"))
+            .write_to_file(&self.path.join("stats.jsonl"))?;
+
+        CopyFormatter::new(Self::qlty_config_path()?)
+            .write_to_file(&self.path.join("qlty.toml"))?;
+
+        Ok(())
     }
 
     fn export_json_gz(&self) -> Result<()> {
@@ -62,6 +68,15 @@ impl AnalysisExport {
             .write_to_file(&self.path.join("issues.json.gz"))?;
 
         GzFormatter::new(JsonEachRowFormatter::new(self.report.stats.clone()))
-            .write_to_file(&self.path.join("stats.json.gz"))
+            .write_to_file(&self.path.join("stats.json.gz"))?;
+
+        GzFormatter::new(CopyFormatter::new(Self::qlty_config_path()?))
+            .write_to_file(&self.path.join("qlty.toml.gz"))?;
+
+        Ok(())
+    }
+
+    fn qlty_config_path() -> Result<PathBuf> {
+        Ok(Workspace::new()?.library()?.qlty_config_path())
     }
 }

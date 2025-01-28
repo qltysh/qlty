@@ -1,10 +1,12 @@
 use anyhow::{anyhow, Context, Result};
 
+mod copy;
 mod gz;
 mod json;
 mod json_each;
 mod protos;
 
+pub use copy::CopyFormatter;
 pub use gz::GzFormatter;
 pub use json::JsonFormatter;
 pub use json_each::JsonEachRowFormatter;
