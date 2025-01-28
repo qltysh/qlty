@@ -12,7 +12,6 @@ edition.workspace = true
 
 [lib]
 doctest = false
-test = false
 
 [dependencies]
 anyhow.workspace = true
