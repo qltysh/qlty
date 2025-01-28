@@ -48,7 +48,7 @@ impl AnalysisExport {
         JsonEachRowFormatter::new(self.report.stats.clone())
             .write_to_file(&self.path.join("stats.jsonl"))?;
 
-        CopyFormatter::new(Self::qlty_config_path()?)
+        CopyFormatter::boxed(Self::qlty_config_path()?)
             .write_to_file(&self.path.join("qlty.toml"))?;
 
         Ok(())
@@ -70,7 +70,7 @@ impl AnalysisExport {
         GzFormatter::new(JsonEachRowFormatter::new(self.report.stats.clone()))
             .write_to_file(&self.path.join("stats.json.gz"))?;
 
-        GzFormatter::new(CopyFormatter::new(Self::qlty_config_path()?))
+        GzFormatter::new(CopyFormatter::boxed(Self::qlty_config_path()?))
             .write_to_file(&self.path.join("qlty.toml.gz"))?;
 
         Ok(())

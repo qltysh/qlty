@@ -11,7 +11,7 @@ pub struct CopyFormatter {
 }
 
 impl CopyFormatter {
-    pub fn new(path: PathBuf) -> Box<dyn Formatter> {
+    pub fn boxed(path: PathBuf) -> Box<dyn Formatter> {
         Box::new(Self { path })
     }
 }
