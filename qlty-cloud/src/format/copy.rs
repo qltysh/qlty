@@ -22,3 +22,24 @@ impl Formatter for CopyFormatter {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Read;
+
+    #[test]
+    fn test_copy_formatter() -> anyhow::Result<()> {
+        let path = PathBuf::from("Cargo.toml");
+        let formatter = CopyFormatter::boxed(path.clone());
+        let mut buffer = Vec::new();
+        formatter.write_to(&mut buffer)?;
+
+        let mut file = File::open(path)?;
+        let mut file_buffer = Vec::new();
+        file.read_to_end(&mut file_buffer)?;
+
+        assert_eq!(buffer, file_buffer);
+        Ok(())
+    }
+}
