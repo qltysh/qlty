@@ -13,6 +13,8 @@ use qlty_config::Workspace;
 use std::io::Write;
 use tabwriter::TabWriter;
 
+const CLASSIC_CONFIG_NAME: &str = ".codeclimate.yml";
+
 #[derive(Args, Debug)]
 pub struct Init {
     /// Answer yes to all prompts
@@ -106,9 +108,9 @@ impl Init {
                 self.print_enabled_plugins(&initializer)?;
             }
 
-            // if !self.skip_migrate && .codeclimate.yml exists{
-            // self.maybe_migrate_config
-            // }
+            if !self.skip_plugins {
+                self.maybe_migrate_config()?;
+            }
 
             if !self.skip_plugins {
                 self.plugins_post_init(&initializer)?;
@@ -265,5 +267,27 @@ impl Init {
     fn current_exe(&self) -> Result<std::path::PathBuf> {
         let current_exe = std::env::current_exe()?;
         Ok(current_exe)
+    }
+
+    fn maybe_migrate_config(&self) -> Result<()> {
+        let workspace = Workspace::new()?;
+        let classic_config_path = workspace.root.join(CLASSIC_CONFIG_NAME);
+
+        if classic_config_path.exists() {
+            if !self.no
+                && (self.yes
+                    || Confirm::with_theme(&ColorfulTheme::default())
+                        .with_prompt(
+                            "Would you like to migrate your .codeclimate.yml configuration?",
+                        )
+                        .default(true)
+                        .show_default(true)
+                        .interact()?)
+            {
+                cmd!(self.current_exe()?, "config", "migrate").run()?;
+                self.print_check("Migrated .codeclimate.yml configuration");
+            }
+        }
+        Ok(())
     }
 }
