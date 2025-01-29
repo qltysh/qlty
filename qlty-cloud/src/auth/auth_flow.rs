@@ -163,14 +163,19 @@ mod tests {
     use super::*;
     use crate::auth::credentials::{read_token, set_mock_entry};
     use keyring::{mock, set_default_credential_builder, Entry};
+    use std::sync::Once;
     use std::{thread, time::Duration};
+
+    static INIT: Once = Once::new();
 
     impl AppState {
         fn test(original_state: &str) -> Self {
-            set_default_credential_builder(mock::default_credential_builder());
-            set_mock_entry(Arc::new(
-                Entry::new("qlty-cli-test", "qlty-cli-test").unwrap(),
-            ));
+            INIT.call_once(|| {
+                set_default_credential_builder(mock::default_credential_builder());
+                set_mock_entry(Arc::new(
+                    Entry::new("qlty-cli-test", "qlty-cli-test").unwrap(),
+                ));
+            });
 
             let mut state = AppState::default();
             state.original_state = original_state.to_string();
