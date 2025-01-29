@@ -1,6 +1,7 @@
 use crate::publish::Report;
 use anyhow::{Context, Result};
 use qlty_cloud::{export::CoverageExport, Client as QltyClient};
+use qlty_types::tests::v1::CoverageMetadata;
 use serde_json::Value;
 use std::path::PathBuf;
 use ureq::Error;
@@ -19,33 +20,7 @@ pub struct Upload {
 
 impl Upload {
     pub fn prepare(token: &str, report: &mut Report) -> Result<Self> {
-        let client = QltyClient::new(Some(LEGACY_API_URL), Some(token.into()));
-
-        let response_result = client.post("/coverage").send_json(ureq::json!({
-            "data": report.metadata,
-        }));
-
-        let response = match response_result {
-            Ok(resp) => resp
-                .into_json::<Value>()
-                .map_err(|_| anyhow::anyhow!("Invalid JSON response")),
-
-            Err(Error::Status(code, resp)) => {
-                let error_message: Value = resp
-                    .into_json()
-                    .unwrap_or_else(|_| serde_json::json!({"error": "Unknown error"}));
-
-                let error_text = error_message
-                    .get("error")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("Unknown error");
-
-                Err(anyhow::anyhow!("HTTP Error {}: {}", code, error_text))
-            }
-            Err(Error::Transport(transport_error)) => {
-                Err(anyhow::anyhow!("Transport Error: {:?}", transport_error))
-            }
-        }?;
+        let response = Self::request_api(&report.metadata, token)?;
 
         let file_coverages_url = response
             .get("data")
@@ -173,5 +148,34 @@ impl Upload {
         }
 
         Ok(())
+    }
+
+    fn request_api(metadata: &CoverageMetadata, token: &str) -> Result<Value> {
+        let client = QltyClient::new(Some(LEGACY_API_URL), Some(token.into()));
+        let response_result = client.post("/coverage").send_json(ureq::json!({
+            "data": metadata,
+        }));
+
+        match response_result {
+            Ok(resp) => resp
+                .into_json::<Value>()
+                .map_err(|_| anyhow::anyhow!("Invalid JSON response")),
+
+            Err(Error::Status(code, resp)) => {
+                let error_message: Value = resp
+                    .into_json()
+                    .unwrap_or_else(|_| serde_json::json!({"error": "Unknown error"}));
+
+                let error_text = error_message
+                    .get("error")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("Unknown error");
+
+                Err(anyhow::anyhow!("HTTP Error {}: {}", code, error_text))
+            }
+            Err(Error::Transport(transport_error)) => {
+                Err(anyhow::anyhow!("Transport Error: {:?}", transport_error))
+            }
+        }
     }
 }
