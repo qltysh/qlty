@@ -1,4 +1,6 @@
-use crate::format::{CopyFormatter, GzFormatter, JsonEachRowFormatter, JsonFormatter};
+use crate::format::{
+    CopyFormatter, GzFormatter, InvocationJsonFormatter, JsonEachRowFormatter, JsonFormatter,
+};
 use anyhow::Result;
 use qlty_analysis::Report;
 use qlty_config::Workspace;
@@ -39,7 +41,7 @@ impl AnalysisExport {
         JsonEachRowFormatter::new(self.report.messages.clone())
             .write_to_file(&self.path.join("messages.jsonl"))?;
 
-        JsonEachRowFormatter::new(self.report.invocations.clone())
+        InvocationJsonFormatter::new(self.report.invocations.clone())
             .write_to_file(&self.path.join("invocations.jsonl"))?;
 
         JsonEachRowFormatter::new(self.report.issues.clone())

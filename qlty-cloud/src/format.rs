@@ -4,12 +4,14 @@ mod copy;
 mod gz;
 mod json;
 mod json_each;
+mod json_each_truncated;
 mod protos;
 
 pub use copy::CopyFormatter;
 pub use gz::GzFormatter;
 pub use json::JsonFormatter;
 pub use json_each::JsonEachRowFormatter;
+pub use json_each_truncated::InvocationJsonFormatter;
 pub use protos::{ProtoFormatter, ProtosFormatter};
 
 pub trait Formatter {
