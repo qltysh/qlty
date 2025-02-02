@@ -40,6 +40,10 @@ pub struct DriverDef {
 
     #[serde(default)]
     pub output_format: OutputFormat,
+
+    #[serde(default)]
+    pub output_missing: OutputMissing,
+
     pub output_regex: Option<String>,
 
     #[serde(default)]
@@ -111,9 +115,6 @@ pub struct DriverDef {
 
     #[serde(default)]
     pub autoload_script: Option<String>,
-
-    #[serde(default)]
-    pub missing_output_as_error: bool,
 }
 
 fn default_driver_timeout() -> u64 {
@@ -122,6 +123,22 @@ fn default_driver_timeout() -> u64 {
 
 fn default_max_batch() -> usize {
     64
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]
+pub enum OutputMissing {
+    /// Raise an error if the output is missing
+    #[default]
+    #[serde(rename = "error")]
+    Error,
+
+    /// Interpret no output as no issues
+    #[serde(rename = "no_issues")]
+    NoIssues,
+
+    /// Hand the empty output to the parser for processing
+    #[serde(rename = "parse")]
+    Parse,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]

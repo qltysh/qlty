@@ -7,7 +7,7 @@ use anyhow::{Context, Result};
 use chrono::prelude::*;
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_config::{
-    config::{OutputDestination, TargetType},
+    config::{OutputDestination, OutputMissing, TargetType},
     version::QLTY_VERSION,
 };
 use qlty_types::analysis::v1::{
@@ -273,20 +273,7 @@ impl InvocationResult {
         let tmpfile_path = self.invocation.tmpfile_path.as_ref().unwrap();
         let read_result = std::fs::read_to_string(tmpfile_path)
             .with_context(|| format!("Failed to read tmpfile contents from {}", tmpfile_path));
-
-        match read_result {
-            Ok(contents) => {
-                self.invocation.tmpfile_contents = Some(contents);
-            }
-            Err(e) => {
-                if self.plan.driver.missing_output_as_error {
-                    self.invocation.tmpfile_contents = Some("".to_string());
-                } else {
-                    self.invocation.parser_error = Some(e.to_string());
-                }
-            }
-        }
-
+        self.invocation.tmpfile_contents = read_result.ok();
         Ok(())
     }
 
@@ -330,19 +317,28 @@ impl InvocationResult {
                 &self.invocation.stdout
             };
 
-            if output.is_empty() && self.plan.driver.missing_output_as_error {
-                self.invocation.exit_result =
-                    qlty_types::analysis::v1::ExitResult::UnknownError.into();
-                self.log_error_output();
-            } else {
-                let file_results = self.plan.driver.parse(output, &self.plan);
-
-                match file_results {
-                    Ok(file_results) => {
-                        self.file_results = Some(file_results);
+            if output.is_empty() {
+                match self.plan.driver.output_missing {
+                    OutputMissing::Error => {
+                        self.invocation.exit_result =
+                            qlty_types::analysis::v1::ExitResult::UnknownError.into();
+                        self.log_error_output();
                     }
-                    Err(e) => {
-                        self.invocation.parser_error = Some(e.to_string());
+                    OutputMissing::NoIssues => {
+                        self.invocation.exit_result =
+                            qlty_types::analysis::v1::ExitResult::NoIssues.into();
+                    }
+                    OutputMissing::Parse => {
+                        let file_results = self.plan.driver.parse(output, &self.plan);
+
+                        match file_results {
+                            Ok(file_results) => {
+                                self.file_results = Some(file_results);
+                            }
+                            Err(e) => {
+                                self.invocation.parser_error = Some(e.to_string());
+                            }
+                        }
                     }
                 }
             }
