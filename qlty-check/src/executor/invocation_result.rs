@@ -307,39 +307,51 @@ impl InvocationResult {
     }
 
     fn handle_output_parsing(&mut self) -> Result<()> {
-        // If we have something to attempt to parse (which we don't if the tmpfile doesn't exist)
-        if !self.plan.uses_tmpfile() || self.invocation.tmpfile_contents.is_some() {
-            let output = if self.plan.uses_tmpfile() {
-                self.invocation.tmpfile_contents.as_ref().unwrap()
-            } else if self.plan.driver.output == OutputDestination::Stderr {
-                &self.invocation.stderr
-            } else {
-                &self.invocation.stdout
-            };
+        let output = if self.plan.uses_tmpfile() {
+            self.invocation
+                .tmpfile_contents
+                .as_ref()
+                .unwrap_or(&String::new())
+                .to_owned()
+        } else if self.plan.driver.output == OutputDestination::Stderr {
+            self.invocation.stderr.to_owned()
+        } else {
+            self.invocation.stdout.to_owned()
+        };
 
-            if output.is_empty() {
-                match self.plan.driver.output_missing {
-                    OutputMissing::Error => {
-                        self.invocation.exit_result =
-                            qlty_types::analysis::v1::ExitResult::UnknownError.into();
-                        self.log_error_output();
-                    }
-                    OutputMissing::NoIssues => {
-                        self.invocation.exit_result =
-                            qlty_types::analysis::v1::ExitResult::NoIssues.into();
-                    }
-                    OutputMissing::Parse => {
-                        let file_results = self.plan.driver.parse(output, &self.plan);
+        if output.is_empty() {
+            match self.plan.driver.output_missing {
+                OutputMissing::Error => {
+                    self.invocation.exit_result =
+                        qlty_types::analysis::v1::ExitResult::UnknownError.into();
+                    self.log_error_output();
+                }
+                OutputMissing::NoIssues => {
+                    self.invocation.exit_result =
+                        qlty_types::analysis::v1::ExitResult::NoIssues.into();
+                }
+                OutputMissing::Parse => {
+                    let file_results = self.plan.driver.parse(&output, &self.plan);
 
-                        match file_results {
-                            Ok(file_results) => {
-                                self.file_results = Some(file_results);
-                            }
-                            Err(e) => {
-                                self.invocation.parser_error = Some(e.to_string());
-                            }
+                    match file_results {
+                        Ok(file_results) => {
+                            self.file_results = Some(file_results);
+                        }
+                        Err(e) => {
+                            self.invocation.parser_error = Some(e.to_string());
                         }
                     }
+                }
+            }
+        } else {
+            let file_results = self.plan.driver.parse(&output, &self.plan);
+
+            match file_results {
+                Ok(file_results) => {
+                    self.file_results = Some(file_results);
+                }
+                Err(e) => {
+                    self.invocation.parser_error = Some(e.to_string());
                 }
             }
         }
