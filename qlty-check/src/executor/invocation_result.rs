@@ -330,33 +330,26 @@ impl InvocationResult {
                     self.invocation.exit_result =
                         qlty_types::analysis::v1::ExitResult::NoIssues.into();
                 }
-                OutputMissing::Parse => {
-                    let file_results = self.plan.driver.parse(&output, &self.plan);
-
-                    match file_results {
-                        Ok(file_results) => {
-                            self.file_results = Some(file_results);
-                        }
-                        Err(e) => {
-                            self.invocation.parser_error = Some(e.to_string());
-                        }
-                    }
-                }
+                OutputMissing::Parse => self.parse_output(output),
             }
         } else {
-            let file_results = self.plan.driver.parse(&output, &self.plan);
-
-            match file_results {
-                Ok(file_results) => {
-                    self.file_results = Some(file_results);
-                }
-                Err(e) => {
-                    self.invocation.parser_error = Some(e.to_string());
-                }
-            }
+            self.parse_output(output);
         }
 
         Ok(())
+    }
+
+    fn parse_output(&mut self, output: String) {
+        let file_results = self.plan.driver.parse(&output, &self.plan);
+
+        match file_results {
+            Ok(file_results) => {
+                self.file_results = Some(file_results);
+            }
+            Err(e) => {
+                self.invocation.parser_error = Some(e.to_string());
+            }
+        }
     }
 
     fn create_file_result_for_autofmts(&self) -> Result<Vec<FileResult>> {
