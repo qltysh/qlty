@@ -1,6 +1,6 @@
 use anyhow::{bail, Result};
 use qlty_analysis::utils::fs::path_to_string;
-use qlty_analysis::workspace_entries::TargetMode;
+use qlty_analysis::workspace_entries::{OrMatcher, TargetMode};
 use qlty_analysis::{
     git::GitDiff, workspace_entries::AndMatcher, FileMatcher, GlobsMatcher, PrefixMatcher,
     WorkspaceEntryFinder, WorkspaceEntryMatcher, WorkspaceEntrySource,
@@ -115,10 +115,24 @@ impl PluginWorkspaceEntryFinderBuilder {
             .iter()
             .flat_map(|i| i.file_patterns.clone())
             .collect::<Vec<_>>();
+        let mut ignores = vec![];
+        let mut negated_ignores = vec![];
 
-        let ignores = GlobsMatcher::new_for_globs(&ignores, false)?;
-        matchers.push(Box::new(ignores));
+        for ignore in &self.ignores {
+            for pattern in &ignore.file_patterns {
+                match pattern.strip_prefix('!') {
+                    Some(pattern) => negated_ignores.push(pattern.to_string()),
+                    None => ignores.push(pattern.clone()),
+                }
+            }
+        }
 
+        let ignore_matchers: Vec<Box<dyn WorkspaceEntryMatcher>> = vec![
+            Box::new(GlobsMatcher::new_for_globs(&negated_ignores, true)?),
+            Box::new(GlobsMatcher::new_for_globs(&ignores, false)?),
+        ];
+
+        matchers.push(Box::new(OrMatcher::new(ignore_matchers)));
         Ok(Box::new(AndMatcher::new(matchers)))
     }
 

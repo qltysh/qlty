@@ -1,0 +1,16 @@
+config_version = "0"
+
+[plugins.definitions.exists]
+file_types = ["shell"]
+
+[plugins.definitions.exists.drivers.lint]
+script = "false"
+success_codes = [0]
+output = "pass_fail"
+
+[[plugin]]
+name = "exists"
+version = "1.0.0"
+
+[[ignore]]
+file_patterns = ["**/ignore/**.sh", "!**/ignore/dont_ignore.sh"]
