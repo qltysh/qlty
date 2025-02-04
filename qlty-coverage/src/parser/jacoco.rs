@@ -19,7 +19,7 @@ struct Package {
 #[derive(Debug, Deserialize)]
 struct Sourcefile {
     name: String,
-    line: Vec<Line>,
+    line: Option<Vec<Line>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -51,13 +51,15 @@ impl Parser for Jacoco {
         for package in source.package.iter() {
             for sourcefile in package.sourcefile.iter() {
                 let mut line_hits = Vec::new();
-                for line in sourcefile.line.iter() {
-                    // Fill in any missing lines with -1 to indicate that are omitted
-                    for _x in (line_hits.len() as i64)..(line.nr - 1) {
-                        line_hits.push(-1)
-                    }
+                if let Some(lines) = sourcefile.line.as_ref() {
+                    for line in lines {
+                        // Fill in any missing lines with -1 to indicate that are omitted
+                        for _x in (line_hits.len() as i64)..(line.nr - 1) {
+                            line_hits.push(-1)
+                        }
 
-                    line_hits.push(line.ci);
+                        line_hits.push(line.ci);
+                    }
                 }
 
                 let path = format!("{}/{}", package.name, sourcefile.name);
@@ -86,53 +88,54 @@ mod tests {
         let input = include_str!("../../tests/fixtures/jacoco/sample.xml");
 
         let parsed_results = Jacoco::new().parse_text(input).unwrap();
-        insta::assert_yaml_snapshot!(parsed_results, @r#"
-    - path: be/apo/basic/Application.java
-      hits:
-        - "-1"
-        - "-1"
-        - "-1"
-        - "-1"
-        - "-1"
-        - "-1"
-        - "3"
-        - "-1"
-        - "-1"
-        - "0"
-        - "0"
-    - path: be/apo/basic/rest/EchoService.java
-      hits:
-        - "-1"
-        - "-1"
-        - "-1"
-        - "-1"
-        - "-1"
-        - "-1"
-        - "-1"
-        - "3"
-        - "-1"
-        - "-1"
-        - "-1"
-        - "0"
-    - path: be/apo/basic/rest/model/Poney.java
-      hits:
-        - "-1"
-        - "-1"
-        - "0"
-        - "-1"
-        - "-1"
-        - "0"
-        - "-1"
-        - "-1"
-        - "0"
-        - "-1"
-        - "-1"
-        - "-1"
-        - "0"
-        - "0"
-        - "-1"
-        - "-1"
-        - "0"
-    "#);
+        insta::assert_yaml_snapshot!(parsed_results, @r###"
+        - path: be/apo/basic/Application.java
+          hits:
+            - "-1"
+            - "-1"
+            - "-1"
+            - "-1"
+            - "-1"
+            - "-1"
+            - "3"
+            - "-1"
+            - "-1"
+            - "0"
+            - "0"
+        - path: be/apo/basic/rest/EchoService.java
+          hits:
+            - "-1"
+            - "-1"
+            - "-1"
+            - "-1"
+            - "-1"
+            - "-1"
+            - "-1"
+            - "3"
+            - "-1"
+            - "-1"
+            - "-1"
+            - "0"
+        - path: be/apo/basic/rest/model/Poney.java
+          hits:
+            - "-1"
+            - "-1"
+            - "0"
+            - "-1"
+            - "-1"
+            - "0"
+            - "-1"
+            - "-1"
+            - "0"
+            - "-1"
+            - "-1"
+            - "-1"
+            - "0"
+            - "0"
+            - "-1"
+            - "-1"
+            - "0"
+        - path: be/apo/basic/rest/model/Empty.java
+        "###);
     }
 }
