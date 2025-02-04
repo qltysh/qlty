@@ -231,7 +231,14 @@ impl Init {
         );
         println!();
 
-        cmd!(self.current_exe()?, "check", "--sample", "5").run()?;
+        cmd!(
+            self.current_exe()?,
+            "check",
+            "--sample",
+            "5",
+            "--no-formatters"
+        )
+        .run()?;
         Ok(())
     }
 
