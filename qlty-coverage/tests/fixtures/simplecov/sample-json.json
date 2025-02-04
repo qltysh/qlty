@@ -1,0 +1,61 @@
+{
+  "timestamp": 1738692160,
+  "command_name": "RSpec",
+  "files": [
+    {
+      "filename": "app/controllers/base_controller.rb",
+      "coverage": [
+        1,
+        1,
+        1,
+        1,
+        null,
+        1,
+        null,
+        1,
+        null,
+        1,
+        null,
+        1,
+        null,
+        0,
+        null,
+        0,
+        26,
+        null,
+        null,
+        1,
+        20,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "filename": "app/controllers/sample_controller.rb",
+      "coverage": [
+        1,
+        1,
+        1,
+        null,
+        1,
+        0,
+        0,
+        0,
+        null,
+        null,
+        1,
+        null,
+        1,
+        1,
+        null,
+        null,
+        1,
+        1,
+        null,
+        null,
+        null
+      ]
+    }
+  ]
+}
