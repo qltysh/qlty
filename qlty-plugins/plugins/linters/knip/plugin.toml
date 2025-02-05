@@ -28,3 +28,4 @@ success_codes = [0, 1]
 output = "stdout"
 output_format = "knip"
 skip_upstream = true
+output_missing = "parse"

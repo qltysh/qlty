@@ -24,3 +24,4 @@ output_format = "actionlint"
 cache_results = true
 batch = true
 suggested = "targets"
+output_missing = "parse"

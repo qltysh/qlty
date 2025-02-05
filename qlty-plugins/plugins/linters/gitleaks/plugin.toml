@@ -26,3 +26,4 @@ output_level = "high"
 cache_results = true
 batch = false
 suggested = "config"
+output_missing = "parse"

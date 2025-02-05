@@ -21,6 +21,7 @@ output_format = "rubocop"
 batch = true
 cache_results = true
 suggested = "targets"
+output_missing = "parse"
 
 [plugins.definitions.rubocop.drivers.format]
 script = "rubocop --fix-layout ${target}"

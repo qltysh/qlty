@@ -48,3 +48,4 @@ output_format = "ripgrep"
 batch = true
 cache_results = true
 suggested = "targets"
+output_missing = "parse"

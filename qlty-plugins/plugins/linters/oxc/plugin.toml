@@ -21,3 +21,4 @@ output_regex = "::(?P<severity>[^ ]+) file=(?P<path>[^,]+),line=(?P<line>\\d+),e
 batch = true
 cache_results = true
 max_batch = 40
+output_missing = "parse"

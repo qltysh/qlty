@@ -22,6 +22,7 @@ output_format = "biome"
 batch = true
 cache_results = true
 suggested = "config"
+output_missing = "parse"
 
 [plugins.definitions.biome.drivers.format]
 script = "biome format --write ${target}"

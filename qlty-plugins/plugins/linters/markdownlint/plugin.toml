@@ -19,6 +19,7 @@ driver_type = "linter"
 output = "stderr"
 output_format = "markdownlint"
 suggested = "targets"
+output_missing = "parse"
 
 [plugins.definitions.markdownlint.drivers.format]
 script = "markdownlint --fix ${target}"

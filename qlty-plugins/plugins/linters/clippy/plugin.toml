@@ -19,6 +19,7 @@ success_codes = [0, 101, 383]
 output = "stdout"
 output_format = "clippy"
 suggested = "targets"
+output_missing = "parse"
 
 [[plugins.definitions.clippy.environment]]
 name = "PATH"

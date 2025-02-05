@@ -21,3 +21,4 @@ output_regex = "((?P<path>.*):(?P<line>\\d+):(?P<col>\\d+): \\[(?P<severity>.*)\
 cache_results = true
 batch = true
 suggested = "targets"
+output_missing = "parse"

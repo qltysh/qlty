@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=markdownlint fixture=no_issues version=0.41.0 1`] = `
+{
+  "issues": [],
+}
+`;

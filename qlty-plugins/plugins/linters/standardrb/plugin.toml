@@ -20,6 +20,7 @@ output_format = "rubocop"
 batch = true
 cache_results = true
 suggested = "config"
+output_missing = "parse"
 
 [plugins.definitions.standardrb.drivers.format]
 script = "standardrb ${target} --fix"

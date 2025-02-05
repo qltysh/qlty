@@ -18,3 +18,4 @@ output = "tmpfile"
 output_format = "ruff"
 batch = true
 suggested = "targets"
+output_missing = "parse"

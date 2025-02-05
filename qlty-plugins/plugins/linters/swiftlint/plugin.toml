@@ -45,3 +45,4 @@ batch = true
 cache_results = true
 output_category = "style"
 suggested = "never"
+output_missing = "parse"
