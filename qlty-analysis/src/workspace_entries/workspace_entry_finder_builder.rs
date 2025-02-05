@@ -55,7 +55,8 @@ impl WorkspaceEntryFinderBuilder {
             TargetMode::All => Ok(Arc::new(AllSource::new(self.root.clone()))),
             TargetMode::Paths(_) => Ok(Arc::new(ArgsSource::new(
                 self.root.clone(),
-                self.paths.clone(),
+                // Use absolute paths, so when running in a subdirectory, the paths are still correct
+                self.paths.iter().map(|p| self.root.join(p)).collect(),
             ))),
             TargetMode::UpstreamDiff(_) => Ok(Arc::new(DiffSource::new(
                 self.git_diff()?.changed_files,
