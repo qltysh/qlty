@@ -15,7 +15,6 @@ script = "java -jar ${linter}/radarlint.jar ${target}"
 success_codes = [0]
 output = "stdout"
 output_format = "radarlint"
-output_missing = "parse"
 batch = true
 cache_results = true
 suggested = "targets"
