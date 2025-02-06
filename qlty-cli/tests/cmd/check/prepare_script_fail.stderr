@@ -1,2 +1,2 @@
-❌ [..]: prepare_script exited with non-zero code 127: sh -c INVALID_COMMAND
+❌ [..]: prepare_script exited with non-zero code 127:[..]INVALID_COMMAND[..]
 ...
