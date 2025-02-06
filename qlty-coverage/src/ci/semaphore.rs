@@ -50,8 +50,8 @@ impl CI for Semaphore {
     fn build_url(&self) -> String {
         format!(
             "{}/jobs/{}",
-            self.ci_url().to_string(),
-            self.build_id().to_string()
+            self.ci_url(),
+            self.build_id()
         )
     }
 
