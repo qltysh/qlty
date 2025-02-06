@@ -48,11 +48,7 @@ impl CI for Semaphore {
     }
 
     fn build_url(&self) -> String {
-        format!(
-            "{}/jobs/{}",
-            self.ci_url(),
-            self.build_id()
-        )
+        format!("{}/jobs/{}", self.ci_url(), self.build_id())
     }
 
     fn pull_number(&self) -> String {
