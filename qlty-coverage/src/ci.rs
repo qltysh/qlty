@@ -2,11 +2,13 @@ mod circleci;
 mod codefresh;
 mod github;
 mod gitlab;
+mod semaphore;
 
 pub use circleci::CircleCI;
 pub use codefresh::Codefresh;
 pub use github::GitHub;
 pub use gitlab::GitLab;
+pub use semaphore::Semaphore;
 use qlty_types::tests::v1::CoverageMetadata;
 
 pub trait CI {
@@ -63,5 +65,6 @@ pub fn all() -> Vec<Box<dyn CI>> {
         Box::<GitLab>::default(),
         Box::<CircleCI>::default(),
         Box::<Codefresh>::default(),
+        Box::<Semaphore>::default(),
     ]
 }
