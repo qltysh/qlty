@@ -541,9 +541,10 @@ impl Driver {
             Ok(())
         } else {
             bail!(
-                "{}: prepare_script exited with non-zero code {}",
+                "{}: prepare_script exited with non-zero code {}: {}",
                 plan.invocation_id,
-                output.status.code().unwrap_or(-1)
+                output.status.code().unwrap_or(-1),
+                rerun
             );
         }
     }

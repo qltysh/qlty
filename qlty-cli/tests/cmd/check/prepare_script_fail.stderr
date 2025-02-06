@@ -1,2 +1,2 @@
-❌ Failed to run prepare_script for prepare_script_fail/lint:[..]INVALID_COMMAND[..]
+❌ [..]: prepare_script exited with non-zero code 127: sh -c INVALID_COMMAND
 ...
