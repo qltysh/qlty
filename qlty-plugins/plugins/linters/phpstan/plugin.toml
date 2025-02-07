@@ -12,8 +12,9 @@ description = "PHP code linter"
 suggested = "targets"
 
 [plugins.definitions.phpstan.drivers.lint]
-script = "php -d memory_limit=-1 ${linter}/phpstan analyze ${target} --error-format=json --level=9 ${autoload_script} --configuration=${config_file}"
+script = "php -d memory_limit=-1 ${linter}/phpstan analyze ${target} --error-format=json --level=9 ${autoload_script} ${config_script}"
 autoload_script = "--autoload-file=${linter}/vendor/autoload.php"
+config_script = "--configuration=${config_file}"
 success_codes = [0, 1]
 output = "stdout"
 output_format = "phpstan"

@@ -17,6 +17,7 @@ pub fn compute_invocation_script(plan: &InvocationPlan) -> Result<String> {
 
     // Autoload script first in case it has variables that need to be interpolated
     base_script = replace_autoload_script(plan, base_script);
+    base_script = replace_config_script(plan, base_script);
     base_script = plan.tool.interpolate_variables(&base_script);
     base_script = replace_target_variable(plan, base_script);
     base_script = replace_tmpfile_variable(plan, base_script);
@@ -33,6 +34,19 @@ fn replace_autoload_script(plan: &InvocationPlan, script: String) -> String {
             script.replace("${autoload_script}", autoload_script)
         } else {
             script.replace("${autoload_script}", "")
+        }
+    } else {
+        script
+    }
+}
+
+fn replace_config_script(plan: &InvocationPlan, script: String) -> String {
+    if script.contains("${config_script}") {
+        if plan.plugin_configs.len() > 0 {
+            let config_script = plan.driver.config_script.as_deref().unwrap_or("");
+            script.replace("${config_script}", config_script)
+        } else {
+            script.replace("${config_script}", "")
         }
     } else {
         script
