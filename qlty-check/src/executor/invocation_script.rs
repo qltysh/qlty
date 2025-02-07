@@ -42,7 +42,7 @@ fn replace_autoload_script(plan: &InvocationPlan, script: String) -> String {
 
 fn replace_config_script(plan: &InvocationPlan, script: String) -> String {
     if script.contains("${config_script}") {
-        if plan.plugin_configs.len() > 0 {
+        if !plan.plugin_configs.is_empty() {
             let config_script = plan.driver.config_script.as_deref().unwrap_or("");
             script.replace("${config_script}", config_script)
         } else {
