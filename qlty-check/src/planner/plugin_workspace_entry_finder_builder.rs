@@ -105,8 +105,13 @@ impl PluginWorkspaceEntryFinderBuilder {
             )));
         }
 
-        let ignores = self
+        let ignores_without_metadata = self
             .ignores
+            .iter()
+            .filter(|i| i.plugins.is_empty() && i.rules.is_empty() && i.levels.is_empty())
+            .collect::<Vec<_>>();
+
+        let ignores = ignores_without_metadata
             .iter()
             .flat_map(|i| i.file_patterns.clone())
             .collect::<Vec<_>>();
