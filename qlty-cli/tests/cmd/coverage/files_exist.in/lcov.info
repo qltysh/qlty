@@ -1,5 +1,5 @@
 TN:
-SF:formatter.js
+SF:src/formatter.js
 FN:10,Formatter
 FN:14,(anonymous_2)
 FN:18,(anonymous_3)
@@ -69,7 +69,7 @@ BRDA:91,8,1,5
 BRF:16
 BRH:9
 end_of_record
-SF:src/ignore.js
+SF:src/doesnt_exist.js
 DA:1,1
 DA:2,0
 DA:5,10
