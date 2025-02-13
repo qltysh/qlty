@@ -213,6 +213,41 @@ mod test {
     }
 
     #[test]
+    fn simplecov_legacy_report_two_sections() {
+        let input = r#"
+        {
+            "Unit Tests": {
+                "coverage": {
+                    "development/mygem/lib/mygem/errors.rb": [1, 0, 1, null]
+                },
+                "timestamp": 1488827968
+            },
+            "Integration Tests": {
+                "coverage": {
+                    "development/mygem/lib/mygem/errors.rb": [1, 2, null, null]
+                },
+                "timestamp": 1488827968
+            }
+        }
+        "#;
+        let results: Vec<FileCoverage> = Simplecov::new().parse_text(input).unwrap();
+        insta::assert_yaml_snapshot!(results, @r#"
+        - path: development/mygem/lib/mygem/errors.rb
+          hits:
+            - "1"
+            - "0"
+            - "1"
+            - "-1"
+        - path: development/mygem/lib/mygem/errors.rb
+          hits:
+            - "1"
+            - "2"
+            - "-1"
+            - "-1"
+        "#);
+    }
+
+    #[test]
     fn simplecov_fixture() {
         let input = include_str!("../../tests/fixtures/simplecov/sample.json");
         let parsed_results = Simplecov::new().parse_text(input).unwrap();
