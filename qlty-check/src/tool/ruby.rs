@@ -55,7 +55,8 @@ pub trait PlatformRuby {
                         if let Ok(entries) = read_dir(entries_path) {
                             for entry in entries.flatten() {
                                 if path_to_string(entry.file_name()).starts_with(&major_version) {
-                                    major_version = path_to_string(entry.file_name())
+                                    major_version = path_to_string(entry.file_name());
+                                    break;
                                 }
                             }
                         }
