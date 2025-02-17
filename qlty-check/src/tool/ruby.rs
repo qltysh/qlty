@@ -10,7 +10,7 @@ use crate::ui::{ProgressBar, ProgressTask};
 use anyhow::Result;
 use itertools::Itertools;
 use qlty_analysis::join_path_string;
-use qlty_analysis::utils::fs::path_to_native_string;
+use qlty_analysis::utils::fs::{path_to_native_string, path_to_string};
 use qlty_config::config::{Cpu, DownloadDef, System};
 use qlty_config::config::{OperatingSystem, PluginDef};
 use std::collections::HashMap;
@@ -43,19 +43,30 @@ pub trait PlatformRuby {
     fn insert_rubylib_env(&self, tool: &dyn Tool, env: &mut HashMap<String, String>) {
         let major_version = self.major_version(tool);
         let platform_directory = self.platform_directory(tool);
+        let lib_prefix = join_path_string!(tool.directory(), "lib", "ruby");
         env.insert(
             "RUBYLIB".to_string(),
             join_paths(
                 ["site_ruby", "vendor_ruby", ""]
                     .iter()
                     .flat_map(|dir| {
+                        let mut major_version = major_version.clone();
+                        let entries_path = join_path_string!(&lib_prefix, dir);
+                        if let Ok(entries) = read_dir(entries_path) {
+                            for entry in entries.flatten() {
+                                if path_to_string(entry.file_name()).starts_with(&major_version) {
+                                    major_version = path_to_string(entry.file_name())
+                                }
+                            }
+                        }
+
                         [
                             join_path_string!(dir, &major_version),
                             join_path_string!(dir, &major_version, &platform_directory),
                             join_path_string!(dir),
                         ]
                         .iter()
-                        .map(|path| join_path_string!(tool.directory(), "lib", "ruby", path))
+                        .map(|path| join_path_string!(&lib_prefix, path))
                         .collect_vec()
                     })
                     .collect_vec(),

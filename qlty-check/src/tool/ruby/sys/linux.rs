@@ -224,6 +224,48 @@ mod test {
     }
 
     #[test]
+    fn test_different_version_directory() {
+        let tempdir = TempDir::new().unwrap();
+        std::fs::create_dir_all(tempdir.path().join("lib/ruby/site_ruby/9.9.0+1")).unwrap();
+        let tool = TestTool {
+            directory: tempdir.path().to_path_buf(),
+            version: "9.9.9".to_string(),
+        };
+        let mut env = std::collections::HashMap::new();
+        let runtime = RubyLinux::default();
+        let platform_dir = runtime.platform_directory(&tool);
+        runtime.extra_env_vars(&tool, &mut env);
+        assert_eq!(
+            *env.get("PKG_CONFIG_PATH").unwrap(),
+            format!("{}/lib/pkgconfig", path_to_string(tempdir.path()))
+        );
+        assert_eq!(
+            *env.get("RUBYLIB").unwrap(),
+            path_to_string(
+                join_paths(vec![
+                    tempdir.path().join("lib/ruby/site_ruby/9.9.0+1"),
+                    tempdir
+                        .path()
+                        .join(format!("lib/ruby/site_ruby/9.9.0+1/{}", platform_dir)),
+                    tempdir.path().join("lib/ruby/site_ruby"),
+                    tempdir.path().join("lib/ruby/vendor_ruby/9.9.0"),
+                    tempdir
+                        .path()
+                        .join(format!("lib/ruby/vendor_ruby/9.9.0/{}", platform_dir)),
+                    tempdir.path().join("lib/ruby/vendor_ruby"),
+                    tempdir.path().join("lib/ruby/9.9.0"),
+                    tempdir
+                        .path()
+                        .join(format!("lib/ruby/9.9.0/{}", platform_dir)),
+                    tempdir.path().join("lib/ruby/"),
+                ])
+                .unwrap()
+            )
+        );
+        drop(tempdir);
+    }
+
+    #[test]
     fn test_extra_env_vars() {
         let tempdir = TempDir::new().unwrap();
         let tool = TestTool {
