@@ -80,13 +80,16 @@ impl PlatformRuby for RubyMacos {
     /// version of darwin this was built against. The most reliable way to get
     /// this is to look at the first directory in site_ruby and use that.
     fn platform_directory(&self, tool: &dyn Tool) -> String {
-        let dir = join_path_string!(
-            tool.directory(),
-            "lib",
-            "ruby",
-            "site_ruby",
-            self.major_version(tool)
-        );
+        let mut dir = join_path_string!(tool.directory(), "lib", "ruby", "site_ruby");
+        if let Ok(version_dirs) = read_dir(&dir) {
+            let version = self.major_version(tool);
+            for entry in version_dirs.flatten().filter(|entry| entry.path().is_dir()) {
+                if path_to_string(entry.file_name()).starts_with(&version) {
+                    dir = path_to_string(entry.path());
+                    break;
+                }
+            }
+        }
         if let Ok(subdirs) = read_dir(&dir) {
             subdirs
                 .flatten()
@@ -243,14 +246,13 @@ mod test {
     #[test]
     fn test_different_version_directory() {
         let tempdir = TempDir::new().unwrap();
-        std::fs::create_dir_all(tempdir.path().join("lib/ruby/site_ruby/9.9.0+1")).unwrap();
+        std::fs::create_dir_all(tempdir.path().join("lib/ruby/site_ruby/9.9.0+1/ARCH")).unwrap();
         let tool = TestTool {
             directory: tempdir.path().to_path_buf(),
             version: "9.9.9".to_string(),
         };
         let mut env = std::collections::HashMap::new();
         let runtime = RubyMacos::default();
-        let platform_dir = runtime.platform_directory(&tool);
         runtime.extra_env_vars(&tool, &mut env);
         assert_eq!(
             *env.get("PKG_CONFIG_PATH").unwrap(),
@@ -261,19 +263,13 @@ mod test {
             path_to_string(
                 join_paths(vec![
                     tempdir.path().join("lib/ruby/site_ruby/9.9.0+1"),
-                    tempdir
-                        .path()
-                        .join(format!("lib/ruby/site_ruby/9.9.0+1/{}", platform_dir)),
+                    tempdir.path().join("lib/ruby/site_ruby/9.9.0+1/ARCH"),
                     tempdir.path().join("lib/ruby/site_ruby"),
                     tempdir.path().join("lib/ruby/vendor_ruby/9.9.0"),
-                    tempdir
-                        .path()
-                        .join(format!("lib/ruby/vendor_ruby/9.9.0/{}", platform_dir)),
+                    tempdir.path().join("lib/ruby/vendor_ruby/9.9.0/ARCH"),
                     tempdir.path().join("lib/ruby/vendor_ruby"),
                     tempdir.path().join("lib/ruby/9.9.0"),
-                    tempdir
-                        .path()
-                        .join(format!("lib/ruby/9.9.0/{}", platform_dir)),
+                    tempdir.path().join("lib/ruby/9.9.0/ARCH"),
                     tempdir.path().join("lib/ruby/"),
                 ])
                 .unwrap()

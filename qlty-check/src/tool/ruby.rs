@@ -53,7 +53,7 @@ pub trait PlatformRuby {
                         let mut major_version = major_version.clone();
                         let entries_path = join_path_string!(&lib_prefix, dir);
                         if let Ok(entries) = read_dir(entries_path) {
-                            for entry in entries.flatten() {
+                            for entry in entries.flatten().filter(|entry| entry.path().is_dir()) {
                                 if path_to_string(entry.file_name()).starts_with(&major_version) {
                                     major_version = path_to_string(entry.file_name());
                                     break;
