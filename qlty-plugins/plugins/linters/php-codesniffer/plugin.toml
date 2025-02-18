@@ -5,6 +5,7 @@ runnable_archive_url = "https://github.com/PHPCSStandards/PHP_CodeSniffer/releas
 strip_components = 0
 runtime = "php"
 file_types = ["php"]
+config_files = ["phpcs.xml"]
 latest_version = "3.10.3"
 known_good_version = "3.10.3"
 version_command = "php ${linter}/php-codesniffer --version"
