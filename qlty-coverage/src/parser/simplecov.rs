@@ -19,37 +19,16 @@ impl Parser for Simplecov {
             serde_json::from_str(text).with_context(|| "Failed to parse JSON text")?;
 
         let mut file_coverages = vec![];
-        let mut optional_coverage_data = Map::new();
 
-        let coverage_data = if self.is_version_018_or_newer(&json_value) {
-            json_value.get("coverage").and_then(|c| c.as_object())
-        } else {
-            let coverage = json_value
-                .as_object()
-                .and_then(|obj| obj.values().next())
-                .and_then(|group| group.get("coverage").and_then(|c| c.as_object()));
-            if coverage.is_some() {
-                coverage.to_owned()
-            } else {
-                // Check if using simplecov-json[https://github.com/vicentllongo/simplecov-json]
-                Self::extract_coverage_data_for_simplecov_json(
-                    &json_value,
-                    &mut optional_coverage_data,
-                )
+        if self.is_version_018_or_newer(&json_value) {
+            if let Some(coverage) = self.extract_coverage(&json_value) {
+                file_coverages.extend(self.extract_file_coverage(coverage));
             }
-        };
+        } else {
+            file_coverages.extend(self.parse_legacy_coverage(&json_value));
 
-        if let Some(coverage) = coverage_data {
-            for (file_path, data) in coverage {
-                let line_hits = self.parse_line_coverage(data);
-
-                let file_coverage = FileCoverage {
-                    path: file_path.to_string(),
-                    hits: line_hits,
-                    ..Default::default()
-                };
-
-                file_coverages.push(file_coverage);
+            if file_coverages.is_empty() {
+                file_coverages.extend(self.parse_json_coverage(&json_value));
             }
         }
 
@@ -58,6 +37,49 @@ impl Parser for Simplecov {
 }
 
 impl Simplecov {
+    fn extract_coverage<'a>(&self, json_value: &'a Value) -> Option<&'a Map<String, Value>> {
+        json_value.get("coverage").and_then(|c| c.as_object())
+    }
+
+    fn parse_legacy_coverage(&self, json_value: &Value) -> Vec<FileCoverage> {
+        let mut file_coverages = vec![];
+
+        if let Some(groups) = json_value.as_object() {
+            for group in groups.values() {
+                if let Some(coverage) = self.extract_coverage(group) {
+                    file_coverages.extend(self.extract_file_coverage(coverage));
+                }
+            }
+        }
+
+        file_coverages
+    }
+
+    fn parse_json_coverage(&self, json_value: &Value) -> Vec<FileCoverage> {
+        let mut file_coverages = vec![];
+
+        if let Some(files) = json_value.get("files").and_then(|v| v.as_array()) {
+            for file in files {
+                if let (Some(filename), Some(coverage)) =
+                    (file.get("filename"), file.get("coverage"))
+                {
+                    if let (Some(filename_str), Some(coverage_arr)) =
+                        (filename.as_str(), coverage.as_array())
+                    {
+                        let line_hits = self.parse_line_coverage(&Value::Array(coverage_arr.clone()));
+                        file_coverages.push(FileCoverage {
+                            path: filename_str.to_string(),
+                            hits: line_hits,
+                            ..Default::default()
+                        });
+                    }
+                }
+            }
+        }
+
+        file_coverages
+    }
+
     fn parse_line_coverage(&self, data: &Value) -> Vec<i64> {
         match data {
             Value::Object(obj) => {
@@ -74,6 +96,20 @@ impl Simplecov {
             }
             _ => vec![],
         }
+    }
+
+    fn extract_file_coverage(&self, map: &Map<String, Value>) -> Vec<FileCoverage> {
+        map.iter()
+            .filter_map(|(key, value)| {
+                let line_hits = self.parse_line_coverage(value);
+
+                Some(FileCoverage {
+                    path: key.to_string(),
+                    hits: line_hits,
+                    ..Default::default()
+                })
+            })
+            .collect()
     }
 
     fn parse_lines(&self, value: &Value) -> i64 {
@@ -94,30 +130,6 @@ impl Simplecov {
             }
         }
         false
-    }
-
-    fn extract_coverage_data_for_simplecov_json<'a>(
-        json_value: &'a serde_json::Value,
-        coverage_data: &'a mut Map<String, Value>,
-    ) -> Option<&'a Map<String, Value>> {
-        // Check if using simplecov-json[https://github.com/vicentllongo/simplecov-json]
-        if let Some(files) = json_value.get("files").and_then(|v| v.as_array()) {
-            for file in files {
-                if let (Some(filename), Some(coverage)) =
-                    (file.get("filename"), file.get("coverage"))
-                {
-                    if let (Some(filename_str), Some(coverage_arr)) =
-                        (filename.as_str(), coverage.as_array())
-                    {
-                        coverage_data
-                            .insert(filename_str.to_string(), Value::Array(coverage_arr.clone()));
-                    }
-                }
-            }
-            Some(coverage_data)
-        } else {
-            None
-        }
     }
 }
 
