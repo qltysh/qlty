@@ -226,7 +226,7 @@ impl Ruby {
                     },
                     System {
                         url:
-                            "https://github.com/ruby/ruby-builder/releases/download/toolcache/ruby-${version}-ubuntu-20.04.tar.gz"
+                            "https://github.com/ruby/ruby-builder/releases/download/toolcache/ruby-${version}-ubuntu-22.04-arm64.tar.gz"
                                 .to_string(),
                         cpu: Cpu::Aarch64,
                         os: OperatingSystem::Linux,
