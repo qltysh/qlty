@@ -281,29 +281,32 @@ impl Init {
         let workspace = Workspace::new()?;
         let classic_config_path = workspace.root.join(CLASSIC_CONFIG_NAME);
 
-        if classic_config_path.exists() {
-            if !self.no
-                && (self.yes
-                    || Confirm::with_theme(&ColorfulTheme::default())
-                        .with_prompt(
-                            "Would you like to migrate your .codeclimate.yml configuration?",
-                        )
-                        .default(true)
-                        .show_default(true)
-                        .interact()?)
-            {
-                let migration_settings = MigrationSettings::new(
-                    &workspace.root,
-                    workspace.config()?,
-                    &workspace.config_path()?,
-                    &classic_config_path,
-                    self.dry_run,
-                )?;
+        if classic_config_path.exists()
+            && !self.no
+            && (self.yes
+                || self.prompt_yes_no(
+                    "Would you like to migrate your .codeclimate.yml configuration?",
+                )?)
+        {
+            let migration_settings = MigrationSettings::new(
+                &workspace.root,
+                workspace.config()?,
+                &workspace.config_path()?,
+                &classic_config_path,
+                self.dry_run,
+            )?;
 
-                MigrateConfig::new(migration_settings)?.migrate()?;
-                self.print_check("Migrated .codeclimate.yml configuration");
-            }
+            MigrateConfig::new(migration_settings)?.migrate()?;
+            self.print_check("Migrated .codeclimate.yml configuration");
         }
         Ok(())
+    }
+
+    fn prompt_yes_no(&self, prompt: &str) -> Result<bool> {
+        Ok(Confirm::with_theme(&ColorfulTheme::default())
+            .with_prompt(prompt)
+            .default(true)
+            .show_default(true)
+            .interact()?)
     }
 }
