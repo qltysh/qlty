@@ -147,7 +147,7 @@ impl Planner {
         }
 
         // Should be placed after AddPrefix/StripPrefix or any path changes
-        if self.settings.files_exist {
+        if self.settings.skip_missing_files {
             transformers.push(Box::new(FileExistanceCheck));
         }
 

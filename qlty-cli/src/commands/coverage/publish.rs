@@ -81,9 +81,8 @@ pub struct Publish {
     // Paths to coverage reports
     pub paths: Vec<String>,
 
-    #[arg(long)]
-    /// Check if the files in the coverage report actually exist on the file system
-    pub files_exist: bool,
+    #[arg(long, hide = true)]
+    pub skip_missing_files: bool,
 }
 
 impl Publish {
@@ -112,7 +111,7 @@ impl Publish {
                 tag: self.tag.clone(),
                 report_format: self.report_format,
                 paths: self.paths.clone(),
-                files_exist: self.files_exist,
+                skip_missing_files: self.skip_missing_files,
             },
         )
         .compute()?;
@@ -315,7 +314,7 @@ mod tests {
             json: false,
             quiet: true,
             paths: vec![],
-            files_exist: false,
+            skip_missing_files: false,
         }
     }
 
