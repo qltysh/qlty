@@ -17,6 +17,7 @@ output = "stdout"
 output_format = "sarif"
 file_types = ["java"]
 batch = true
+output_missing = "parse"
 
 [plugins.definitions.pmd.drivers.lint-apex]
 script = "pmd check --rulesets rulesets/apex/quickstart.xml --format sarif --dir ${target}"
@@ -25,3 +26,4 @@ output = "stdout"
 output_format = "sarif"
 file_types = ["apex"]
 batch = true
+output_missing = "parse"

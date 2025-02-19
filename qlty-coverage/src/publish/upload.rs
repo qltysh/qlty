@@ -1,7 +1,10 @@
 use crate::publish::Report;
 use anyhow::{Context, Result};
 use qlty_cloud::{export::CoverageExport, Client as QltyClient};
+use qlty_types::tests::v1::CoverageMetadata;
+use serde_json::Value;
 use std::path::PathBuf;
+use ureq::Error;
 
 const LEGACY_API_URL: &str = "https://qlty.sh/api";
 
@@ -12,18 +15,12 @@ pub struct Upload {
     pub file_coverages_url: String,
     pub report_files_url: String,
     pub metadata_url: String,
+    pub raw_files_url: String,
 }
 
 impl Upload {
     pub fn prepare(token: &str, report: &mut Report) -> Result<Self> {
-        let client = QltyClient::new(Some(LEGACY_API_URL), Some(token.into()));
-
-        let response = client
-            .post("/coverage")
-            .send_json(ureq::json!({
-                "data": report.metadata,
-            }))?
-            .into_json::<serde_json::Value>()?;
+        let response = Self::request_api(&report.metadata, token)?;
 
         let file_coverages_url = response
             .get("data")
@@ -61,6 +58,18 @@ impl Upload {
             })
             .context("Failed to extract metadata URL from response")?;
 
+        let raw_files_url = response
+            .get("data")
+            .and_then(|data| data.get("raw_files.zip"))
+            .and_then(|upload_url| upload_url.as_str())
+            .with_context(|| {
+                format!(
+                    "Unable to find metadata URL in response body: {:?}",
+                    response
+                )
+            })
+            .context("Failed to extract metadata URL from response")?;
+
         let id = response
             .get("data")
             .and_then(|data| data.get("id"))
@@ -84,6 +93,7 @@ impl Upload {
             file_coverages_url: file_coverages_url.to_string(),
             report_files_url: report_files_url.to_string(),
             metadata_url: metadata_url.to_string(),
+            raw_files_url: raw_files_url.to_string(),
         })
     }
 
@@ -104,6 +114,12 @@ impl Upload {
             &self.metadata_url,
             "application/json",
             export.read_file(PathBuf::from("metadata.json"))?,
+        )?;
+
+        self.upload_data(
+            &self.raw_files_url,
+            "application/zip",
+            export.read_file(PathBuf::from("raw_files.zip"))?,
         )?;
 
         Ok(())
@@ -132,5 +148,34 @@ impl Upload {
         }
 
         Ok(())
+    }
+
+    fn request_api(metadata: &CoverageMetadata, token: &str) -> Result<Value> {
+        let client = QltyClient::new(Some(LEGACY_API_URL), Some(token.into()));
+        let response_result = client.post("/coverage").send_json(ureq::json!({
+            "data": metadata,
+        }));
+
+        match response_result {
+            Ok(resp) => resp
+                .into_json::<Value>()
+                .map_err(|_| anyhow::anyhow!("Invalid JSON response")),
+
+            Err(Error::Status(code, resp)) => {
+                let error_message: Value = resp
+                    .into_json()
+                    .unwrap_or_else(|_| serde_json::json!({"error": "Unknown error"}));
+
+                let error_text = error_message
+                    .get("error")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("Unknown error");
+
+                Err(anyhow::anyhow!("HTTP Error {}: {}", code, error_text))
+            }
+            Err(Error::Transport(transport_error)) => {
+                Err(anyhow::anyhow!("Transport Error: {:?}", transport_error))
+            }
+        }
     }
 }

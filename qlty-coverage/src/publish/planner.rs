@@ -11,6 +11,7 @@ use crate::utils::extract_path_and_format;
 use crate::Transformer;
 use anyhow::Result;
 use pbjson_types::Timestamp;
+use qlty_config::version::LONG_VERSION;
 use qlty_config::QltyConfig;
 use qlty_types::tests::v1::CoverageMetadata;
 use qlty_types::tests::v1::ReportFile;
@@ -47,10 +48,12 @@ impl Planner {
         let mut metadata = if let Some(ci) = crate::ci::current() {
             ci.metadata()
         } else {
-            let mut metadata = CoverageMetadata::default();
-            metadata.ci = "unknown".to_string();
-            metadata
+            CoverageMetadata {
+                ci: "unknown".to_string(),
+                ..CoverageMetadata::default()
+            }
         };
+        metadata.cli_version = LONG_VERSION.to_string();
 
         metadata.uploaded_at = Some(Timestamp {
             seconds: now.unix_timestamp(),
@@ -127,7 +130,7 @@ impl Planner {
         if let Some(prefix) = self.settings.strip_prefix.clone() {
             transformers.push(Box::new(StripPrefix::new(prefix)));
         } else {
-            transformers.push(Box::<StripPrefix>::default());
+            transformers.push(Box::new(StripPrefix::new_from_git_root()?));
         }
 
         transformers.push(Box::new(StripDotSlashPrefix));

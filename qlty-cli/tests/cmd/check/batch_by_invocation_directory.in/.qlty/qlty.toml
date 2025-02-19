@@ -5,7 +5,7 @@ file_types = ["shell"]
 
 [plugins.definitions.batch-by.drivers.invocation_directory]
 file_types = ["shell"]
-prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd"
+prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd"
 script = "ls -l sample.sh"
 runs_from = { type = "root_or_parent_with_any_config" }
 config_files = ["config.json"]
@@ -15,7 +15,7 @@ output = "pass_fail"
 
 [plugins.definitions.batch-by.drivers.invocation_directory_nested]
 file_types = ["javascript"]
-prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd"
+prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd"
 script = "ls -l nested.js"
 runs_from = { type = "root_or_parent_with_any_config" }
 config_files = ["config_nested.json"]

@@ -49,3 +49,8 @@ fn python_tests() {
 fn go_tests() {
     setup_and_run_test_cases("tests/lang/go/**/*.toml");
 }
+
+#[test]
+fn csharp_tests() {
+    setup_and_run_test_cases("tests/lang/csharp/**/*.toml");
+}

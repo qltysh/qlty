@@ -19,3 +19,4 @@ success_codes = [0, 1, 3]
 output = "stdout"
 output_format = "sarif"
 suggested = "targets"
+output_missing = "parse"

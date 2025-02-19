@@ -4,8 +4,8 @@ config_version = "0"
 file_types = ["rust"]
 
 [plugins.definitions.runs_from.drivers.test]
-prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd"
-script = "ls -l src" # this should run in dir with target
+prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd"
+script = "ls -l src"                                                                                   # this should run in dir with target
 target = { type = "parent_with", path = "Cargo.toml" }
 runs_from = { type = "target_directory" }
 success_codes = [0]

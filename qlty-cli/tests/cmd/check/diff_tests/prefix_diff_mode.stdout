@@ -1,6 +1,6 @@
+[..]JOBS: 1[..]
 
- ISSUES: 1 
+Plugin  Result   Targets   Time   Debug File
+exists  Success  1 target[..]
 
-:0:0
-    0:0  high    exists failed  exists:fail
-
+Checked 1 modified file

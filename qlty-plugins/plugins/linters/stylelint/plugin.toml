@@ -43,6 +43,7 @@ cache_results = true
 batch = true
 max_batch = 100
 suggested = "config"
+output_missing = "parse"
 
 [plugins.definitions.stylelint.drivers.format]
 script = "stylelint --fix ${target}"

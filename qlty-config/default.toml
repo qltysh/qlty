@@ -5,8 +5,8 @@ exclude_patterns = [
   "*_min.*",
   "*-min.*",
   "*.min.*",
-  "**/*.d.ts",
   "**/.yarn/**",
+  "**/*.d.ts",
   "**/bower_components/**",
   "**/build/**",
   "**/cache/**",
@@ -16,6 +16,7 @@ exclude_patterns = [
   "**/dist/**",
   "**/extern/**",
   "**/external/**",
+  "**/fixtures/**",
   "**/generated/**",
   "**/Godeps/**",
   "**/gradlew/**",
@@ -30,6 +31,9 @@ exclude_patterns = [
 
 [file_types.ALL]
 globs = ["*.*"]
+
+[file_types.csharp]
+globs = ["*.cs"]
 
 [file_types.css]
 globs = ["*.css"]
@@ -364,6 +368,7 @@ smells.duplication.nodes_threshold = 50
 
 [language.java]
 globs = ["*.java"]
+smells.duplication.filter_patterns = ["(import_declaration _)"]
 
 [language.javascript]
 globs = ["*.js", "*.mjs", "*.cjs", "*.jsx", "**/Jakefile"]
@@ -431,6 +436,10 @@ smells.duplication.filter_patterns = ["(import_statement _)"]
 
 [language.tsx]
 globs = ["*.tsx", "*.mtsx", "*.ctsx"]
+
+[language.csharp]
+globs = ["*.cs"]
+smells.duplication.filter_patterns = ["(using_directive _)"]
 
 [smells.boolean_logic]
 threshold = 4

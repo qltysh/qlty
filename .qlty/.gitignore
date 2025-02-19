@@ -1,4 +1,4 @@
-results
-logs
-out
-sources
+*
+!configs
+!hooks
+!qlty.toml

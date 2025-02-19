@@ -1,0 +1,14 @@
+config_version = "0"
+
+[plugins.definitions.prepare_script_fail]
+file_types = ["ALL"]
+
+[plugins.definitions.prepare_script_fail.drivers.lint]
+prepare_script = "INVALID_COMMAND"
+script = "cd ."
+success_codes = [0]
+output = "pass_fail"
+
+[[plugin]]
+name = "prepare_script_fail"
+version = "1.0.0"

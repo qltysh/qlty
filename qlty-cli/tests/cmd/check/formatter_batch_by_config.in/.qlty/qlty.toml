@@ -4,7 +4,7 @@ config_version = "0"
 file_types = ["shell"]
 
 [plugins.definitions.formatter-batch-by.drivers.config]
-prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd"
+prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd"
 script = "exit 0"
 config_files = ["config.*.json"]
 batch_by = "config_file"

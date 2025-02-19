@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.466.0"
+version = "0.490.0"
 authors = ["Qlty Software Inc."]
 description = "Code quality toolkit"
 documentation = "https://docs.qlty.sh"
@@ -26,13 +26,13 @@ bytesize = "1.3.0"
 cap = "0.1.2"
 cc = "1.2.1"
 chrono = "0.4.39"
-clap = { version = "4.5.23", features = ["derive", "wrap_help"] }
+clap = { version = "4.5.29", features = ["derive", "wrap_help"] }
 clap_complete = "4.5.34"
 cli-table = "0.4.9"
 config = "0.13.3"
 console = "0.15.10"
 dialoguer = "0.11.0"
-diffy = "0.4.0"
+diffy = "0.4.2"
 duct = { git = "https://github.com/brynary/duct.rs.git" }
 exec = "0.3.1"
 flate2 = "1.0.19"
@@ -47,9 +47,9 @@ glob = "0.3.2"
 globset = "0.4.15"
 http = "1.2.0"
 ignore = "0.4.22"
-indicatif = "0.17.8"
+indicatif = "0.17.11"
 indoc = "2.0.5"
-insta = { version = "1.42.0", features = ["yaml", "redactions"] }
+insta = { version = "1.42.1", features = ["yaml", "redactions"] }
 itertools = "0.13.0"
 keyring = { version = "3.6.1", features = [
     "apple-native",
@@ -57,32 +57,33 @@ keyring = { version = "3.6.1", features = [
     "linux-native",
 ] }
 lazy_static = "1.5.0"
-log = "0.4.22"
+log = "0.4.25"
 lzma-rs = "0.3.0"
 mac_address = "1.1.7"
 md5 = "0.7.0"
 num-format = "0.4.4"
 num_cpus = "1.15.0"
-once_cell = "1.20.2"
+once_cell = "1.20.3"
 path-absolutize = "3.1.1"
 pathdiff = "0.2.3"
 pbjson = "0.7.0"
 pbjson-types = "0.7.0"
 prost = "0.13.4"
-qlty-analysis = { version = "0.466.0", path = "qlty-analysis" }
-qlty-check = { version = "0.466.0", path = "qlty-check" }
-qlty-cloud = { version = "0.466.0", path = "qlty-cloud" }
-qlty-config = { version = "0.466.0", path = "qlty-config" }
-qlty-coverage = { version = "0.466.0", path = "qlty-coverage" }
-qlty-plugins = { version = "0.466.0", path = "qlty-plugins" }
-qlty-smells = { version = "0.466.0", path = "qlty-smells" }
-qlty-test-utilities = { version = "0.466.0", path = "qlty-test-utilities" }
-qlty-types = { version = "0.466.0", path = "qlty-types" }
+qlty-analysis = { version = "0.490.0", path = "qlty-analysis" }
+qlty-check = { version = "0.490.0", path = "qlty-check" }
+qlty-cloud = { version = "0.490.0", path = "qlty-cloud" }
+qlty-config = { version = "0.490.0", path = "qlty-config" }
+qlty-coverage = { version = "0.490.0", path = "qlty-coverage" }
+qlty-plugins = { version = "0.490.0", path = "qlty-plugins" }
+qlty-smells = { version = "0.490.0", path = "qlty-smells" }
+qlty-test-utilities = { version = "0.490.0", path = "qlty-test-utilities" }
+qlty-types = { version = "0.490.0", path = "qlty-types" }
 rand = "0.8.5"
 rayon = "1.10.0"
 regex = "1.11.0"
 rust-embed = { version = "8.5.0", features = ["include-exclude"] }
-semver = "1.0.24"
+schemars = "0.8.21"
+semver = "1.0.25"
 sentry = { version = "0.34.0", default-features = false, features = [
     "backtrace",
     "contexts",
@@ -92,35 +93,36 @@ sentry = { version = "0.34.0", default-features = false, features = [
 ] }
 sentry-backtrace = "0.34.0"
 serde = { version = "1.0.217", features = ["derive", "rc"] }
-serde_json = { version = "1.0.134", features = ["preserve_order"] }
+serde_json = { version = "1.0.138", features = ["preserve_order"] }
 serde-querystring = "0.2.1"
 serde_with = "3.12.0"
 serde_yaml = "0.9.34"
 serde-xml-rs = "0.6.0"
 sha2 = "0.10.6"
 shell-escape = "0.1.5"
-similar = { version = "2.6.0", features = ["inline"] }
+similar = { version = "2.7.0", features = ["inline"] }
 supports-color = "3.0.1"
 syntect = "5.2.0"
 sysinfo = "0.31.4"
 tabwriter = { version = "1.4.0", features = ["ansi_formatting"] }
 tar = "0.4.43"
-tempfile = "3.15.0"
+tempfile = "3.16.0"
 termbg = "0.6.0"
-thiserror = "2.0.9"
+thiserror = "2.0.11"
 time = { version = "0.3.37", features = [
     "serde-well-known",
     "formatting",
     "parsing",
 ] }
 tiny_http = "0.12.0"
-toml = "0.8.2"
-toml_edit = "0.22.21"
+toml = "0.8.20"
+toml_edit = "0.22.24"
 tracing = "0.1.41"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 tracing-test = "0.2.5"
 tree-sitter = "0.22.6"
+tree-sitter-c-sharp = "0.21.3"
 tree-sitter-go = "0.21.2"
 tree-sitter-java = "0.21.0"
 tree-sitter-javascript = "0.21.4"
@@ -133,7 +135,7 @@ tree-sitter-typescript = "0.21.2"
 trycmd = "0.15.8"
 ureq = { version = "2.12.1", features = ["json"] }
 url = "2.5.4"
-uuid = { version = "1.11.0", features = ["v4"] }
+uuid = { version = "1.13.2", features = ["v4"] }
 walkdir = "2.5.0"
 webbrowser = "1.0.3"
 whoami = "1.5.2"
@@ -168,7 +170,7 @@ allow-dirty = ["ci"]
 
 [workspace.metadata.dist.github-custom-runners]
 aarch64-apple-darwin = "macos-15"
-aarch64-unknown-linux-gnu = "ubuntu-22.04"
+aarch64-unknown-linux-gnu = "ubuntu-2204-32-cores-arm64"
 x86_64-apple-darwin = "macos-15"
 x86_64-pc-windows-msvc = "windows-latest"
 x86_64-unknown-linux-gnu = "ubuntu-22.04"

@@ -30,6 +30,7 @@ success_codes = [0, 2, 7]
 output = "stdout"
 output_format = "golangci_lint"
 suggested = "targets"
+output_missing = "parse"
 
 [[plugins.definitions.golangci-lint.environment]]
 name = "PATH"

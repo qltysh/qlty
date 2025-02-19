@@ -28,7 +28,8 @@ pub struct Transform {
     pub add_prefix: Option<String>,
 
     #[arg(long)]
-    /// The prefix to remove from absolute paths in coverage payloads. This makes paths relative to the project root, typically the directory where tests were run. Defaults to the current working directory.
+    /// The prefix to remove from absolute paths in coverage payloads to make them relative to the project root.
+    /// This is usually the directory in which the tests were run. Defaults to the root of the git repository.
     pub strip_prefix: Option<String>,
 
     #[arg(long)]

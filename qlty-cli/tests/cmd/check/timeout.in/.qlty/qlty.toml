@@ -4,8 +4,8 @@ config_version = "0"
 file_types = ["shell"]
 
 [plugins.definitions.timeout.drivers.lint]
-prepare_script = "mkdir ${linter} && echo (ping -n 20 127.0.0.1>NUL) > ${linter}/sleep.cmd"
-script = "sleep 800"
+prepare_script = "mkdir ${linter} && echo ping -n 10 127.0.0.1 > ${linter}/sleep.cmd || echo ping -n 10 127.0.0.1 > ${linter}/sleep.cmd"
+script = "sleep 10"
 success_codes = [0]
 output = "pass_fail"
 timeout = 2

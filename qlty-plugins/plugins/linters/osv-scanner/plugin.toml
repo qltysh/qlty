@@ -72,3 +72,4 @@ cache_results = true
 batch = false
 skip_upstream = true
 suggested = "targets"
+output_missing = "parse"

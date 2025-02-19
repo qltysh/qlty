@@ -97,6 +97,9 @@ impl serde::Serialize for CoverageMetadata {
         if self.uploaded_at.is_some() {
             len += 1;
         }
+        if !self.cli_version.is_empty() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("qlty.tests.v1.CoverageMetadata", len)?;
         if !self.upload_id.is_empty() {
             struct_ser.serialize_field("uploadId", &self.upload_id)?;
@@ -188,6 +191,9 @@ impl serde::Serialize for CoverageMetadata {
         if let Some(v) = self.uploaded_at.as_ref() {
             struct_ser.serialize_field("uploadedAt", v)?;
         }
+        if !self.cli_version.is_empty() {
+            struct_ser.serialize_field("cliVersion", &self.cli_version)?;
+        }
         struct_ser.end()
     }
 }
@@ -251,6 +257,8 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             "description",
             "uploaded_at",
             "uploadedAt",
+            "cli_version",
+            "cliVersion",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -285,6 +293,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             Tag,
             Description,
             UploadedAt,
+            CliVersion,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -336,6 +345,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                             "tag" => Ok(GeneratedField::Tag),
                             "description" => Ok(GeneratedField::Description),
                             "uploadedAt" | "uploaded_at" => Ok(GeneratedField::UploadedAt),
+                            "cliVersion" | "cli_version" => Ok(GeneratedField::CliVersion),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -385,6 +395,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                 let mut tag__ = None;
                 let mut description__ = None;
                 let mut uploaded_at__ = None;
+                let mut cli_version__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::UploadId => {
@@ -567,6 +578,12 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                             }
                             uploaded_at__ = map_.next_value()?;
                         }
+                        GeneratedField::CliVersion => {
+                            if cli_version__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("cliVersion"));
+                            }
+                            cli_version__ = Some(map_.next_value()?);
+                        }
                     }
                 }
                 Ok(CoverageMetadata {
@@ -600,6 +617,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                     tag: tag__,
                     description: description__.unwrap_or_default(),
                     uploaded_at: uploaded_at__,
+                    cli_version: cli_version__.unwrap_or_default(),
                 })
             }
         }
@@ -629,22 +647,18 @@ impl serde::Serialize for CoverageSummary {
         let mut struct_ser = serializer.serialize_struct("qlty.tests.v1.CoverageSummary", len)?;
         if self.covered != 0 {
             #[allow(clippy::needless_borrow)]
-            #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser.serialize_field("covered", ToString::to_string(&self.covered).as_str())?;
         }
         if self.missed != 0 {
             #[allow(clippy::needless_borrow)]
-            #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser.serialize_field("missed", ToString::to_string(&self.missed).as_str())?;
         }
         if self.omit != 0 {
             #[allow(clippy::needless_borrow)]
-            #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser.serialize_field("omit", ToString::to_string(&self.omit).as_str())?;
         }
         if self.total != 0 {
             #[allow(clippy::needless_borrow)]
-            #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser.serialize_field("total", ToString::to_string(&self.total).as_str())?;
         }
         struct_ser.end()
@@ -1156,7 +1170,6 @@ impl serde::Serialize for ReportFile {
         }
         if self.size != 0 {
             #[allow(clippy::needless_borrow)]
-            #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser.serialize_field("size", ToString::to_string(&self.size).as_str())?;
         }
         if let Some(v) = self.project_id.as_ref() {

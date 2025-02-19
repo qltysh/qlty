@@ -8,7 +8,6 @@ homepage.workspace = true
 repository.workspace = true
 keywords.workspace = true
 categories.workspace = true
-license-file.workspace = true
 edition.workspace = true
 
 [lib]
@@ -21,8 +20,9 @@ git2.workspace = true
 glob.workspace = true
 globset.workspace = true
 ignore.workspace = true
-md5.workspace = true
 lazy_static.workspace = true
+md5.workspace = true
+num_cpus.workspace = true
 path-absolutize.workspace = true
 pbjson-types.workspace = true
 qlty-config.workspace = true
@@ -37,6 +37,7 @@ tempfile.workspace = true
 time.workspace = true
 tracing.workspace = true
 tree-sitter.workspace = true
+tree-sitter-c-sharp.workspace = true
 tree-sitter-go.workspace = true
 tree-sitter-java.workspace = true
 tree-sitter-javascript.workspace = true

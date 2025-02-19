@@ -57,6 +57,10 @@ impl Library {
         self.local_root.join("results")
     }
 
+    pub fn plugin_cachedir_dir(&self) -> PathBuf {
+        self.local_root.join("plugin_cachedir")
+    }
+
     pub fn configs_dir(&self) -> PathBuf {
         self.local_root.join("configs")
     }
@@ -132,6 +136,12 @@ impl Library {
                 .join(self.local_fingerprint())
                 .join("results"),
         )?;
+        fs::create_dir_all(
+            global_cache_root
+                .join("repos")
+                .join(self.local_fingerprint())
+                .join("plugin_cachedir"),
+        )?;
         Ok(())
     }
 
@@ -144,6 +154,10 @@ impl Library {
         self.try_symlink_if_missing(&global_repo_path.join("out"), &self.out_dir())?;
         self.try_symlink_if_missing(&global_repo_path.join("logs"), &self.logs_dir())?;
         self.try_symlink_if_missing(&global_repo_path.join("results"), &self.results_dir())?;
+        self.try_symlink_if_missing(
+            &global_repo_path.join("plugin_cachedir"),
+            &self.plugin_cachedir_dir(),
+        )?;
 
         Ok(())
     }
@@ -152,6 +166,55 @@ impl Library {
         Ok(Self::global_cache_root()?
             .join("repos")
             .join(self.local_fingerprint()))
+    }
+
+    pub fn prune(&self) -> Result<()> {
+        let cache_directory = self.cache_directory()?;
+
+        if cache_directory.join("logs").exists() {
+            self.prune_dir(&cache_directory.join("logs"), 7)?;
+        }
+
+        if cache_directory.join("out").exists() {
+            self.prune_dir(&cache_directory.join("out"), 3)?;
+        }
+
+        if cache_directory.join("results").join("issues").exists() {
+            self.prune_dir(&cache_directory.join("results").join("issues"), 1)?;
+        }
+
+        if cache_directory.join("plugin_cachedir").exists() {
+            for entry in fs::read_dir(cache_directory.join("plugin_cachedir"))? {
+                let entry = entry?;
+                let path = entry.path();
+
+                if path.is_file() {
+                    fs::remove_file(&path)?;
+                } else {
+                    fs::remove_dir_all(&path)?;
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    fn prune_dir(&self, dir: &Path, days: u32) -> Result<()> {
+        for entry in fs::read_dir(dir)? {
+            let entry = entry?;
+            let path = entry.path();
+
+            if path.is_file() {
+                let metadata = fs::metadata(&path)?;
+                let usage_time = std::cmp::max(metadata.accessed()?, metadata.modified()?);
+
+                if usage_time.elapsed()?.as_secs() > days as u64 * 24 * 60 * 60 {
+                    fs::remove_file(&path)?;
+                }
+            }
+        }
+
+        Ok(())
     }
 
     pub fn clean(&self) -> Result<()> {
@@ -170,11 +233,6 @@ impl Library {
             }
         }
 
-        Ok(())
-    }
-
-    pub fn prune(&self) -> Result<()> {
-        // TODO
         Ok(())
     }
 
@@ -213,10 +271,21 @@ impl Library {
 
     fn status_dirs(&self) -> Result<Vec<PathBuf>> {
         let global_repo_path = self.cache_directory()?;
-        Ok(vec![
+        let candidates = vec![
             global_repo_path.join("out"),
             global_repo_path.join("logs"),
             global_repo_path.join("results"),
-        ])
+            global_repo_path.join("plugin_cachedir"),
+        ];
+
+        let mut existing_dirs = vec![];
+
+        for candidate in candidates {
+            if candidate.exists() {
+                existing_dirs.push(candidate);
+            }
+        }
+
+        Ok(existing_dirs)
     }
 }

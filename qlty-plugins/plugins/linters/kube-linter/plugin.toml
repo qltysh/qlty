@@ -46,3 +46,4 @@ output = "stdout"
 output_format = "sarif"
 output_category = "vulnerability"
 output_level = "medium"
+target = { type = "literal", path = "." }

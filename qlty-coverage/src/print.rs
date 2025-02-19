@@ -82,11 +82,10 @@ pub fn print_report_as_text(report: &Report) -> Result<()> {
     Ok(())
 }
 
-pub fn print_file_coverages_as_text(file_coverages: &Vec<FileCoverage>) -> Result<()> {
+pub fn print_file_coverages_as_text(file_coverages: &[FileCoverage]) -> Result<()> {
     let rows: Vec<_> = file_coverages
-        .clone()
-        .into_iter()
-        .map(|file_coverage| vec![file_coverage.path.cell()])
+        .iter()
+        .map(|file_coverage| vec![file_coverage.clone().path.cell()])
         .collect();
 
     let table = rows

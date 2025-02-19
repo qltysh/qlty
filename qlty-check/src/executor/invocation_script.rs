@@ -4,7 +4,7 @@ use itertools::Itertools;
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_analysis::{join_path_string, utils::fs::path_to_native_string};
 use qlty_config::config::InvocationDirectoryType;
-use tracing::{debug, error};
+use tracing::{error, trace};
 
 #[cfg(unix)]
 use shell_escape::unix::escape;
@@ -12,17 +12,18 @@ use shell_escape::unix::escape;
 use shell_escape::windows::escape;
 
 pub fn compute_invocation_script(plan: &InvocationPlan) -> Result<String> {
-    debug!("Driver script (original): {}", plan.driver.script);
+    trace!("Driver script (original): {}", plan.driver.script);
     let mut base_script = plan.driver.script.clone();
 
     // Autoload script first in case it has variables that need to be interpolated
     base_script = replace_autoload_script(plan, base_script);
+    base_script = replace_config_script(plan, base_script);
     base_script = plan.tool.interpolate_variables(&base_script);
     base_script = replace_target_variable(plan, base_script);
     base_script = replace_tmpfile_variable(plan, base_script);
     base_script = replace_config_file(plan, base_script);
 
-    debug!("Driver script (interpolated): {}", base_script);
+    trace!("Driver script (interpolated): {}", base_script);
     Ok(base_script)
 }
 
@@ -33,6 +34,19 @@ fn replace_autoload_script(plan: &InvocationPlan, script: String) -> String {
             script.replace("${autoload_script}", autoload_script)
         } else {
             script.replace("${autoload_script}", "")
+        }
+    } else {
+        script
+    }
+}
+
+fn replace_config_script(plan: &InvocationPlan, script: String) -> String {
+    if script.contains("${config_script}") {
+        if !plan.plugin_configs.is_empty() {
+            let config_script = plan.driver.config_script.as_deref().unwrap_or("");
+            script.replace("${config_script}", config_script)
+        } else {
+            script.replace("${config_script}", "")
         }
     } else {
         script

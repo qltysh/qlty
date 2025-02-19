@@ -28,6 +28,7 @@ output_format = "trivy_sarif"
 cache_results = true
 batch = false
 suggested = "targets"
+output_missing = "parse"
 
 [plugins.definitions.trivy.drivers.fs-secret]
 # Defining file_types at driver level since each works with different files
@@ -41,6 +42,7 @@ output_format = "trivy_sarif"
 output_category = "secret"
 cache_results = true
 batch = false
+output_missing = "parse"
 
 [plugins.definitions.trivy.drivers.config]
 # Defining file_types at driver level since each works with different files
@@ -54,6 +56,7 @@ output_format = "trivy_sarif"
 cache_results = true
 batch = false
 suggested = "targets"
+output_missing = "parse"
 
 [[plugins.definitions.trivy.environment]]
 name = "PATH"

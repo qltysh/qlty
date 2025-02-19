@@ -44,7 +44,7 @@ impl Parser for Lcov {
                     }
                 }
 
-                let maximum_line_number = line_numbers_to_hits.keys().max().unwrap();
+                let maximum_line_number = line_numbers_to_hits.keys().max().unwrap_or(&0);
                 let mut line_hits: Vec<i64> = vec![-1; *maximum_line_number as usize];
 
                 for (line_number, hits) in line_numbers_to_hits {
@@ -147,5 +147,17 @@ DA:5,10
         - "-1"
         - "2"
     "#);
+    }
+
+    #[test]
+    fn test_empty() {
+        let input = r#"
+SF:src/lib.rs
+end_of_record
+"#;
+
+        insta::assert_yaml_snapshot!(Lcov::new().parse_text(input).unwrap(), @r#"
+        - path: src/lib.rs
+        "#);
     }
 }

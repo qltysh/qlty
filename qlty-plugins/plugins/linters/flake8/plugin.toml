@@ -22,5 +22,6 @@ output_regex = "((?P<path>.*):(?P<line>-?\\d+):(?P<col>-?\\d+): (?P<code>\\S+) (
 cache_results = true
 batch = true
 suggested = "config"
+output_missing = "parse"
 
 # TODO: run_linter_from: parent_directory

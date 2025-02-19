@@ -1,4 +1,0 @@
-config_version = "0"
-
-[coverage]
-paths = ["lcov.info"]

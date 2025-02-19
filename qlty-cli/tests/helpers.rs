@@ -12,51 +12,20 @@ use trycmd::TestCases;
 const MANIFEST_DIR: &str = env!("CARGO_MANIFEST_DIR");
 const DEFAULT_TEST_TIMEOUT: u64 = 600;
 
-#[cfg(target_family = "unix")]
 const GIT_SETUP_SCRIPT: &str = r#"
   git init --initial-branch=main &&
   git add . &&
-  git config user.email test@codeclimate.com &&
-  git config user.name TEST &&
-  GIT_COMMITTER_DATE="2024-01-01T00:00:00+00:00" git commit --no-gpg-sign --date="2024-01-01T00:00:00+00:00" --message initial
+  git commit --no-gpg-sign --message initial
 "#;
 
-#[cfg(target_family = "windows")]
-const GIT_SETUP_SCRIPT: &str = r#"
-  git init --initial-branch=main &&
-  git add . &&
-  git config user.email test@codeclimate.com &&
-  git config user.name TEST &&
-  set GIT_COMMITTER_DATE=2024-01-01T00:00:00+00:00 &&
-  git commit --no-gpg-sign --date="2024-01-01T00:00:00+00:00" --message initial
-"#;
-
-#[cfg(target_family = "unix")]
 const GIT_DIFF_SETUP_SCRIPT: &str = r#"
   git init --initial-branch=main &&
   git add . &&
-  git reset -- diff/* &&
-  git config user.email test@codeclimate.com &&
-  git config user.name TEST &&
-  GIT_COMMITTER_DATE="2024-01-01T00:00:00+00:00" git commit --no-gpg-sign --date="2024-01-01T00:00:00+00:00" --message initial &&
+  git reset -- diff &&
+  git commit --no-gpg-sign --message initial &&
   git checkout -b test_branch &&
   git add . &&
-  GIT_COMMITTER_DATE="2024-01-01T00:00:00+00:00" git commit --no-gpg-sign --date="2024-01-01T00:00:00+00:00" --message initial
-"#;
-
-#[cfg(target_family = "windows")]
-const GIT_DIFF_SETUP_SCRIPT: &str = r#"
-  git init --initial-branch=main &&
-  git add . &&
-  git reset -- diff/* &&
-  git config user.email test@codeclimate.com &&
-  git config user.name TEST &&
-  set GIT_COMMITTER_DATE=2024-01-01T00:00:00+00:00 &&
-  git commit --no-gpg-sign --date="2024-01-01T00:00:00+00:00" --message initial &&
-  git checkout -b test_branch &&
-  git add . &&
-  set GIT_COMMITTER_DATE=2024-01-01T00:00:00+00:00 &&
-  git commit --no-gpg-sign --date="2024-01-01T00:00:00+00:00" --message initial
+  git commit --no-gpg-sign --message initial
 "#;
 
 pub fn setup_and_run_diff_test_cases(glob: &str) {
@@ -150,6 +119,12 @@ impl RepositoryFixture {
 
         cmd!(shell, flag, script.to_string().trim().replace('\n', ""))
             .dir(&self.path)
+            .env("GIT_COMMITTER_DATE", "2024-01-01T00:00:00+00:00")
+            .env("GIT_COMMITTER_NAME", "TEST")
+            .env("GIT_COMMITTER_EMAIL", "test@codeclimate.com")
+            .env("GIT_AUTHOR_DATE", "2024-01-01T00:00:00+00:00")
+            .env("GIT_AUTHOR_NAME", "TEST")
+            .env("GIT_AUTHOR_EMAIL", "test@codeclimate.com")
             .read()
             .unwrap();
     }

@@ -3,6 +3,7 @@ use core::fmt;
 use std::sync::Arc;
 use tree_sitter::{Node, Parser, Query};
 
+mod csharp;
 mod go;
 mod java;
 mod javascript;
@@ -16,8 +17,8 @@ mod typescript;
 mod typescript_common;
 
 pub use {
-    go::*, java::*, javascript::*, kotlin::*, php::*, python::*, ruby::*, rust::*, tsx::*,
-    typescript::*,
+    csharp::*, go::*, java::*, javascript::*, kotlin::*, php::*, python::*, ruby::*, rust::*,
+    tsx::*, typescript::*,
 };
 
 #[allow(clippy::borrowed_box)]
@@ -30,6 +31,7 @@ use lazy_static::lazy_static;
 lazy_static! {
     pub static ref ALL_LANGS: Vec<Box<dyn Language + Sync>> = {
         vec![
+            Box::<csharp::CSharp>::default(),
             Box::<php::Php>::default(),
             Box::<kotlin::Kotlin>::default(),
             Box::<go::Go>::default(),

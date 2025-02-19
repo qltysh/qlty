@@ -4,8 +4,8 @@ config_version = "0"
 file_types = ["rust"]
 
 [plugins.definitions.target.drivers.test]
-prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd"
-script = "ls -l Cargo.toml" # this should target Cargo.toml file
+prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd"
+script = "ls -l Cargo.toml"                                                                            # this should target Cargo.toml file
 target = { type = "parent_with", path = "Cargo.toml" }
 success_codes = [0]
 output = "pass_fail"

@@ -312,6 +312,7 @@ pub fn language_enum_from_name(name: &str) -> analysis::v1::Language {
         "rust" => analysis::v1::Language::Rust,
         "tsx" => analysis::v1::Language::Tsx,
         "typescript" => analysis::v1::Language::Typescript,
+        "csharp" => analysis::v1::Language::CSharp,
         _ => panic!("Unrecognized language name: {}", name),
     }
 }

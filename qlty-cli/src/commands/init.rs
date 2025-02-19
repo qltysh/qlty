@@ -140,7 +140,7 @@ impl Init {
     }
 
     fn print_check(&self, message: &str) {
-        eprintln!("{} {}", style("✔").green(), message,);
+        eprintln!("{} {}", style("✔").green(), message);
     }
 
     fn print_enabled_plugins(&self, initializer: &Initializer) -> Result<()> {
@@ -238,7 +238,14 @@ impl Init {
         );
         println!();
 
-        cmd!(self.current_exe()?, "check", "--sample", "5").run()?;
+        cmd!(
+            self.current_exe()?,
+            "check",
+            "--sample",
+            "5",
+            "--no-formatters"
+        )
+        .run()?;
         Ok(())
     }
 

@@ -8,12 +8,10 @@ homepage.workspace = true
 repository.workspace = true
 keywords.workspace = true
 categories.workspace = true
-license-file.workspace = true
 edition.workspace = true
 
 [lib]
 doctest = false
-test = false
 
 [dependencies]
 anyhow.workspace = true
@@ -33,3 +31,4 @@ tracing.workspace = true
 ureq.workspace = true
 uuid.workspace = true
 webbrowser.workspace = true
+zip.workspace = true

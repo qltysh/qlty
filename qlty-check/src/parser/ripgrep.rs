@@ -100,9 +100,9 @@ impl Parser for Ripgrep {
                             path: path.text.clone(),
                             range: Some(Range {
                                 start_line: line_number,
-                                start_column: submatch.start,
+                                start_column: submatch.start + 1, // submatch uses 1-based indexing
                                 end_line: line_number,
-                                end_column: submatch.end,
+                                end_column: submatch.end + 1, // submatch uses 1-based indexing
                                 ..Default::default()
                             }),
                         }),
@@ -137,7 +137,7 @@ mod test {
         "###;
 
         let issues = Ripgrep::default().parse("ripgrep", input);
-        insta::assert_yaml_snapshot!(issues.unwrap(), @r###"
+        insta::assert_yaml_snapshot!(issues.unwrap(), @r"
         - tool: ripgrep
           ruleKey: FIXME
           message: // FIXME TODO
@@ -147,9 +147,9 @@ mod test {
             path: basic_e.in.rs
             range:
               startLine: 2
-              startColumn: 7
+              startColumn: 8
               endLine: 2
-              endColumn: 12
+              endColumn: 13
         - tool: ripgrep
           ruleKey: TODO
           message: // FIXME TODO
@@ -159,9 +159,9 @@ mod test {
             path: basic_e.in.rs
             range:
               startLine: 2
-              startColumn: 13
+              startColumn: 14
               endLine: 2
-              endColumn: 17
+              endColumn: 18
         - tool: ripgrep
           ruleKey: NOTE
           message: // NOTE
@@ -171,9 +171,9 @@ mod test {
             path: basic.in.rs
             range:
               startLine: 2
-              startColumn: 7
+              startColumn: 8
               endLine: 2
-              endColumn: 11
+              endColumn: 12
         - tool: ripgrep
           ruleKey: FIXME
           message: // FIXME TODO
@@ -183,9 +183,9 @@ mod test {
             path: basic.in.rs
             range:
               startLine: 3
-              startColumn: 7
+              startColumn: 8
               endLine: 3
-              endColumn: 12
+              endColumn: 13
         - tool: ripgrep
           ruleKey: TODO
           message: // FIXME TODO
@@ -195,9 +195,9 @@ mod test {
             path: basic.in.rs
             range:
               startLine: 3
-              startColumn: 13
+              startColumn: 14
               endLine: 3
-              endColumn: 17
+              endColumn: 18
         - tool: ripgrep
           ruleKey: HACK
           message: // HACK
@@ -207,10 +207,10 @@ mod test {
             path: basic.in.rs
             range:
               startLine: 4
-              startColumn: 7
+              startColumn: 8
               endLine: 4
-              endColumn: 11
-        "###);
+              endColumn: 12
+        ");
     }
 
     #[test]
@@ -231,7 +231,7 @@ mod test {
         assert!(logs_contain("Failed to parse line number"));
         assert!(logs_contain("Failed to parse path"));
 
-        insta::assert_yaml_snapshot!(issues.unwrap(), @r###"
+        insta::assert_yaml_snapshot!(issues.unwrap(), @r"
         - tool: ripgrep
           ruleKey: NOTE
           message: // NOTE
@@ -241,7 +241,9 @@ mod test {
             path: basic.in.rs
             range:
               startLine: 2
+              startColumn: 1
               endLine: 2
-        "###);
+              endColumn: 1
+        ");
     }
 }

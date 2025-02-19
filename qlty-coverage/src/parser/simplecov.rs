@@ -2,7 +2,7 @@ use crate::Parser;
 use anyhow::{Context, Result};
 use qlty_types::tests::v1::FileCoverage;
 use semver::Version;
-use serde_json::Value;
+use serde_json::{Map, Value};
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct Simplecov {}
@@ -19,14 +19,24 @@ impl Parser for Simplecov {
             serde_json::from_str(text).with_context(|| "Failed to parse JSON text")?;
 
         let mut file_coverages = vec![];
+        let mut optional_coverage_data = Map::new();
 
         let coverage_data = if self.is_version_018_or_newer(&json_value) {
             json_value.get("coverage").and_then(|c| c.as_object())
         } else {
-            json_value
+            let coverage = json_value
                 .as_object()
                 .and_then(|obj| obj.values().next())
-                .and_then(|group| group.get("coverage").and_then(|c| c.as_object()))
+                .and_then(|group| group.get("coverage").and_then(|c| c.as_object()));
+            if coverage.is_some() {
+                coverage.to_owned()
+            } else {
+                // Check if using simplecov-json[https://github.com/vicentllongo/simplecov-json]
+                Self::extract_coverage_data_for_simplecov_json(
+                    &json_value,
+                    &mut optional_coverage_data,
+                )
+            }
         };
 
         if let Some(coverage) = coverage_data {
@@ -84,6 +94,30 @@ impl Simplecov {
             }
         }
         false
+    }
+
+    fn extract_coverage_data_for_simplecov_json<'a>(
+        json_value: &'a serde_json::Value,
+        coverage_data: &'a mut Map<String, Value>,
+    ) -> Option<&'a Map<String, Value>> {
+        // Check if using simplecov-json[https://github.com/vicentllongo/simplecov-json]
+        if let Some(files) = json_value.get("files").and_then(|v| v.as_array()) {
+            for file in files {
+                if let (Some(filename), Some(coverage)) =
+                    (file.get("filename"), file.get("coverage"))
+                {
+                    if let (Some(filename_str), Some(coverage_arr)) =
+                        (filename.as_str(), coverage.as_array())
+                    {
+                        coverage_data
+                            .insert(filename_str.to_string(), Value::Array(coverage_arr.clone()));
+                    }
+                }
+            }
+            Some(coverage_data)
+        } else {
+            None
+        }
     }
 }
 
@@ -225,5 +259,64 @@ mod test {
         - "-1"
         - "-1"
     "#);
+    }
+
+    #[test]
+    fn simplecov_json_fixture() {
+        // When using https://github.com/vicentllongo/simplecov-json
+        let input = include_str!("../../tests/fixtures/simplecov/sample-json.json");
+        let parsed_results = Simplecov::new().parse_text(input).unwrap();
+
+        insta::assert_yaml_snapshot!(parsed_results, @r###"
+        - path: app/controllers/base_controller.rb
+          hits:
+            - "1"
+            - "1"
+            - "1"
+            - "1"
+            - "-1"
+            - "1"
+            - "-1"
+            - "1"
+            - "-1"
+            - "1"
+            - "-1"
+            - "1"
+            - "-1"
+            - "0"
+            - "-1"
+            - "0"
+            - "26"
+            - "-1"
+            - "-1"
+            - "1"
+            - "20"
+            - "-1"
+            - "-1"
+            - "-1"
+        - path: app/controllers/sample_controller.rb
+          hits:
+            - "1"
+            - "1"
+            - "1"
+            - "-1"
+            - "1"
+            - "0"
+            - "0"
+            - "0"
+            - "-1"
+            - "-1"
+            - "1"
+            - "-1"
+            - "1"
+            - "1"
+            - "-1"
+            - "-1"
+            - "1"
+            - "1"
+            - "-1"
+            - "-1"
+            - "-1"
+        "###);
     }
 }

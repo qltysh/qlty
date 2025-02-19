@@ -26,3 +26,4 @@ cache_results = true
 batch = true
 output_category = "style"
 suggested = "config"
+output_missing = "parse"

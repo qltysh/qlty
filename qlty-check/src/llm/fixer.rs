@@ -9,10 +9,12 @@ use qlty_cloud::Client;
 use qlty_config::issue_transformer::IssueTransformer;
 use qlty_types::analysis::v1::{Issue, Suggestion};
 use rayon::prelude::*;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::sync::atomic::AtomicUsize;
+use std::sync::Arc;
 use tracing::info;
 use tracing::{debug, warn};
+use ureq::json;
 
 const MAX_FIXES: usize = 500;
 const MAX_FIXES_PER_FILE: usize = 30;
@@ -27,6 +29,7 @@ pub struct Fixer {
     pre_transformers: Vec<Box<dyn IssueTransformer>>,
     issues: Vec<Issue>,
     fixes_to_attempt: Vec<usize>,
+    fixes_generated: Arc<AtomicUsize>,
 }
 
 impl Fixer {
@@ -41,6 +44,7 @@ impl Fixer {
                 filters: settings.filters.clone(),
             })],
             fixes_to_attempt: vec![],
+            fixes_generated: Arc::new(AtomicUsize::new(0)),
         }
     }
 
@@ -135,7 +139,11 @@ impl Fixer {
     }
 
     pub fn generate_fixes(&mut self) -> Result<Results> {
-        info!("Attempting AI autofix of {}...", self.completions_count());
+        info!(
+            "Attempting AI autofix for {} of {} issues...",
+            self.completions_count(),
+            self.results.issues.len()
+        );
 
         let progress =
             Progress::new_with_position(self.progress, self.fixes_to_attempt.len() as u64);
@@ -158,6 +166,13 @@ impl Fixer {
         });
 
         progress.clear();
+
+        info!(
+            "Generated AI autofixes for {} of {} attempted issues",
+            self.fixes_generated
+                .load(std::sync::atomic::Ordering::Relaxed),
+            self.completions_count()
+        );
 
         Ok(Results {
             issues: modified_issues,
@@ -186,7 +201,17 @@ impl Fixer {
 
         let issue = match self.try_fix(issue) {
             Ok(issue) => {
-                info!("Generated AI autofix for issue: {:?}", &issue.suggestions);
+                if issue.suggestions.is_empty() {
+                    debug!(
+                        "No AI fix generated for issue: {}:{}",
+                        &issue.tool, &issue.rule_key
+                    );
+                } else {
+                    info!("Generated AI autofix for issue: {:?}", &issue.suggestions);
+                    self.fixes_generated
+                        .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                }
+
                 issue
             }
             Err(error) => {
@@ -201,36 +226,21 @@ impl Fixer {
     }
 
     fn try_fix(&self, issue: &Issue) -> Result<Issue> {
-        #[derive(Debug, Clone, Serialize, Deserialize)]
-        struct File {
-            content: String,
-            path: String,
-        }
-
-        #[derive(Debug, Clone, Serialize, Deserialize)]
-        struct Options {
-            r#unsafe: bool,
-        }
-
-        #[derive(Debug, Clone, Serialize, Deserialize)]
-        struct FixRequest {
-            issue: Issue,
-            files: Vec<File>,
-            options: Option<Options>,
-        }
-
         if let Some(path) = issue.path() {
             let client = Client::authenticated()?;
             let content = self.staging_area.read(issue.path().unwrap().into())?;
-            let response = client.post("/fixes").send_json(ureq::json!(&FixRequest {
-                issue: issue.clone(),
-                files: vec![File { content, path }],
-                options: Some(Options {
-                    r#unsafe: self.r#unsafe
-                }),
+            let response = client.post("/fixes").send_json(json!({
+                "issue": issue.clone(),
+                "files": [{ "content": content, "path": path }],
+                "options": {
+                    "unsafe": self.r#unsafe
+                },
             }))?;
 
+            let response_debug = format!("{:?}", &response);
             let suggestions: Vec<Suggestion> = response.into_json()?;
+            debug!("{} with {} suggestions", response_debug, suggestions.len());
+
             let mut issue = issue.clone();
             issue.suggestions = suggestions.clone();
 

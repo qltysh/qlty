@@ -22,16 +22,16 @@ script = "if not exist %USERPROFILE%\\.qlty\\bin ( md %USERPROFILE%\\.qlty\\bin 
 
 [tasks.symlink-release]
 dependencies = ["create-bin-dir"]
-script = "ln -sf $PWD/cli/target/release/qlty $HOME/.qlty/bin/qlty"
+script = "ln -sf $PWD/target/release/qlty $HOME/.qlty/bin/qlty"
 
 [tasks.symlink-release.windows]
 dependencies = ["create-bin-dir"]
-script = "copy /y %CD%\\cli\\target\\release\\qlty*.exe %USERPROFILE%\\.qlty\\bin"
+script = "copy /y %CD%\\target\\release\\qlty*.exe %USERPROFILE%\\.qlty\\bin"
 
 [tasks.symlink-debug]
 dependencies = ["create-bin-dir"]
-script = "ln -sf $PWD/cli/target/debug/qlty ~/.qlty/bin/qlty"
+script = "ln -sf $PWD/target/debug/qlty ~/.qlty/bin/qlty"
 
 [tasks.symlink-debug.windows]
 dependencies = ["create-bin-dir"]
-script = "copy /y %CD%\\cli\\target\\debug\\qlty*.exe %USERPROFILE%\\.qlty\\bin"
+script = "copy /y %CD%\\target\\debug\\qlty*.exe %USERPROFILE%\\.qlty\\bin"

@@ -44,7 +44,7 @@ impl Planner {
         if let Some(prefix) = self.settings.strip_prefix.clone() {
             transformers.push(Box::new(StripPrefix::new(prefix)));
         } else {
-            transformers.push(Box::<StripPrefix>::default());
+            transformers.push(Box::new(StripPrefix::new_from_git_root()?));
         }
 
         transformers.push(Box::new(StripDotSlashPrefix));

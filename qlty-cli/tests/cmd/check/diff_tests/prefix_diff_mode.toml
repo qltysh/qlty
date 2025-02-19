@@ -1,3 +1,2 @@
 bin.name = "qlty"
-args = ["check", "--no-cache"]
-status.code = 1
+args = ["check", "--no-cache", "--verbose"]

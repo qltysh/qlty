@@ -1,12 +1,8 @@
 use anyhow::Result;
 use globset::{Glob, GlobSet, GlobSetBuilder};
-use qlty_analysis::utils::fs::path_to_string;
+use qlty_config::Workspace;
 use qlty_types::tests::v1::{CoverageMetadata, CoverageSummary, FileCoverage};
-use std::{
-    env::current_dir,
-    fmt::Debug,
-    path::{PathBuf, MAIN_SEPARATOR},
-};
+use std::{fmt::Debug, path::PathBuf};
 
 pub trait Transformer: Debug + Send + Sync + 'static {
     fn transform(&self, file_coverage: FileCoverage) -> Option<FileCoverage>;
@@ -153,31 +149,32 @@ impl Transformer for AddPrefix {
 
 #[derive(Debug, Clone)]
 pub struct StripPrefix {
-    prefix: String,
-}
-
-impl Default for StripPrefix {
-    fn default() -> Self {
-        Self {
-            prefix: format!(
-                "{}{}",
-                path_to_string(current_dir().unwrap_or_else(|_| PathBuf::from("."))),
-                MAIN_SEPARATOR
-            ),
-        }
-    }
+    prefix: PathBuf,
 }
 
 impl StripPrefix {
     pub fn new(prefix: String) -> Self {
-        Self { prefix }
+        Self {
+            prefix: PathBuf::from(prefix),
+        }
+    }
+
+    pub fn new_from_git_root() -> Result<Self> {
+        Ok(Self {
+            prefix: Workspace::assert_within_git_directory()?,
+        })
     }
 }
 
 impl Transformer for StripPrefix {
     fn transform(&self, file_coverage: FileCoverage) -> Option<FileCoverage> {
         let mut file_coverage = file_coverage;
-        file_coverage.path = file_coverage.path.replacen(&self.prefix, "", 1);
+        let coverage_path = PathBuf::from(&file_coverage.path);
+
+        if let Ok(sanitized_path) = coverage_path.strip_prefix(&self.prefix) {
+            file_coverage.path = sanitized_path.to_string_lossy().to_string();
+        }
+
         Some(file_coverage)
     }
 
@@ -200,5 +197,30 @@ impl Transformer for StripDotSlashPrefix {
 
     fn clone_box(&self) -> Box<dyn Transformer> {
         Box::new(Self)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_strip_prefix_transformer() {
+        let transformer = StripPrefix::new("/home/circleci/project".to_string());
+        let file_coverage = FileCoverage {
+            build_id: "1234".to_string(),
+            path: "/home/circleci/project/app/deep/nested/file.rb".to_string(),
+            summary: Some(CoverageSummary {
+                covered: 5,
+                missed: 5,
+                omit: 3,
+                total: 13,
+            }),
+            hits: vec![-1, -1, 1, 1, 1, 1, -1, 1, 1, -1, 1],
+            branch: "test-branch".to_string(),
+            ..Default::default()
+        };
+        let file_coverage = transformer.transform(file_coverage).unwrap();
+        assert_eq!(file_coverage.path, "app/deep/nested/file.rb".to_string());
     }
 }

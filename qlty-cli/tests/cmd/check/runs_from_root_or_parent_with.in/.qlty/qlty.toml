@@ -4,8 +4,8 @@ config_version = "0"
 file_types = ["shell"]
 
 [plugins.definitions.runs_from_parent_with.drivers.test]
-prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd"
-script = "ls -l test_file.json" # this should run in dir with test_file.json
+prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd"
+script = "ls -l test_file.json"                                                                        # this should run in dir with test_file.json
 success_codes = [0]
 output = "pass_fail"
 runs_from = { type = "root_or_parent_with", path = "test_file.json" }
@@ -16,8 +16,8 @@ batch = true
 file_types = ["shell"]
 
 [plugins.definitions.ends_up_running_from_root.drivers.test]
-prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd"
-script = "ls -l root.json" # this should run in root dir
+prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd"
+script = "ls -l root.json"                                                                             # this should run in root dir
 success_codes = [0]
 output = "pass_fail"
 runs_from = { type = "root_or_parent_with", path = "not_a_file.json" }

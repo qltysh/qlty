@@ -3,7 +3,7 @@ use crate::{
     sources::{SourceFetch, SourcesList},
     Library, QltyConfig,
 };
-use anyhow::{anyhow, Context, Result};
+use anyhow::{bail, Context, Result};
 use git2::Repository;
 use ignore::{Walk, WalkBuilder};
 use std::path::{Path, PathBuf};
@@ -95,17 +95,17 @@ impl Workspace {
         let git_repository = Self::closest_git_repository_path(&current);
 
         if git_repository.is_none() {
-            return Err(anyhow!(
+            bail!(
                 "This must be run at the root of a Git repository. Current directory is not within a repository: {}",
                 current.display()
-            ));
+            );
         }
 
         if git_repository.as_ref().unwrap() != &current {
-            return Err(anyhow!(
+            bail!(
                 "This must be run at the root of a Git repository. Current directory is not the repository root: {}",
                 current.display()
-            ));
+            );
         }
 
         Ok(git_repository.unwrap())
@@ -115,17 +115,13 @@ impl Workspace {
         let git_repository = Self::closest_git_repository_path(&current);
 
         if git_repository.is_none() {
-            return Err(anyhow!(
-                "This must be run within a Git repository with Qlty set up."
-            ));
+            bail!("This must be run within a Git repository with Qlty set up.");
         } else {
             let git_repository = git_repository.unwrap();
             let workspace = Self::for_root(&git_repository)?;
 
             if !workspace.config_exists()? {
-                return Err(anyhow!(
-                    "Qlty must be set up in this repository. Try: qlty init"
-                ));
+                bail!("Qlty must be set up in this repository. Try: qlty init");
             }
 
             Ok(git_repository)
@@ -137,7 +133,7 @@ impl Workspace {
         let git_repository = Self::closest_git_repository_path(&current);
 
         if git_repository.is_none() {
-            return Err(anyhow!("This must be run within a Git repository."));
+            bail!("This must be run within a Git repository.");
         }
 
         Ok(git_repository.unwrap())

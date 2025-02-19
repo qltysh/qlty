@@ -22,7 +22,7 @@ A plugin consists of:
 
 The plugin definition file (`plugin.toml`) is the heart of the plugin; it contains instructions on how to install the plugin; its capabilities; and how to run it.
 
-You'll typically see at least a section for the definition of the plugin (`[plugins.definitions.${MY_PLUGIN}]`) as well as one or more sections for each "driver" the plugin supports. For a plugin that supports both formatting and linting, you'd see two a section for each one of these drivers: `[plugins.definitions.${MY_PLUGIN}.drivers.lint]` and `[plugins.definitions.${MY_PLUGIN}.drivers.format]`
+You'll typically see at least a section for the definition of the plugin (`[plugins.definitions.${MY_PLUGIN}]`) as well as one or more sections for each "driver" the plugin supports. For a plugin that supports both formatting and linting, you'd see two sections, one for each one of these drivers: `[plugins.definitions.${MY_PLUGIN}.drivers.lint]` and `[plugins.definitions.${MY_PLUGIN}.drivers.format]`
 
 ### Plugin Installation
 
@@ -91,6 +91,31 @@ package = "${MY_PLUGIN}"
 Drivers are defined under `[plugins.definitions.${MY_PLUGIN}.drivers.${driver}]` and contain the script, success codes, output, output format, batch and a few other options.
 
 - `success_codes`: An array of exit codes that denote that the plugin run finished successfully. Ordinarily you might expect this to just be 0 to denote a binary exit successfully, but because many plugins use a 0 vs 1 (or 2) to differentiate between successful runs that did not find any issues vs successful runs that did find issues, Qlty accepts an array of valid exit codes.
+- `target`: Customize what is passed to the underlying driver as the target of analysis. By default, the target is a file. In some cases, such as drivers that run whole program analysis, it can be more appropriate to pass a directory. Valid target types are `literal`, `parent`, and `parent_with`:
+
+To specify the project root directory, use `literal`:
+
+```
+  target = { type = "literal", path = "." }
+```
+
+To specify a directory that is direct parent of a sub-folder, specify a `target_type` of `parent_with` with a `path`:
+
+```
+target = { type = "parent_with", path = "app" }
+```
+
+Or, for a file's parent:
+
+```
+target = { type = "parent_with", path = "Cargo.toml" }
+```
+
+To specify the unique parent directories of files being analyzed, use `parent`:
+
+```
+target = { type = "parent" }
+```
 
 ## Creating a Parser
 
@@ -139,18 +164,6 @@ npm test ${PLUGIN_NAME}
 ```
 
 e.g. `npm test reek`
-
-### Using Local Plugin Definitions
-
-Qlty's default source for plugin definitions is the github.com/qltysh/qlty remote repository, which is fine for most cases, but is not always appropriate for plugin development where developers expect that their local plugin definitions to be used.
-
-To ensure a run of Qlty is using your local plugin definitions, adjust the relevant `.qlty/qlty.toml` definition file to instead reference a local source:
-
-```
-[[source]]
-name = "default"
-directory = "/PATH_TO_QLTY_REPO/qlty-plugins/plugins"
-```
 
 ## Debug
 

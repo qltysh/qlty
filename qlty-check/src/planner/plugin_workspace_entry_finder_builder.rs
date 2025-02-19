@@ -47,9 +47,11 @@ impl PluginWorkspaceEntryFinderBuilder {
                 TargetMode::All | TargetMode::Sample(_) => {
                     Arc::new(AllSource::new(self.root.clone()))
                 }
-                TargetMode::Paths(_) => {
-                    Arc::new(ArgsSource::new(self.root.clone(), self.paths.clone()))
-                }
+                TargetMode::Paths(_) => Arc::new(ArgsSource::new(
+                    self.root.clone(),
+                    // Use absolute paths, so when running in a subdirectory, the paths are still correct
+                    self.paths.iter().map(|p| self.root.join(p)).collect(),
+                )),
                 TargetMode::UpstreamDiff(_) => {
                     Arc::new(DiffSource::new(self.git_diff()?.changed_files, &self.root))
                 }
@@ -103,8 +105,13 @@ impl PluginWorkspaceEntryFinderBuilder {
             )));
         }
 
-        let ignores = self
+        let ignores_without_metadata = self
             .ignores
+            .iter()
+            .filter(|i| i.plugins.is_empty() && i.rules.is_empty() && i.levels.is_empty())
+            .collect::<Vec<_>>();
+
+        let ignores = ignores_without_metadata
             .iter()
             .flat_map(|i| i.file_patterns.clone())
             .collect::<Vec<_>>();

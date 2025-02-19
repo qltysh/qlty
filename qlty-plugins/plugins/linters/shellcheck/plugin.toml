@@ -24,3 +24,4 @@ output = "stdout"
 output_format = "shellcheck"
 cache_results = true
 suggested = "targets"
+output_missing = "parse"

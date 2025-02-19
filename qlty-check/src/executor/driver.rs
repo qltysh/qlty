@@ -518,17 +518,35 @@ impl Driver {
                 invocation_label, &rerun
             )
         })?;
-        let duration = timer.elapsed().as_secs_f64();
 
         info!(
-            "{}: Completed {} in {:.3}s (exit {})",
+            "{}: prepare_script ran {} in {:.3}s (exit {}): stdout: {}",
             plan.invocation_id,
             invocation_label,
-            duration,
-            output.status.code().unwrap_or(-1)
+            timer.elapsed().as_secs_f64(),
+            output.status.code().unwrap_or(-1),
+            String::from_utf8(output.stdout).unwrap_or_default()
         );
 
-        Ok(())
+        if !output.stderr.is_empty() {
+            warn!(
+                "{}: {}: stderr: {}",
+                plan.invocation_id,
+                invocation_label,
+                String::from_utf8(output.stderr).unwrap_or_default()
+            );
+        }
+
+        if output.status.success() {
+            Ok(())
+        } else {
+            bail!(
+                "{}: prepare_script exited with non-zero code {}: {}",
+                plan.invocation_id,
+                output.status.code().unwrap_or(-1),
+                rerun
+            );
+        }
     }
 }
 

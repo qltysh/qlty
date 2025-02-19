@@ -24,3 +24,4 @@ output_format = "sarif"
 target = { type = "parent" }
 runs_from = { type = "target_directory" }
 suggested = "config"
+output_missing = "parse"

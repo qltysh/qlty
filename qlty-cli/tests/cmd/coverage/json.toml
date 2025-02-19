@@ -10,6 +10,7 @@ args = [
   "rails/",
   "--tag",
   "rails",
+  "lcov.info"
 ]
 bin.name = "qlty"
 

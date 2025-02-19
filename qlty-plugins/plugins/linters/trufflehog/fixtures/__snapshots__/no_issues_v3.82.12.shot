@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=trufflehog fixture=no_issues version=3.82.12 1`] = `
+{
+  "issues": [],
+}
+`;

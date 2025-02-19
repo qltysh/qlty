@@ -37,6 +37,19 @@ pub fn print_invocations(
     let cwd = std::env::current_dir().expect("Unable to identify current directory");
     let mut tw = TabWriter::new(vec![]);
 
+    tw.write_all(
+        format!(
+            "{}\t{}\t{}\t{}\t{}\n",
+            style("Plugin").bold().underlined(),
+            style("Result").bold().underlined(),
+            style("Targets").bold().underlined(),
+            style("Time").bold().underlined(),
+            style("Debug File").bold().underlined(),
+        )
+        .as_bytes(),
+    )
+    .unwrap();
+
     // Print a JOBS summary in verbose mode
     if verbose >= 1 {
         for invocation in &report.invocations {
@@ -114,6 +127,18 @@ pub fn print_invocations(
 
     let mut tw = TabWriter::new(vec![]);
     let mut errors_count = 0;
+
+    tw.write_all(
+        format!(
+            "{}\t{}\t{}\t{}\n",
+            style("Plugin").bold().underlined(),
+            style("Result").bold().underlined(),
+            style("Message").bold().underlined(),
+            style("Debug File").bold().underlined(),
+        )
+        .as_bytes(),
+    )
+    .unwrap();
 
     for invocation in &report.invocations {
         let absolute_outfile_path = invocation.outfile_path();
@@ -195,7 +220,7 @@ pub fn print_invocations(
     tw.flush().unwrap();
     let written = String::from_utf8(tw.into_inner().unwrap()).unwrap();
 
-    if !written.is_empty() {
+    if errors_count > 0 {
         writeln!(
             writer,
             "{}{}{}",

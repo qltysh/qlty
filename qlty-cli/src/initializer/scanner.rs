@@ -446,7 +446,7 @@ latest_version = "1.0.0"
 known_good_version = "1.0.0"
 
 [plugins.definitions.exists.drivers.lint]
-prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd"
+prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd"
 script = "ls -l ${target}"
 success_codes = [0]
 output = "pass_fail"

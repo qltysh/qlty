@@ -119,6 +119,8 @@
       <counter type="METHOD" missed="4" covered="0" />
       <counter type="CLASS" missed="1" covered="0" />
     </sourcefile>
+    <sourcefile name="Empty.java">
+    </sourcefile>
     <counter type="INSTRUCTION" missed="16" covered="0" />
     <counter type="LINE" missed="6" covered="0" />
     <counter type="COMPLEXITY" missed="4" covered="0" />

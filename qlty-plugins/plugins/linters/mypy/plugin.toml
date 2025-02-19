@@ -22,3 +22,4 @@ output_format = "mypy"
 cache_results = true
 batch = true
 suggested = "config"
+output_missing = "parse"
