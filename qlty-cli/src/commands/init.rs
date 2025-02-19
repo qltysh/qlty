@@ -9,7 +9,7 @@ use dialoguer::Confirm;
 use duct::cmd;
 use itertools::Itertools;
 use num_format::{Locale, ToFormattedString};
-use qlty_config::Workspace;
+use qlty_config::{MigrateConfig, MigrationSettings, Workspace};
 use std::io::Write;
 use tabwriter::TabWriter;
 
@@ -108,7 +108,8 @@ impl Init {
                 self.print_enabled_plugins(&initializer)?;
             }
 
-            if !self.skip_plugins {
+            // For now, this feature does not work for dry runs
+            if !self.dry_run {
                 self.maybe_migrate_config()?;
             }
 
@@ -284,7 +285,15 @@ impl Init {
                         .show_default(true)
                         .interact()?)
             {
-                cmd!(self.current_exe()?, "config", "migrate").run()?;
+                let migration_settings = MigrationSettings::new(
+                    &workspace.root,
+                    workspace.config()?,
+                    &workspace.config_path()?,
+                    &classic_config_path,
+                    self.dry_run,
+                )?;
+
+                MigrateConfig::new(migration_settings)?.migrate()?;
                 self.print_check("Migrated .codeclimate.yml configuration");
             }
         }
