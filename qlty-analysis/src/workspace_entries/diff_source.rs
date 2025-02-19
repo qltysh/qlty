@@ -30,7 +30,7 @@ impl DiffSource {
         }
 
         for path in changed_files {
-            if let Ok(metadata) = fs::metadata(&full_path.join(path)) {
+            if let Ok(metadata) = fs::metadata(full_path.join(path)) {
                 let content_modified = if let Ok(modified) = metadata.modified() {
                     modified
                 } else {
