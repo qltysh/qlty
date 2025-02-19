@@ -87,7 +87,11 @@ impl NodePackageFile {
         plugin_name: &str,
     ) -> Result<String> {
         let package_file_data = serde_json::from_str::<Value>(package_file_contents)?;
-        let package_file_data = package_file_data.as_object().unwrap();
+        let package_file_data = if let Some(package_data) = package_file_data.as_object() {
+            package_data
+        } else {
+            bail!("Invalid package file data");
+        };
 
         let package_file_version = Self::package_file_version(plugin_name, package_file_data)?;
 
@@ -99,9 +103,11 @@ impl NodePackageFile {
             let mut tokens = line.split_whitespace();
 
             if version_on_next_line {
-                tokens.next().unwrap(); // first token is just "version"
+                tokens.next(); // first token is just "version"
 
-                return Ok(tokens.next().unwrap().replace('"', ""));
+                if let Some(version) = tokens.next() {
+                    return Ok(version.replace('"', ""));
+                }
             }
 
             let potential_package_name = tokens.next().unwrap_or_default().replace([':', '"'], "");

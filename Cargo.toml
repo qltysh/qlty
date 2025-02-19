@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.485.0"
+version = "0.490.0"
 authors = ["Qlty Software Inc."]
 description = "Code quality toolkit"
 documentation = "https://docs.qlty.sh"
@@ -26,7 +26,7 @@ bytesize = "1.3.0"
 cap = "0.1.2"
 cc = "1.2.1"
 chrono = "0.4.39"
-clap = { version = "4.5.27", features = ["derive", "wrap_help"] }
+clap = { version = "4.5.29", features = ["derive", "wrap_help"] }
 clap_complete = "4.5.34"
 cli-table = "0.4.9"
 config = "0.13.3"
@@ -63,21 +63,21 @@ mac_address = "1.1.7"
 md5 = "0.7.0"
 num-format = "0.4.4"
 num_cpus = "1.15.0"
-once_cell = "1.20.2"
+once_cell = "1.20.3"
 path-absolutize = "3.1.1"
 pathdiff = "0.2.3"
 pbjson = "0.7.0"
 pbjson-types = "0.7.0"
 prost = "0.13.4"
-qlty-analysis = { version = "0.485.0", path = "qlty-analysis" }
-qlty-check = { version = "0.485.0", path = "qlty-check" }
-qlty-cloud = { version = "0.485.0", path = "qlty-cloud" }
-qlty-config = { version = "0.485.0", path = "qlty-config" }
-qlty-coverage = { version = "0.485.0", path = "qlty-coverage" }
-qlty-plugins = { version = "0.485.0", path = "qlty-plugins" }
-qlty-smells = { version = "0.485.0", path = "qlty-smells" }
-qlty-test-utilities = { version = "0.485.0", path = "qlty-test-utilities" }
-qlty-types = { version = "0.485.0", path = "qlty-types" }
+qlty-analysis = { version = "0.490.0", path = "qlty-analysis" }
+qlty-check = { version = "0.490.0", path = "qlty-check" }
+qlty-cloud = { version = "0.490.0", path = "qlty-cloud" }
+qlty-config = { version = "0.490.0", path = "qlty-config" }
+qlty-coverage = { version = "0.490.0", path = "qlty-coverage" }
+qlty-plugins = { version = "0.490.0", path = "qlty-plugins" }
+qlty-smells = { version = "0.490.0", path = "qlty-smells" }
+qlty-test-utilities = { version = "0.490.0", path = "qlty-test-utilities" }
+qlty-types = { version = "0.490.0", path = "qlty-types" }
 rand = "0.8.5"
 rayon = "1.10.0"
 regex = "1.11.0"
@@ -115,8 +115,8 @@ time = { version = "0.3.37", features = [
     "parsing",
 ] }
 tiny_http = "0.12.0"
-toml = "0.8.2"
-toml_edit = "0.22.23"
+toml = "0.8.20"
+toml_edit = "0.22.24"
 tracing = "0.1.41"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
@@ -135,7 +135,7 @@ tree-sitter-typescript = "0.21.2"
 trycmd = "0.15.8"
 ureq = { version = "2.12.1", features = ["json"] }
 url = "2.5.4"
-uuid = { version = "1.12.1", features = ["v4"] }
+uuid = { version = "1.13.2", features = ["v4"] }
 walkdir = "2.5.0"
 webbrowser = "1.0.3"
 whoami = "1.5.2"
