@@ -10,7 +10,7 @@ use std::io::Write as _;
 use std::{fmt, io::IsTerminal as _, path::Path};
 use tracing::warn;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ApplyMode {
     All,
     None,

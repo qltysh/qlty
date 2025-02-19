@@ -55,7 +55,7 @@ pub fn print_unformatted(writer: &mut dyn std::io::Write, issues: &[Issue]) -> R
         writeln!(writer)?;
     }
 
-    if std::io::stdin().is_terminal() && !paths.is_empty() {
+    if apply_mode == ApplyMode::Ask && std::io::stdin().is_terminal() && !paths.is_empty() {
         let mut answered = false;
 
         // Loop until we get a valid answer
