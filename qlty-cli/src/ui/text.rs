@@ -39,7 +39,7 @@ impl TextFormatter {
 impl TextFormatter {
     pub fn write_to(&mut self, writer: &mut dyn std::io::Write) -> anyhow::Result<bool> {
         if !self.summary {
-            if print_unformatted(writer, &self.report.issues)? {
+            if print_unformatted(writer, &self.report.issues, self.apply_mode)? {
                 return Ok(true);
             }
 
