@@ -75,13 +75,8 @@ impl Fmt {
             self.git_add(&report.formatted)?;
         }
 
-        let mut formatter = TextFormatter::new(
-            &report,
-            &plan.workspace,
-            settings.verbose,
-            false,
-            ApplyMode::None,
-        );
+        let mut formatter =
+            TextFormatter::new(&report, &plan.workspace, &settings, false, ApplyMode::None);
         formatter.write_to(&mut std::io::stdout())?;
 
         if !self.no_error && report.has_errors() {

@@ -369,13 +369,8 @@ impl Check {
                 ApplyMode::Ask
             };
 
-            let mut formatter = TextFormatter::new(
-                report,
-                &plan.workspace,
-                settings.verbose,
-                self.summary,
-                apply_mode,
-            );
+            let mut formatter =
+                TextFormatter::new(report, &plan.workspace, settings, self.summary, apply_mode);
 
             formatter.write_to(&mut std::io::stdout())
         }

@@ -5,41 +5,39 @@ use super::{fixes::print_fixes, ApplyMode};
 use anyhow::Result;
 use console::style;
 use num_format::{Locale, ToFormattedString as _};
-use qlty_check::Report;
+use qlty_check::{Report, Settings};
 use qlty_config::Workspace;
 use qlty_types::analysis::v1::ExecutionVerb;
 
 #[derive(Debug)]
-pub struct TextFormatter {
+pub struct TextFormatter<'a> {
     report: Report,
     workspace: Workspace,
-    verbose: usize,
+    settings: &'a Settings,
     summary: bool,
     apply_mode: ApplyMode,
 }
 
-impl TextFormatter {
+impl<'a> TextFormatter<'a> {
     pub fn new(
         report: &Report,
         workspace: &Workspace,
-        verbose: usize,
+        settings: &'a Settings,
         summary: bool,
         apply_mode: ApplyMode,
     ) -> Self {
         Self {
             report: report.clone(),
             workspace: workspace.clone(),
-            verbose,
+            settings,
             summary,
             apply_mode,
         }
     }
-}
 
-impl TextFormatter {
     pub fn write_to(&mut self, writer: &mut dyn std::io::Write) -> anyhow::Result<bool> {
         if !self.summary {
-            if print_unformatted(writer, &self.report.issues, self.apply_mode)? {
+            if print_unformatted(writer, &self.report.issues, self.settings, self.apply_mode)? {
                 return Ok(true);
             }
 
@@ -55,16 +53,14 @@ impl TextFormatter {
             print_issues(writer, &self.report)?;
         }
 
-        print_invocations(writer, &self.report, self.verbose)?;
+        print_invocations(writer, &self.report, self.settings.verbose)?;
         self.print_conclusion(writer)?;
 
         Ok(false)
     }
-}
 
-impl TextFormatter {
     pub fn print_conclusion(&self, writer: &mut dyn std::io::Write) -> Result<()> {
-        if self.verbose >= 1 && self.report.targets_count() > 0 {
+        if self.settings.verbose >= 1 && self.report.targets_count() > 0 {
             self.print_processed_files(writer)?;
         } else if self.report.targets_count() == 0 && self.report.target_mode.is_diff() {
             self.print_no_modified_files(writer)?;
