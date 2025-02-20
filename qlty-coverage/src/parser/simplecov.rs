@@ -24,12 +24,10 @@ impl Parser for Simplecov {
             if let Some(coverage) = self.extract_coverage(&json_value) {
                 file_coverages.extend(self.extract_file_coverage(coverage));
             }
+        } else if self.is_json_format(&json_value) {
+            file_coverages.extend(self.parse_json_coverage(&json_value));
         } else {
             file_coverages.extend(self.parse_legacy_coverage(&json_value));
-
-            if file_coverages.is_empty() {
-                file_coverages.extend(self.parse_json_coverage(&json_value));
-            }
         }
 
         Ok(file_coverages)
@@ -131,6 +129,10 @@ impl Simplecov {
             }
         }
         false
+    }
+
+    fn is_json_format(&self, json_value: &serde_json::Value) -> bool {
+        json_value.get("files").is_some()
     }
 }
 
