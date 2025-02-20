@@ -138,9 +138,7 @@ impl Simplecov {
             Value::Object(obj) => obj
                 .get("lines")
                 .and_then(|v| v.as_array())
-                .map_or(vec![], |arr| {
-                    arr.iter().map(Self::parse_lines).collect()
-                }),
+                .map_or(vec![], |arr| arr.iter().map(Self::parse_lines).collect()),
             Value::Array(arr) => arr.iter().map(Self::parse_lines).collect(),
             _ => vec![],
         }
