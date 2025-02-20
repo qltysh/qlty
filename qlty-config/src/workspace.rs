@@ -61,7 +61,7 @@ impl Workspace {
         let config = Builder::full_config_for_workspace(self);
 
         if let Ok(config) = &config {
-            config.print_deprecation_warnings();
+            config.print_deprecation_warnings()?;
         }
 
         config
