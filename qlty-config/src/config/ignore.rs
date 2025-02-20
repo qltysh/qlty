@@ -24,9 +24,6 @@ pub struct Ignore {
 
     #[serde(skip)]
     pub glob_set: RwLock<Option<GlobSet>>,
-
-    #[serde(skip)]
-    pub negated_glob_set: RwLock<Option<GlobSet>>,
 }
 
 impl Clone for Ignore {
@@ -37,7 +34,6 @@ impl Clone for Ignore {
             rules: self.rules.clone(),
             levels: self.levels.clone(),
             glob_set: RwLock::new(None),
-            negated_glob_set: RwLock::new(None),
         }
     }
 }
@@ -67,33 +63,18 @@ impl IssueTransformer for Ignore {
 impl Ignore {
     pub fn initialize_globset(&self) {
         let mut globset_builder = GlobSetBuilder::new();
-        let mut negated_globset_builder = GlobSetBuilder::new();
 
         for glob in &self.file_patterns {
-            if let Some(glob) = glob.strip_prefix("!") {
-                negated_globset_builder.add(Glob::new(glob).unwrap());
-            } else {
-                globset_builder.add(Glob::new(glob).unwrap());
-            }
+            globset_builder.add(Glob::new(glob).unwrap());
         }
 
         let mut glob_set = self.glob_set.write().unwrap();
         *glob_set = Some(globset_builder.build().unwrap());
-
-        let mut negated_glob_set = self.negated_glob_set.write().unwrap();
-        *negated_glob_set = Some(negated_globset_builder.build().unwrap());
     }
 
     pub fn matches_path(&self, path: &str) -> bool {
         if self.file_patterns.is_empty() {
             return true;
-        }
-
-        let negated_glob_set = self.negated_glob_set.read().unwrap();
-        if let Some(negated_glob_set) = negated_glob_set.as_ref() {
-            if negated_glob_set.is_match(path) {
-                return false;
-            }
         }
 
         let glob_set = self.glob_set.read().unwrap();

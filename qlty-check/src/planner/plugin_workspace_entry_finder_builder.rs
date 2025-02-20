@@ -123,7 +123,7 @@ impl PluginWorkspaceEntryFinderBuilder {
             .ignores
             .first()
             .and_then(|ignore| ignore.file_patterns.first())
-            .map_or(false, |pattern| pattern.starts_with('!'));
+            .is_some_and(|pattern| pattern.starts_with('!'));
 
         let mut current_ignore_group = IgnoreGroup {
             ignores: vec![],
@@ -147,16 +147,14 @@ impl PluginWorkspaceEntryFinderBuilder {
                             negate: true,
                         };
                     }
+                } else if current_ignore_group.negate {
+                    ignore_groups.push(current_ignore_group);
+                    current_ignore_group = IgnoreGroup {
+                        ignores: vec![pattern.to_string()],
+                        negate: false,
+                    };
                 } else {
-                    if current_ignore_group.negate {
-                        ignore_groups.push(current_ignore_group);
-                        current_ignore_group = IgnoreGroup {
-                            ignores: vec![pattern.to_string()],
-                            negate: false,
-                        };
-                    } else {
-                        current_ignore_group.ignores.push(pattern.to_string());
-                    }
+                    current_ignore_group.ignores.push(pattern.to_string());
                 }
             }
         }
