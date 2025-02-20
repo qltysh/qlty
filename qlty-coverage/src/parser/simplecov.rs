@@ -39,7 +39,7 @@ impl Simplecov {
         if let Some(coverage) = self.extract_coverage(&json_value) {
             file_coverages.extend(self.extract_file_coverage(coverage));
         }
-        
+
         file_coverages
     }
 
