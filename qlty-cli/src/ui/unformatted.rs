@@ -60,52 +60,56 @@ pub fn print_unformatted(
         writeln!(writer)?;
     }
 
-    if apply_mode == ApplyMode::Ask && std::io::stdin().is_terminal() && !paths.is_empty() {
-        let mut answered = false;
+    if std::io::stdin().is_terminal() && !paths.is_empty() {
+        let mut settings = settings.clone();
+        settings.trigger = Trigger::Manual.into();
+        settings.paths = paths
+            .clone()
+            .into_iter()
+            .map(|p| PathBuf::from(p.clone().unwrap()))
+            .collect();
 
-        // Loop until we get a valid answer
-        while !answered {
-            if let Ok(answer) = prompt_fmt() {
-                match answer.to_lowercase().as_str() {
-                    "y" | "yes" => {
-                        let workspace = Workspace::require_initialized()?;
-                        workspace.fetch_sources()?;
+        match apply_mode {
+            ApplyMode::None => {}
+            ApplyMode::All => {
+                return apply_fmt(writer, &settings);
+            }
+            ApplyMode::Ask => {
+                let mut answered = false;
 
-                        let mut settings = settings.clone();
-                        settings.trigger = Trigger::Manual.into();
-                        settings.paths = paths
-                            .clone()
-                            .into_iter()
-                            .map(|p| PathBuf::from(p.clone().unwrap()))
-                            .collect();
-
-                        let plan = Planner::new(ExecutionVerb::Fmt, &settings)?.compute()?;
-                        let executor = Executor::new(&plan);
-                        let results = executor.install_and_invoke()?;
-
-                        let mut processor = Processor::new(&plan, results);
-                        let report = processor.compute()?;
-
-                        let mut formatter = TextFormatter::new(
-                            &report,
-                            &plan.workspace,
-                            &settings,
-                            false,
-                            ApplyMode::None,
-                        );
-                        formatter.write_to(writer)?;
-                        return Ok(true);
+                // Loop until we get a valid answer
+                while !answered {
+                    if let Ok(answer) = prompt_fmt() {
+                        match answer.to_lowercase().as_str() {
+                            "y" | "yes" => return apply_fmt(writer, &settings),
+                            "n" | "no" => answered = true,
+                            _ => {}
+                        }
                     }
-                    "n" | "no" => {
-                        answered = true;
-                    }
-                    _ => {}
                 }
             }
         }
     }
 
     Ok(false)
+}
+
+fn apply_fmt(writer: &mut dyn std::io::Write, settings: &Settings) -> Result<bool> {
+    let workspace = Workspace::require_initialized()?;
+    workspace.fetch_sources()?;
+
+    let plan = Planner::new(ExecutionVerb::Fmt, &settings)?.compute()?;
+    let executor = Executor::new(&plan);
+    let results = executor.install_and_invoke()?;
+
+    let mut processor = Processor::new(&plan, results);
+    let report = processor.compute()?;
+
+    let mut formatter =
+        TextFormatter::new(&report, &plan.workspace, &settings, false, ApplyMode::None);
+    formatter.write_to(writer)?;
+
+    Ok(true)
 }
 
 fn prompt_fmt() -> Result<String> {
