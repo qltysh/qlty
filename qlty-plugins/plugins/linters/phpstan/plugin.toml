@@ -9,7 +9,7 @@ latest_version = "1.12.7"
 known_good_version = "1.12.7"
 config_files = ["phpstan.neon", "phpstan.neon.dist", "phpstan.dist.neon"]
 description = "PHP code linter"
-suggested = "targets"
+suggested = "config"
 
 [plugins.definitions.phpstan.drivers.lint]
 script = "php -d memory_limit=-1 ${linter}/phpstan analyze ${target} --error-format=json --level=9 ${autoload_script} ${config_script}"
@@ -20,6 +20,6 @@ output = "stdout"
 output_format = "phpstan"
 cache_results = true
 batch = true
-suggested = "targets"
+suggested = "config"
 output_missing = "error"
 copy_configs_into_tool_install = true
