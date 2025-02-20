@@ -101,14 +101,14 @@ impl Simplecov {
 
     fn extract_file_coverage(&self, map: &Map<String, Value>) -> Vec<FileCoverage> {
         map.iter()
-            .filter_map(|(key, value)| {
+            .map(|(key, value)| {
                 let line_hits = self.parse_line_coverage(value);
 
-                Some(FileCoverage {
+                FileCoverage {
                     path: key.to_string(),
                     hits: line_hits,
                     ..Default::default()
-                })
+                }
             })
             .collect()
     }
