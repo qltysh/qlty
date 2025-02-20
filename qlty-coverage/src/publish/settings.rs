@@ -16,4 +16,6 @@ pub struct Settings {
 
     pub add_prefix: Option<String>,
     pub strip_prefix: Option<String>,
+
+    pub skip_missing_files: bool,
 }

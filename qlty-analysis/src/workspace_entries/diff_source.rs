@@ -22,7 +22,7 @@ impl DiffSource {
 
     fn build(changed_files: &Vec<PathBuf>, path: &Path) -> Vec<WorkspaceEntry> {
         let mut entries = vec![];
-        let full_path = path.to_path_buf().join(path);
+        let full_path = path.to_path_buf();
 
         if !full_path.exists() {
             debug!("Changed path does not exist: {}", full_path.display());
@@ -30,7 +30,7 @@ impl DiffSource {
         }
 
         for path in changed_files {
-            if let Ok(metadata) = fs::metadata(&full_path) {
+            if let Ok(metadata) = fs::metadata(full_path.join(path)) {
                 let content_modified = if let Ok(modified) = metadata.modified() {
                     modified
                 } else {

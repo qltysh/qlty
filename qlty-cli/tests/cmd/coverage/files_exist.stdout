@@ -1,0 +1,91 @@
+{
+  "metadata": {
+    "buildId": "123",
+    "ci": "unknown",
+    "commitSha": "2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67",
+    "commitMessage": "initial/n",
+    "authorName": "TEST",
+    "authorEmail": "test@codeclimate.com",
+    "authorTime": "2024-01-01T00:00:00+00:00",
+    "committerName": "TEST",
+    "committerEmail": "test@codeclimate.com",
+    "commitTime": "2024-01-01T00:00:00+00:00",
+    "uploadedAt": "[..]",
+    "cliVersion": "[..]"
+  },
+  "report_files": [
+    {
+      "buildId": "123",
+      "format": "lcov",
+      "path": "lcov.info"
+    }
+  ],
+  "file_coverages": [
+    {
+      "buildId": "123",
+      "path": "src/formatter.js",
+      "summary": {
+        "covered": "24",
+        "missed": "2",
+        "omit": "26",
+        "total": "52"
+      },
+      "hits": [
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "-1",
+        "1",
+        "1",
+        "-1",
+        "-1",
+        "1",
+        "5",
+        "-1",
+        "-1",
+        "1",
+        "2",
+        "1",
+        "1",
+        "1",
+        "-1",
+        "0",
+        "-1",
+        "-1",
+        "-1",
+        "1",
+        "2",
+        "-1",
+        "2",
+        "2",
+        "0",
+        "-1",
+        "-1",
+        "2",
+        "-1",
+        "-1",
+        "-1",
+        "-1",
+        "-1",
+        "-1",
+        "-1",
+        "-1",
+        "-1",
+        "2",
+        "-1",
+        "-1",
+        "-1",
+        "-1",
+        "-1",
+        "2"
+      ],
+      "commitSha": "2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67",
+      "uploadedAt": "[..]"
+    }
+  ]
+}

@@ -88,28 +88,28 @@ impl RubySource {
                 systems: vec![
                     System {
                         url:
-                            "https://github.com/rbenv/ruby-build/archive/refs/tags/v20240709.tar.gz"
+                            "https://github.com/rbenv/ruby-build/archive/refs/tags/v20250215.tar.gz"
                                 .to_string(),
                         cpu: Cpu::Aarch64,
                         os: OperatingSystem::MacOS,
                     },
                     System {
                         url:
-                            "https://github.com/rbenv/ruby-build/archive/refs/tags/v20240709.tar.gz"
+                            "https://github.com/rbenv/ruby-build/archive/refs/tags/v20250215.tar.gz"
                                 .to_string(),
                         cpu: Cpu::X86_64,
                         os: OperatingSystem::MacOS,
                     },
                     System {
                         url:
-                            "https://github.com/rbenv/ruby-build/archive/refs/tags/v20240709.tar.gz"
+                            "https://github.com/rbenv/ruby-build/archive/refs/tags/v20250215.tar.gz"
                                 .to_string(),
                         cpu: Cpu::Aarch64,
                         os: OperatingSystem::Linux,
                     },
                     System {
                         url:
-                            "https://github.com/rbenv/ruby-build/archive/refs/tags/v20240709.tar.gz"
+                            "https://github.com/rbenv/ruby-build/archive/refs/tags/v20250215.tar.gz"
                                 .to_string(),
                         cpu: Cpu::X86_64,
                         os: OperatingSystem::Linux,

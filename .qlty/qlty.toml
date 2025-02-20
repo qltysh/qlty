@@ -47,11 +47,11 @@ name = "actionlint"
 
 [[plugin]]
 name = "clippy"
-version = "1.86.0" # Note: Clippy version is controlled by the rust version above
+version = "1.87.0" # Note: Clippy version is controlled by the rust version above
 
 [[plugin]]
 name = "rustfmt"
-version = "1.86.0" # Note: rustfmt version is controlled by the rust version above
+version = "1.87.0" # Note: rustfmt version is controlled by the rust version above
 
 [[plugin]]
 name = "eslint"
@@ -65,7 +65,7 @@ version = "0.41.0"
 [[plugin]]
 name = "osv-scanner"
 # Disable during Git hooks because it is slow and requires network
-triggers = ["manual", "build"] 
+triggers = ["manual", "build"]
 
 [[plugin]]
 name = "prettier"

@@ -404,7 +404,7 @@ impl Executor {
         &self,
         invocations: Vec<&InvocationPlan>,
         transformers: &[Box<dyn IssueTransformer>],
-    ) -> Vec<Result<InvocationResult>> {
+    ) -> Vec<PlanResult> {
         let pool = rayon::ThreadPoolBuilder::new()
             .num_threads(self.plan.jobs)
             .build()
@@ -423,21 +423,21 @@ impl Executor {
                         return None;
                     }
 
-                    let invocation_result = run_invocation(
+                    let plan_result = run_invocation_with_error_capture(
                         plan.clone(),
                         self.plan.issue_cache.clone(),
                         self.progress.clone(),
                         transformers,
                     );
 
-                    if let Ok(invocation_result) = &invocation_result {
+                    if let Ok(invocation_result) = &plan_result.result {
                         self.total_issues.fetch_add(
                             invocation_result.invocation.issues_count as usize,
                             Ordering::SeqCst,
                         );
                     }
 
-                    Some(invocation_result)
+                    Some(plan_result)
                 })
                 .collect::<Vec<_>>()
         })
@@ -465,14 +465,38 @@ impl Executor {
         let timer = Instant::now();
         info!("Running {} invocations...", linters.len());
 
-        let mut invocation_results = self.run_invocation_pools(linters, transformers);
-        invocation_results.extend(self.run_invocation_pools(formatters, transformers));
+        let mut plan_results = self.run_invocation_pools(linters, transformers);
+        plan_results.extend(self.run_invocation_pools(formatters, transformers));
 
         debug!(
             "All {} invocation tasks complete in {:.2}s",
             self.plan.invocations.len(),
             timer.elapsed().as_secs_f32()
         );
+
+        let mut err_count = 0;
+
+        for plan_result in &plan_results {
+            if let Err(ref err) = plan_result.result {
+                error!(
+                    "Invocation failed for {}: {:?}",
+                    plan_result.plan.invocation_label(),
+                    err
+                );
+
+                err_count += 1;
+            }
+        }
+
+        if err_count > 0 {
+            bail!("FATAL error occurred running {} invocations ", err_count);
+        }
+
+        let invocation_results = plan_results
+            .into_iter()
+            .map(|plan_result| plan_result.result)
+            .collect::<Vec<_>>();
+
         self.process_invocation_results(invocation_results)
     }
 
@@ -574,6 +598,21 @@ impl Executor {
 
         Ok(())
     }
+}
+
+struct PlanResult {
+    plan: InvocationPlan,
+    result: Result<InvocationResult>,
+}
+
+fn run_invocation_with_error_capture(
+    plan: InvocationPlan,
+    cache: IssueCache,
+    progress: Progress,
+    transformers: &[Box<dyn IssueTransformer>],
+) -> PlanResult {
+    let result = run_invocation(plan.clone(), cache, progress, transformers);
+    PlanResult { plan, result }
 }
 
 fn run_invocation(

@@ -1,0 +1,20 @@
+args = [
+  "coverage",
+  "publish",
+  "--dry-run",
+  "--override-commit-sha",
+  "2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67",
+  "--override-build-id",
+  "123",
+  "lcov.info",
+  "--print",
+  "--json",
+  "--skip-missing-files"
+]
+bin.name = "qlty"
+
+[env]
+remove = ["GITHUB_ACTIONS"]
+
+[env.add]
+QLTY_COVERAGE_TOKEN = "123"

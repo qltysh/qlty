@@ -4,6 +4,7 @@ use crate::publish::Settings;
 use crate::transformer::AddPrefix;
 use crate::transformer::AppendMetadata;
 use crate::transformer::ComputeSummary;
+use crate::transformer::FileExistanceCheck;
 use crate::transformer::IgnorePaths;
 use crate::transformer::StripDotSlashPrefix;
 use crate::transformer::StripPrefix;
@@ -143,6 +144,11 @@ impl Planner {
 
         if let Some(prefix) = self.settings.add_prefix.clone() {
             transformers.push(Box::new(AddPrefix::new(&prefix)));
+        }
+
+        // Should be placed after AddPrefix/StripPrefix or any path changes
+        if self.settings.skip_missing_files {
+            transformers.push(Box::new(FileExistanceCheck));
         }
 
         transformers.push(Box::new(AppendMetadata::new(metadata)));

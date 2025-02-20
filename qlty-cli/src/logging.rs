@@ -136,6 +136,12 @@ pub fn init_logs(repository_path: Option<PathBuf>) -> Vec<WorkerGuard> {
         .with(layers)
         .try_init()
         .expect("Could not set global default logger");
+
+    if std::env::var("QLTY_LOG").unwrap_or_default().to_lowercase() != "trace" {
+        // disable all log crate logging (external libs)
+        log::set_max_level(::log::LevelFilter::Off);
+    }
+
     guards
 }
 

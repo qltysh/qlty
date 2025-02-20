@@ -10,7 +10,12 @@ use qlty_config::Workspace;
 use qlty_types::analysis::v1::{ExecutionVerb, Issue, Level};
 use std::{collections::HashSet, io::IsTerminal as _, path::PathBuf};
 
-pub fn print_unformatted(writer: &mut dyn std::io::Write, issues: &[Issue]) -> Result<bool> {
+pub fn print_unformatted(
+    writer: &mut dyn std::io::Write,
+    issues: &[Issue],
+    settings: &Settings,
+    apply_mode: ApplyMode,
+) -> Result<bool> {
     let issues = issues
         .iter()
         .filter(|issue| issue.level() == Level::Fmt)
@@ -55,28 +60,24 @@ pub fn print_unformatted(writer: &mut dyn std::io::Write, issues: &[Issue]) -> R
         writeln!(writer)?;
     }
 
-    if std::io::stdin().is_terminal() && !paths.is_empty() {
+    if apply_mode == ApplyMode::Ask && std::io::stdin().is_terminal() && !paths.is_empty() {
         let mut answered = false;
 
         // Loop until we get a valid answer
         while !answered {
             if let Ok(answer) = prompt_fmt() {
-                match answer.as_str() {
-                    "Y" | "y" | "yes" => {
+                match answer.to_lowercase().as_str() {
+                    "y" | "yes" => {
                         let workspace = Workspace::require_initialized()?;
                         workspace.fetch_sources()?;
 
-                        let settings = Settings {
-                            root: workspace.root.clone(),
-                            progress: true,
-                            paths: paths
-                                .clone()
-                                .into_iter()
-                                .map(|p| PathBuf::from(p.clone().unwrap()))
-                                .collect(),
-                            trigger: Trigger::Manual.into(),
-                            ..Default::default()
-                        };
+                        let mut settings = settings.clone();
+                        settings.trigger = Trigger::Manual.into();
+                        settings.paths = paths
+                            .clone()
+                            .into_iter()
+                            .map(|p| PathBuf::from(p.clone().unwrap()))
+                            .collect();
 
                         let plan = Planner::new(ExecutionVerb::Fmt, &settings)?.compute()?;
                         let executor = Executor::new(&plan);
@@ -88,14 +89,14 @@ pub fn print_unformatted(writer: &mut dyn std::io::Write, issues: &[Issue]) -> R
                         let mut formatter = TextFormatter::new(
                             &report,
                             &plan.workspace,
-                            settings.verbose,
+                            &settings,
                             false,
                             ApplyMode::None,
                         );
                         formatter.write_to(writer)?;
                         return Ok(true);
                     }
-                    "N" | "n" | "no" => {
+                    "n" | "no" => {
                         answered = true;
                     }
                     _ => {}

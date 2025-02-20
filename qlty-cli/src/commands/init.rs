@@ -9,9 +9,11 @@ use dialoguer::Confirm;
 use duct::cmd;
 use itertools::Itertools;
 use num_format::{Locale, ToFormattedString};
-use qlty_config::Workspace;
+use qlty_config::{MigrateConfig, MigrationSettings, Workspace};
 use std::io::Write;
 use tabwriter::TabWriter;
+
+const CLASSIC_CONFIG_NAME: &str = ".codeclimate.yml";
 
 #[derive(Args, Debug)]
 pub struct Init {
@@ -104,6 +106,11 @@ impl Init {
 
             if !self.skip_plugins {
                 self.print_enabled_plugins(&initializer)?;
+            }
+
+            // For now, this feature does not work for dry runs
+            if !self.dry_run {
+                self.maybe_migrate_config()?;
             }
 
             if !self.skip_plugins {
@@ -268,5 +275,38 @@ impl Init {
     fn current_exe(&self) -> Result<std::path::PathBuf> {
         let current_exe = std::env::current_exe()?;
         Ok(current_exe)
+    }
+
+    fn maybe_migrate_config(&self) -> Result<()> {
+        let workspace = Workspace::new()?;
+        let classic_config_path = workspace.root.join(CLASSIC_CONFIG_NAME);
+
+        if classic_config_path.exists()
+            && !self.no
+            && (self.yes
+                || self.prompt_yes_no(
+                    "Would you like to migrate your .codeclimate.yml configuration?",
+                )?)
+        {
+            let migration_settings = MigrationSettings::new(
+                &workspace.root,
+                workspace.config()?,
+                &workspace.config_path()?,
+                &classic_config_path,
+                self.dry_run,
+            )?;
+
+            MigrateConfig::new(migration_settings)?.migrate()?;
+            self.print_check("Migrated .codeclimate.yml configuration");
+        }
+        Ok(())
+    }
+
+    fn prompt_yes_no(&self, prompt: &str) -> Result<bool> {
+        Ok(Confirm::with_theme(&ColorfulTheme::default())
+            .with_prompt(prompt)
+            .default(true)
+            .show_default(true)
+            .interact()?)
     }
 }
