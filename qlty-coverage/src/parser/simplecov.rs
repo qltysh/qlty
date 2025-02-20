@@ -18,25 +18,29 @@ impl Parser for Simplecov {
         let json_value: Value =
             serde_json::from_str(text).with_context(|| "Failed to parse JSON text")?;
 
-        let mut file_coverages = vec![];
-
-        if self.is_version_018_or_newer(&json_value) {
-            if let Some(coverage) = self.extract_coverage(&json_value) {
-                file_coverages.extend(self.extract_file_coverage(coverage));
-            }
-        } else if self.using_simplecov_json_formatter(&json_value) {
-            file_coverages.extend(self.parse_json_coverage(&json_value));
+        if self.using_simplecov_json_formatter(&json_value) {
+            Ok(self.parse_simplecov_json_formatter(&json_value))
+        } else if self.is_version_018_or_newer(&json_value) {
+            Ok(self.parse_version_018_or_newer_coverage(&json_value))
         } else {
-            file_coverages.extend(self.parse_legacy_coverage(&json_value));
+            Ok(self.parse_legacy_coverage(&json_value))
         }
-
-        Ok(file_coverages)
     }
 }
 
 impl Simplecov {
     fn extract_coverage<'a>(&self, json_value: &'a Value) -> Option<&'a Map<String, Value>> {
         json_value.get("coverage").and_then(|c| c.as_object())
+    }
+
+    fn parse_version_018_or_newer_coverage(&self, json_value: &Value) -> Vec<FileCoverage> {
+        let mut file_coverages = vec![];
+
+        if let Some(coverage) = self.extract_coverage(&json_value) {
+            file_coverages.extend(self.extract_file_coverage(coverage));
+        }
+        
+        file_coverages
     }
 
     fn parse_legacy_coverage(&self, json_value: &Value) -> Vec<FileCoverage> {
@@ -53,7 +57,7 @@ impl Simplecov {
         file_coverages
     }
 
-    fn parse_json_coverage(&self, json_value: &Value) -> Vec<FileCoverage> {
+    fn parse_simplecov_json_formatter(&self, json_value: &Value) -> Vec<FileCoverage> {
         let mut file_coverages = vec![];
 
         if let Some(files) = json_value.get("files").and_then(|v| v.as_array()) {
