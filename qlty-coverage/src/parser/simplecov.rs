@@ -139,9 +139,9 @@ impl Simplecov {
                 .get("lines")
                 .and_then(|v| v.as_array())
                 .map_or(vec![], |arr| {
-                    arr.iter().map(|x| Self::parse_lines(x)).collect()
+                    arr.iter().map(Self::parse_lines).collect()
                 }),
-            Value::Array(arr) => arr.iter().map(|x| Self::parse_lines(x)).collect(),
+            Value::Array(arr) => arr.iter().map(Self::parse_lines).collect(),
             _ => vec![],
         }
     }
