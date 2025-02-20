@@ -18,113 +18,31 @@ impl Parser for Simplecov {
         let json_value: Value =
             serde_json::from_str(text).with_context(|| "Failed to parse JSON text")?;
 
-        if self.using_simplecov_json_formatter(&json_value) {
-            Ok(self.parse_simplecov_json_formatter(&json_value))
-        } else if self.is_version_018_or_newer(&json_value) {
-            Ok(self.parse_version_018_or_newer_coverage(&json_value))
-        } else {
-            Ok(self.parse_legacy_coverage(&json_value))
+        let formatters: Vec<Box<dyn SimplecovFormatter>> = vec![
+            Box::new(Simplecov018OrNewer {}),
+            Box::new(SimplecovLegacy {}),
+            Box::new(SimplecovJson {}),
+        ];
+
+        for formatter in formatters {
+            if formatter.matches(&json_value) {
+                return formatter.parse(&json_value);
+            }
         }
+
+        Ok(vec![])
     }
 }
 
-impl Simplecov {
-    fn extract_coverage<'a>(&self, json_value: &'a Value) -> Option<&'a Map<String, Value>> {
-        json_value.get("coverage").and_then(|c| c.as_object())
-    }
+trait SimplecovFormatter {
+    fn matches(&self, json_value: &Value) -> bool;
+    fn parse(&self, json_value: &Value) -> Result<Vec<FileCoverage>>;
+}
 
-    fn parse_version_018_or_newer_coverage(&self, json_value: &Value) -> Vec<FileCoverage> {
-        let mut file_coverages = vec![];
+struct Simplecov018OrNewer;
 
-        if let Some(coverage) = self.extract_coverage(&json_value) {
-            file_coverages.extend(self.extract_file_coverage(coverage));
-        }
-
-        file_coverages
-    }
-
-    fn parse_legacy_coverage(&self, json_value: &Value) -> Vec<FileCoverage> {
-        let mut file_coverages = vec![];
-
-        if let Some(groups) = json_value.as_object() {
-            for group in groups.values() {
-                if let Some(coverage) = self.extract_coverage(group) {
-                    file_coverages.extend(self.extract_file_coverage(coverage));
-                }
-            }
-        }
-
-        file_coverages
-    }
-
-    fn parse_simplecov_json_formatter(&self, json_value: &Value) -> Vec<FileCoverage> {
-        let mut file_coverages = vec![];
-
-        if let Some(files) = json_value.get("files").and_then(|v| v.as_array()) {
-            for file in files {
-                if let (Some(filename), Some(coverage)) =
-                    (file.get("filename"), file.get("coverage"))
-                {
-                    if let (Some(filename_str), Some(coverage_arr)) =
-                        (filename.as_str(), coverage.as_array())
-                    {
-                        let line_hits =
-                            self.parse_line_coverage(&Value::Array(coverage_arr.clone()));
-                        file_coverages.push(FileCoverage {
-                            path: filename_str.to_string(),
-                            hits: line_hits,
-                            ..Default::default()
-                        });
-                    }
-                }
-            }
-        }
-
-        file_coverages
-    }
-
-    fn parse_line_coverage(&self, data: &Value) -> Vec<i64> {
-        match data {
-            Value::Object(obj) => {
-                // Post-0.18.0 format with "lines" key
-                obj.get("lines")
-                    .and_then(|v| v.as_array())
-                    .map_or(vec![], |arr| {
-                        arr.iter().map(|x| self.parse_lines(x)).collect()
-                    })
-            }
-            Value::Array(arr) => {
-                // Pre-0.18.0 format, directly an array
-                arr.iter().map(|x| self.parse_lines(x)).collect()
-            }
-            _ => vec![],
-        }
-    }
-
-    fn extract_file_coverage(&self, map: &Map<String, Value>) -> Vec<FileCoverage> {
-        map.iter()
-            .map(|(key, value)| {
-                let line_hits = self.parse_line_coverage(value);
-
-                FileCoverage {
-                    path: key.to_string(),
-                    hits: line_hits,
-                    ..Default::default()
-                }
-            })
-            .collect()
-    }
-
-    fn parse_lines(&self, value: &Value) -> i64 {
-        match value {
-            Value::Number(n) => n.as_i64().unwrap_or(-1),
-            Value::String(s) if s == "ignored" => -2,
-            Value::Null => -1,
-            _ => -1,
-        }
-    }
-
-    fn is_version_018_or_newer(&self, json_value: &serde_json::Value) -> bool {
+impl SimplecovFormatter for Simplecov018OrNewer {
+    fn matches(&self, json_value: &Value) -> bool {
         if let Some(meta) = json_value.get("meta") {
             if let Some(version_str) = meta.get("simplecov_version").and_then(|v| v.as_str()) {
                 if let Ok(version) = Version::parse(version_str) {
@@ -135,9 +53,106 @@ impl Simplecov {
         false
     }
 
-    // https://github.com/vicentllongo/simplecov-json
-    fn using_simplecov_json_formatter(&self, json_value: &serde_json::Value) -> bool {
+    fn parse(&self, json_value: &Value) -> Result<Vec<FileCoverage>> {
+        let mut file_coverages = vec![];
+        if let Some(coverage) = json_value.get("coverage").and_then(|c| c.as_object()) {
+            file_coverages.extend(Simplecov::extract_file_coverage(coverage));
+        }
+        Ok(file_coverages)
+    }
+}
+
+struct SimplecovLegacy;
+
+impl SimplecovFormatter for SimplecovLegacy {
+    fn matches(&self, json_value: &Value) -> bool {
+        if let Some(obj) = json_value.as_object() {
+            obj.values().any(|obj| obj.get("coverage").is_some())
+        } else {
+            false
+        }
+    }
+
+    fn parse(&self, json_value: &Value) -> Result<Vec<FileCoverage>> {
+        let mut file_coverages = vec![];
+        if let Some(groups) = json_value.as_object() {
+            for group in groups.values() {
+                if let Some(coverage) = group.get("coverage").and_then(|c| c.as_object()) {
+                    file_coverages.extend(Simplecov::extract_file_coverage(coverage));
+                }
+            }
+        }
+        Ok(file_coverages)
+    }
+}
+
+struct SimplecovJson;
+
+impl SimplecovFormatter for SimplecovJson {
+    fn matches(&self, json_value: &Value) -> bool {
         json_value.get("files").is_some()
+    }
+
+    fn parse(&self, json_value: &Value) -> Result<Vec<FileCoverage>> {
+        let mut file_coverages = vec![];
+        if let Some(files) = json_value.get("files").and_then(|v| v.as_array()) {
+            for file in files {
+                if let (Some(filename), Some(coverage)) =
+                    (file.get("filename"), file.get("coverage"))
+                {
+                    if let (Some(filename_str), Some(coverage_arr)) =
+                        (filename.as_str(), coverage.as_array())
+                    {
+                        let line_hits =
+                            Simplecov::parse_line_coverage(&Value::Array(coverage_arr.clone()));
+                        file_coverages.push(FileCoverage {
+                            path: filename_str.to_string(),
+                            hits: line_hits,
+                            ..Default::default()
+                        });
+                    }
+                }
+            }
+        }
+        Ok(file_coverages)
+    }
+}
+
+impl Simplecov {
+    fn extract_file_coverage(map: &Map<String, Value>) -> Vec<FileCoverage> {
+        map.iter()
+            .map(|(key, value)| {
+                let line_hits = Self::parse_line_coverage(value);
+
+                FileCoverage {
+                    path: key.to_string(),
+                    hits: line_hits,
+                    ..Default::default()
+                }
+            })
+            .collect()
+    }
+
+    fn parse_line_coverage(data: &Value) -> Vec<i64> {
+        match data {
+            Value::Object(obj) => obj
+                .get("lines")
+                .and_then(|v| v.as_array())
+                .map_or(vec![], |arr| {
+                    arr.iter().map(|x| Self::parse_lines(x)).collect()
+                }),
+            Value::Array(arr) => arr.iter().map(|x| Self::parse_lines(x)).collect(),
+            _ => vec![],
+        }
+    }
+
+    fn parse_lines(value: &Value) -> i64 {
+        match value {
+            Value::Number(n) => n.as_i64().unwrap_or(-1),
+            Value::String(s) if s == "ignored" => -2,
+            Value::Null => -1,
+            _ => -1,
+        }
     }
 }
 
