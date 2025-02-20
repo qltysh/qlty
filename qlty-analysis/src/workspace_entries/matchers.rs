@@ -234,6 +234,36 @@ fn globs_to_globset(globs: &[String]) -> Result<GlobSet> {
     Ok(builder.build()?)
 }
 
+#[derive(Default, Debug)]
+pub struct IgnoreGroupsMatcher {
+    matchers: Vec<GlobsMatcher>,
+}
+
+impl IgnoreGroupsMatcher {
+    pub fn new(matchers: Vec<GlobsMatcher>) -> Self {
+        Self { matchers }
+    }
+}
+
+impl WorkspaceEntryMatcher for IgnoreGroupsMatcher {
+    fn matches(&self, workspace_entry: WorkspaceEntry) -> Option<WorkspaceEntry> {
+        // By default, include the file
+        let path = workspace_entry.path_string();
+
+        for matcher in self.matchers.iter().rev() {
+            if matcher.glob_set.is_match(&path) {
+                return if matcher.include {
+                    Some(workspace_entry) // No need to clone; directly return ownership
+                } else {
+                    None // Immediately exclude the file if a normal ignore rule matches
+                };
+            }
+        }
+
+        Some(workspace_entry)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

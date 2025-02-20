@@ -13,4 +13,9 @@ name = "exists"
 version = "1.0.0"
 
 [[ignore]]
-file_patterns = ["**/ignore/**.sh", "!**/ignore/dont_ignore.sh"]
+file_patterns = [
+  "**/ignores/**.sh",
+  "!**/dont_ignore/**.sh",
+  "**/back_to_ignore/**.sh",
+  "!**/back_to_dont_ignore/**.sh"
+]

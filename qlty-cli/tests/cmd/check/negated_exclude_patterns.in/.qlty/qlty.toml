@@ -1,5 +1,9 @@
 config_version = "0"
-exclude_patterns = ["**/ignores/**.sh", "!**/ignores/dont_ignore.sh"]
+exclude_patterns = [
+  "**/ignores/**.sh",
+  "!**/dont_ignore/**",
+  "**/ignores/dont_ignore/ignore_this_one.sh"
+]
 
 [plugins.definitions.exists]
 file_types = ["shell"]

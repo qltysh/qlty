@@ -1,6 +1,6 @@
 use anyhow::{bail, Result};
 use qlty_analysis::utils::fs::path_to_string;
-use qlty_analysis::workspace_entries::{OrMatcher, TargetMode};
+use qlty_analysis::workspace_entries::{IgnoreGroupsMatcher, TargetMode};
 use qlty_analysis::{
     git::GitDiff, workspace_entries::AndMatcher, FileMatcher, GlobsMatcher, PrefixMatcher,
     WorkspaceEntryFinder, WorkspaceEntryMatcher, WorkspaceEntrySource,
@@ -22,6 +22,12 @@ pub struct PluginWorkspaceEntryFinderBuilder {
     pub cached_git_diff: Option<GitDiff>,
     pub prefix: Option<String>,
     pub source: Option<Arc<dyn WorkspaceEntrySource>>,
+}
+
+#[derive(Debug)]
+struct IgnoreGroup {
+    ignores: Vec<String>,
+    negate: bool,
 }
 
 impl PluginWorkspaceEntryFinderBuilder {
@@ -111,28 +117,63 @@ impl PluginWorkspaceEntryFinderBuilder {
             .filter(|i| i.plugins.is_empty() && i.rules.is_empty() && i.levels.is_empty())
             .collect::<Vec<_>>();
 
-        let ignores = ignores_without_metadata
-            .iter()
-            .flat_map(|i| i.file_patterns.clone())
-            .collect::<Vec<_>>();
-        let mut ignores = vec![];
-        let mut negated_ignores = vec![];
+        let mut ignore_groups = vec![];
 
-        for ignore in &self.ignores {
+        let start_with_negated = self
+            .ignores
+            .first()
+            .and_then(|ignore| ignore.file_patterns.first())
+            .map_or(false, |pattern| pattern.starts_with('!'));
+
+        let mut current_ignore_group = IgnoreGroup {
+            ignores: vec![],
+            negate: start_with_negated,
+        };
+
+        for ignore in ignores_without_metadata {
+            if ignore.file_patterns.is_empty() {
+                continue;
+            }
+
             for pattern in &ignore.file_patterns {
-                match pattern.strip_prefix('!') {
-                    Some(pattern) => negated_ignores.push(pattern.to_string()),
-                    None => ignores.push(pattern.clone()),
+                if let Some(pattern) = pattern.strip_prefix('!') {
+                    if current_ignore_group.negate {
+                        current_ignore_group.ignores.push(pattern.to_string());
+                    } else {
+                        // Push previous group before switching negation
+                        ignore_groups.push(current_ignore_group);
+                        current_ignore_group = IgnoreGroup {
+                            ignores: vec![pattern.to_string()],
+                            negate: true,
+                        };
+                    }
+                } else {
+                    if current_ignore_group.negate {
+                        ignore_groups.push(current_ignore_group);
+                        current_ignore_group = IgnoreGroup {
+                            ignores: vec![pattern.to_string()],
+                            negate: false,
+                        };
+                    } else {
+                        current_ignore_group.ignores.push(pattern.to_string());
+                    }
                 }
             }
         }
 
-        let ignore_matchers: Vec<Box<dyn WorkspaceEntryMatcher>> = vec![
-            Box::new(GlobsMatcher::new_for_globs(&negated_ignores, true)?),
-            Box::new(GlobsMatcher::new_for_globs(&ignores, false)?),
-        ];
+        // Ensure the last group is added
+        if !current_ignore_group.ignores.is_empty() {
+            ignore_groups.push(current_ignore_group);
+        }
 
-        matchers.push(Box::new(OrMatcher::new(ignore_matchers)));
+        let ignore_matchers: Vec<GlobsMatcher> = ignore_groups
+            .into_iter()
+            .filter_map(|ignore_group| {
+                GlobsMatcher::new_for_globs(&ignore_group.ignores, ignore_group.negate).ok()
+            })
+            .collect();
+
+        matchers.push(Box::new(IgnoreGroupsMatcher::new(ignore_matchers)));
         Ok(Box::new(AndMatcher::new(matchers)))
     }
 
