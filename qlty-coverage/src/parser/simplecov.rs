@@ -66,7 +66,8 @@ impl Simplecov {
                     if let (Some(filename_str), Some(coverage_arr)) =
                         (filename.as_str(), coverage.as_array())
                     {
-                        let line_hits = self.parse_line_coverage(&Value::Array(coverage_arr.clone()));
+                        let line_hits =
+                            self.parse_line_coverage(&Value::Array(coverage_arr.clone()));
                         file_coverages.push(FileCoverage {
                             path: filename_str.to_string(),
                             hits: line_hits,
