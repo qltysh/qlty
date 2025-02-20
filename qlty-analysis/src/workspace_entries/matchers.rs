@@ -2,7 +2,7 @@ use super::workspace_entry::{WorkspaceEntry, WorkspaceEntryKind};
 use crate::{code::language_detector::get_language_from_shebang, utils::fs::path_to_string};
 use anyhow::{Context, Result};
 use globset::{Glob, GlobSet, GlobSetBuilder};
-use qlty_config::FileType;
+use qlty_config::{config::ignore_group::IgnoreGroup, FileType};
 use std::{collections::HashMap, path::PathBuf};
 
 pub trait WorkspaceEntryMatcher: core::fmt::Debug {
@@ -240,7 +240,14 @@ pub struct IgnoreGroupsMatcher {
 }
 
 impl IgnoreGroupsMatcher {
-    pub fn new(matchers: Vec<GlobsMatcher>) -> Self {
+    pub fn new(ignore_groups: Vec<IgnoreGroup>) -> Self {
+        let matchers = ignore_groups
+            .into_iter()
+            .filter_map(|ignore_group| {
+                GlobsMatcher::new_for_globs(&ignore_group.ignores, ignore_group.negate).ok()
+            })
+            .collect();
+
         Self { matchers }
     }
 }

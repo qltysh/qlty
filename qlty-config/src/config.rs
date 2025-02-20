@@ -3,6 +3,7 @@ mod coverage;
 mod download;
 mod file_type;
 mod ignore;
+pub mod ignore_group;
 pub mod issue_transformer;
 mod language;
 mod overrides;

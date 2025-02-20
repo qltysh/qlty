@@ -6,6 +6,7 @@ use qlty_analysis::{
     WorkspaceEntryFinder, WorkspaceEntryMatcher, WorkspaceEntrySource,
 };
 use qlty_analysis::{AllSource, ArgsSource, DiffSource};
+use qlty_config::config::ignore_group::IgnoreGroup;
 use qlty_config::config::issue_transformer::{IssueTransformer, NullIssueTransformer};
 use qlty_config::config::Ignore;
 use qlty_config::{FileType, Workspace};
@@ -22,12 +23,6 @@ pub struct PluginWorkspaceEntryFinderBuilder {
     pub cached_git_diff: Option<GitDiff>,
     pub prefix: Option<String>,
     pub source: Option<Arc<dyn WorkspaceEntrySource>>,
-}
-
-#[derive(Debug)]
-struct IgnoreGroup {
-    ignores: Vec<String>,
-    negate: bool,
 }
 
 impl PluginWorkspaceEntryFinderBuilder {
@@ -115,63 +110,12 @@ impl PluginWorkspaceEntryFinderBuilder {
             .ignores
             .iter()
             .filter(|i| i.plugins.is_empty() && i.rules.is_empty() && i.levels.is_empty())
-            .collect::<Vec<_>>();
-
-        let mut ignore_groups = vec![];
-
-        let start_with_negated = self
-            .ignores
-            .first()
-            .and_then(|ignore| ignore.file_patterns.first())
-            .is_some_and(|pattern| pattern.starts_with('!'));
-
-        let mut current_ignore_group = IgnoreGroup {
-            ignores: vec![],
-            negate: start_with_negated,
-        };
-
-        for ignore in ignores_without_metadata {
-            if ignore.file_patterns.is_empty() {
-                continue;
-            }
-
-            for pattern in &ignore.file_patterns {
-                if let Some(pattern) = pattern.strip_prefix('!') {
-                    if current_ignore_group.negate {
-                        current_ignore_group.ignores.push(pattern.to_string());
-                    } else {
-                        // Push previous group before switching negation
-                        ignore_groups.push(current_ignore_group);
-                        current_ignore_group = IgnoreGroup {
-                            ignores: vec![pattern.to_string()],
-                            negate: true,
-                        };
-                    }
-                } else if current_ignore_group.negate {
-                    ignore_groups.push(current_ignore_group);
-                    current_ignore_group = IgnoreGroup {
-                        ignores: vec![pattern.to_string()],
-                        negate: false,
-                    };
-                } else {
-                    current_ignore_group.ignores.push(pattern.to_string());
-                }
-            }
-        }
-
-        // Ensure the last group is added
-        if !current_ignore_group.ignores.is_empty() {
-            ignore_groups.push(current_ignore_group);
-        }
-
-        let ignore_matchers: Vec<GlobsMatcher> = ignore_groups
-            .into_iter()
-            .filter_map(|ignore_group| {
-                GlobsMatcher::new_for_globs(&ignore_group.ignores, ignore_group.negate).ok()
-            })
             .collect();
 
-        matchers.push(Box::new(IgnoreGroupsMatcher::new(ignore_matchers)));
+        let ignore_groups =
+            IgnoreGroup::build_ignore_groups_from_ignores(&ignores_without_metadata);
+
+        matchers.push(Box::new(IgnoreGroupsMatcher::new(ignore_groups)));
         Ok(Box::new(AndMatcher::new(matchers)))
     }
 

@@ -1,12 +1,13 @@
 use super::{LanguagesShebangMatcher, OrMatcher, TargetMode};
 use crate::{
     git::GitDiff,
-    workspace_entries::{AndMatcher, LanguageGlobsMatcher},
-    AllSource, ArgsSource, DiffSource, FileMatcher, GlobsMatcher, WorkspaceEntryFinder,
-    WorkspaceEntryMatcher, WorkspaceEntrySource,
+    workspace_entries::{AndMatcher, IgnoreGroupsMatcher, LanguageGlobsMatcher},
+    AllSource, ArgsSource, DiffSource, FileMatcher, WorkspaceEntryFinder, WorkspaceEntryMatcher,
+    WorkspaceEntrySource,
 };
 use anyhow::{bail, Result};
 use qlty_config::{
+    config::{ignore_group::IgnoreGroup, Ignore},
     issue_transformer::{IssueTransformer, NullIssueTransformer},
     QltyConfig,
 };
@@ -73,25 +74,26 @@ impl WorkspaceEntryFinderBuilder {
         matcher.push(Box::new(FileMatcher));
 
         // Ignore explicit ignores and tests
-        let mut ignores = self
-            .config
-            .ignore
-            .iter()
-            .flat_map(|i| i.file_patterns.clone())
-            .collect::<Vec<_>>();
+        let mut ignores = self.config.ignore.clone();
         debug!("Ignoring globs: {:?}", ignores);
 
         if self.exclude_tests {
             if !self.config.test_patterns.is_empty() {
                 debug!("Ignoring test patterns: {:?}", self.config.test_patterns);
-                ignores.extend(self.config.test_patterns.clone());
+
+                ignores.push(Ignore {
+                    file_patterns: self.config.test_patterns.clone(),
+                    ..Default::default()
+                });
             } else {
                 debug!("Ignoring test patterns: none");
             }
         }
 
-        let ignores = GlobsMatcher::new_for_globs(&ignores, false)?;
-        matcher.push(Box::new(ignores));
+        let ignore_groups =
+            IgnoreGroup::build_ignore_groups_from_ignores(&ignores.iter().collect());
+
+        matcher.push(Box::new(IgnoreGroupsMatcher::new(ignore_groups)));
 
         // Must match a language
         matcher.push(self.languages_matcher()?);
