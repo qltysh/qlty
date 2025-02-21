@@ -9,12 +9,15 @@ use qlty_types::analysis::v1::{Issue, Suggestion};
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
-use tracing::info;
+use std::thread::sleep;
+use std::time::Duration;
 use tracing::{debug, warn};
+use tracing::{info, trace};
 use ureq::json;
 
 const MAX_FIXES: usize = 500;
 const MAX_FIXES_PER_FILE: usize = 30;
+const MAX_CONCURRENT_FIXES: usize = 10;
 
 #[derive(Clone, Debug)]
 pub struct Fixer {
@@ -23,6 +26,8 @@ pub struct Fixer {
     r#unsafe: bool,
     attempts_per_file: Arc<Mutex<HashMap<Option<String>, AtomicUsize>>>,
     total_attempts: Arc<AtomicUsize>,
+    api_concurrency_lock: Arc<AtomicUsize>,
+    api_concurrency_guard: Arc<Mutex<()>>,
 }
 
 impl IssueTransformer for Fixer {
@@ -50,6 +55,8 @@ impl Fixer {
             r#unsafe: plan.settings.r#unsafe,
             attempts_per_file: Arc::new(Mutex::new(HashMap::new())),
             total_attempts: Arc::new(AtomicUsize::new(0)),
+            api_concurrency_lock: Arc::new(AtomicUsize::new(0)),
+            api_concurrency_guard: Arc::new(Mutex::new(())),
         }
     }
 
@@ -122,16 +129,18 @@ impl Fixer {
         if let Some(path) = issue.path() {
             let client = Client::authenticated()?;
             let content = self.staging_area.read(issue.path().unwrap().into())?;
+            self.try_fix_barrier();
             let response = client.post("/fixes").send_json(json!({
                 "issue": issue.clone(),
                 "files": [{ "content": content, "path": path }],
                 "options": {
                     "unsafe": self.r#unsafe
                 },
-            }))?;
+            }));
+            self.api_concurrency_lock.fetch_sub(1, Ordering::SeqCst);
 
             let response_debug = format!("{:?}", &response);
-            let suggestions: Vec<Suggestion> = response.into_json()?;
+            let suggestions: Vec<Suggestion> = response?.into_json()?;
             debug!("{} with {} suggestions", response_debug, suggestions.len());
 
             let mut issue = issue.clone();
@@ -141,5 +150,15 @@ impl Fixer {
         } else {
             bail!("Issue {} has no path", issue.id);
         }
+    }
+
+    fn try_fix_barrier(&self) {
+        let guard = self.api_concurrency_guard.lock().unwrap();
+        while self.api_concurrency_lock.load(Ordering::SeqCst) >= MAX_CONCURRENT_FIXES {
+            sleep(Duration::from_millis(100));
+        }
+        let value = self.api_concurrency_lock.fetch_add(1, Ordering::SeqCst);
+        trace!("API request made with {} concurrent fixes", value);
+        drop(guard);
     }
 }

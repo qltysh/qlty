@@ -628,10 +628,10 @@ fn run_invocation(
 ) -> Result<InvocationResult> {
     let task = progress.task(&plan.plugin_name, &plan.description());
     let mut result = plan.driver.run(&plan, &task)?;
-    let mut issue_limit_reached = HashSet::<PathBuf>::new();
+    let issue_limit_reached = Arc::new(Mutex::new(HashSet::<PathBuf>::new()));
 
     if let Some(file_results) = result.file_results.as_mut() {
-        for file_result in file_results {
+        file_results.par_iter_mut().for_each(|file_result| {
             if file_result.issues.len() >= MAX_ISSUES_PER_FILE {
                 warn!(
                     "{} on {:?} produced too many results ({} > {}), dropping all issues from file.",
@@ -640,15 +640,16 @@ fn run_invocation(
                     file_result.issues.len(),
                     MAX_ISSUES_PER_FILE
                 );
-                issue_limit_reached.insert(PathBuf::from(&file_result.path));
+                issue_limit_reached.lock().unwrap().insert(PathBuf::from(&file_result.path));
                 file_result.issues.truncate(MAX_ISSUES_PER_FILE);
                 file_result.issues.shrink_to_fit();
-                continue;
+                return;
             }
 
             file_result.issues = file_result
                 .issues
-                .drain(..)
+                .par_iter()
+                .cloned()
                 .filter_map(|mut issue| {
                     for transformer in transformers {
                         if let Some(transformed_issue) = transformer.transform(issue) {
@@ -660,7 +661,7 @@ fn run_invocation(
                     Some(issue)
                 })
                 .collect();
-        }
+        });
     }
 
     if plan.driver.cache_results {
@@ -670,6 +671,7 @@ fn run_invocation(
     progress.increment(plan.workspace_entries.len() as u64);
     task.clear();
 
+    let issue_limit_reached = issue_limit_reached.lock().unwrap();
     if !issue_limit_reached.is_empty() {
         result.push_message(
             MessageLevel::Error,
