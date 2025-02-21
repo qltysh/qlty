@@ -63,7 +63,8 @@ jobs:
 
       - name: Setup PHP with PECL extension
         uses: shivammathur/setup-php@v2
-        if: contains(matrix.os, 'macos')
+        with:
+          extensions: xmlwriter  # Install xmlwriter extension
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
