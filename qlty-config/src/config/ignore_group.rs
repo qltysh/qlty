@@ -7,7 +7,7 @@ pub struct IgnoreGroup {
 }
 
 impl IgnoreGroup {
-    pub fn build_ignore_groups_from_ignores(ignores: &Vec<&Ignore>) -> Vec<Self> {
+    pub fn build_from_ignores(ignores: &Vec<&Ignore>) -> Vec<Self> {
         let mut ignore_groups = vec![];
 
         let start_with_negated = ignores
@@ -73,7 +73,7 @@ mod tests {
     #[test]
     fn test_empty_ignores() {
         let ignores: Vec<&Ignore> = vec![];
-        let result = IgnoreGroup::build_ignore_groups_from_ignores(&ignores);
+        let result = IgnoreGroup::build_from_ignores(&ignores);
         assert!(
             result.is_empty(),
             "Expected empty result for empty ignores input"
@@ -85,7 +85,7 @@ mod tests {
         let ignore1 = build_ignore(vec!["src/", "target/"]);
 
         let ignores: Vec<&Ignore> = vec![&ignore1];
-        let result = IgnoreGroup::build_ignore_groups_from_ignores(&ignores);
+        let result = IgnoreGroup::build_from_ignores(&ignores);
 
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].ignores, vec!["src/", "target/"]);
@@ -97,7 +97,7 @@ mod tests {
         let ignore1 = build_ignore(vec!["!src/", "!target/"]);
 
         let ignores: Vec<&Ignore> = vec![&ignore1];
-        let result = IgnoreGroup::build_ignore_groups_from_ignores(&ignores);
+        let result = IgnoreGroup::build_from_ignores(&ignores);
 
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].ignores, vec!["src/", "target/"]);
@@ -110,7 +110,7 @@ mod tests {
         let ignore2 = build_ignore(vec!["bin/", "!out/"]);
 
         let ignores: Vec<&Ignore> = vec![&ignore1, &ignore2];
-        let result = IgnoreGroup::build_ignore_groups_from_ignores(&ignores);
+        let result = IgnoreGroup::build_from_ignores(&ignores);
 
         assert_eq!(result.len(), 4);
         assert_eq!(result[0].ignores, vec!["src/"]);
@@ -133,7 +133,7 @@ mod tests {
         let ignore3 = build_ignore(vec!["!qux/"]);
 
         let ignores: Vec<&Ignore> = vec![&ignore1, &ignore2, &ignore3];
-        let result = IgnoreGroup::build_ignore_groups_from_ignores(&ignores);
+        let result = IgnoreGroup::build_from_ignores(&ignores);
 
         assert_eq!(result.len(), 3);
 

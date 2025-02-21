@@ -112,8 +112,7 @@ impl PluginWorkspaceEntryFinderBuilder {
             .filter(|i| i.plugins.is_empty() && i.rules.is_empty() && i.levels.is_empty())
             .collect();
 
-        let ignore_groups =
-            IgnoreGroup::build_ignore_groups_from_ignores(&ignores_without_metadata);
+        let ignore_groups = IgnoreGroup::build_from_ignores(&ignores_without_metadata);
 
         matchers.push(Box::new(IgnoreGroupsMatcher::new(ignore_groups)));
         Ok(Box::new(AndMatcher::new(matchers)))

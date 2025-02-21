@@ -90,8 +90,7 @@ impl WorkspaceEntryFinderBuilder {
             }
         }
 
-        let ignore_groups =
-            IgnoreGroup::build_ignore_groups_from_ignores(&ignores.iter().collect());
+        let ignore_groups = IgnoreGroup::build_from_ignores(&ignores.iter().collect());
 
         matcher.push(Box::new(IgnoreGroupsMatcher::new(ignore_groups)));
 
