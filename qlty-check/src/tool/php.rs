@@ -141,12 +141,19 @@ impl Tool for PhpPackage {
 
     fn package_install(&self, task: &ProgressTask, name: &str, version: &str) -> Result<()> {
         task.set_dim_message(&format!("Installing {}", name));
+        let composer = Composer {
+            cmd: default_command_builder(),
+        };
+
+        let composer_phar = PathBuf::from(composer.directory()).join("composer.phar");
 
         self.run_command(self.cmd.build(
-            "composer",
+            "php",
             vec![
+                &path_to_native_string(composer_phar.to_str().unwrap()),
                 "require",
                 "--no-interaction",
+                "--ignore-platform-reqs",
                 format!("{}:{}", name, version).as_str(),
             ],
         ))
