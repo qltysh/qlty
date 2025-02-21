@@ -30,8 +30,8 @@ impl IssueTransformer for Fixer {
         if !self.reached_max_fixes(&issue) {
             issue = self
                 .fix_issue(&issue)
-                .inspect(|issue| self.update_max_fixes(&issue))
-                .unwrap_or_else(|| issue);
+                .inspect(|issue| self.update_max_fixes(issue))
+                .unwrap_or(issue);
         }
 
         Some(issue)
