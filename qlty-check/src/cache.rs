@@ -1,7 +1,7 @@
 use crate::planner::config_files::PluginConfigFile;
 use crate::planner::target::Target;
 use crate::tool::Tool;
-use anyhow::Result;
+use anyhow::{Context, Result};
 use git2::{Repository, Status};
 use itertools::Itertools;
 use prost::Message;
@@ -93,7 +93,7 @@ pub struct IssuesCacheHit {
 
 #[derive(Debug, Clone)]
 pub struct IssuesCacheKey {
-    repository_sha: Option<String>,
+    repository_tree_sha: Option<String>,
     dirty_paths: Vec<PathBuf>,
     pub digest: HashDigest,
 }
@@ -283,7 +283,7 @@ impl IssuesCacheKey {
         }
 
         Self {
-            repository_sha,
+            repository_tree_sha: repository_sha,
             dirty_paths,
             digest: InvocationCacheKey {
                 qlty_version: QLTY_VERSION.to_string(),
@@ -319,7 +319,7 @@ impl IssuesCacheKey {
     }
 
     fn add_target_sha(&mut self, target: &Target) -> bool {
-        if let Some(sha) = &self.repository_sha {
+        if let Some(sha) = &self.repository_tree_sha {
             if !self
                 .dirty_paths
                 .iter()
@@ -334,7 +334,12 @@ impl IssuesCacheKey {
     }
 
     fn repository_sha(repo: &Repository) -> Result<String> {
-        Ok(repo.head()?.resolve()?.target().unwrap().to_string())
+        Ok(repo
+            .head()?
+            .resolve()?
+            .target()
+            .context("missing target")?
+            .to_string())
     }
 
     fn collect_dirty_paths(repo: &Repository) -> Vec<PathBuf> {
@@ -342,8 +347,7 @@ impl IssuesCacheKey {
             statuses
                 .iter()
                 .filter(|entry| entry.status() != Status::CURRENT && entry.path().is_some())
-                .map(|entry| entry.path().map(PathBuf::from))
-                .flatten()
+                .flat_map(|entry| entry.path().map(PathBuf::from))
                 .collect::<Vec<PathBuf>>()
         } else {
             vec![]
