@@ -25,18 +25,22 @@ impl Parser for Qlty {
                     .and_then(Value::as_str)
                     .ok_or_else(|| anyhow::anyhow!("Missing or invalid `path` field"))?;
 
-                let hits: Vec<i64> = json_line
-                    .get("hits")
-                    .and_then(Value::as_array)
-                    .ok_or_else(|| anyhow::anyhow!("Missing or invalid `hits` field"))?
-                    .iter()
-                    .map(|v| {
-                        v.as_str()
-                            .ok_or_else(|| anyhow::anyhow!("Invalid hit value, expected a string"))?
-                            .parse::<i64>()
-                            .map_err(|e| anyhow::anyhow!("Failed to parse hit value: {}", e))
-                    })
-                    .collect::<Result<Vec<_>, _>>()?;
+                let hits: Vec<i64> = if let Some(hits) = json_line.get("hits") {
+                    hits.as_array()
+                        .ok_or_else(|| anyhow::anyhow!("Invalid `hits` field"))?
+                        .iter()
+                        .map(|v| {
+                            v.as_str()
+                                .ok_or_else(|| {
+                                    anyhow::anyhow!("Invalid hit value, expected a string")
+                                })?
+                                .parse::<i64>()
+                                .map_err(|e| anyhow::anyhow!("Failed to parse hit value: {}", e))
+                        })
+                        .collect::<Result<Vec<_>, _>>()?
+                } else {
+                    vec![]
+                };
 
                 Ok(FileCoverage {
                     path: path.to_string(),
@@ -73,6 +77,15 @@ mod test {
             - "0"
             - "-1"
             - "-1"
+        "#);
+    }
+
+    #[test]
+    fn qlty_no_hits() {
+        let input = r#"{"path":"lib/fish.rb"}"#;
+        let results = Qlty::new().parse_text(input).unwrap();
+        insta::assert_yaml_snapshot!(results, @r#"
+        - path: lib/fish.rb
         "#);
     }
 
