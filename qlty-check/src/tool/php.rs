@@ -153,7 +153,6 @@ impl Tool for PhpPackage {
                 &path_to_native_string(composer_phar.to_str().unwrap()),
                 "require",
                 "--no-interaction",
-                "--ignore-platform-reqs",
                 format!("{}:{}", name, version).as_str(),
             ],
         ))
