@@ -2,11 +2,13 @@ use crate::planner::config_files::PluginConfigFile;
 use crate::planner::target::Target;
 use crate::tool::Tool;
 use anyhow::Result;
+use git2::{Repository, Status};
 use itertools::Itertools;
 use prost::Message;
 use qlty_analysis::cache::{Cache, CacheKey, HashDigest};
 use qlty_config::config::PluginDef;
 use qlty_config::version::QLTY_VERSION;
+use qlty_config::Workspace;
 use qlty_types::analysis::v1::Issue;
 use std::sync::Arc;
 use std::{collections::HashMap, fmt::Debug, path::PathBuf};
@@ -91,6 +93,8 @@ pub struct IssuesCacheHit {
 
 #[derive(Debug, Clone)]
 pub struct IssuesCacheKey {
+    repository_sha: Option<String>,
+    dirty_paths: Vec<PathBuf>,
     pub digest: HashDigest,
 }
 
@@ -271,7 +275,16 @@ impl IssuesCacheKey {
             cache_busters.insert(path, contents);
         }
 
+        let mut repository_sha: Option<String> = None;
+        let mut dirty_paths = Vec::new();
+        if let Ok(repository) = Workspace::new().and_then(|w| w.repo()) {
+            repository_sha = Self::repository_sha(&repository).ok();
+            dirty_paths = Self::collect_dirty_paths(&repository);
+        }
+
         Self {
+            repository_sha,
+            dirty_paths,
             digest: InvocationCacheKey {
                 qlty_version: QLTY_VERSION.to_string(),
                 tool: tool.clone(),
@@ -290,17 +303,51 @@ impl IssuesCacheKey {
         self.digest
             .add("target_contents_size", &target.contents_size.to_string());
 
-        self.digest.add(
-            "target_content_modified",
-            &target
-                .content_modified
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_millis()
-                .to_string(),
-        );
+        if !self.add_target_sha(target) {
+            self.digest.add(
+                "target_content_modified",
+                &target
+                    .content_modified
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_millis()
+                    .to_string(),
+            );
+        }
 
         self.digest.finalize();
+    }
+
+    fn add_target_sha(&mut self, target: &Target) -> bool {
+        if let Some(sha) = &self.repository_sha {
+            if !self
+                .dirty_paths
+                .iter()
+                .any(|path| target.path.starts_with(path))
+            {
+                self.digest.add("target_sha", sha);
+                return true;
+            }
+        }
+
+        false
+    }
+
+    fn repository_sha(repo: &Repository) -> Result<String> {
+        Ok(repo.head()?.resolve()?.target().unwrap().to_string())
+    }
+
+    fn collect_dirty_paths(repo: &Repository) -> Vec<PathBuf> {
+        if let Ok(statuses) = repo.statuses(None) {
+            statuses
+                .iter()
+                .filter(|entry| entry.status() != Status::CURRENT && entry.path().is_some())
+                .map(|entry| entry.path().map(PathBuf::from))
+                .flatten()
+                .collect::<Vec<PathBuf>>()
+        } else {
+            vec![]
+        }
     }
 }
 

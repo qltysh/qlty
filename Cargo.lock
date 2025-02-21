@@ -2469,6 +2469,7 @@ dependencies = [
  "flate2",
  "fs_extra",
  "fslock",
+ "git2",
  "globset",
  "ignore",
  "indicatif",
