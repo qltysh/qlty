@@ -4,6 +4,7 @@ mod invocation_script;
 pub mod staging_area;
 
 use self::staging_area::{load_config_file_from_qlty_dir, load_config_file_from_repository};
+use crate::llm::Fixer;
 use crate::planner::check_filters::CheckFilters;
 use crate::planner::config_files::config_globset;
 use crate::planner::source_extractor::SourceExtractor;
@@ -135,6 +136,10 @@ impl Executor {
         transformers.push(Box::new(SourceExtractor {
             staging_area: self.plan.staging_area.clone(),
         }));
+
+        if self.plan.settings.ai {
+            transformers.push(Box::new(Fixer::new(&self.plan, self.progress.clone())));
+        }
 
         if !self.plan.invocations.is_empty() {
             let loaded_config_files = self.stage_workspace_entries()?;

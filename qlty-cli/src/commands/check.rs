@@ -1,4 +1,3 @@
-pub mod autofix;
 use crate::ui::ApplyMode;
 use crate::ui::ErrorsFormatter;
 use crate::ui::Steps;
@@ -6,7 +5,6 @@ use crate::ui::TextFormatter;
 use crate::{Arguments, CommandError, CommandSuccess, Trigger};
 use anyhow::bail;
 use anyhow::Result;
-use autofix::autofix;
 use clap::Args;
 use console::{style, Emoji};
 use qlty_check::planner::Plan;
@@ -167,13 +165,6 @@ impl Check {
 
             let executor = Executor::new(&plan);
             let results = executor.install_and_invoke()?;
-            let results = autofix(
-                &results,
-                &settings,
-                &plan.staging_area,
-                Some(&mut steps),
-                self.verbose,
-            )?;
 
             let mut processor = Processor::new(&plan, results);
             let report = processor.compute()?;

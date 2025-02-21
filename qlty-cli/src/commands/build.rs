@@ -1,4 +1,3 @@
-use super::check::autofix::autofix;
 use crate::{Arguments, CommandError, CommandSuccess};
 use anyhow::Result;
 use clap::Args;
@@ -237,7 +236,6 @@ impl Build {
         let executor = qlty_check::Executor::new(&plan);
 
         let results = executor.install_and_invoke()?;
-        let results = autofix(&results, &settings, &plan.staging_area, None, 0)?;
         let mut processor = qlty_check::Processor::new(&plan, results.clone());
         let report = processor.compute()?;
 
