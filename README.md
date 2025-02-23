@@ -67,7 +67,7 @@ qlty metrics --all --max-depth=2 --sort complexity --limit 10
 
 ## Plugins
 
-Qlty CLI is powered by a set of 40+ plugins for static analysis tools like linters, auto-formatters, and security scanners. Plugin definitions can be found in the [`plugins/linters` directory](https://github.com/qltysh/qlty/tree/main/plugins/linters).
+Qlty CLI is powered by a set of 40+ plugins for static analysis tools like linters, auto-formatters, and security scanners. Plugin definitions can be found in the [`plugins/linters` directory](https://github.com/qltysh/qlty/tree/main/qlty-plugins/plugins/linters/).
 
 Creating a plugin can be as easy as writing a small plugin definition TOML file. If the tool has a custom output format (instead of a standard like [SARIF](https://sarifweb.azurewebsites.net/)), then writing a simple output parser in Rust is also needed.
 
