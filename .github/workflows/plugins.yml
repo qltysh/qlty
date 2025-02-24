@@ -53,7 +53,7 @@ jobs:
           cache-dependency-path: plugins/package-lock.json
 
       - name: Generate cache key
-        run: echo "CACHE_MONTH=$(date +'%Y-%m')" >> $GITHUB_ENV
+        run: echo "CACHE_MONTH=$(date +'blowup-cache')" >> $GITHUB_ENV
 
       - name: Cache qlty tools
         uses: actions/cache@v4
