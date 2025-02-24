@@ -53,18 +53,17 @@ jobs:
           cache-dependency-path: plugins/package-lock.json
 
       - name: Generate cache key
-        run: echo "CACHE_MONTH=$(date +'blowup-cache')" >> $GITHUB_ENV
+        run: echo "CACHE_MONTH=$(date +'%Y-%m')" >> $GITHUB_ENV
 
       - name: Cache qlty tools
         uses: actions/cache@v4
         with:
           path: ~/.qlty
-          key: ${{ runner.os }}-qlty-${{ env.CACHE_MONTH }}
+          key: ${{ runner.os }}-qlty-${{ env.CACHE_MONTH }}-v1
 
       - name: Setup PHP with PECL extension
         uses: shivammathur/setup-php@v2
-        with:
-          extensions: xmlwriter  # Install xmlwriter extension
+        if: contains(matrix.os, 'macos')
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
