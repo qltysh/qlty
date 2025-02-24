@@ -11,6 +11,8 @@ const LEGACY_API_URL: &str = "https://qlty.sh/api";
 #[derive(Default, Clone, Debug)]
 pub struct Upload {
     pub id: String,
+    pub workspace_login: String,
+    pub project_key: String,
     pub project_id: String,
     pub file_coverages_url: String,
     pub report_files_url: String,
@@ -83,12 +85,24 @@ impl Upload {
             .and_then(|project_id| project_id.as_str())
             .with_context(|| format!("Unable to find project ID in response body: {:?}", response))
             .context("Failed to extract project ID from response")?;
+    
+        let project_key = response
+            .get("data")
+            .and_then(|data| data.get("projectKey"))
+            .and_then(|project_id| project_id.as_str());
+    
+        let workspace_login = response
+            .get("data")
+            .and_then(|data| data.get("workspaceLogin"))
+            .and_then(|project_id| project_id.as_str());
 
         report.set_upload_id(id);
         report.set_project_id(project_id);
 
         Ok(Self {
             id: id.to_string(),
+            workspace_login: workspace_login.unwrap_or_default().to_string(),
+            project_key: project_key.unwrap_or_default().to_string(),
             project_id: project_id.to_string(),
             file_coverages_url: file_coverages_url.to_string(),
             report_files_url: report_files_url.to_string(),

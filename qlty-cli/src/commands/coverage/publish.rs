@@ -14,6 +14,7 @@ use qlty_coverage::publish::{Planner, Processor, Reader, Report, Settings, Uploa
 use std::path::PathBuf;
 use std::time::Instant;
 use tracing::debug;
+use itertools::Itertools;
 
 const COVERAGE_TOKEN_WORKSPACE_PREFIX: &str = "qltcw_";
 
@@ -116,15 +117,40 @@ impl Publish {
         )
         .compute()?;
 
-        eprintln_unless!(
-            self.quiet,
-            "{}",
-            style(format!(
-                "  → {} CI commit {:?} on branch {:?}",
-                plan.metadata.ci, plan.metadata.commit_sha, plan.metadata.branch
-            ))
-            .dim()
-        );
+        if let Some(tag) = &self.tag {
+            eprintln_unless!(
+                self.quiet,
+                "{}",
+                style(format!(
+                    "  → {} CI commit {} on branch {} for tag {}",
+                    plan.metadata.ci, &plan.metadata.commit_sha[0..8], plan.metadata.branch, tag
+                ))
+                .dim()
+            );
+        } else {
+            eprintln_unless!(
+                self.quiet,
+                "{}",
+                style(format!(
+                    "  → {} CI commit {} on branch {}",
+                    plan.metadata.ci, &plan.metadata.commit_sha[0..8], plan.metadata.branch
+                ))
+                .dim()
+            );
+        }
+
+        if !plan.metadata.pull_request_number.is_empty() {
+            eprintln_unless!(
+                self.quiet,
+                "{}",
+                style(format!(
+                    "  → Pull request #{}",
+                    plan.metadata.pull_request_number
+                ))
+                .dim()
+            );
+        }
+        
         eprintln_unless!(self.quiet, "");
 
         eprintln_unless!(self.quiet, "  Reading code coverage data...");
@@ -134,8 +160,17 @@ impl Publish {
             self.quiet,
             "{}",
             style(format!(
-                "  → Found {} files with code coverage data",
+                "  → Read {} coverage data files",
                 report.report_files.len()
+            ))
+            .dim()
+        );
+        eprintln_unless!(
+            self.quiet,
+            "{}",
+            style(format!(
+                "  → Found coverage for {} unique file paths",
+                report.file_coverages.iter().unique_by(|f| f.path.clone()).collect::<Vec<_>>().len(),
             ))
             .dim()
         );
@@ -162,12 +197,6 @@ impl Publish {
             Ok(upload) => {
                 eprintln_unless!(self.quiet, "  Exporting code coverage data...");
                 let export = report.export_to(self.output_dir.clone())?;
-
-                eprintln_unless!(
-                    self.quiet,
-                    "{}",
-                    style(format!("  → Exported to {:?}", export.to.as_ref().unwrap())).dim()
-                );
                 eprintln_unless!(self.quiet, "");
 
                 eprintln_unless!(
@@ -195,7 +224,7 @@ impl Publish {
                 );
 
                 eprintln_unless!(self.quiet, "");
-                eprintln_unless!(self.quiet, "View upload at https://qlty.sh");
+                eprintln!("View upload at https://qlty.sh/gh/{}/projects/{}/settings/coverage/uploads/{}", upload.workspace_login, upload.project_key, upload.id);
             }
             Err(err) => {
                 eprintln!("{}", style(format!("  → {}", err)).red());
