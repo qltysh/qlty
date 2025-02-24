@@ -1,7 +1,7 @@
 config_version = "0"
 
 [plugins.releases.gitleaks]
-github = "zricethezav/gitleaks"
+github = "gitleaks/gitleaks"
 download_type = "targz"
 strip_components = 0
 
