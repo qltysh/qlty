@@ -15,7 +15,7 @@ use crate::{
     ui::{Progress, ProgressBar},
 };
 use crate::{cache::IssuesCacheHit, planner::Plan, Results};
-use anyhow::{bail, Context, Result};
+use anyhow::{anyhow, bail, Context, Result};
 use chrono::Utc;
 pub use driver::Driver;
 use ignore::{DirEntry, WalkBuilder, WalkState};
@@ -640,7 +640,10 @@ fn run_invocation(
                     file_result.issues.len(),
                     MAX_ISSUES_PER_FILE
                 );
-                issue_limit_reached.lock().unwrap().insert(PathBuf::from(&file_result.path));
+                match issue_limit_reached.lock() {
+                    Ok(mut limit) => limit.insert(file_result.path.clone().into()),
+                    Err(_) => { debug!("Poison error in thread"); false },
+                };
                 file_result.issues.truncate(MAX_ISSUES_PER_FILE);
                 file_result.issues.shrink_to_fit();
                 return;
@@ -671,7 +674,9 @@ fn run_invocation(
     progress.increment(plan.workspace_entries.len() as u64);
     task.clear();
 
-    let issue_limit_reached = issue_limit_reached.lock().unwrap();
+    let issue_limit_reached = issue_limit_reached
+        .lock()
+        .map_err(|_| anyhow!("Posion error in thread"))?;
     if !issue_limit_reached.is_empty() {
         result.push_message(
             MessageLevel::Error,
