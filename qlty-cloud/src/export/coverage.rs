@@ -1,7 +1,7 @@
-use crate::format::{GzFormatter, JsonEachRowFormatter, JsonFormatter};
+use crate::format::{JsonEachRowFormatter, JsonFormatter};
 use anyhow::{Context, Result};
 use qlty_types::tests::v1::{CoverageMetadata, FileCoverage, ReportFile};
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use zip::{write::FileOptions, ZipWriter};
@@ -63,24 +63,19 @@ impl CoverageExport {
         JsonFormatter::new(self.metadata.clone())
             .write_to_file(&directory.join("metadata.json"))?;
 
-        let raw_file_paths = self
-            .report_files
-            .iter()
-            .map(|report_file| &report_file.path)
-            .cloned()
-            .collect();
+        let raw_files_dir = &directory.join("raw_files");
+        let exported_raw_files = self.export_raw_report_files(&raw_files_dir)?;
 
-        compress_files(raw_file_paths, &directory.join("raw_files.zip"))?;
-
-        let files_to_zip = vec![
+        let mut files_to_zip = vec![
             "report_files.jsonl",
             "file_coverages.jsonl",
             "metadata.json",
-            "raw_files.zip",
         ]
         .iter()
         .map(|file| directory.join(file).to_string_lossy().into_owned())
-        .collect();
+        .collect::<Vec<_>>();
+
+        files_to_zip.extend(exported_raw_files);
 
         compress_files(files_to_zip, &directory.join("coverage.zip"))
     }
@@ -100,5 +95,27 @@ impl CoverageExport {
             .with_context(|| format!("Failed to read file: {:?}", path))?;
 
         Ok(buffer)
+    }
+
+    fn export_raw_report_files(&self, output_dir: &Path) -> Result<Vec<String>> {
+        let mut copied_files = Vec::new();
+
+        for report_file in &self.report_files {
+            let path = Path::new(&report_file.path);
+
+            if path.is_file() {
+                let relative_path = path.strip_prefix("/").unwrap_or(path);
+                let dest_path = output_dir.join(relative_path);
+                if let Some(parent) = dest_path.parent() {
+                    fs::create_dir_all(parent)?;
+                }
+                fs::copy(path, dest_path.as_path())?;
+                copied_files.push(dest_path.to_string_lossy().into_owned());
+            } else {
+                eprintln!("Skipping non-file: {}", report_file.path);
+            }
+        }
+
+        Ok(copied_files)
     }
 }
