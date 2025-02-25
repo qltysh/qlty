@@ -628,9 +628,10 @@ fn run_invocation(
 ) -> Result<InvocationResult> {
     let task = progress.task(&plan.plugin_name, &plan.description());
     let mut result = plan.driver.run(&plan, &task)?;
-    let issue_limit_reached = Arc::new(Mutex::new(HashSet::<PathBuf>::new()));
+    let mut issue_limit_reached = HashSet::<PathBuf>::new();
 
     if let Some(file_results) = result.file_results.as_mut() {
+        let limit_guard = Arc::new(Mutex::new(&mut issue_limit_reached));
         file_results.par_iter_mut().for_each(|file_result| {
             if file_result.issues.len() >= MAX_ISSUES_PER_FILE {
                 warn!(
@@ -640,7 +641,7 @@ fn run_invocation(
                     file_result.issues.len(),
                     MAX_ISSUES_PER_FILE
                 );
-                match issue_limit_reached.lock() {
+                match limit_guard.lock() {
                     Ok(mut limit) => limit.insert(file_result.path.clone().into()),
                     Err(_) => { debug!("Poison error in thread"); false },
                 };
@@ -674,9 +675,6 @@ fn run_invocation(
     progress.increment(plan.workspace_entries.len() as u64);
     task.clear();
 
-    let issue_limit_reached = issue_limit_reached
-        .lock()
-        .map_err(|_| anyhow!("Posion error in thread"))?;
     if !issue_limit_reached.is_empty() {
         result.push_message(
             MessageLevel::Error,
