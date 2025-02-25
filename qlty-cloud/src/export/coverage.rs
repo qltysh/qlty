@@ -54,11 +54,11 @@ impl CoverageExport {
     fn export(&self) -> Result<()> {
         let directory = self.to.as_ref().unwrap();
 
-        GzFormatter::new(JsonEachRowFormatter::new(self.report_files.clone()))
-            .write_to_file(&directory.join("report_files.json.gz"))?;
+        JsonEachRowFormatter::new(self.report_files.clone())
+            .write_to_file(&directory.join("report_files.jsonl"))?;
 
-        GzFormatter::new(JsonEachRowFormatter::new(self.file_coverages.clone()))
-            .write_to_file(&directory.join("file_coverages.json.gz"))?;
+        JsonEachRowFormatter::new(self.file_coverages.clone())
+            .write_to_file(&directory.join("file_coverages.jsonl"))?;
 
         JsonFormatter::new(self.metadata.clone())
             .write_to_file(&directory.join("metadata.json"))?;
@@ -73,8 +73,8 @@ impl CoverageExport {
         compress_files(raw_file_paths, &directory.join("raw_files.zip"))?;
 
         let files_to_zip = vec![
-            "report_files.json.gz",
-            "file_coverages.json.gz",
+            "report_files.jsonl",
+            "file_coverages.jsonl",
             "metadata.json",
             "raw_files.zip",
         ]
