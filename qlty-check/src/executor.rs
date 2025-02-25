@@ -15,7 +15,7 @@ use crate::{
     ui::{Progress, ProgressBar},
 };
 use crate::{cache::IssuesCacheHit, planner::Plan, Results};
-use anyhow::{anyhow, bail, Context, Result};
+use anyhow::{bail, Context, Result};
 use chrono::Utc;
 pub use driver::Driver;
 use ignore::{DirEntry, WalkBuilder, WalkState};
