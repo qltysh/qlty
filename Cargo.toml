@@ -57,7 +57,7 @@ keyring = { version = "3.6.1", features = [
     "linux-native",
 ] }
 lazy_static = "1.5.0"
-log = "0.4.25"
+log = "0.4.26"
 lzma-rs = "0.3.0"
 mac_address = "1.1.7"
 md5 = "0.7.0"
@@ -92,8 +92,8 @@ sentry = { version = "0.34.0", default-features = false, features = [
     "ureq",
 ] }
 sentry-backtrace = "0.34.0"
-serde = { version = "1.0.217", features = ["derive", "rc"] }
-serde_json = { version = "1.0.138", features = ["preserve_order"] }
+serde = { version = "1.0.218", features = ["derive", "rc"] }
+serde_json = { version = "1.0.139", features = ["preserve_order"] }
 serde-querystring = "0.3.0"
 serde_with = "3.12.0"
 serde_yaml = "0.9.34"
@@ -135,7 +135,7 @@ tree-sitter-typescript = "0.21.2"
 trycmd = "0.15.8"
 ureq = { version = "2.12.1", features = ["json"] }
 url = "2.5.4"
-uuid = { version = "1.13.2", features = ["v4"] }
+uuid = { version = "1.14.0", features = ["v4"] }
 walkdir = "2.5.0"
 webbrowser = "1.0.3"
 whoami = "1.5.2"
