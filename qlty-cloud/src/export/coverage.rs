@@ -70,18 +70,23 @@ impl CoverageExport {
             .cloned()
             .collect();
 
-        compress_files(raw_file_paths, &directory.join("raw_files.zip"))
+        compress_files(raw_file_paths, &directory.join("raw_files.zip"))?;
+
+        let files_to_zip = vec![
+            "report_files.json.gz",
+            "file_coverages.json.gz",
+            "metadata.json",
+            "raw_files.zip",
+        ]
+        .iter()
+        .map(|file| directory.join(file).to_string_lossy().into_owned())
+        .collect();
+
+        compress_files(files_to_zip, &directory.join("coverage.zip"))
     }
 
     pub fn total_size_bytes(&self) -> Result<u64> {
-        let mut bytes: u64 = 0;
-
-        bytes += self.read_file("report_files.json.gz")?.len() as u64;
-        bytes += self.read_file("file_coverages.json.gz")?.len() as u64;
-        bytes += self.read_file("metadata.json")?.len() as u64;
-        bytes += self.read_file("raw_files.zip")?.len() as u64;
-
-        Ok(bytes)
+        Ok(self.read_file("coverage.zip")?.len() as u64)
     }
 
     pub fn read_file<P: AsRef<Path>>(&self, filename: P) -> Result<Vec<u8>> {

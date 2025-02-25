@@ -12,63 +12,24 @@ const LEGACY_API_URL: &str = "https://qlty.sh/api";
 pub struct Upload {
     pub id: String,
     pub project_id: String,
-    pub file_coverages_url: String,
-    pub report_files_url: String,
-    pub metadata_url: String,
-    pub raw_files_url: String,
+    pub coverage_url: String,
 }
 
 impl Upload {
     pub fn prepare(token: &str, report: &mut Report) -> Result<Self> {
         let response = Self::request_api(&report.metadata, token)?;
 
-        let file_coverages_url = response
+        let coverage_url = response
             .get("data")
-            .and_then(|data| data.get("file_coverages.json.gz"))
+            .and_then(|data| data.get("coverage.zip"))
             .and_then(|upload_url| upload_url.as_str())
             .with_context(|| {
                 format!(
-                    "Unable to find file coverages URL in response body: {:?}",
+                    "Unable to find coverage URL in response body: {:?}",
                     response
                 )
             })
-            .context("Failed to extract file coverages URL from response")?;
-
-        let report_files_url = response
-            .get("data")
-            .and_then(|data| data.get("report_files.json.gz"))
-            .and_then(|upload_url| upload_url.as_str())
-            .with_context(|| {
-                format!(
-                    "Unable to find report files URL in response body: {:?}",
-                    response
-                )
-            })
-            .context("Failed to extract report files URL from response")?;
-
-        let metadata_url = response
-            .get("data")
-            .and_then(|data| data.get("metadata.json"))
-            .and_then(|upload_url| upload_url.as_str())
-            .with_context(|| {
-                format!(
-                    "Unable to find metadata URL in response body: {:?}",
-                    response
-                )
-            })
-            .context("Failed to extract metadata URL from response")?;
-
-        let raw_files_url = response
-            .get("data")
-            .and_then(|data| data.get("raw_files.zip"))
-            .and_then(|upload_url| upload_url.as_str())
-            .with_context(|| {
-                format!(
-                    "Unable to find metadata URL in response body: {:?}",
-                    response
-                )
-            })
-            .context("Failed to extract metadata URL from response")?;
+            .context("Failed to extract coverage URL from response")?;
 
         let id = response
             .get("data")
@@ -90,36 +51,15 @@ impl Upload {
         Ok(Self {
             id: id.to_string(),
             project_id: project_id.to_string(),
-            file_coverages_url: file_coverages_url.to_string(),
-            report_files_url: report_files_url.to_string(),
-            metadata_url: metadata_url.to_string(),
-            raw_files_url: raw_files_url.to_string(),
+            coverage_url: coverage_url.to_string(),
         })
     }
 
     pub fn upload(&self, export: &CoverageExport) -> Result<()> {
         self.upload_data(
-            &self.file_coverages_url,
-            "application/gzip",
-            export.read_file(PathBuf::from("file_coverages.json.gz"))?,
-        )?;
-
-        self.upload_data(
-            &self.report_files_url,
-            "application/gzip",
-            export.read_file(PathBuf::from("report_files.json.gz"))?,
-        )?;
-
-        self.upload_data(
-            &self.metadata_url,
-            "application/json",
-            export.read_file(PathBuf::from("metadata.json"))?,
-        )?;
-
-        self.upload_data(
-            &self.raw_files_url,
+            &self.coverage_url,
             "application/zip",
-            export.read_file(PathBuf::from("raw_files.zip"))?,
+            export.read_file(PathBuf::from("coverage.zip"))?,
         )?;
 
         Ok(())
