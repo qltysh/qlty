@@ -57,7 +57,7 @@ keyring = { version = "3.6.1", features = [
     "linux-native",
 ] }
 lazy_static = "1.5.0"
-log = "0.4.25"
+log = "0.4.26"
 lzma-rs = "0.3.0"
 mac_address = "1.1.7"
 md5 = "0.7.0"
