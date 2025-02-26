@@ -6,7 +6,11 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 use zip::{write::FileOptions, ZipWriter};
 
-fn compress_files(files: Vec<String>, output_file: &Path) -> Result<()> {
+fn compress_files(
+    files: Vec<String>,
+    output_file: &Path,
+    strip_prefix: Option<&Path>,
+) -> Result<()> {
     // Create the output ZIP file
     let zip_file = File::create(output_file)?;
     let mut zip = ZipWriter::new(zip_file);
@@ -20,9 +24,18 @@ fn compress_files(files: Vec<String>, output_file: &Path) -> Result<()> {
         let path = Path::new(&file_path);
 
         if path.is_file() {
+            // Determine the filename to use in the ZIP file
+            let filename = if let Some(prefix) = strip_prefix {
+                path.strip_prefix(prefix)
+                    .unwrap_or(path)
+                    .to_string_lossy()
+                    .into_owned()
+            } else {
+                path.to_string_lossy().into_owned()
+            };
+
             // Add the file to the archive
-            // Use path as filename in case multiple files with same name
-            zip.start_file(path.to_string_lossy(), options)?;
+            zip.start_file(filename, options)?;
 
             // Write the file content to the archive
             let mut file = File::open(path)?;
@@ -77,7 +90,11 @@ impl CoverageExport {
 
         files_to_zip.extend(exported_raw_files);
 
-        compress_files(files_to_zip, &directory.join("coverage.zip"))
+        compress_files(
+            files_to_zip,
+            &directory.join("coverage.zip"),
+            Some(directory),
+        )
     }
 
     pub fn total_size_bytes(&self) -> Result<u64> {
