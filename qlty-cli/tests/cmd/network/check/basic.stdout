@@ -1,7 +1,11 @@
 
- ISSUES 
+ UNFORMATTED FILES: 1 
+
+✖ basic.py
+
+
+ ISSUES: 1 
 
 basic.py:0:0
     0:0  fmt     Incorrect formatting, autoformat by running `qlty fmt`.  black:fmt
 
-Checked 1 file

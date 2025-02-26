@@ -33,7 +33,7 @@ fn check_tests() {
 fn network_tests() {
     // only run .toml files in check/network/*/ directory
     // Run check and fmt network in sequence
-    setup_and_run_test_cases("tests/cmd/check/network/*/*.toml");
+    setup_and_run_test_cases("tests/cmd/network/*/*.toml");
 }
 
 #[test]

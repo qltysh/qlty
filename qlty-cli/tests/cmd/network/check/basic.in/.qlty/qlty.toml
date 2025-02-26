@@ -1,8 +1,8 @@
 config_version = "0"
 
-[sources.default]
-repository = "https://github.com/qltysh/qlty"
-branch = "main"
+[[source]]
+name = "default"
+default = true
 
 [[plugin]]
 name = "black"

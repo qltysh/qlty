@@ -1,2 +1,7 @@
-def foo():
-    x = 1 + 2
+def main():
+
+
+    pass
+
+
+import foo
