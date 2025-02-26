@@ -363,10 +363,14 @@ impl Scanner {
                 .extend(package_filters.clone());
 
             if let Some(package_file) = &plugin_to_activate.package_file {
-                plugin_to_activate.package_file = Self::process_plugin_package_file_prefix(
-                    package_file,
-                    &mut plugin_to_activate.prefixes,
-                );
+                // We only need to add the prefix for the existing package file the
+                // first time we add prefixes
+                if plugin_to_activate.prefixes.is_empty() {
+                    plugin_to_activate.package_file = Self::process_plugin_package_file_prefix(
+                        package_file,
+                        &mut plugin_to_activate.prefixes,
+                    );
+                }
 
                 Self::process_plugin_package_file_prefix(path, &mut plugin_to_activate.prefixes);
             } else {
@@ -645,12 +649,69 @@ config_files = ["config.toml"]
             vec!["test".to_string()]
         );
 
-        let path = "package.json";
-
         assert_eq!(
             plugins_to_activate.get("test").unwrap().prefixes,
             HashSet::new()
         );
+
+        let path = "also_deep/package.json";
+
+        Scanner::insert_package_filters_and_package_file(
+            &mut plugins_to_activate,
+            vec!["test".to_string()],
+            &plugin_initializer,
+            path,
+        );
+
+        assert_eq!(plugins_to_activate.len(), 1);
+        assert_eq!(
+            plugins_to_activate.get("test").unwrap().package_file,
+            Some("package.json".to_string())
+        );
+        assert_eq!(
+            plugins_to_activate.get("test").unwrap().package_filters,
+            vec!["test".to_string(), "test".to_string()]
+        );
+
+        let mut prefix_set = HashSet::new();
+        prefix_set.insert("deep".to_string());
+        prefix_set.insert("also_deep".to_string());
+
+        assert_eq!(
+            plugins_to_activate.get("test").unwrap().prefixes,
+            prefix_set
+        );
+
+        let path = "similar_depth/package.json";
+
+        Scanner::insert_package_filters_and_package_file(
+            &mut plugins_to_activate,
+            vec!["test".to_string()],
+            &plugin_initializer,
+            path,
+        );
+
+        assert_eq!(plugins_to_activate.len(), 1);
+        assert_eq!(
+            plugins_to_activate.get("test").unwrap().package_file,
+            Some("package.json".to_string())
+        );
+        assert_eq!(
+            plugins_to_activate.get("test").unwrap().package_filters,
+            vec!["test".to_string(), "test".to_string(), "test".to_string()]
+        );
+
+        let mut prefix_set = HashSet::new();
+        prefix_set.insert("deep".to_string());
+        prefix_set.insert("also_deep".to_string());
+        prefix_set.insert("similar_depth".to_string());
+
+        assert_eq!(
+            plugins_to_activate.get("test").unwrap().prefixes,
+            prefix_set
+        );
+
+        let path = "package.json";
 
         Scanner::insert_package_filters_and_package_file(
             &mut plugins_to_activate,
@@ -666,11 +727,18 @@ config_files = ["config.toml"]
         );
         assert_eq!(
             plugins_to_activate.get("test").unwrap().package_filters,
-            vec!["test".to_string(), "test2".to_string()]
+            vec![
+                "test".to_string(),
+                "test".to_string(),
+                "test".to_string(),
+                "test2".to_string()
+            ]
         );
 
         let mut prefix_set = HashSet::new();
         prefix_set.insert("deep".to_string());
+        prefix_set.insert("also_deep".to_string());
+        prefix_set.insert("similar_depth".to_string());
         prefix_set.insert("".to_string());
 
         assert_eq!(
