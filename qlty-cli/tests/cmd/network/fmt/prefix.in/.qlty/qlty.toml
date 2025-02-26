@@ -1,0 +1,13 @@
+config_version = "0"
+
+[[source]]
+name = "default"
+default = true
+
+[[plugin]]
+name = "prettier"
+prefix = "also_nested"
+
+[[plugin]]
+name = "prettier"
+prefix = "nested"

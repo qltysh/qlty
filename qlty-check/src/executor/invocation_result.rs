@@ -16,7 +16,7 @@ use qlty_types::analysis::v1::{
 use serde::Serialize;
 use std::{collections::HashMap, path::PathBuf};
 use std::{process::Output, sync::Arc};
-use tracing::{debug, error};
+use tracing::{debug, error, info};
 
 #[derive(Debug, Clone)]
 pub struct InvocationResult {
@@ -280,9 +280,18 @@ impl InvocationResult {
     fn handle_output_rewrite(&mut self) -> Result<()> {
         let mut formatted = vec![];
 
-        for workspace_entry in self.plan.workspace_entries.iter() {
-            let workspace_path = self.plan.workspace.root.join(&workspace_entry.path);
-            let staged_path = self.plan.target_root.join(&workspace_entry.path);
+        for workspace_entry in self.invocation.target_paths.iter() {
+            let prefixed_path = if let Some(prefix) = &self.plan.plugin.prefix {
+                PathBuf::from(prefix).join(&workspace_entry)
+            } else {
+                PathBuf::from(&workspace_entry)
+            };
+
+            let workspace_path = self.plan.workspace.root.join(&prefixed_path);
+            let staged_path = self.plan.target_root.join(&workspace_entry);
+
+            info!("workspace_path file {:?}", &workspace_path);
+            info!("staged_path file {:?}", &staged_path);
 
             let workspace_contents = match std::fs::read_to_string(&workspace_path) {
                 Ok(content) => content,
@@ -296,9 +305,10 @@ impl InvocationResult {
                 .with_context(|| format!("Failed to read staged file {:?}", &staged_path))?;
 
             if workspace_contents != staged_contents {
+                info!("Rewriting file {:?}", &workspace_path);
                 std::fs::copy(&staged_path, &workspace_path)?;
                 self.invocation.rewrites_count += 1;
-                formatted.push(workspace_entry.path.to_owned())
+                formatted.push(prefixed_path.to_owned())
             }
         }
 
@@ -365,7 +375,13 @@ impl InvocationResult {
                 }
             };
 
-            let workspace_path = self.plan.workspace.root.join(&workspace_entry.path);
+            let prefixed_path = if let Some(prefix) = &self.plan.plugin.prefix {
+                PathBuf::from(prefix).join(&workspace_entry.path)
+            } else {
+                PathBuf::from(&workspace_entry.path)
+            };
+
+            let workspace_path = self.plan.workspace.root.join(&prefixed_path);
             let workspace_contents = std::fs::read_to_string(&workspace_path)?;
 
             let mut issues = Vec::new();
