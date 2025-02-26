@@ -46,6 +46,12 @@ impl Tool for Php {
         task.set_message("Verifying Php installation");
         Php::verify_installation(self.env())?;
 
+        task.set_message("Installing composer");
+        let composer = Composer {
+            cmd: default_command_builder(),
+        };
+        composer.setup(task)?;
+
         Ok(())
     }
 
@@ -133,11 +139,23 @@ impl Tool for PhpPackage {
         self.plugin.version_regex.clone()
     }
 
-    fn install(&self, task: &ProgressTask) -> Result<()> {
-        self.download().install(self.directory(), self.name())?;
-        self.package_file_install(task)?;
+    fn package_install(&self, task: &ProgressTask, name: &str, version: &str) -> Result<()> {
+        task.set_dim_message(&format!("Installing {}", name));
+        let composer = Composer {
+            cmd: default_command_builder(),
+        };
 
-        Ok(())
+        let composer_phar = PathBuf::from(composer.directory()).join("composer.phar");
+
+        self.run_command(self.cmd.build(
+            "php",
+            vec![
+                &path_to_native_string(composer_phar.to_str().unwrap()),
+                "require",
+                "--no-interaction",
+                format!("{}:{}", name, version).as_str(),
+            ],
+        ))
     }
 
     fn package_file_install(&self, task: &ProgressTask) -> Result<()> {

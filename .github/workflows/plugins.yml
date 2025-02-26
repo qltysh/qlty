@@ -59,7 +59,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.qlty
-          key: ${{ runner.os }}-qlty-${{ env.CACHE_MONTH }}
+          key: ${{ runner.os }}-qlty-${{ env.CACHE_MONTH }}-v1
 
       - name: Setup PHP with PECL extension
         uses: shivammathur/setup-php@v2

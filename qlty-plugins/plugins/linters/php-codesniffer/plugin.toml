@@ -1,19 +1,18 @@
 config_version = "0"
 
 [plugins.definitions.php-codesniffer]
-runnable_archive_url = "https://github.com/PHPCSStandards/PHP_CodeSniffer/releases/download/${version}/phpcs.phar"
-strip_components = 0
+package = "squizlabs/php_codesniffer"
 runtime = "php"
 file_types = ["php"]
 config_files = ["phpcs.xml"]
 latest_version = "3.10.3"
 known_good_version = "3.10.3"
-version_command = "php ${linter}/php-codesniffer --version"
+version_command = "php ${linter}/vendor/bin/phpcs --version"
 description = "PHP code linter"
 suggested = "targets"
 
 [plugins.definitions.php-codesniffer.drivers.lint]
-script = "php -d memory_limit=-1 ${linter}/php-codesniffer --report=json -q ${autoload_script} ${target}"
+script = "php -d memory_limit=-1 ${linter}/vendor/bin/phpcs --report=json -q ${autoload_script} ${target}"
 autoload_script = "--bootstrap=${linter}/vendor/autoload.php"
 success_codes = [0, 1, 2]
 output = "stdout"
