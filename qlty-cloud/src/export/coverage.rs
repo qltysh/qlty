@@ -1,16 +1,13 @@
 use crate::format::{JsonEachRowFormatter, JsonFormatter};
 use anyhow::{Context, Result};
 use qlty_types::tests::v1::{CoverageMetadata, FileCoverage, ReportFile};
-use std::fs::{self, File};
+use std::collections::HashMap;
+use std::fs::File;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use zip::{write::FileOptions, ZipWriter};
 
-fn compress_files(
-    files: Vec<String>,
-    output_file: &Path,
-    strip_prefix: Option<&Path>,
-) -> Result<()> {
+fn compress_files(files: HashMap<String, PathBuf>, output_file: &Path) -> Result<()> {
     // Create the output ZIP file
     let zip_file = File::create(output_file)?;
     let mut zip = ZipWriter::new(zip_file);
@@ -19,29 +16,16 @@ fn compress_files(
         .compression_method(zip::CompressionMethod::Deflated) // Compression method
         .unix_permissions(0o755);
 
-    // Iterate over the list of files to compress
-    for file_path in files {
-        let path = Path::new(&file_path);
-
-        if path.is_file() {
-            // Determine the filename to use in the ZIP file
-            let filename = if let Some(prefix) = strip_prefix {
-                path.strip_prefix(prefix)
-                    .unwrap_or(path)
-                    .to_string_lossy()
-                    .into_owned()
-            } else {
-                path.to_string_lossy().into_owned()
-            };
-
+    for (name, file_path) in &files {
+        if file_path.is_file() {
             // Add the file to the archive
-            zip.start_file(filename, options)?;
+            zip.start_file(name, options)?;
 
             // Write the file content to the archive
-            let mut file = File::open(path)?;
+            let mut file = File::open(file_path)?;
             std::io::copy(&mut file, &mut zip)?;
         } else {
-            eprintln!("Skipping non-file: {}", file_path);
+            eprintln!("Skipping non-file: {}", file_path.to_string_lossy());
         }
     }
 
@@ -76,29 +60,35 @@ impl CoverageExport {
         JsonFormatter::new(self.metadata.clone())
             .write_to_file(&directory.join("metadata.json"))?;
 
-        let raw_files_dir = directory.join("raw_files");
-        let exported_raw_files = self.export_raw_report_files(&raw_files_dir)?;
+        let zip_file_contents = self.compute_zip_file_contents(directory)?;
 
-        let mut files_to_zip = [
-            "report_files.jsonl",
-            "file_coverages.jsonl",
-            "metadata.json",
-        ]
-        .iter()
-        .map(|file| directory.join(file).to_string_lossy().into_owned())
-        .collect::<Vec<_>>();
-
-        files_to_zip.extend(exported_raw_files);
-
-        compress_files(
-            files_to_zip,
-            &directory.join("coverage.zip"),
-            Some(directory),
-        )
+        compress_files(zip_file_contents, &directory.join("coverage.zip"))
     }
 
     pub fn total_size_bytes(&self) -> Result<u64> {
         Ok(self.read_file("coverage.zip")?.len() as u64)
+    }
+
+    fn compute_zip_file_contents(&self, directory: &Path) -> Result<HashMap<String, PathBuf>> {
+        let mut files_to_zip = HashMap::new();
+
+        files_to_zip.insert(
+            "report_files.jsonl".to_string(),
+            directory.join("report_files.jsonl"),
+        );
+        files_to_zip.insert(
+            "file_coverages.jsonl".to_string(),
+            directory.join("file_coverages.jsonl"),
+        );
+        files_to_zip.insert("metadata.json".to_string(), directory.join("metadata.json"));
+
+        for report_file in &self.report_files {
+            let actual_path = PathBuf::from(&report_file.path);
+            let zip_file_name = PathBuf::from("raw_files").join(&report_file.path);
+            files_to_zip.insert(zip_file_name.to_string_lossy().into_owned(), actual_path);
+        }
+
+        Ok(files_to_zip)
     }
 
     pub fn read_file<P: AsRef<Path>>(&self, filename: P) -> Result<Vec<u8>> {
@@ -113,26 +103,63 @@ impl CoverageExport {
 
         Ok(buffer)
     }
+}
 
-    fn export_raw_report_files(&self, output_dir: &Path) -> Result<Vec<String>> {
-        let mut copied_files = Vec::new();
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Write;
+    use tempfile::{tempdir, TempDir};
+    use zip::read::ZipArchive;
 
-        for report_file in &self.report_files {
-            let path = Path::new(&report_file.path);
+    #[test]
+    fn test_export_to() {
+        let destination_binding = tempdir().unwrap();
+        let destination = destination_binding.path();
 
-            if path.is_file() {
-                let relative_path = path.strip_prefix("/").unwrap_or(path);
-                let dest_path = output_dir.join(relative_path);
-                if let Some(parent) = dest_path.parent() {
-                    fs::create_dir_all(parent)?;
-                }
-                fs::copy(path, dest_path.as_path())?;
-                copied_files.push(dest_path.to_string_lossy().into_owned());
-            } else {
-                eprintln!("Skipping non-file: {}", report_file.path);
-            }
-        }
+        let raw_files_temp_binding = TempDir::new_in(".").unwrap();
+        let raw_files_dir = raw_files_temp_binding.path();
 
-        Ok(copied_files)
+        let f1 = &raw_files_dir.join("coverage.lcov");
+        let mut file = File::create(f1).unwrap();
+        writeln!(file, "D").unwrap();
+
+        let metadata = CoverageMetadata::default();
+        let report_files = vec![ReportFile {
+            path: raw_files_dir
+                .file_name()
+                .map(|name| {
+                    Path::new(name)
+                        .join("coverage.lcov")
+                        .to_string_lossy()
+                        .into_owned()
+                })
+                .unwrap_or_default(),
+            ..Default::default()
+        }];
+        let file_coverages = vec![FileCoverage::default()];
+
+        let mut export = CoverageExport {
+            metadata,
+            report_files,
+            file_coverages,
+            to: None,
+        };
+
+        export.export_to(Some(destination.to_path_buf())).unwrap();
+
+        assert!(destination.join("coverage.zip").exists());
+
+        // Verify the contents of the zip file
+        let zip_file = File::open(destination.join("coverage.zip")).unwrap();
+        let mut zip = ZipArchive::new(zip_file).unwrap();
+        assert!(zip.by_name("report_files.jsonl").is_ok());
+        assert!(zip.by_name("file_coverages.jsonl").is_ok());
+        assert!(zip.by_name("metadata.json").is_ok());
+        let raw_file_path = format!(
+            "raw_files/{}/coverage.lcov",
+            raw_files_dir.file_name().unwrap().to_string_lossy()
+        );
+        assert!(zip.by_name(&raw_file_path).is_ok());
     }
 }
