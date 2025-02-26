@@ -76,10 +76,10 @@ impl CoverageExport {
         JsonFormatter::new(self.metadata.clone())
             .write_to_file(&directory.join("metadata.json"))?;
 
-        let raw_files_dir = &directory.join("raw_files");
+        let raw_files_dir = directory.join("raw_files");
         let exported_raw_files = self.export_raw_report_files(&raw_files_dir)?;
 
-        let mut files_to_zip = vec![
+        let mut files_to_zip = [
             "report_files.jsonl",
             "file_coverages.jsonl",
             "metadata.json",
