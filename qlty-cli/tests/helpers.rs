@@ -105,11 +105,7 @@ impl RepositoryFixture {
             self.destroy();
         }
 
-        let (shell, flag) = if cfg!(windows) {
-            ("cmd", "/c")
-        } else {
-            ("sh", "-c")
-        };
+        let (shell, flag) = Self::get_shell_and_flag();
 
         let script = if self.diff_tests {
             GIT_DIFF_SETUP_SCRIPT
@@ -130,11 +126,28 @@ impl RepositoryFixture {
     }
 
     pub fn destroy(&self) {
+        self.reset_git();
         std::fs::remove_dir_all(&self.git_dir()).unwrap_or_default();
+    }
+
+    fn reset_git(&self) {
+        let (shell, flag) = Self::get_shell_and_flag();
+        cmd!(shell, flag, "git reset --hard")
+            .dir(&self.path)
+            .read()
+            .unwrap();
     }
 
     fn git_dir(&self) -> PathBuf {
         self.path.join(".git")
+    }
+
+    fn get_shell_and_flag() -> (&'static str, &'static str) {
+        if cfg!(windows) {
+            ("cmd", "/c")
+        } else {
+            ("sh", "-c")
+        }
     }
 }
 
