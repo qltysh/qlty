@@ -125,16 +125,20 @@ mod tests {
         writeln!(file, "D").unwrap();
 
         let metadata = CoverageMetadata::default();
+        let relative_raw_file_path = raw_files_dir
+            .file_name()
+            .map(|name| {
+                Path::new(name)
+                    .join("coverage.lcov")
+                    .to_string_lossy()
+                    .into_owned()
+            })
+            .unwrap_or_default();
+
+        // the ReportFile path is what is supplied by a user as one of the path arguments to `qlty coverage publish path/to/coverage.lcov`
+        // that path could be relative or absolute (but probably more typically relative)
         let report_files = vec![ReportFile {
-            path: raw_files_dir
-                .file_name()
-                .map(|name| {
-                    Path::new(name)
-                        .join("coverage.lcov")
-                        .to_string_lossy()
-                        .into_owned()
-                })
-                .unwrap_or_default(),
+            path: relative_raw_file_path.clone(),
             ..Default::default()
         }];
         let file_coverages = vec![FileCoverage::default()];
@@ -153,13 +157,15 @@ mod tests {
         // Verify the contents of the zip file
         let zip_file = File::open(destination.join("coverage.zip")).unwrap();
         let mut zip = ZipArchive::new(zip_file).unwrap();
+
         assert!(zip.by_name("report_files.jsonl").is_ok());
         assert!(zip.by_name("file_coverages.jsonl").is_ok());
         assert!(zip.by_name("metadata.json").is_ok());
-        let raw_file_path = format!(
-            "raw_files/{}/coverage.lcov",
-            raw_files_dir.file_name().unwrap().to_string_lossy()
-        );
-        assert!(zip.by_name(&raw_file_path).is_ok());
+        let raw_file_path = PathBuf::from("raw_files")
+            .join(raw_files_dir.file_name().unwrap())
+            .join("coverage.lcov");
+        assert!(zip
+            .by_name(raw_file_path.to_string_lossy().into_owned().as_str())
+            .is_ok());
     }
 }
