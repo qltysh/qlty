@@ -16,7 +16,7 @@ use qlty_types::analysis::v1::{
 use serde::Serialize;
 use std::{collections::HashMap, path::PathBuf};
 use std::{process::Output, sync::Arc};
-use tracing::{debug, error, info};
+use tracing::{debug, error, info, trace};
 
 #[derive(Debug, Clone)]
 pub struct InvocationResult {
@@ -290,8 +290,8 @@ impl InvocationResult {
             let workspace_path = self.plan.workspace.root.join(&prefixed_path);
             let staged_path = self.plan.target_root.join(workspace_entry);
 
-            info!("workspace_path file {:?}", &workspace_path);
-            info!("staged_path file {:?}", &staged_path);
+            trace!("workspace_path file {:?}", &workspace_path);
+            trace!("staged_path file {:?}", &staged_path);
 
             let workspace_contents = match std::fs::read_to_string(&workspace_path) {
                 Ok(content) => content,
