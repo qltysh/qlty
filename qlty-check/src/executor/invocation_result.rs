@@ -280,15 +280,11 @@ impl InvocationResult {
     fn handle_output_rewrite(&mut self) -> Result<()> {
         let mut formatted = vec![];
 
-        for workspace_entry in self.invocation.target_paths.iter() {
-            let prefixed_path = if let Some(prefix) = &self.plan.plugin.prefix {
-                PathBuf::from(prefix).join(workspace_entry)
-            } else {
-                PathBuf::from(&workspace_entry)
-            };
+        for target_path in self.invocation.target_paths.iter() {
+            let prefixed_target_path = self.prefixed_file_path(target_path);
 
-            let workspace_path = self.plan.workspace.root.join(&prefixed_path);
-            let staged_path = self.plan.target_root.join(workspace_entry);
+            let workspace_path = self.plan.workspace.root.join(&prefixed_target_path);
+            let staged_path = self.plan.target_root.join(target_path);
 
             trace!("workspace_path file {:?}", &workspace_path);
             trace!("staged_path file {:?}", &staged_path);
@@ -308,7 +304,7 @@ impl InvocationResult {
                 info!("Rewriting file {:?}", &workspace_path);
                 std::fs::copy(&staged_path, &workspace_path)?;
                 self.invocation.rewrites_count += 1;
-                formatted.push(prefixed_path.to_owned())
+                formatted.push(prefixed_target_path.to_owned())
             }
         }
 
@@ -365,8 +361,8 @@ impl InvocationResult {
     fn create_file_result_for_autofmts(&self) -> Result<Vec<FileResult>> {
         let mut file_results: Vec<FileResult> = Vec::new();
 
-        for workspace_entry in self.plan.targets.iter() {
-            let staged_path = self.plan.target_root.join(&workspace_entry.path);
+        for target in self.plan.targets.iter() {
+            let staged_path = self.plan.target_root.join(&target.path);
             let staged_contents = match std::fs::read_to_string(&staged_path) {
                 Ok(content) => content,
                 Err(_) => {
@@ -375,16 +371,13 @@ impl InvocationResult {
                 }
             };
 
-            let prefixed_path = if let Some(prefix) = &self.plan.plugin.prefix {
-                PathBuf::from(prefix).join(&workspace_entry.path)
-            } else {
-                PathBuf::from(&workspace_entry.path)
-            };
+            let prefixed_target_path = self.prefixed_file_path(&target.path_string());
 
-            let workspace_path = self.plan.workspace.root.join(&prefixed_path);
+            let workspace_path = self.plan.workspace.root.join(&prefixed_target_path);
             let workspace_contents = std::fs::read_to_string(&workspace_path)?;
 
             let mut issues = Vec::new();
+            let prefixed_target_path_string = path_to_string(prefixed_target_path);
 
             if workspace_contents != staged_contents {
                 issues.push(Issue {
@@ -394,7 +387,7 @@ impl InvocationResult {
                     rule_key: "fmt".to_string(),
                     tool: self.plan.plugin_name.clone(),
                     location: Some(Location {
-                        path: workspace_entry.path_string(),
+                        path: prefixed_target_path_string.clone(),
                         ..Default::default()
                     }),
                     on_added_line: true,
@@ -403,7 +396,7 @@ impl InvocationResult {
             }
 
             file_results.push(FileResult {
-                path: workspace_entry.path_string(),
+                path: prefixed_target_path_string,
                 issues,
             });
         }

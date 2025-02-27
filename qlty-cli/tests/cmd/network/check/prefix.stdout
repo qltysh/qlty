@@ -1,12 +1,15 @@
 
- UNFORMATTED FILES: 1 
+ UNFORMATTED FILES: 2 
 
-✖ needs_formatting.js
+✖ also_nested/needs_formatting.js
+✖ nested/needs_formatting.js
 
 
  ISSUES: 2 
 
-needs_formatting.js:0:0
+also_nested/needs_formatting.js:0:0
     0:0  fmt     Incorrect formatting, autoformat by running `qlty fmt`.  prettier:fmt
+
+nested/needs_formatting.js:0:0
     0:0  fmt     Incorrect formatting, autoformat by running `qlty fmt`.  prettier:fmt
 
