@@ -533,7 +533,7 @@ impl Executor {
                 results.extend(formatted.clone());
             }
         }
-
+        results.sort();
         results
     }
 
