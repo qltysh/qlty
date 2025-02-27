@@ -282,13 +282,13 @@ impl InvocationResult {
 
         for workspace_entry in self.invocation.target_paths.iter() {
             let prefixed_path = if let Some(prefix) = &self.plan.plugin.prefix {
-                PathBuf::from(prefix).join(&workspace_entry)
+                PathBuf::from(prefix).join(workspace_entry)
             } else {
                 PathBuf::from(&workspace_entry)
             };
 
             let workspace_path = self.plan.workspace.root.join(&prefixed_path);
-            let staged_path = self.plan.target_root.join(&workspace_entry);
+            let staged_path = self.plan.target_root.join(workspace_entry);
 
             info!("workspace_path file {:?}", &workspace_path);
             info!("staged_path file {:?}", &staged_path);
