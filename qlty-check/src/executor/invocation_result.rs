@@ -511,4 +511,12 @@ impl InvocationResult {
 
         file_results_by_path
     }
+
+    fn prefixed_file_path(&self, path: &str) -> PathBuf {
+        if let Some(prefix) = &self.plan.plugin.prefix {
+            PathBuf::from(prefix).join(path)
+        } else {
+            PathBuf::from(path)
+        }
+    }
 }
