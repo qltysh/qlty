@@ -59,20 +59,49 @@ impl Executor {
     }
 
     pub fn install_and_invoke(&self) -> Result<Results> {
-        self.install()?;
+        let install_messages = self.install()?;
         self.run_prepare_scripts()?;
-        self.invoke()
+        let mut result = self.invoke()?;
+
+        for message in install_messages {
+            result.messages.push(message);
+        }
+
+        Ok(result)
     }
 
-    pub fn install(&self) -> Result<()> {
-        Self::install_tools(self.plan.tools(), self.plan.jobs, self.progress.clone())
+    pub fn install(&self) -> Result<Vec<Message>> {
+        let mut install_messages = vec![];
+        let installation_resullts =
+            Self::install_tools(self.plan.tools(), self.plan.jobs, self.progress.clone());
+
+        for result in installation_resullts {
+            if self.plan.settings.skip_errored_plugins {
+                if let Err(err) = result {
+                    warn!("Error installing tool: {:?}", err);
+
+                    install_messages.push(Message {
+                        timestamp: Some(Utc::now().into()),
+                        module: "qlty_check::executor".to_string(),
+                        ty: "executor.install.error".to_string(),
+                        level: MessageLevel::Error.into(),
+                        message: format!("Error installing tool: {:?}", err),
+                        ..Default::default()
+                    });
+                }
+            } else {
+                result?;
+            }
+        }
+
+        Ok(install_messages)
     }
 
     pub fn install_tools(
         tools: Vec<(String, Box<dyn Tool>)>,
         jobs: usize,
         progress: Progress,
-    ) -> Result<()> {
+    ) -> Vec<Result<()>> {
         let timer = Instant::now();
         let pool = rayon::ThreadPoolBuilder::new()
             .num_threads(jobs)
@@ -89,16 +118,13 @@ impl Executor {
                 .collect::<Vec<_>>();
         });
 
-        for result in install_results {
-            result?;
-        }
-
         info!(
-            "All {} install tasks complete in {:.2}s",
+            "All {} install tasks ran in {:.2}s",
             tasks_count,
             timer.elapsed().as_secs_f32()
         );
-        Ok(())
+
+        install_results
     }
 
     pub fn run_prepare_scripts(&self) -> Result<()> {
@@ -107,6 +133,13 @@ impl Executor {
         self.plan
             .invocations
             .iter()
+            .filter(|invocation| {
+                if self.plan.settings.skip_errored_plugins {
+                    invocation.tool.is_installed()
+                } else {
+                    true
+                }
+            })
             .for_each(|invocation: &InvocationPlan| {
                 if invocation.driver.prepare_script.is_some() {
                     // Prevent multiple prepare scripts for the same driver and plugin and
@@ -423,6 +456,15 @@ impl Executor {
                         warn!(
                             "Stopping invocations: Maximum total issue count of {} was reached",
                             MAX_ISSUES
+                        );
+
+                        return None;
+                    }
+
+                    if self.plan.settings.skip_errored_plugins && !plan.tool.is_installed() {
+                        warn!(
+                            "Skipping invocation for {} because --skip-errored-plugins is set and the tool is not installed",
+                            plan.invocation_label()
                         );
 
                         return None;

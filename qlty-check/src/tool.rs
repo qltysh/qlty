@@ -84,6 +84,7 @@ pub enum ToolType {
     Download,
     RuntimePackage,
     GitHubRelease,
+    NullTool,
 }
 
 pub trait Tool: Debug + Sync + Send {
@@ -154,6 +155,10 @@ pub trait Tool: Debug + Sync + Send {
         Ok(())
     }
 
+    fn is_installed(&self) -> bool {
+        self.tool_type() == ToolType::NullTool || (self.donefile_path().exists() && self.exists())
+    }
+
     fn setup(&self, task: &ProgressTask) -> Result<()> {
         std::fs::create_dir_all(self.parent_directory())?;
 
@@ -176,12 +181,13 @@ pub trait Tool: Debug + Sync + Send {
             path_to_string(self.lockfile_path())
         );
 
-        if self.donefile_path().exists() && self.exists() {
+        if self.is_installed() {
             debug!(
                 "Tool already installed: {}@{:?}",
                 self.name(),
                 self.version()
             );
+
             Ok(())
         } else {
             info!(

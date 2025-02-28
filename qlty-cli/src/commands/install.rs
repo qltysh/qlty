@@ -66,6 +66,11 @@ impl Install {
         let progress = Progress::new(!self.no_progress, tools.len() as u64);
         let jobs = Planner::jobs_count(self.jobs);
 
-        Executor::install_tools(tools, jobs, progress)
+        let results = Executor::install_tools(tools, jobs, progress);
+        for result in results {
+            result?;
+        }
+
+        Ok(())
     }
 }

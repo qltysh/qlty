@@ -15,7 +15,7 @@ impl Tool for NullTool {
     }
 
     fn tool_type(&self) -> ToolType {
-        ToolType::Download
+        ToolType::NullTool
     }
 
     fn version(&self) -> Option<String> {

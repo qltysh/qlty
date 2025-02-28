@@ -1,0 +1,27 @@
+config_version = "0"
+
+[[source]]
+name = "default"
+default = true
+
+[plugins.releases.gitleaks]
+github = "gitleaks/random_non_existing_name"
+
+[[plugin]]
+name = "gitleaks"
+
+[plugins.definitions.always_error]
+file_types = ["javascript"]
+
+[plugins.definitions.always_error.drivers.lint]
+script = "exit 1"
+success_codes = [0]
+
+[plugins.definitions.always_error.drivers.fails]
+script = "exit 1"
+success_codes = [0]
+output = "pass_fail"
+
+[[plugin]]
+name = "always_error"
+version = "0.10.0"
