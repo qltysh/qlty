@@ -156,7 +156,7 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn is_installed(&self) -> bool {
-        self.tool_type() == ToolType::NullTool || (self.donefile_path().exists() && self.exists())
+        self.donefile_path().exists() && self.exists()
     }
 
     fn setup(&self, task: &ProgressTask) -> Result<()> {

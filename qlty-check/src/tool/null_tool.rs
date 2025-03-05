@@ -41,4 +41,8 @@ impl Tool for NullTool {
     fn install_and_validate(&self, _: &ProgressTask) -> Result<()> {
         Ok(())
     }
+
+    fn is_installed(&self) -> bool {
+        true
+    }
 }
