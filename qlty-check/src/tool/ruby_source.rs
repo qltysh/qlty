@@ -37,7 +37,9 @@ impl Tool for RubySource {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message("Installing ruby-build");
-        self.download().install(self.directory(), self.name())?;
+        let mut tool_install_data = self.create_tool_install();
+        self.download()
+            .install(self.directory(), self.name(), &mut tool_install_data)?;
         Ok(())
     }
 

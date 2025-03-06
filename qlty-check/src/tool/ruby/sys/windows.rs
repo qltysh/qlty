@@ -6,6 +6,7 @@ use crate::{
 use anyhow::{Context, Result};
 use itertools::Itertools;
 use qlty_analysis::utils::fs::path_to_native_string;
+use qlty_types::analysis::v1::ToolInstallSummary;
 use sha2::Digest;
 use std::{collections::HashMap, env::split_paths};
 use tracing::debug;
@@ -28,7 +29,13 @@ impl PlatformRuby for RubyWindows {
         Ok(())
     }
 
-    fn install(&self, tool: &dyn Tool, task: &ProgressTask, _download: Download) -> Result<()> {
+    fn install(
+        &self,
+        tool: &dyn Tool,
+        task: &ProgressTask,
+        _download: Download,
+        _tool_install: &mut ToolInstallSummary,
+    ) -> Result<()> {
         task.set_message("Using system Ruby");
         Self::verify_system_installation(tool)
     }

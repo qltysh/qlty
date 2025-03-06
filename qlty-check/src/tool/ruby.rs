@@ -13,6 +13,7 @@ use qlty_analysis::join_path_string;
 use qlty_analysis::utils::fs::{path_to_native_string, path_to_string};
 use qlty_config::config::{Cpu, DownloadDef, System};
 use qlty_config::config::{OperatingSystem, PluginDef};
+use qlty_types::analysis::v1::ToolInstallSummary;
 use std::collections::HashMap;
 use std::env::join_paths;
 use std::fmt::Debug;
@@ -35,9 +36,15 @@ pub trait PlatformRuby {
         Some(version.to_string())
     }
 
-    fn install(&self, tool: &dyn Tool, task: &ProgressTask, download: Download) -> Result<()> {
+    fn install(
+        &self,
+        tool: &dyn Tool,
+        task: &ProgressTask,
+        download: Download,
+        tool_install: &mut ToolInstallSummary,
+    ) -> Result<()> {
         task.set_message("Installing Ruby");
-        download.install(tool.directory(), tool.name())
+        download.install(tool.directory(), tool.name(), tool_install)
     }
 
     fn insert_rubylib_env(&self, tool: &dyn Tool, env: &mut HashMap<String, String>) {
@@ -139,7 +146,9 @@ impl Tool for Ruby {
     }
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
-        self.platform_tool.install(self, task, self.download())
+        let mut tool_install_data = self.create_tool_install();
+        self.platform_tool
+            .install(self, task, self.download(), &mut tool_install_data)
     }
 
     fn post_install(&self, task: &ProgressTask) -> Result<()> {

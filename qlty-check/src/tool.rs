@@ -12,11 +12,13 @@ mod ruby_source;
 mod runnable_archive;
 pub mod rust;
 pub mod tool_builder;
+mod tool_install_summary_writter;
 
 use crate::tool::download::Download;
 use crate::ui::ProgressBar;
 use crate::ui::ProgressTask;
 use anyhow::{bail, Context, Result};
+use chrono::Utc;
 use command_builder::Command;
 use duct::Expression;
 use fslock::LockFile;
@@ -24,14 +26,18 @@ use qlty_analysis::join_path_string;
 use qlty_analysis::utils::fs::path_to_native_string;
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_config::config::{PluginDef, PluginEnvironment};
+use qlty_config::version::QLTY_VERSION;
 use qlty_config::Library;
+use qlty_types::analysis::v1::ToolInstallSummary;
 use regex::Regex;
 use sha2::Digest;
 use std::env::join_paths;
 use std::env::split_paths;
+use std::io::Write;
 use std::path::Path;
 use std::time::Instant;
 use std::{collections::HashMap, fmt::Debug, path::PathBuf};
+use tool_install_summary_writter::ToolInstallSummaryWritter;
 use tracing::warn;
 use tracing::{debug, error, info};
 
@@ -88,6 +94,21 @@ pub enum ToolType {
 }
 
 pub trait Tool: Debug + Sync + Send {
+    fn create_tool_install(&self) -> ToolInstallSummary {
+        ToolInstallSummary {
+            tool_name: self.name(),
+            version: self.version().unwrap_or_default(),
+            tool_type: format!("{:?}", self.tool_type()),
+            directory: self.directory(),
+            runtime: self.runtime().map_or("".to_string(), |r| r.name()),
+            fingerprint: self.fingerprint(),
+            qlty_cli_version: QLTY_VERSION.to_string(),
+            log_file_path: self.install_log_path(),
+            started_at: Some(Utc::now().into()),
+            ..Default::default()
+        }
+    }
+
     fn name(&self) -> String;
     fn version(&self) -> Option<String>;
 
@@ -338,15 +359,53 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn run_command(&self, cmd: Expression) -> Result<()> {
+        let mut install_summary = self.create_tool_install();
+
+        let env = self.env();
+        install_summary.install_env = env.clone();
+        install_summary.install_script = Some(format!("{:?}", cmd));
+
         let cmd = cmd
             .dir(self.directory())
-            .full_env(self.env())
-            .stderr_to_stdout()
-            .stdout_file(self.install_log_file()?);
+            .full_env(env)
+            .stderr_capture()
+            .stdout_capture();
 
         debug!("{:?}", cmd);
-        cmd.run()?;
+        install_summary.install_script = Some(format!("{:?}", cmd));
+        let result = cmd.run();
 
+        if let Ok(ref output) = result {
+            install_summary.install_stdout =
+                Some(String::from_utf8_lossy(&output.stdout).to_string());
+            install_summary.install_stderr =
+                Some(String::from_utf8_lossy(&output.stderr).to_string());
+            install_summary.install_exit_code =
+                Some(output.status.code().unwrap_or_default().into());
+        } else {
+            install_summary.install_stderr = Some(format!("{:?}", result));
+        }
+
+        self.install_log_file()?.write_all(
+            install_summary
+                .install_stdout
+                .clone()
+                .unwrap_or_default()
+                .as_bytes(),
+        )?;
+        self.install_log_file()?.write_all(
+            install_summary
+                .install_stderr
+                .clone()
+                .unwrap_or_default()
+                .as_bytes(),
+        )?;
+
+        install_summary.finished_at = Some(Utc::now().into());
+        if let Err(err) = ToolInstallSummaryWritter::write_to_file(&install_summary) {
+            error!("Error writing debug data: {}", err);
+        }
+        result?;
         Ok(())
     }
 
