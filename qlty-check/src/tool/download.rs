@@ -224,7 +224,7 @@ impl Download {
         archive: &mut Archive<R>,
         destination: &Path,
     ) -> Result<()> {
-        info!("Extrasdasacting to {}", destination.display());
+        info!("Extracting to {}", destination.display());
         for entry in archive.entries()? {
             let mut entry = entry?;
             let path = entry.path()?;
