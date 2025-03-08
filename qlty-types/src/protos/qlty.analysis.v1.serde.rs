@@ -429,6 +429,437 @@ impl<'de> serde::Deserialize<'de> for ExitResult {
         deserializer.deserialize_any(GeneratedVisitor)
     }
 }
+impl serde::Serialize for Installation {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.tool_name.is_empty() {
+            len += 1;
+        }
+        if !self.version.is_empty() {
+            len += 1;
+        }
+        if !self.tool_type.is_empty() {
+            len += 1;
+        }
+        if !self.directory.is_empty() {
+            len += 1;
+        }
+        if !self.runtime.is_empty() {
+            len += 1;
+        }
+        if !self.fingerprint.is_empty() {
+            len += 1;
+        }
+        if !self.qlty_cli_version.is_empty() {
+            len += 1;
+        }
+        if !self.log_file_path.is_empty() {
+            len += 1;
+        }
+        if self.script.is_some() {
+            len += 1;
+        }
+        if self.stdout.is_some() {
+            len += 1;
+        }
+        if self.stderr.is_some() {
+            len += 1;
+        }
+        if self.exit_code.is_some() {
+            len += 1;
+        }
+        if !self.env.is_empty() {
+            len += 1;
+        }
+        if self.download_url.is_some() {
+            len += 1;
+        }
+        if self.download_file_to.is_some() {
+            len += 1;
+        }
+        if self.download_file_type.is_some() {
+            len += 1;
+        }
+        if self.download_binary_name.is_some() {
+            len += 1;
+        }
+        if self.download_success.is_some() {
+            len += 1;
+        }
+        if self.started_at.is_some() {
+            len += 1;
+        }
+        if self.finished_at.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("qlty.analysis.v1.Installation", len)?;
+        if !self.tool_name.is_empty() {
+            struct_ser.serialize_field("toolName", &self.tool_name)?;
+        }
+        if !self.version.is_empty() {
+            struct_ser.serialize_field("version", &self.version)?;
+        }
+        if !self.tool_type.is_empty() {
+            struct_ser.serialize_field("toolType", &self.tool_type)?;
+        }
+        if !self.directory.is_empty() {
+            struct_ser.serialize_field("directory", &self.directory)?;
+        }
+        if !self.runtime.is_empty() {
+            struct_ser.serialize_field("runtime", &self.runtime)?;
+        }
+        if !self.fingerprint.is_empty() {
+            struct_ser.serialize_field("fingerprint", &self.fingerprint)?;
+        }
+        if !self.qlty_cli_version.is_empty() {
+            struct_ser.serialize_field("qltyCliVersion", &self.qlty_cli_version)?;
+        }
+        if !self.log_file_path.is_empty() {
+            struct_ser.serialize_field("logFilePath", &self.log_file_path)?;
+        }
+        if let Some(v) = self.script.as_ref() {
+            struct_ser.serialize_field("script", v)?;
+        }
+        if let Some(v) = self.stdout.as_ref() {
+            struct_ser.serialize_field("stdout", v)?;
+        }
+        if let Some(v) = self.stderr.as_ref() {
+            struct_ser.serialize_field("stderr", v)?;
+        }
+        if let Some(v) = self.exit_code.as_ref() {
+            #[allow(clippy::needless_borrow)]
+            struct_ser.serialize_field("exitCode", ToString::to_string(&v).as_str())?;
+        }
+        if !self.env.is_empty() {
+            struct_ser.serialize_field("env", &self.env)?;
+        }
+        if let Some(v) = self.download_url.as_ref() {
+            struct_ser.serialize_field("downloadUrl", v)?;
+        }
+        if let Some(v) = self.download_file_to.as_ref() {
+            struct_ser.serialize_field("downloadFileTo", v)?;
+        }
+        if let Some(v) = self.download_file_type.as_ref() {
+            struct_ser.serialize_field("downloadFileType", v)?;
+        }
+        if let Some(v) = self.download_binary_name.as_ref() {
+            struct_ser.serialize_field("downloadBinaryName", v)?;
+        }
+        if let Some(v) = self.download_success.as_ref() {
+            struct_ser.serialize_field("downloadSuccess", v)?;
+        }
+        if let Some(v) = self.started_at.as_ref() {
+            struct_ser.serialize_field("startedAt", v)?;
+        }
+        if let Some(v) = self.finished_at.as_ref() {
+            struct_ser.serialize_field("finishedAt", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for Installation {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "tool_name",
+            "toolName",
+            "version",
+            "tool_type",
+            "toolType",
+            "directory",
+            "runtime",
+            "fingerprint",
+            "qlty_cli_version",
+            "qltyCliVersion",
+            "log_file_path",
+            "logFilePath",
+            "script",
+            "stdout",
+            "stderr",
+            "exit_code",
+            "exitCode",
+            "env",
+            "download_url",
+            "downloadUrl",
+            "download_file_to",
+            "downloadFileTo",
+            "download_file_type",
+            "downloadFileType",
+            "download_binary_name",
+            "downloadBinaryName",
+            "download_success",
+            "downloadSuccess",
+            "started_at",
+            "startedAt",
+            "finished_at",
+            "finishedAt",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            ToolName,
+            Version,
+            ToolType,
+            Directory,
+            Runtime,
+            Fingerprint,
+            QltyCliVersion,
+            LogFilePath,
+            Script,
+            Stdout,
+            Stderr,
+            ExitCode,
+            Env,
+            DownloadUrl,
+            DownloadFileTo,
+            DownloadFileType,
+            DownloadBinaryName,
+            DownloadSuccess,
+            StartedAt,
+            FinishedAt,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "toolName" | "tool_name" => Ok(GeneratedField::ToolName),
+                            "version" => Ok(GeneratedField::Version),
+                            "toolType" | "tool_type" => Ok(GeneratedField::ToolType),
+                            "directory" => Ok(GeneratedField::Directory),
+                            "runtime" => Ok(GeneratedField::Runtime),
+                            "fingerprint" => Ok(GeneratedField::Fingerprint),
+                            "qltyCliVersion" | "qlty_cli_version" => Ok(GeneratedField::QltyCliVersion),
+                            "logFilePath" | "log_file_path" => Ok(GeneratedField::LogFilePath),
+                            "script" => Ok(GeneratedField::Script),
+                            "stdout" => Ok(GeneratedField::Stdout),
+                            "stderr" => Ok(GeneratedField::Stderr),
+                            "exitCode" | "exit_code" => Ok(GeneratedField::ExitCode),
+                            "env" => Ok(GeneratedField::Env),
+                            "downloadUrl" | "download_url" => Ok(GeneratedField::DownloadUrl),
+                            "downloadFileTo" | "download_file_to" => Ok(GeneratedField::DownloadFileTo),
+                            "downloadFileType" | "download_file_type" => Ok(GeneratedField::DownloadFileType),
+                            "downloadBinaryName" | "download_binary_name" => Ok(GeneratedField::DownloadBinaryName),
+                            "downloadSuccess" | "download_success" => Ok(GeneratedField::DownloadSuccess),
+                            "startedAt" | "started_at" => Ok(GeneratedField::StartedAt),
+                            "finishedAt" | "finished_at" => Ok(GeneratedField::FinishedAt),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = Installation;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct qlty.analysis.v1.Installation")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<Installation, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut tool_name__ = None;
+                let mut version__ = None;
+                let mut tool_type__ = None;
+                let mut directory__ = None;
+                let mut runtime__ = None;
+                let mut fingerprint__ = None;
+                let mut qlty_cli_version__ = None;
+                let mut log_file_path__ = None;
+                let mut script__ = None;
+                let mut stdout__ = None;
+                let mut stderr__ = None;
+                let mut exit_code__ = None;
+                let mut env__ = None;
+                let mut download_url__ = None;
+                let mut download_file_to__ = None;
+                let mut download_file_type__ = None;
+                let mut download_binary_name__ = None;
+                let mut download_success__ = None;
+                let mut started_at__ = None;
+                let mut finished_at__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::ToolName => {
+                            if tool_name__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("toolName"));
+                            }
+                            tool_name__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::Version => {
+                            if version__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("version"));
+                            }
+                            version__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::ToolType => {
+                            if tool_type__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("toolType"));
+                            }
+                            tool_type__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::Directory => {
+                            if directory__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("directory"));
+                            }
+                            directory__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::Runtime => {
+                            if runtime__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("runtime"));
+                            }
+                            runtime__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::Fingerprint => {
+                            if fingerprint__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("fingerprint"));
+                            }
+                            fingerprint__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::QltyCliVersion => {
+                            if qlty_cli_version__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("qltyCliVersion"));
+                            }
+                            qlty_cli_version__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::LogFilePath => {
+                            if log_file_path__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("logFilePath"));
+                            }
+                            log_file_path__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::Script => {
+                            if script__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("script"));
+                            }
+                            script__ = map_.next_value()?;
+                        }
+                        GeneratedField::Stdout => {
+                            if stdout__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("stdout"));
+                            }
+                            stdout__ = map_.next_value()?;
+                        }
+                        GeneratedField::Stderr => {
+                            if stderr__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("stderr"));
+                            }
+                            stderr__ = map_.next_value()?;
+                        }
+                        GeneratedField::ExitCode => {
+                            if exit_code__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("exitCode"));
+                            }
+                            exit_code__ = 
+                                map_.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                        GeneratedField::Env => {
+                            if env__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("env"));
+                            }
+                            env__ = Some(
+                                map_.next_value::<std::collections::HashMap<_, _>>()?
+                            );
+                        }
+                        GeneratedField::DownloadUrl => {
+                            if download_url__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("downloadUrl"));
+                            }
+                            download_url__ = map_.next_value()?;
+                        }
+                        GeneratedField::DownloadFileTo => {
+                            if download_file_to__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("downloadFileTo"));
+                            }
+                            download_file_to__ = map_.next_value()?;
+                        }
+                        GeneratedField::DownloadFileType => {
+                            if download_file_type__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("downloadFileType"));
+                            }
+                            download_file_type__ = map_.next_value()?;
+                        }
+                        GeneratedField::DownloadBinaryName => {
+                            if download_binary_name__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("downloadBinaryName"));
+                            }
+                            download_binary_name__ = map_.next_value()?;
+                        }
+                        GeneratedField::DownloadSuccess => {
+                            if download_success__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("downloadSuccess"));
+                            }
+                            download_success__ = map_.next_value()?;
+                        }
+                        GeneratedField::StartedAt => {
+                            if started_at__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("startedAt"));
+                            }
+                            started_at__ = map_.next_value()?;
+                        }
+                        GeneratedField::FinishedAt => {
+                            if finished_at__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("finishedAt"));
+                            }
+                            finished_at__ = map_.next_value()?;
+                        }
+                    }
+                }
+                Ok(Installation {
+                    tool_name: tool_name__.unwrap_or_default(),
+                    version: version__.unwrap_or_default(),
+                    tool_type: tool_type__.unwrap_or_default(),
+                    directory: directory__.unwrap_or_default(),
+                    runtime: runtime__.unwrap_or_default(),
+                    fingerprint: fingerprint__.unwrap_or_default(),
+                    qlty_cli_version: qlty_cli_version__.unwrap_or_default(),
+                    log_file_path: log_file_path__.unwrap_or_default(),
+                    script: script__,
+                    stdout: stdout__,
+                    stderr: stderr__,
+                    exit_code: exit_code__,
+                    env: env__.unwrap_or_default(),
+                    download_url: download_url__,
+                    download_file_to: download_file_to__,
+                    download_file_type: download_file_type__,
+                    download_binary_name: download_binary_name__,
+                    download_success: download_success__,
+                    started_at: started_at__,
+                    finished_at: finished_at__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("qlty.analysis.v1.Installation", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for Invocation {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>

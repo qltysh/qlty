@@ -303,7 +303,9 @@ impl Tool for GitHubReleaseTool {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing {}", self.name()));
-        self.download()?.install(self.directory(), self.name())?;
+        let mut installation = self.initialize_installation();
+        self.download()?
+            .install(self.directory(), self.name(), &mut installation)?;
         Ok(())
     }
 

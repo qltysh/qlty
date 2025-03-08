@@ -2,6 +2,7 @@ pub mod command_builder;
 mod download;
 mod github;
 pub mod go;
+mod installation_file_writter;
 pub mod java;
 pub mod node;
 pub mod null_tool;
@@ -17,19 +18,25 @@ use crate::tool::download::Download;
 use crate::ui::ProgressBar;
 use crate::ui::ProgressTask;
 use anyhow::{bail, Context, Result};
+use chrono::Utc;
 use command_builder::Command;
 use duct::Expression;
 use fslock::LockFile;
+use installation_file_writter::InstallationFileWritter;
 use qlty_analysis::join_path_string;
 use qlty_analysis::utils::fs::path_to_native_string;
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_config::config::{PluginDef, PluginEnvironment};
+use qlty_config::version::QLTY_VERSION;
 use qlty_config::Library;
+use qlty_types::analysis::v1::Installation;
 use regex::Regex;
 use sha2::Digest;
 use std::env::join_paths;
 use std::env::split_paths;
+use std::io::Write;
 use std::path::Path;
+use std::process::Output;
 use std::time::Instant;
 use std::{collections::HashMap, fmt::Debug, path::PathBuf};
 use tracing::warn;
@@ -88,6 +95,22 @@ pub enum ToolType {
 }
 
 pub trait Tool: Debug + Sync + Send {
+    fn initialize_installation(&self) -> Installation {
+        Installation {
+            tool_name: self.name(),
+            version: self.version().unwrap_or_default(),
+            tool_type: format!("{:?}", self.tool_type()),
+            directory: self.directory(),
+            runtime: self.runtime().map_or("".to_string(), |r| r.name()),
+            fingerprint: self.fingerprint(),
+            qlty_cli_version: QLTY_VERSION.to_string(),
+            log_file_path: self.install_log_path(),
+            started_at: Some(Utc::now().into()),
+            env: self.env(),
+            ..Default::default()
+        }
+    }
+
     fn name(&self) -> String;
     fn version(&self) -> Option<String>;
 
@@ -337,16 +360,49 @@ pub trait Tool: Debug + Sync + Send {
         Ok(())
     }
 
+    fn finalize_installation_from_cmd_result(
+        &self,
+        result: &std::io::Result<Output>,
+        installation: &mut Installation,
+        script: String,
+    ) -> Result<()> {
+        installation.script = Some(script);
+        if let Ok(ref output) = result {
+            installation.stdout = Some(String::from_utf8_lossy(&output.stdout).to_string());
+            installation.stderr = Some(String::from_utf8_lossy(&output.stderr).to_string());
+            installation.exit_code = Some(output.status.code().unwrap_or_default().into());
+        } else {
+            installation.stderr = Some(format!("{:?}", result));
+        }
+
+        let mut log_file = self.install_log_file()?;
+        log_file.write_all(installation.stdout.clone().unwrap_or_default().as_bytes())?;
+        log_file.write_all(installation.stderr.clone().unwrap_or_default().as_bytes())?;
+
+        installation.finished_at = Some(Utc::now().into());
+        if let Err(err) = InstallationFileWritter::write_to_file(&installation) {
+            error!("Error writing debug data: {}", err);
+        }
+
+        Ok(())
+    }
+
     fn run_command(&self, cmd: Expression) -> Result<()> {
+        let mut installation = self.initialize_installation();
+
         let cmd = cmd
             .dir(self.directory())
             .full_env(self.env())
-            .stderr_to_stdout()
-            .stdout_file(self.install_log_file()?);
+            .stderr_capture()
+            .stdout_capture();
 
-        debug!("{:?}", cmd);
-        cmd.run()?;
+        let script = format!("{:?}", cmd);
+        debug!(script);
 
+        let result = cmd.run();
+        self.finalize_installation_from_cmd_result(&result, &mut installation, script)?;
+
+        result?;
         Ok(())
     }
 

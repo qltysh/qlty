@@ -325,6 +325,54 @@ pub struct Range {
     #[prost(uint32, optional, tag="6")]
     pub end_byte: ::core::option::Option<u32>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Installation {
+    /// Common data
+    #[prost(string, tag="1")]
+    pub tool_name: ::prost::alloc::string::String,
+    #[prost(string, tag="2")]
+    pub version: ::prost::alloc::string::String,
+    #[prost(string, tag="3")]
+    pub tool_type: ::prost::alloc::string::String,
+    #[prost(string, tag="4")]
+    pub directory: ::prost::alloc::string::String,
+    #[prost(string, tag="5")]
+    pub runtime: ::prost::alloc::string::String,
+    #[prost(string, tag="6")]
+    pub fingerprint: ::prost::alloc::string::String,
+    #[prost(string, tag="7")]
+    pub qlty_cli_version: ::prost::alloc::string::String,
+    #[prost(string, tag="8")]
+    pub log_file_path: ::prost::alloc::string::String,
+    /// Command line related data
+    #[prost(string, optional, tag="9")]
+    pub script: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(string, optional, tag="10")]
+    pub stdout: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(string, optional, tag="11")]
+    pub stderr: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(int64, optional, tag="12")]
+    pub exit_code: ::core::option::Option<i64>,
+    #[prost(map="string, string", tag="13")]
+    pub env: ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
+    /// Download data
+    #[prost(string, optional, tag="14")]
+    pub download_url: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(string, optional, tag="15")]
+    pub download_file_to: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(string, optional, tag="16")]
+    pub download_file_type: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(string, optional, tag="17")]
+    pub download_binary_name: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(bool, optional, tag="18")]
+    pub download_success: ::core::option::Option<bool>,
+    /// Timestamps
+    #[prost(message, optional, tag="19")]
+    pub started_at: ::core::option::Option<::pbjson_types::Timestamp>,
+    #[prost(message, optional, tag="20")]
+    pub finished_at: ::core::option::Option<::pbjson_types::Timestamp>,
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
 pub enum ExecutionVerb {
