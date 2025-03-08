@@ -327,7 +327,7 @@ pub struct Range {
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct ToolInstallSummary {
+pub struct Installation {
     /// Common data
     #[prost(string, tag="1")]
     pub tool_name: ::prost::alloc::string::String,
@@ -347,15 +347,15 @@ pub struct ToolInstallSummary {
     pub log_file_path: ::prost::alloc::string::String,
     /// Command line related data
     #[prost(string, optional, tag="9")]
-    pub install_script: ::core::option::Option<::prost::alloc::string::String>,
+    pub script: ::core::option::Option<::prost::alloc::string::String>,
     #[prost(string, optional, tag="10")]
-    pub install_stdout: ::core::option::Option<::prost::alloc::string::String>,
+    pub stdout: ::core::option::Option<::prost::alloc::string::String>,
     #[prost(string, optional, tag="11")]
-    pub install_stderr: ::core::option::Option<::prost::alloc::string::String>,
+    pub stderr: ::core::option::Option<::prost::alloc::string::String>,
     #[prost(int64, optional, tag="12")]
-    pub install_exit_code: ::core::option::Option<i64>,
+    pub exit_code: ::core::option::Option<i64>,
     #[prost(map="string, string", tag="13")]
-    pub install_env: ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
+    pub env: ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
     /// Download data
     #[prost(string, optional, tag="14")]
     pub download_url: ::core::option::Option<::prost::alloc::string::String>,

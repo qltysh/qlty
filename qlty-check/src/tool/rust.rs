@@ -41,9 +41,9 @@ impl Tool for Rust {
             version // e.g. "nightly"
         };
         task.set_message(&format!("Installing Rust {}", version));
-        let mut tool_install_data = self.create_tool_install();
+        let mut installation = self.initialize_installation();
         self.download()
-            .install(self.directory(), self.name(), &mut tool_install_data)?;
+            .install(self.directory(), self.name(), &mut installation)?;
         Ok(())
     }
 
