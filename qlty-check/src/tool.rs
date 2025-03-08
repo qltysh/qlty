@@ -380,7 +380,7 @@ pub trait Tool: Debug + Sync + Send {
         log_file.write_all(installation.stderr.clone().unwrap_or_default().as_bytes())?;
 
         installation.finished_at = Some(Utc::now().into());
-        if let Err(err) = InstallationFileWritter::write_to_file(&installation) {
+        if let Err(err) = InstallationFileWritter::write_to_file(installation) {
             error!("Error writing debug data: {}", err);
         }
 
