@@ -63,8 +63,7 @@ impl Executor {
         self.run_prepare_scripts()?;
         let mut result = self.invoke()?;
 
-        let (install_messages, install_jobs) = install_result;
-        for message in install_messages {
+        for message in install_result {
             result.messages.push(message);
         }
 
@@ -73,7 +72,7 @@ impl Executor {
 
     pub fn install(&self) -> Result<Vec<Message>> {
         let mut install_messages = vec![];
-        let installation_resullts =
+        let installation_results =
             Self::install_tools(self.plan.tools(), self.plan.jobs, self.progress.clone());
 
         for installation_result in installation_results {
