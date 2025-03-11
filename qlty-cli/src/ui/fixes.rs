@@ -174,19 +174,19 @@ pub fn print_fixes(
                         // Loop until we get a valid answer
                         while !answered {
                             if let Ok(answer) = prompt_apply_this_fix() {
-                                match answer.as_str() {
-                                    "Y" | "y" | "yes" => {
+                                match answer.to_lowercase().as_str() {
+                                    "y" | "yes" => {
                                         answered = true;
                                         apply_fix(writer, &candidate)?;
                                         dirty = true;
                                     }
-                                    "A" | "a" | "all" => {
+                                    "a" | "all" => {
                                         answered = true;
                                         apply_mode = ApplyMode::All;
                                         apply_fix(writer, &candidate)?;
                                         dirty = true;
                                     }
-                                    "N" | "n" | "no" => {
+                                    "n" | "no" => {
                                         answered = true;
                                     }
                                     "none" => {
