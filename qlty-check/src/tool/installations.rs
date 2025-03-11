@@ -36,7 +36,7 @@ pub fn finalize_installation_from_assets_fetch(
     }
     installation.finished_at = Some(Utc::now().into());
 
-    if let Err(err) = InstallationFileWritter::write_to_file(&installation) {
+    if let Err(err) = InstallationFileWritter::write_to_file(installation) {
         error!("Error writing debug data: {}", err);
     }
 }
