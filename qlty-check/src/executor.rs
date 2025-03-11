@@ -692,8 +692,14 @@ fn run_invocation(
                 return;
             }
 
-            file_result.issues = file_result
-                .issues
+            let mut issues = file_result.issues.clone();
+            for transformer in transformers {
+                if let Some(group_issues) = transformer.transform_batch(&issues) {
+                    issues = group_issues;
+                }
+            }
+
+            file_result.issues = issues
                 .par_iter()
                 .cloned()
                 .filter_map(|mut issue| {

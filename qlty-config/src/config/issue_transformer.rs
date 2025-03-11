@@ -4,6 +4,9 @@ use std::fmt::Debug;
 pub trait IssueTransformer: Debug + Send + Sync + 'static {
     fn initialize(&self) {}
     fn transform(&self, issue: Issue) -> Option<Issue>;
+    fn transform_batch(&self, _issues: &[Issue]) -> Option<Vec<Issue>> {
+        None
+    }
     fn clone_box(&self) -> Box<dyn IssueTransformer>;
 }
 
