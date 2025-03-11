@@ -1,3 +1,4 @@
+use super::installations::{finalize_installation_from_assets_fetch, initialize_installation};
 use super::ToolType;
 use crate::tool::Download;
 use crate::{
@@ -303,9 +304,7 @@ impl Tool for GitHubReleaseTool {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing {}", self.name()));
-        let mut installation = self.initialize_installation();
-        self.download()?
-            .install(self.directory(), self.name(), &mut installation)?;
+        self.download()?.install(self)?;
         Ok(())
     }
 
@@ -398,8 +397,11 @@ impl GitHubReleaseTool {
             request = request.set("Authorization", &format!("Bearer {}", auth_token));
         }
 
-        let json = request.call()?.into_json::<serde_json::Value>()?;
+        let mut installation = initialize_installation(self);
+        let result = request.call();
+        finalize_installation_from_assets_fetch(&mut installation, &result, url);
 
+        let json = result?.into_json::<serde_json::Value>()?;
         json["assets"]
             .as_array()
             .ok_or_else(|| anyhow::anyhow!("No assets found"))

@@ -1,5 +1,5 @@
 use crate::{Arguments, CommandError, CommandSuccess};
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::Args;
 use qlty_check::planner::{plugin_supported_on_platform, Plan};
 use qlty_check::tool::tool_builder::ToolBuilder;
@@ -67,8 +67,8 @@ impl Install {
         let jobs = Planner::jobs_count(self.jobs);
 
         let results = Executor::install_tools(tools, jobs, progress);
-        for result in results {
-            result?;
+        for (name, result) in results {
+            result.with_context(|| format!("Failed to install {}", name,))?;
         }
 
         Ok(())

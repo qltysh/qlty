@@ -1,6 +1,5 @@
 use anyhow::{anyhow, bail, Context, Result};
 use qlty_config::Workspace;
-use rand::{distributions::Alphanumeric, Rng};
 use std::fs::Permissions;
 use std::fs::{copy, create_dir_all};
 use std::path::{Path, PathBuf};
@@ -8,6 +7,7 @@ use std::sync::Arc;
 use tracing::{debug, error, trace};
 
 use crate::source_reader::{SourceReader, SourceReaderFs};
+use crate::utils::generate_random_id;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -73,7 +73,7 @@ impl StagingArea {
             return Self::new(source.clone(), source, mode);
         }
 
-        let random_id = Self::generate_random_id();
+        let random_id = generate_random_id(8);
 
         Self::new(
             source.clone(),
@@ -214,14 +214,6 @@ impl StagingArea {
         self.write(relative_path.to_path_buf(), content)?;
         self.unstage_file(relative_path)?;
         Ok(())
-    }
-
-    fn generate_random_id() -> String {
-        rand::thread_rng()
-            .sample_iter(&Alphanumeric)
-            .take(8)
-            .map(char::from)
-            .collect()
     }
 }
 

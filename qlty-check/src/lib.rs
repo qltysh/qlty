@@ -14,6 +14,7 @@ mod settings;
 pub mod source_reader;
 pub mod tool;
 pub mod ui;
+mod utils;
 
 pub use executor::{Executor, InvocationResult};
 pub use patch_builder::PATCH_CONTEXT_LENGTH;

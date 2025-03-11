@@ -9,6 +9,7 @@ use crate::{
     cache::{IssueCache, IssuesCacheHit, IssuesCacheKey},
     executor::staging_area::StagingArea,
     planner::{target_batcher::TargetBatcher, InvocationPlan},
+    utils::generate_random_id,
     Tool,
 };
 use anyhow::{bail, Result};
@@ -18,7 +19,6 @@ use qlty_config::{
     Workspace,
 };
 use qlty_types::analysis::v1::ExecutionVerb;
-use rand::{distributions::Alphanumeric, Rng};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use std::{
     path::PathBuf,
@@ -233,7 +233,7 @@ impl DriverPlanner {
                 });
 
             invocations.push(InvocationPlan {
-                invocation_id: generate_random_id(),
+                invocation_id: generate_random_id(6),
                 verb: self.verb,
                 settings: self.settings.clone(),
                 tool: self.tool.clone(),
@@ -278,12 +278,4 @@ impl DriverPlanner {
                 .unwrap_or("".to_string()),
         )
     }
-}
-
-fn generate_random_id() -> String {
-    rand::thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(6)
-        .map(char::from)
-        .collect()
 }

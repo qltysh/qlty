@@ -38,9 +38,7 @@ impl Tool for Java {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing Java v{}", self.version().unwrap()));
-        let mut installation = self.initialize_installation();
-        self.download()
-            .install(self.directory(), self.name(), &mut installation)?;
+        self.download().install(self)?;
         Ok(())
     }
 
@@ -155,9 +153,7 @@ impl Tool for JavaPackage {
     }
 
     fn install(&self, _task: &ProgressTask) -> Result<()> {
-        let mut installation = self.initialize_installation();
-        self.download()
-            .install(self.directory(), self.name(), &mut installation)?;
+        self.download().install(self)?;
         Ok(())
     }
 

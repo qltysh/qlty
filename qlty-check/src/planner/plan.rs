@@ -89,7 +89,12 @@ impl Plan {
         // Deduplicate tools by name
         let unique_tools: HashMap<String, Box<dyn Tool>> = all_tools
             .into_iter()
-            .map(|t| (t.name().to_string(), t))
+            .map(|t| {
+                (
+                    format!("{}@{}", t.name(), t.version().unwrap_or_default()),
+                    t,
+                )
+            })
             .collect();
 
         // Return the tools as a vector of tuples so we can sort them

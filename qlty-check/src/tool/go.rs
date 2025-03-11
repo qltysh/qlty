@@ -38,9 +38,7 @@ impl Tool for Go {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing go v{}", self.version));
-        let mut installation = self.initialize_installation();
-        self.download()
-            .install(self.directory(), self.name(), &mut installation)?;
+        self.download().install(self)?;
         Ok(())
     }
 
