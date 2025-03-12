@@ -7,7 +7,7 @@ file_types = ["java"]
 latest_version = "10.21.4"
 known_good_version = "10.21.4"
 version_command = "java -jar ${linter}/checkstyle --version"
-description = "Java linter"
+description = "Java Code Quality Tool"
 config_files = ["checker.xml"]
 
 [plugins.definitions.checkstyle.drivers.lint-java]
