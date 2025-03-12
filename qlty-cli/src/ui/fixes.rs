@@ -4,6 +4,7 @@ use console::{style, Style};
 use dialoguer::{theme::ColorfulTheme, Input};
 use diffy::Patch;
 use num_format::{Locale, ToFormattedString as _};
+use qlty_config::Workspace;
 use qlty_types::analysis::v1::{Issue, SuggestionSource};
 use similar::{ChangeTag, TextDiff};
 use std::io::Write as _;
@@ -46,6 +47,7 @@ pub fn print_fixes(
     let mut dirty = false;
     let mut apply_mode = apply_mode;
     let mut patch_candidates = vec![];
+    let workspace = Workspace::new()?;
 
     for issue in issues {
         if let Some(location) = &issue.location {
@@ -165,7 +167,7 @@ pub fn print_fixes(
                 match apply_mode {
                     ApplyMode::None => {} // Skip and don't ask
                     ApplyMode::All => {
-                        apply_fix(writer, &candidate)?;
+                        apply_fix(&workspace, writer, &candidate)?;
                         dirty = true;
                     }
                     ApplyMode::Ask => {
@@ -177,13 +179,13 @@ pub fn print_fixes(
                                 match answer.to_lowercase().as_str() {
                                     "y" | "yes" => {
                                         answered = true;
-                                        apply_fix(writer, &candidate)?;
+                                        apply_fix(&workspace, writer, &candidate)?;
                                         dirty = true;
                                     }
                                     "a" | "all" => {
                                         answered = true;
                                         apply_mode = ApplyMode::All;
-                                        apply_fix(writer, &candidate)?;
+                                        apply_fix(&workspace, writer, &candidate)?;
                                         dirty = true;
                                     }
                                     "n" | "no" => {
@@ -217,10 +219,14 @@ fn prompt_apply_this_fix() -> Result<String> {
         .interact_text()?)
 }
 
-fn apply_fix(writer: &mut dyn std::io::Write, candidate: &PatchCandidate) -> Result<()> {
+fn apply_fix(
+    workspace: &Workspace,
+    writer: &mut dyn std::io::Write,
+    candidate: &PatchCandidate,
+) -> Result<()> {
     if let Ok(patch) = Patch::from_str(&candidate.patch) {
         if let Ok(modified_code) = diffy::apply(&candidate.original_code, &patch) {
-            std::fs::write(&candidate.path, &modified_code)
+            std::fs::write(workspace.root.join(&candidate.path), &modified_code)
                 .with_context(|| format!("Failed to apply path to file: {}", candidate.path))?;
 
             eprintln!(
