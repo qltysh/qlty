@@ -81,10 +81,8 @@ impl GitDiff {
         debug!("Found {} changed files", changed_files.len());
         trace!("Changed files: {:?}", changed_files);
 
-        let line_filter = DiffLineTransformer::new(Self::plus_lines_index(
-            &diff,
-            path.parent().unwrap().to_path_buf(),
-        )?);
+        let line_filter =
+            DiffLineTransformer::new(Self::plus_lines_index(&diff, path.to_path_buf())?);
 
         Ok(Self {
             changed_files,
@@ -349,7 +347,7 @@ mod test {
         )
         .unwrap();
 
-        let git_diff = GitDiff::compute(DiffMode::HeadToWorkdir, &repo.path())?;
+        let git_diff = GitDiff::compute(DiffMode::HeadToWorkdir, &repo.path().parent().unwrap())?;
         let paths = git_diff.changed_files;
 
         let expected_paths = [
