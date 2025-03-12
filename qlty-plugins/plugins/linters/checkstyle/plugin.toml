@@ -8,7 +8,7 @@ latest_version = "10.21.4"
 known_good_version = "10.21.4"
 version_command = "java -jar ${linter}/checkstyle --version"
 description = "Java Code Quality Tool"
-config_files = ["checker.xml"]
+config_files = ["checkstyle.xml"]
 
 [plugins.definitions.checkstyle.drivers.lint-java]
 script = "java -jar ${linter}/checkstyle -f sarif -c ${config_file} ${target}"
