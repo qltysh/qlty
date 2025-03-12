@@ -361,6 +361,7 @@ impl Driver {
         // be file:///path/... and
         // staging_directory path may or may not contain '/private'
         path = path.strip_prefix("file://").unwrap_or(&path).into();
+        path = path.strip_prefix("file:").unwrap_or(&path).into();
 
         // another possibility is that the path is prefixed with './'
         path = path.strip_prefix("./").unwrap_or(&path).into();

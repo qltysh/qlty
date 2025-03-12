@@ -1,0 +1,76 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=checkstyle fixture=HasIssue version=10.21.4 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "HasIssue.in.java",
+        "range": {
+          "endColumn": 5,
+          "endLine": 13,
+          "startColumn": 5,
+          "startLine": 13,
+        },
+      },
+      "message": "'file' has incorrect indentation level 4, expected level should be 8.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "indentation.error",
+      "snippet": "    file, Lock lock) {",
+      "snippetWithContext": "class Hasissue {
+    public void method() {
+        for (int i = 0; i < 10; i++) {
+            for (int k = 0; k < 20; i++) {
+                System.out.println("Hello");
+            }
+        }
+    }
+
+    public void doSomething(File
+    file, Lock lock) {
+        String b = "txt";
+
+        String a = b;
+
+        String c = a;
+        b = c;
+
+        file.delete();  // Noncompliant
+        lock.tryLock(); // Noncompliant
+    }",
+      "tool": "checkstyle",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "HasIssue.in.java",
+        "range": {
+          "endColumn": 9,
+          "endLine": 1,
+          "startColumn": 9,
+          "startLine": 1,
+        },
+      },
+      "message": "Name 'pkg1' must match pattern '^[a-z]+(\\.[a-zA-Z_]\\w*)*$'.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "name.invalidPattern",
+      "snippet": "package pkg1;",
+      "snippetWithContext": "package pkg1;
+
+class Hasissue {
+    public void method() {
+        for (int i = 0; i < 10; i++) {
+            for (int k = 0; k < 20; i++) {
+                System.out.println("Hello");
+            }
+        }
+    }
+",
+      "tool": "checkstyle",
+    },
+  ],
+}
+`;

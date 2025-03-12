@@ -1,0 +1,457 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=checkstyle fixture=Foo version=10.21.4 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "Foo.in.java",
+        "range": {
+          "endColumn": 5,
+          "endLine": 7,
+          "startColumn": 5,
+          "startLine": 7,
+        },
+      },
+      "message": "'method def' child has incorrect indentation level 4, expected level should be 8.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "indentation.child.error",
+      "snippet": "    echo(3);",
+      "snippetWithContext": "package foo;
+
+public class Foo
+{
+  public void call_echo()
+  {
+    echo(3);
+  }
+
+  public void echo(int
+    i) {
+    should_be_static();
+  }
+
+  // invalid
+  private void should_be_static() {
+    System.out.println("Foo");",
+      "tool": "checkstyle",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "Foo.in.java",
+        "range": {
+          "endColumn": 5,
+          "endLine": 12,
+          "startColumn": 5,
+          "startLine": 12,
+        },
+      },
+      "message": "'method def' child has incorrect indentation level 4, expected level should be 8.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "indentation.child.error",
+      "snippet": "    should_be_static();",
+      "snippetWithContext": "
+public class Foo
+{
+  public void call_echo()
+  {
+    echo(3);
+  }
+
+  public void echo(int
+    i) {
+    should_be_static();
+  }
+
+  // invalid
+  private void should_be_static() {
+    System.out.println("Foo");
+  }
+
+}",
+      "tool": "checkstyle",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "Foo.in.java",
+        "range": {
+          "endColumn": 5,
+          "endLine": 17,
+          "startColumn": 5,
+          "startLine": 17,
+        },
+      },
+      "message": "'method def' child has incorrect indentation level 4, expected level should be 8.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "indentation.child.error",
+      "snippet": "    System.out.println("Foo");",
+      "snippetWithContext": "    echo(3);
+  }
+
+  public void echo(int
+    i) {
+    should_be_static();
+  }
+
+  // invalid
+  private void should_be_static() {
+    System.out.println("Foo");
+  }
+
+}",
+      "tool": "checkstyle",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "Foo.in.java",
+        "range": {
+          "endColumn": 5,
+          "endLine": 11,
+          "startColumn": 5,
+          "startLine": 11,
+        },
+      },
+      "message": "'i' has incorrect indentation level 4, expected level should be 6.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "indentation.error",
+      "snippet": "    i) {",
+      "snippetWithContext": "package foo;
+
+public class Foo
+{
+  public void call_echo()
+  {
+    echo(3);
+  }
+
+  public void echo(int
+    i) {
+    should_be_static();
+  }
+
+  // invalid
+  private void should_be_static() {
+    System.out.println("Foo");
+  }
+
+}",
+      "tool": "checkstyle",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "Foo.in.java",
+        "range": {
+          "endColumn": 3,
+          "endLine": 6,
+          "startColumn": 3,
+          "startLine": 6,
+        },
+      },
+      "message": "'method def lcurly' has incorrect indentation level 2, expected level should be 4.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "indentation.error",
+      "snippet": "  {",
+      "snippetWithContext": "package foo;
+
+public class Foo
+{
+  public void call_echo()
+  {
+    echo(3);
+  }
+
+  public void echo(int
+    i) {
+    should_be_static();
+  }
+
+  // invalid
+  private void should_be_static() {",
+      "tool": "checkstyle",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "Foo.in.java",
+        "range": {
+          "endColumn": 3,
+          "endLine": 5,
+          "startColumn": 3,
+          "startLine": 5,
+        },
+      },
+      "message": "'method def modifier' has incorrect indentation level 2, expected level should be 4.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "indentation.error",
+      "snippet": "  public void call_echo()",
+      "snippetWithContext": "package foo;
+
+public class Foo
+{
+  public void call_echo()
+  {
+    echo(3);
+  }
+
+  public void echo(int
+    i) {
+    should_be_static();
+  }
+
+  // invalid",
+      "tool": "checkstyle",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "Foo.in.java",
+        "range": {
+          "endColumn": 3,
+          "endLine": 10,
+          "startColumn": 3,
+          "startLine": 10,
+        },
+      },
+      "message": "'method def modifier' has incorrect indentation level 2, expected level should be 4.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "indentation.error",
+      "snippet": "  public void echo(int",
+      "snippetWithContext": "package foo;
+
+public class Foo
+{
+  public void call_echo()
+  {
+    echo(3);
+  }
+
+  public void echo(int
+    i) {
+    should_be_static();
+  }
+
+  // invalid
+  private void should_be_static() {
+    System.out.println("Foo");
+  }
+
+}",
+      "tool": "checkstyle",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "Foo.in.java",
+        "range": {
+          "endColumn": 3,
+          "endLine": 16,
+          "startColumn": 3,
+          "startLine": 16,
+        },
+      },
+      "message": "'method def modifier' has incorrect indentation level 2, expected level should be 4.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "indentation.error",
+      "snippet": "  private void should_be_static() {",
+      "snippetWithContext": "  {
+    echo(3);
+  }
+
+  public void echo(int
+    i) {
+    should_be_static();
+  }
+
+  // invalid
+  private void should_be_static() {
+    System.out.println("Foo");
+  }
+
+}",
+      "tool": "checkstyle",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "Foo.in.java",
+        "range": {
+          "endColumn": 3,
+          "endLine": 8,
+          "startColumn": 3,
+          "startLine": 8,
+        },
+      },
+      "message": "'method def rcurly' has incorrect indentation level 2, expected level should be 4.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "indentation.error",
+      "snippet": "  }",
+      "snippetWithContext": "package foo;
+
+public class Foo
+{
+  public void call_echo()
+  {
+    echo(3);
+  }
+
+  public void echo(int
+    i) {
+    should_be_static();
+  }
+
+  // invalid
+  private void should_be_static() {
+    System.out.println("Foo");
+  }",
+      "tool": "checkstyle",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "Foo.in.java",
+        "range": {
+          "endColumn": 3,
+          "endLine": 13,
+          "startColumn": 3,
+          "startLine": 13,
+        },
+      },
+      "message": "'method def rcurly' has incorrect indentation level 2, expected level should be 4.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "indentation.error",
+      "snippet": "  }",
+      "snippetWithContext": "public class Foo
+{
+  public void call_echo()
+  {
+    echo(3);
+  }
+
+  public void echo(int
+    i) {
+    should_be_static();
+  }
+
+  // invalid
+  private void should_be_static() {
+    System.out.println("Foo");
+  }
+
+}",
+      "tool": "checkstyle",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "Foo.in.java",
+        "range": {
+          "endColumn": 3,
+          "endLine": 18,
+          "startColumn": 3,
+          "startLine": 18,
+        },
+      },
+      "message": "'method def rcurly' has incorrect indentation level 2, expected level should be 4.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "indentation.error",
+      "snippet": "  }",
+      "snippetWithContext": "  }
+
+  public void echo(int
+    i) {
+    should_be_static();
+  }
+
+  // invalid
+  private void should_be_static() {
+    System.out.println("Foo");
+  }
+
+}",
+      "tool": "checkstyle",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "Foo.in.java",
+        "range": {
+          "endColumn": 15,
+          "endLine": 5,
+          "startColumn": 15,
+          "startLine": 5,
+        },
+      },
+      "message": "Name 'call_echo' must match pattern '^[a-z][a-zA-Z0-9]*$'.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "name.invalidPattern",
+      "snippet": "  public void call_echo()",
+      "snippetWithContext": "package foo;
+
+public class Foo
+{
+  public void call_echo()
+  {
+    echo(3);
+  }
+
+  public void echo(int
+    i) {
+    should_be_static();
+  }
+
+  // invalid",
+      "tool": "checkstyle",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "Foo.in.java",
+        "range": {
+          "endColumn": 16,
+          "endLine": 16,
+          "startColumn": 16,
+          "startLine": 16,
+        },
+      },
+      "message": "Name 'should_be_static' must match pattern '^[a-z][a-zA-Z0-9]*$'.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "name.invalidPattern",
+      "snippet": "  private void should_be_static() {",
+      "snippetWithContext": "  {
+    echo(3);
+  }
+
+  public void echo(int
+    i) {
+    should_be_static();
+  }
+
+  // invalid
+  private void should_be_static() {
+    System.out.println("Foo");
+  }
+
+}",
+      "tool": "checkstyle",
+    },
+  ],
+}
+`;

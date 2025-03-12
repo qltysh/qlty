@@ -1,0 +1,21 @@
+config_version = "0"
+
+[plugins.definitions.checkstyle]
+runnable_archive_url = "https://github.com/checkstyle/checkstyle/releases/download/checkstyle-${version}/checkstyle-${version}-all.jar"
+runtime = "java"
+file_types = ["java"]
+latest_version = "10.21.4"
+known_good_version = "10.21.4"
+version_command = "java -jar ${linter}/checkstyle --version"
+description = "Java linter"
+config_files = ["checker.xml"]
+
+[plugins.definitions.checkstyle.drivers.lint-java]
+script = "java -jar ${linter}/checkstyle -f sarif -c ${config_file} ${target}"
+success_codes = [0]
+output = "stdout"
+output_format = "sarif"
+output_missing = "parse"
+batch = true
+cache_results = true
+suggested = "targets"

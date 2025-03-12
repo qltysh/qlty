@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=checkstyle fixture=Empty version=10.21.4 1`] = `
+{
+  "issues": [],
+}
+`;
