@@ -18,4 +18,4 @@ output_format = "sarif"
 output_missing = "parse"
 batch = true
 cache_results = true
-suggested = "targets"
+suggested = "config"
