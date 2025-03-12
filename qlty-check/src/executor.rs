@@ -79,7 +79,7 @@ impl Executor {
             let (name, result) = installation_result;
             if self.plan.settings.skip_errored_plugins {
                 if let Err(err) = result {
-                    warn!("Error installing tool {}: {:?}", name, err);
+                    error!("Error installing tool {}: {:?}", name, err);
 
                     install_messages.push(Message {
                         timestamp: Some(Utc::now().into()),
