@@ -28,8 +28,8 @@ pub struct GitDiff {
 }
 
 impl GitDiff {
-    pub fn compute(mode: DiffMode, path: &Path) -> Result<Self> {
-        let repository = Repository::open(path)?;
+    pub fn compute(mode: DiffMode, repository_root: &Path) -> Result<Self> {
+        let repository = Repository::open(repository_root)?;
         let head_commit = repository.head()?.peel_to_commit()?;
 
         let commit = match mode {
@@ -81,8 +81,10 @@ impl GitDiff {
         debug!("Found {} changed files", changed_files.len());
         trace!("Changed files: {:?}", changed_files);
 
-        let line_filter =
-            DiffLineTransformer::new(Self::plus_lines_index(&diff, path.to_path_buf())?);
+        let line_filter = DiffLineTransformer::new(Self::plus_lines_index(
+            &diff,
+            repository_root.to_path_buf(),
+        )?);
 
         Ok(Self {
             changed_files,
