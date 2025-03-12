@@ -1,13 +1,16 @@
-use super::installations::{finalize_installation_from_download_result, initialize_installation};
+use super::installations::initialize_installation;
+use super::installations::write_to_file;
 use super::Tool;
 use super::ToolType;
 use crate::ui::{ProgressBar, ProgressTask};
 use anyhow::{anyhow, bail, Result};
+use chrono::Utc;
 use flate2::read::GzDecoder;
 use itertools::Itertools;
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_config::config::PluginDef;
 use qlty_config::config::{Cpu, DownloadDef, DownloadFileType, OperatingSystem};
+use qlty_types::analysis::v1::Installation;
 use sha2::Digest;
 use sha2::Sha256;
 use std::fmt::Debug;
@@ -17,6 +20,7 @@ use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use tar::Archive;
 use tempfile::tempfile;
+use tracing::error;
 use tracing::{info, trace, warn};
 use zip::ZipArchive;
 
@@ -399,4 +403,27 @@ fn strip_components(path: &Path, n: usize) -> PathBuf {
             acc
         })
         .to_path_buf()
+}
+
+fn finalize_installation_from_download_result(
+    download: &Download,
+    installation: &mut Installation,
+    result: &Result<()>,
+) -> Result<()> {
+    installation.download_url = Some(download.url()?);
+    installation.download_file_type = Some(download.file_type().to_string());
+    installation.download_binary_name = download.binary_name();
+
+    if result.is_ok() {
+        installation.download_success = Some(true);
+    } else {
+        installation.download_success = Some(false);
+    }
+    installation.finished_at = Some(Utc::now().into());
+
+    if let Err(err) = write_to_file(installation) {
+        error!("Error writing debug data: {}", err);
+    }
+
+    Ok(())
 }

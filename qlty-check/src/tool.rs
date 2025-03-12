@@ -2,7 +2,6 @@ pub mod command_builder;
 mod download;
 mod github;
 pub mod go;
-mod installation_file_writter;
 mod installations;
 pub mod java;
 pub mod node;
@@ -19,20 +18,25 @@ use crate::tool::download::Download;
 use crate::ui::ProgressBar;
 use crate::ui::ProgressTask;
 use anyhow::{bail, Context, Result};
+use chrono::Utc;
 use command_builder::Command;
 use duct::Expression;
 use fslock::LockFile;
-use installations::{finalize_installation_from_cmd_result, initialize_installation};
+use installations::initialize_installation;
+use installations::write_to_file;
 use qlty_analysis::join_path_string;
 use qlty_analysis::utils::fs::path_to_native_string;
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_config::config::{PluginDef, PluginEnvironment};
 use qlty_config::Library;
+use qlty_types::analysis::v1::Installation;
 use regex::Regex;
 use sha2::Digest;
 use std::env::join_paths;
 use std::env::split_paths;
+use std::io::Write;
 use std::path::Path;
+use std::process::Output;
 use std::time::Instant;
 use std::{collections::HashMap, fmt::Debug, path::PathBuf};
 use tracing::warn;
@@ -670,6 +674,33 @@ impl Clone for Box<dyn Tool> {
 
 pub trait RuntimeTool: Tool {
     fn package_tool(&self, name: &str, plugin: &PluginDef) -> Box<dyn Tool>;
+}
+
+fn finalize_installation_from_cmd_result(
+    tool: &dyn Tool,
+    result: &std::io::Result<Output>,
+    installation: &mut Installation,
+    script: String,
+) -> Result<()> {
+    installation.script = Some(script);
+    if let Ok(ref output) = result {
+        installation.stdout = Some(String::from_utf8_lossy(&output.stdout).to_string());
+        installation.stderr = Some(String::from_utf8_lossy(&output.stderr).to_string());
+        installation.exit_code = Some(output.status.code().unwrap_or_default().into());
+    } else {
+        installation.stderr = Some(format!("{:?}", result));
+    }
+
+    let mut log_file = tool.install_log_file()?;
+    log_file.write_all(installation.stdout.clone().unwrap_or_default().as_bytes())?;
+    log_file.write_all(installation.stderr.clone().unwrap_or_default().as_bytes())?;
+
+    installation.finished_at = Some(Utc::now().into());
+    if let Err(err) = write_to_file(installation) {
+        error!("Error writing debug data: {}", err);
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]

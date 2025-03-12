@@ -1,4 +1,4 @@
-use super::installations::{finalize_installation_from_assets_fetch, initialize_installation};
+use super::installations::{initialize_installation, write_to_file};
 use super::ToolType;
 use crate::tool::Download;
 use crate::{
@@ -6,11 +6,13 @@ use crate::{
     Tool,
 };
 use anyhow::Result;
+use chrono::Utc;
 use once_cell::sync::OnceCell;
 use qlty_config::config::{Cpu, DownloadDef, OperatingSystem, PluginDef, ReleaseDef, System};
 use qlty_config::version::QLTY_VERSION;
+use qlty_types::analysis::v1::Installation;
 use sha2::Digest;
-use tracing::{debug, info, trace};
+use tracing::{debug, error, info, trace};
 
 const GITHUB_API_VERSION: &str = "2022-11-28";
 const USER_AGENT_PREFIX: &str = "qlty-check";
@@ -406,6 +408,25 @@ impl GitHubReleaseTool {
             .as_array()
             .ok_or_else(|| anyhow::anyhow!("No assets found"))
             .cloned()
+    }
+}
+
+fn finalize_installation_from_assets_fetch(
+    installation: &mut Installation,
+    result: &Result<ureq::Response, ureq::Error>,
+    url: &str,
+) {
+    installation.download_url = Some(url.to_string());
+
+    if result.is_ok() {
+        installation.download_success = Some(true);
+    } else {
+        installation.download_success = Some(false);
+    }
+    installation.finished_at = Some(Utc::now().into());
+
+    if let Err(err) = write_to_file(installation) {
+        error!("Error writing debug data: {}", err);
     }
 }
 
