@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=stylelint fixture=basic version=16.15.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.css",
+        "range": {
+          "endColumn": 5,
+          "endLine": 1,
+          "startColumn": 3,
+          "startLine": 1,
+        },
+      },
+      "message": "Unexpected empty block (block-no-empty)",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "block-no-empty",
+      "snippet": "a {}",
+      "snippetWithContext": "a {}",
+      "tool": "stylelint",
+    },
+  ],
+}
+`;

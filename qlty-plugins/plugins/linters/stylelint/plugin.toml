@@ -33,11 +33,25 @@ suggested = "config"
 package_file_candidate = "package.json"
 package_file_candidate_filters = ["stylelint"]
 
-[plugins.definitions.stylelint.drivers.lint]
+[[plugins.definitions.stylelint.drivers.lint.version]]
+version_matcher = "<16.0.0"
 script = "stylelint --formatter json ${target}"
 success_codes = [0, 2]
 error_codes = [1, 78]
 output = "stdout"
+output_format = "stylelint"
+cache_results = true
+batch = true
+max_batch = 100
+suggested = "config"
+output_missing = "parse"
+
+[[plugins.definitions.stylelint.drivers.lint.version]]
+version_matcher = ">=16.0.0"
+script = "stylelint --formatter json ${target}"
+success_codes = [0, 2]
+error_codes = [1, 78]
+output = "stderr"
 output_format = "stylelint"
 cache_results = true
 batch = true
