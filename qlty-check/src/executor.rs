@@ -692,27 +692,9 @@ fn run_invocation(
                 return;
             }
 
-            let mut issues = file_result.issues.clone();
             for transformer in transformers {
-                if let Some(group_issues) = transformer.transform_batch(&issues) {
-                    issues = group_issues;
-                }
+                file_result.issues = transformer.transform_batch(file_result.issues.clone());
             }
-
-            file_result.issues = issues
-                .par_iter()
-                .cloned()
-                .filter_map(|mut issue| {
-                    for transformer in transformers {
-                        if let Some(transformed_issue) = transformer.transform(issue) {
-                            issue = transformed_issue;
-                        } else {
-                            return None;
-                        }
-                    }
-                    Some(issue)
-                })
-                .collect();
         });
     }
 

@@ -37,11 +37,7 @@ pub struct Fixer {
 }
 
 impl IssueTransformer for Fixer {
-    fn transform(&self, issue: Issue) -> Option<Issue> {
-        Some(issue)
-    }
-
-    fn transform_batch(&self, issues: &[Issue]) -> Option<Vec<Issue>> {
+    fn transform_batch(&self, issues: Vec<Issue>) -> Vec<Issue> {
         let no_path_issues = issues
             .iter()
             .filter(|issue| issue.path().is_none())
@@ -61,7 +57,8 @@ impl IssueTransformer for Fixer {
             })
             .collect_vec()
             .concat();
-        Some([no_path_issues, processed_issues].concat())
+
+        [no_path_issues, processed_issues].concat()
     }
 
     fn clone_box(&self) -> Box<dyn IssueTransformer> {

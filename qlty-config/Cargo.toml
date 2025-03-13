@@ -33,6 +33,7 @@ lazy_static.workspace = true
 md5.workspace = true
 qlty-plugins.workspace = true
 qlty-types.workspace = true
+rayon.workspace = true
 schemars.workspace = true
 semver.workspace = true
 serde_with.workspace = true
