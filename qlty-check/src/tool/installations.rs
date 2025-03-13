@@ -24,7 +24,7 @@ pub fn initialize_installation(tool: &dyn Tool) -> Installation {
 }
 
 pub fn write_to_file(installation: &Installation) {
-    if let Err(err) = write_installation(&installation) {
+    if let Err(err) = write_installation(installation) {
         error!("Error writing debug data: {}", err);
     }
 }
