@@ -67,7 +67,7 @@ impl RubyWindows {
             .stderr_to_stdout()
             .stdout_capture();
 
-        let script = cmd.to_string_lossy();
+        let script = format!("{:?}", cmd);
         debug!("Verify system Ruby: {:?}", script);
 
         let mut installation = initialize_installation(tool);

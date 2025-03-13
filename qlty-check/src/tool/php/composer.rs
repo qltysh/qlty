@@ -105,7 +105,7 @@ impl Composer {
             .stderr_to_stdout()
             .stdout_file(php_package.install_log_file()?);
 
-        let script = cmd.to_string_lossy();
+        let script = format!("{:?}", cmd);
         debug!(script);
 
         let mut installation = initialize_installation(self);

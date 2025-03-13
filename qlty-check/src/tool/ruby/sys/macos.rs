@@ -60,7 +60,7 @@ impl PlatformRuby for RubyMacos {
 
         debug!("Running: {:?}", cmd);
 
-        let script = cmd.to_string_lossy();
+        let script = format!("{:?}", cmd);
         debug!(script);
 
         let mut installation = initialize_installation(tool);
