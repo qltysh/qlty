@@ -12,7 +12,7 @@ use qlty_config::config::{Cpu, DownloadDef, OperatingSystem, PluginDef, ReleaseD
 use qlty_config::version::QLTY_VERSION;
 use qlty_types::analysis::v1::Installation;
 use sha2::Digest;
-use tracing::{debug, error, info, trace};
+use tracing::{debug, info, trace};
 
 const GITHUB_API_VERSION: &str = "2022-11-28";
 const USER_AGENT_PREFIX: &str = "qlty-check";
@@ -425,9 +425,7 @@ fn finalize_installation_from_assets_fetch(
     }
     installation.finished_at = Some(Utc::now().into());
 
-    if let Err(err) = write_to_file(installation) {
-        error!("Error writing debug data: {}", err);
-    }
+    write_to_file(installation);
 }
 
 #[cfg(test)]

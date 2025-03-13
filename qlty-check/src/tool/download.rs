@@ -20,7 +20,6 @@ use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use tar::Archive;
 use tempfile::tempfile;
-use tracing::error;
 use tracing::{info, trace, warn};
 use zip::ZipArchive;
 
@@ -420,10 +419,7 @@ fn finalize_installation_from_download_result(
         installation.download_success = Some(false);
     }
     installation.finished_at = Some(Utc::now().into());
-
-    if let Err(err) = write_to_file(installation) {
-        error!("Error writing debug data: {}", err);
-    }
+    write_to_file(installation);
 
     Ok(())
 }

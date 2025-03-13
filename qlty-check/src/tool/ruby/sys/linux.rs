@@ -14,7 +14,7 @@ use std::{
     io::{BufReader, Cursor, Read},
     path::Path,
 };
-use tracing::{debug, error};
+use tracing::debug;
 
 #[cfg(target_arch = "x86_64")]
 const ARCH: &str = "amd64";
@@ -117,15 +117,11 @@ impl RubyLinux {
                 )?;
 
                 installation.download_success = Some(true);
-                if let Err(err) = write_to_file(&installation) {
-                    error!("Error writing debug data: {}", err);
-                }
+                write_to_file(&installation);
             }
             Err(err) => {
                 installation.download_success = Some(false);
-                if let Err(err) = write_to_file(&installation) {
-                    error!("Error writing debug data: {}", err);
-                }
+                write_to_file(&installation);
 
                 bail!("Failed to download dependency: {}: {:?}", package, err);
             }
