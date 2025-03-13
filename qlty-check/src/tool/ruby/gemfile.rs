@@ -29,7 +29,7 @@ impl RubyGemfile {
             .stdout_capture()
             .unchecked();
 
-        let script = list_command.to_string_lossy();
+        let script = format!("{:?}", list_command);
         debug!(script);
 
         let mut installation = initialize_installation(self);
