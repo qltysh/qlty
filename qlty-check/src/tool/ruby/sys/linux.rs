@@ -1,5 +1,8 @@
 use crate::{
-    tool::ruby::PlatformRuby,
+    tool::{
+        installations::{initialize_installation, write_to_file},
+        ruby::PlatformRuby,
+    },
     ui::{ProgressBar, ProgressTask},
     Tool,
 };
@@ -11,7 +14,7 @@ use std::{
     io::{BufReader, Cursor, Read},
     path::Path,
 };
-use tracing::debug;
+use tracing::{debug, error};
 
 #[cfg(target_arch = "x86_64")]
 const ARCH: &str = "amd64";
@@ -99,6 +102,11 @@ impl RubyLinux {
             "https://ftp.debian.org/debian/pool/main/{}_{}.deb",
             package, ARCH
         );
+        let mut installation = initialize_installation(tool);
+        installation.download_url = Some(url.to_string());
+        installation.download_file_type = Some(".deb".to_string());
+        installation.download_binary_name = Some(package.to_string());
+
         match ureq::get(url.as_str()).call() {
             Ok(response) => {
                 self.extract_dependency_deb_archive(
@@ -107,8 +115,18 @@ impl RubyLinux {
                     tool.directory(),
                     extract_filenames,
                 )?;
+
+                installation.download_success = Some(true);
+                if let Err(err) = write_to_file(&installation) {
+                    error!("Error writing debug data: {}", err);
+                }
             }
             Err(err) => {
+                installation.download_success = Some(false);
+                if let Err(err) = write_to_file(&installation) {
+                    error!("Error writing debug data: {}", err);
+                }
+
                 bail!("Failed to download dependency: {}: {:?}", package, err);
             }
         }

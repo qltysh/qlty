@@ -676,7 +676,7 @@ pub trait RuntimeTool: Tool {
     fn package_tool(&self, name: &str, plugin: &PluginDef) -> Box<dyn Tool>;
 }
 
-fn finalize_installation_from_cmd_result(
+pub fn finalize_installation_from_cmd_result(
     tool: &dyn Tool,
     result: &std::io::Result<Output>,
     installation: &mut Installation,

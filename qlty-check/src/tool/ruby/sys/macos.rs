@@ -1,5 +1,8 @@
 use crate::{
-    tool::{command_builder::CommandBuilder, ruby::PlatformRuby},
+    tool::{
+        command_builder::CommandBuilder, finalize_installation_from_cmd_result,
+        installations::initialize_installation, ruby::PlatformRuby,
+    },
     ui::{ProgressBar, ProgressTask},
     Tool,
 };
@@ -56,7 +59,15 @@ impl PlatformRuby for RubyMacos {
             .full_env(tool.env());
 
         debug!("Running: {:?}", cmd);
-        cmd.run()?;
+
+        let script = cmd.to_string_lossy();
+        debug!(script);
+
+        let mut installation = initialize_installation(tool);
+        let result = cmd.run();
+        let _ = finalize_installation_from_cmd_result(tool, &result, &mut installation, script);
+
+        result?;
 
         Ok(())
     }

@@ -1,4 +1,6 @@
 use crate::tool::command_builder::CommandBuilder;
+use crate::tool::finalize_installation_from_cmd_result;
+use crate::tool::installations::initialize_installation;
 use crate::tool::node::package_json::PackageJson;
 use crate::ui::ProgressBar;
 use crate::{tool::ToolType, ui::ProgressTask, Tool};
@@ -103,7 +105,14 @@ impl Composer {
             .stderr_to_stdout()
             .stdout_file(php_package.install_log_file()?);
 
-        cmd.run()?;
+        let script = cmd.to_string_lossy();
+        debug!(script);
+
+        let mut installation = initialize_installation(self);
+        let result = cmd.run();
+        let _ = finalize_installation_from_cmd_result(self, &result, &mut installation, script);
+
+        result?;
 
         Ok(())
     }
