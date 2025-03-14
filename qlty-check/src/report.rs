@@ -1,4 +1,6 @@
-use crate::{results::FixedResult, InvocationResult};
+use crate::{
+    executor::installation_error::InstallationError, results::FixedResult, InvocationResult,
+};
 use itertools::Itertools;
 use qlty_analysis::{workspace_entries::TargetMode, IssueCount};
 use qlty_types::analysis::v1::{ExecutionVerb, Issue, Level, Message};
@@ -18,6 +20,7 @@ pub struct Report {
     pub fixed: HashSet<FixedResult>,
     pub fixable: HashSet<FixedResult>,
     pub counts: IssueCount,
+    pub installation_errors: Vec<InstallationError>,
 }
 
 impl Report {

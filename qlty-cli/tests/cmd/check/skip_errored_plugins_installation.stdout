@@ -1,5 +1,7 @@
- ERRORS: 1 
+ ERRORS: 2 
 
-Plugin        Result  Message                      Debug File
-always_error  Error   Exited with code 1 in [..].[..]s  .qlty/out/invoke-[..].yaml
+Plugin           Result              Message                      Debug File
+always_error     Error               Exited with code 1 in 0.01s  .qlty/out/invoke-Q8bi4Q.yaml
+gitleaks@8.21.1  Installation error  Error installing gitleaks@8.21.1.
+                 /Users/arslan/.qlty/cache/tools/gitleaks/8.21.1-071a463eecc0-installation-debug-files
 

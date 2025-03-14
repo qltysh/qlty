@@ -1,4 +1,4 @@
-use crate::InvocationResult;
+use crate::executor::{installation_error::InstallationError, InvocationResult};
 use qlty_types::analysis::v1::{Issue, Location, Message};
 use std::path::PathBuf;
 
@@ -8,6 +8,7 @@ pub struct Results {
     pub invocations: Vec<InvocationResult>,
     pub issues: Vec<Issue>,
     pub formatted: Vec<PathBuf>,
+    pub installation_errors: Vec<InstallationError>,
 }
 
 #[derive(Hash, Eq, PartialEq, Debug, Clone)]
@@ -22,12 +23,14 @@ impl Results {
         invocations: Vec<InvocationResult>,
         issues: Vec<Issue>,
         formatted: Vec<PathBuf>,
+        installation_errors: Vec<InstallationError>,
     ) -> Self {
         Self {
             messages,
             issues,
             formatted,
             invocations,
+            installation_errors,
         }
     }
 }

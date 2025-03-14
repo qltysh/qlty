@@ -1,4 +1,5 @@
 mod driver;
+pub mod installation_error;
 mod invocation_result;
 mod invocation_script;
 pub mod staging_area;
@@ -19,6 +20,7 @@ use anyhow::{bail, Context, Result};
 use chrono::Utc;
 pub use driver::Driver;
 use ignore::{DirEntry, WalkBuilder, WalkState};
+use installation_error::InstallationError;
 pub use invocation_result::{InvocationResult, InvocationStatus};
 pub use invocation_script::{compute_invocation_script, plan_target_list};
 use itertools::Itertools;
@@ -59,24 +61,24 @@ impl Executor {
     }
 
     pub fn install_and_invoke(&self) -> Result<Results> {
-        let install_result = self.install()?;
+        let (install_messages, installation_errors) = self.install()?;
         self.run_prepare_scripts()?;
         let mut result = self.invoke()?;
 
-        for message in install_result {
-            result.messages.push(message);
-        }
+        result.messages.extend(install_messages);
+        result.installation_errors.extend(installation_errors);
 
         Ok(result)
     }
 
-    pub fn install(&self) -> Result<Vec<Message>> {
+    pub fn install(&self) -> Result<(Vec<Message>, Vec<InstallationError>)> {
         let mut install_messages = vec![];
+        let mut jobs = vec![];
         let installation_results =
             Self::install_tools(self.plan.tools(), self.plan.jobs, self.progress.clone());
 
         for installation_result in installation_results {
-            let (name, result) = installation_result;
+            let (name, directory, result) = installation_result;
             if self.plan.settings.skip_errored_plugins {
                 if let Err(err) = result {
                     error!("Error installing tool {}: {:?}", name, err);
@@ -90,20 +92,26 @@ impl Executor {
                         details: err.to_string(),
                         ..Default::default()
                     });
+
+                    jobs.push(InstallationError {
+                        tool_name: name.clone(),
+                        error_message: Some(err.to_string()),
+                        directory: Some(directory),
+                    });
                 }
             } else {
                 result?;
             }
         }
 
-        Ok(install_messages)
+        Ok((install_messages, jobs))
     }
 
     pub fn install_tools(
         tools: Vec<(String, Box<dyn Tool>)>,
         jobs: usize,
         progress: Progress,
-    ) -> Vec<(String, Result<()>)> {
+    ) -> Vec<(String, String, Result<()>)> {
         let timer = Instant::now();
         let pool = rayon::ThreadPoolBuilder::new()
             .num_threads(jobs)
@@ -119,6 +127,7 @@ impl Executor {
                 .map(|(name, tool)| {
                     (
                         name.clone(),
+                        tool.debug_files_directory(),
                         Self::install_tool(name, tool, progress.clone()),
                     )
                 })
@@ -225,7 +234,13 @@ impl Executor {
             });
         }
 
-        Ok(Results::new(messages, invocations, issues, formatted))
+        Ok(Results::new(
+            messages,
+            invocations,
+            issues,
+            formatted,
+            vec![],
+        ))
     }
 
     fn install_tool(name: String, tool: Box<dyn Tool>, progress: Progress) -> Result<()> {

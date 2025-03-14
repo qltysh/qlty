@@ -67,8 +67,8 @@ impl Install {
         let jobs = Planner::jobs_count(self.jobs);
 
         let results = Executor::install_tools(tools, jobs, progress);
-        for (name, result) in results {
-            result.with_context(|| format!("Failed to install {}", name,))?;
+        for (name, directory, result) in results {
+            result.with_context(|| format!("Failed to install {} check {}", name, directory))?;
         }
 
         Ok(())
