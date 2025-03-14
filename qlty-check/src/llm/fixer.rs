@@ -38,27 +38,23 @@ pub struct Fixer {
 
 impl IssueTransformer for Fixer {
     fn transform_batch(&self, issues: Vec<Issue>) -> Vec<Issue> {
-        let no_path_issues = issues
+        issues
             .iter()
-            .filter(|issue| issue.path().is_none())
             .cloned()
-            .collect_vec();
-        let processed_issues = issues
-            .iter()
-            .filter(|issue| issue.path().is_some())
-            .cloned()
-            .into_group_map_by(|issue| issue.path().unwrap_or_default())
+            .into_group_map_by(|issue| issue.path())
             .iter()
             .map(|(path, issues)| {
-                issues
-                    .chunks(MAX_BATCH_SIZE)
-                    .flat_map(|chunk| self.fix_issue(path, chunk))
-                    .collect_vec()
+                if let Some(path) = path {
+                    issues
+                        .chunks(MAX_BATCH_SIZE)
+                        .flat_map(|chunk| self.fix_issue(path, chunk))
+                        .collect_vec()
+                } else {
+                    issues.clone()
+                }
             })
             .collect_vec()
-            .concat();
-
-        [no_path_issues, processed_issues].concat()
+            .concat()
     }
 
     fn clone_box(&self) -> Box<dyn IssueTransformer> {
