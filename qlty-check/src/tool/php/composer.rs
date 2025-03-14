@@ -76,14 +76,7 @@ impl Composer {
     pub fn install_package_file(&self, php_package: &PhpPackage) -> Result<()> {
         info!("Installing composer package file");
         let install_dir = PathBuf::from(php_package.directory());
-        let final_composer_file = Self::filter_composer(php_package)?;
-        debug!(
-            "Writing {} composer.json: {}",
-            php_package.name(),
-            final_composer_file
-        );
-
-        std::fs::write(install_dir.join("composer.json"), final_composer_file)?;
+        Self::update_composer_json(php_package)?;
         let composer_phar = PathBuf::from(self.directory()).join("composer.phar");
 
         let cmd = self
@@ -92,10 +85,9 @@ impl Composer {
                 "php",
                 vec![
                     &path_to_native_string(composer_phar.to_str().unwrap()),
-                    "install",
+                    "update",
                     "--no-interaction",
                     "--ignore-platform-reqs",
-                    "--no-plugins",
                 ],
             )
             .dir(install_dir)
@@ -159,15 +151,76 @@ impl Composer {
 
         Ok(serde_json::to_string_pretty(&composer_json)?)
     }
+
+    fn update_composer_json(php_package: &PhpPackage) -> Result<()> {
+        let install_dir = PathBuf::from(php_package.directory());
+        let package_file_contents = Self::filter_composer(php_package)?;
+        let user_json = serde_json::from_str::<Value>(&package_file_contents)?;
+        let staged_file = install_dir.join("composer.json");
+        let mut data_json = Value::Object(serde_json::Map::new());
+
+        if staged_file.exists() {
+            // use the original composer.json contents, merging package_file contents on top.
+            // this will retain any existing dependencies provided by the initial tool installation
+            let contents = std::fs::read_to_string(&staged_file)?;
+            data_json = serde_json::from_str::<Value>(&contents).unwrap_or_default();
+        }
+
+        PackageJson::merge_json(&mut data_json, user_json);
+
+        let final_composer_file = serde_json::to_string_pretty(&data_json)?;
+        debug!(
+            "Writing {} composer.json to {:?}: {}",
+            php_package.name, staged_file, final_composer_file
+        );
+
+        std::fs::write(staged_file, final_composer_file)?;
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::tool::{command_builder::test::stub_cmd, php::Php};
+    use crate::tool::{
+        command_builder::test::{reroute_tools_root, stub_cmd, ENV_LOCK},
+        php::Php,
+    };
+    use qlty_analysis::utils::fs::path_to_string;
     use qlty_config::config::PluginDef;
     use std::sync::{Arc, Mutex};
-    use tempfile::tempdir;
+    use tempfile::{tempdir, TempDir};
+
+    pub fn with_php_package(
+        callback: impl Fn(
+            &mut PhpPackage,
+            &TempDir,
+            &Arc<Mutex<Vec<Vec<String>>>>,
+        ) -> anyhow::Result<()>,
+    ) {
+        let _lock = ENV_LOCK.lock().unwrap_or_else(|err| {
+            ENV_LOCK.clear_poison();
+            err.into_inner()
+        });
+        let list = Arc::new(Mutex::new(Vec::<Vec<String>>::new()));
+        let temp_path = tempdir().unwrap();
+        let mut pkg = PhpPackage {
+            cmd: stub_cmd(list.clone()),
+            name: "tool".into(),
+            plugin: PluginDef {
+                package: Some("test".to_string()),
+                version: Some("1.0.0".to_string()),
+                ..Default::default()
+            },
+            runtime: Php {
+                version: "1.0.0".to_string(),
+            },
+        };
+        reroute_tools_root(&temp_path, &pkg);
+        callback(&mut pkg, &temp_path, &list).unwrap();
+        drop(temp_path);
+    }
 
     #[test]
     fn test_filter_composer() {
@@ -282,5 +335,64 @@ pub mod test {
   }
 }"#
         );
+    }
+
+    #[test]
+    fn test_update_existing_composer_json() {
+        with_php_package(|pkg, tempdir, _| {
+            let existing_composer_file = PathBuf::from(pkg.directory()).join("composer.json");
+            std::fs::write(
+                &existing_composer_file,
+                r#"
+                {
+                    "require": {
+                        "tool": "1.0.0"
+                    }
+                }"#,
+            )
+            .unwrap();
+
+            let package_file = tempdir.path().join("user-composer.json");
+            std::fs::write(
+                &package_file,
+                r#"
+                {
+                    "require": {
+                        "other-tool": "1.0.0"
+                    },
+                    "require-dev": {
+                        "other-tool-dev": "1.0.0"
+                    },
+                    "autoload": {
+                        "random": "value"
+                    },
+                    "autoload-dev": {
+                        "random": "value"
+                    }
+                }"#,
+            )
+            .unwrap();
+
+            pkg.plugin.package_file = Some(path_to_string(package_file));
+            reroute_tools_root(tempdir, pkg);
+
+            Composer::update_composer_json(pkg).unwrap();
+
+            let composer_file_contents = std::fs::read_to_string(&existing_composer_file)?;
+            let composer_json = serde_json::from_str::<Value>(&composer_file_contents)?;
+
+            assert_eq!(
+                composer_json,
+                serde_json::json!({
+                    "require": {
+                        "tool": "1.0.0",
+                        "other-tool": "1.0.0",
+                        "other-tool-dev": "1.0.0"
+                    }
+                })
+            );
+
+            Ok(())
+        });
     }
 }
