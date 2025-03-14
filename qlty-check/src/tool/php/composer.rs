@@ -75,7 +75,6 @@ impl Tool for Composer {
 impl Composer {
     pub fn install_package_file(&self, php_package: &PhpPackage) -> Result<()> {
         info!("Installing composer package file");
-        let install_dir = PathBuf::from(php_package.directory());
         Self::update_composer_json(php_package)?;
         let composer_phar = PathBuf::from(self.directory()).join("composer.phar");
 
@@ -90,7 +89,7 @@ impl Composer {
                     "--ignore-platform-reqs",
                 ],
             )
-            .dir(install_dir)
+            .dir(php_package.directory())
             .full_env(self.env())
             .stderr_to_stdout()
             .stdout_file(php_package.install_log_file()?);
@@ -184,43 +183,13 @@ impl Composer {
 pub mod test {
     use super::*;
     use crate::tool::{
-        command_builder::test::{reroute_tools_root, stub_cmd, ENV_LOCK},
-        php::Php,
+        command_builder::test::{reroute_tools_root, stub_cmd},
+        php::{test::with_php_package, Php},
     };
     use qlty_analysis::utils::fs::path_to_string;
     use qlty_config::config::PluginDef;
     use std::sync::{Arc, Mutex};
-    use tempfile::{tempdir, TempDir};
-
-    pub fn with_php_package(
-        callback: impl Fn(
-            &mut PhpPackage,
-            &TempDir,
-            &Arc<Mutex<Vec<Vec<String>>>>,
-        ) -> anyhow::Result<()>,
-    ) {
-        let _lock = ENV_LOCK.lock().unwrap_or_else(|err| {
-            ENV_LOCK.clear_poison();
-            err.into_inner()
-        });
-        let list = Arc::new(Mutex::new(Vec::<Vec<String>>::new()));
-        let temp_path = tempdir().unwrap();
-        let mut pkg = PhpPackage {
-            cmd: stub_cmd(list.clone()),
-            name: "tool".into(),
-            plugin: PluginDef {
-                package: Some("test".to_string()),
-                version: Some("1.0.0".to_string()),
-                ..Default::default()
-            },
-            runtime: Php {
-                version: "1.0.0".to_string(),
-            },
-        };
-        reroute_tools_root(&temp_path, &pkg);
-        callback(&mut pkg, &temp_path, &list).unwrap();
-        drop(temp_path);
-    }
+    use tempfile::tempdir;
 
     #[test]
     fn test_filter_composer() {
