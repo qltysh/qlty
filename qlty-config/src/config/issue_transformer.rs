@@ -12,7 +12,8 @@ pub trait IssueTransformer: Debug + Send + Sync + 'static {
     fn transform_batch(&self, issues: Vec<Issue>) -> Vec<Issue> {
         issues
             .par_iter()
-            .filter_map(|issue| self.transform(issue.clone()))
+            .cloned()
+            .filter_map(|issue| self.transform(issue))
             .collect()
     }
 

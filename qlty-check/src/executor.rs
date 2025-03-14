@@ -692,9 +692,11 @@ fn run_invocation(
                 return;
             }
 
+            let mut issues = file_result.issues.clone();
             for transformer in transformers {
-                file_result.issues = transformer.transform_batch(file_result.issues.clone());
+                issues = transformer.transform_batch(issues);
             }
+            file_result.issues = issues;
         });
     }
 
