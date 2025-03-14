@@ -87,7 +87,7 @@ impl Php {
 
         let mut installation = initialize_installation(self);
         let result = cmd.run();
-        let _ = finalize_installation_from_cmd_result(self, &result, &mut installation, script);
+        finalize_installation_from_cmd_result(self, &result, &mut installation, script).ok();
 
         result.with_context(|| "Ensure `php` is installed and in $PATH")?;
 
