@@ -676,7 +676,7 @@ pub trait RuntimeTool: Tool {
     fn package_tool(&self, name: &str, plugin: &PluginDef) -> Box<dyn Tool>;
 }
 
-fn finalize_installation_from_cmd_result(
+pub fn finalize_installation_from_cmd_result(
     tool: &dyn Tool,
     result: &std::io::Result<Output>,
     installation: &mut Installation,
@@ -696,9 +696,7 @@ fn finalize_installation_from_cmd_result(
     log_file.write_all(installation.stderr.clone().unwrap_or_default().as_bytes())?;
 
     installation.finished_at = Some(Utc::now().into());
-    if let Err(err) = write_to_file(installation) {
-        error!("Error writing debug data: {}", err);
-    }
+    write_to_file(installation);
 
     Ok(())
 }

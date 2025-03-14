@@ -1,8 +1,10 @@
 use crate::tool::command_builder::CommandBuilder;
+use crate::tool::finalize_installation_from_cmd_result;
+use crate::tool::installations::initialize_installation;
 use crate::tool::node::package_json::PackageJson;
 use crate::ui::ProgressBar;
 use crate::{tool::ToolType, ui::ProgressTask, Tool};
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use itertools::Itertools;
 use qlty_analysis::utils::fs::path_to_native_string;
 use serde_json::Value;
@@ -100,10 +102,21 @@ impl Composer {
             )
             .dir(install_dir)
             .full_env(self.env())
-            .stderr_to_stdout()
-            .stdout_file(php_package.install_log_file()?);
+            .stderr_capture()
+            .stdout_capture()
+            .unchecked(); // Capture output for debugging
 
-        cmd.run()?;
+        let script = format!("{:?}", cmd);
+        debug!(script);
+
+        let mut installation = initialize_installation(php_package);
+        let result = cmd.run();
+        let _ =
+            finalize_installation_from_cmd_result(php_package, &result, &mut installation, script);
+
+        if result?.status.code() != Some(0) {
+            bail!("Failed to install composer package file");
+        }
 
         Ok(())
     }

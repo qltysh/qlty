@@ -23,7 +23,13 @@ pub fn initialize_installation(tool: &dyn Tool) -> Installation {
     }
 }
 
-pub fn write_to_file(installation: &Installation) -> Result<()> {
+pub fn write_to_file(installation: &Installation) {
+    if let Err(err) = write_to_file_impl(installation) {
+        error!("Error writing debug data: {}", err);
+    }
+}
+
+fn write_to_file_impl(installation: &Installation) -> Result<()> {
     let installation_id = generate_random_id(6);
     let installation_files_directory = PathBuf::from(&installation.directory);
     if let Err(err) = create_dir_all(&installation_files_directory) {

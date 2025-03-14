@@ -1,5 +1,8 @@
 use crate::{
-    tool::{command_builder::Command, download::Download, ruby::PlatformRuby},
+    tool::{
+        command_builder::Command, download::Download, finalize_installation_from_cmd_result,
+        installations::initialize_installation, ruby::PlatformRuby,
+    },
     ui::{ProgressBar, ProgressTask},
     Tool,
 };
@@ -64,10 +67,14 @@ impl RubyWindows {
             .stderr_to_stdout()
             .stdout_capture();
 
-        debug!("Verify system Ruby: {:?}", cmd);
-        let output = cmd
-            .run()
-            .with_context(|| "Ensure `ruby` is installed and in $PATH")?;
+        let script = format!("{:?}", cmd);
+        debug!("Verify system Ruby: {:?}", script);
+
+        let mut installation = initialize_installation(tool);
+        let result = cmd.run();
+        let _ = finalize_installation_from_cmd_result(tool, &result, &mut installation, script);
+
+        let output = result.with_context(|| "Ensure `ruby` is installed and in $PATH")?;
         debug!("Verified system ruby: {:?}", output);
 
         Ok(())

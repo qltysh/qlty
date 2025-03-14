@@ -1,9 +1,10 @@
 pub mod composer;
 use super::command_builder::{default_command_builder, CommandBuilder};
+use super::installations::initialize_installation;
 use super::runnable_archive::RunnableArchive;
 use super::Tool;
 use super::ToolType;
-use crate::tool::RuntimeTool;
+use crate::tool::{finalize_installation_from_cmd_result, RuntimeTool};
 use crate::ui::{ProgressBar, ProgressTask};
 use anyhow::Context;
 use anyhow::Result;
@@ -44,7 +45,7 @@ impl Tool for Php {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message("Verifying Php installation");
-        Php::verify_installation(self.env())?;
+        self.verify_installation(self.env())?;
 
         task.set_message("Installing composer");
         let composer = Composer {
@@ -75,15 +76,20 @@ impl Tool for Php {
 }
 
 impl Php {
-    fn verify_installation(env: HashMap<String, String>) -> Result<()> {
+    fn verify_installation(&self, env: HashMap<String, String>) -> Result<()> {
         let cmd = cmd!("php", "--version")
             .full_env(env)
             .stderr_to_stdout()
             .stdout_capture();
 
-        debug!("{:?}", cmd);
-        cmd.run()
-            .with_context(|| "Ensure `php` is installed and in $PATH")?;
+        let script = format!("{:?}", cmd);
+        debug!(script);
+
+        let mut installation = initialize_installation(self);
+        let result = cmd.run();
+        finalize_installation_from_cmd_result(self, &result, &mut installation, script).ok();
+
+        result.with_context(|| "Ensure `php` is installed and in $PATH")?;
 
         Ok(())
     }

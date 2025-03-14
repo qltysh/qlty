@@ -1,4 +1,6 @@
 use super::RubygemsPackage;
+use crate::tool::finalize_installation_from_cmd_result;
+use crate::tool::installations::initialize_installation;
 use crate::ui::ProgressBar;
 use crate::{tool::Tool, ui::ProgressTask};
 use anyhow::{bail, Context, Result};
@@ -27,9 +29,15 @@ impl RubyGemfile {
             .stdout_capture()
             .unchecked();
 
-        let list_output: std::process::Output = list_command
-            .run()
-            .with_context(|| "Failed to run: ruby -S bundle list")?;
+        let script = format!("{:?}", list_command);
+        debug!(script);
+
+        let mut installation = initialize_installation(self);
+        let result = list_command.run();
+        let _ = finalize_installation_from_cmd_result(self, &result, &mut installation, script);
+
+        let list_output: std::process::Output =
+            result.with_context(|| "Failed to run: ruby -S bundle list")?;
 
         let stdout = String::from_utf8_lossy(&list_output.stdout).to_string();
         let stderr = String::from_utf8_lossy(&list_output.stderr).to_string();

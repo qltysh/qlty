@@ -1,11 +1,16 @@
 use crate::{
-    tool::ruby::PlatformRuby,
+    tool::{
+        installations::{initialize_installation, write_to_file},
+        ruby::PlatformRuby,
+    },
     ui::{ProgressBar, ProgressTask},
     Tool,
 };
 use anyhow::{bail, Result};
 use ar::Entry;
+use chrono::Utc;
 use qlty_analysis::{join_path_string, utils::fs::path_to_string};
+use qlty_types::analysis::v1::Installation;
 use std::{
     collections::HashMap,
     io::{BufReader, Cursor, Read},
@@ -99,7 +104,15 @@ impl RubyLinux {
             "https://ftp.debian.org/debian/pool/main/{}_{}.deb",
             package, ARCH
         );
-        match ureq::get(url.as_str()).call() {
+        let mut installation = initialize_installation(tool);
+        installation.download_url = Some(url.to_string());
+        installation.download_file_type = Some(".deb".to_string());
+        installation.download_binary_name = Some(package.to_string());
+
+        let result = ureq::get(url.as_str()).call();
+        Self::finalize_installation(&mut installation, &result);
+
+        match result {
             Ok(response) => {
                 self.extract_dependency_deb_archive(
                     response.into_reader(),
@@ -114,6 +127,24 @@ impl RubyLinux {
         }
 
         Ok(())
+    }
+
+    fn finalize_installation(
+        installation: &mut Installation,
+        result: &std::result::Result<ureq::Response, ureq::Error>,
+    ) {
+        installation.finished_at = Some(Utc::now().into());
+        match result {
+            Ok(_) => {
+                installation.download_success = Some(true);
+            }
+            Err(err) => {
+                installation.download_success = Some(false);
+                installation.stderr = Some(format!("{:?}", err));
+            }
+        }
+
+        write_to_file(installation);
     }
 
     fn extract_dependency_deb_archive(
