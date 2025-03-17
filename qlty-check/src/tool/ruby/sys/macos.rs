@@ -65,7 +65,7 @@ impl PlatformRuby for RubyMacos {
 
         let mut installation = initialize_installation(tool);
         let result = cmd.run();
-        let _ = finalize_installation_from_cmd_result(tool, &result, &mut installation, script);
+        finalize_installation_from_cmd_result(tool, &result, &mut installation, script).ok();
 
         result?;
 
