@@ -30,7 +30,7 @@ clap = { version = "4.5.31", features = ["derive", "wrap_help"] }
 clap_complete = "4.5.34"
 cli-table = "0.4.9"
 config = "0.13.3"
-console = "0.15.10"
+console = "0.15.11"
 dialoguer = "0.11.0"
 diffy = "0.4.2"
 duct = { git = "https://github.com/brynary/duct.rs.git" }
