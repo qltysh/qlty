@@ -44,7 +44,7 @@ cache_results = true
 batch = true
 max_batch = 100
 suggested = "config"
-output_missing = "parse"
+output_missing = "error"
 
 [[plugins.definitions.stylelint.drivers.lint.version]]
 version_matcher = ">=16.0.0"
@@ -57,7 +57,7 @@ cache_results = true
 batch = true
 max_batch = 100
 suggested = "config"
-output_missing = "parse"
+output_missing = "error"
 
 [plugins.definitions.stylelint.drivers.format]
 script = "stylelint --fix ${target}"
