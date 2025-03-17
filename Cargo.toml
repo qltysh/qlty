@@ -68,7 +68,7 @@ path-absolutize = "3.1.1"
 pathdiff = "0.2.3"
 pbjson = "0.7.0"
 pbjson-types = "0.7.0"
-prost = "0.13.4"
+prost = "0.13.5"
 qlty-analysis = { version = "0.499.0", path = "qlty-analysis" }
 qlty-check = { version = "0.499.0", path = "qlty-check" }
 qlty-cloud = { version = "0.499.0", path = "qlty-cloud" }
