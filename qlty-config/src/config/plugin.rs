@@ -10,6 +10,7 @@ use std::fmt;
 use std::fs::File;
 use std::io::Write as _;
 use std::path::PathBuf;
+use tracing::error;
 
 const SEMVER_REGEX: &str = r"(\d+\.\d+\.\d+)";
 const ALL: &str = "ALL";
@@ -781,7 +782,17 @@ impl<'de> Deserialize<'de> for ExtraPackage {
         D: Deserializer<'de>,
     {
         let string = String::deserialize(deserializer)?;
-        let (name, version) = string.rsplit_once('@').unwrap();
+        let (name, version) = if let Some((name, version)) = string.rsplit_once('@') {
+            (name, version)
+        } else {
+            let error_message = format!(
+                "Invalid extra package format, expected \"<name>@<version>\" got {}",
+                string
+            );
+            error!(error_message);
+
+            return Err(serde::de::Error::custom(error_message));
+        };
 
         Ok(ExtraPackage {
             name: name.to_string(),
