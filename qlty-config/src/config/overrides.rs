@@ -1,3 +1,4 @@
+use super::ignore::is_rule_issue_match;
 use super::IssueMode;
 use crate::config::issue_transformer::IssueTransformer;
 use globset::{Glob, GlobSet, GlobSetBuilder};
@@ -87,16 +88,12 @@ impl IssueTransformer for Override {
 impl Override {
     fn applies_to_issue(&self, issue: &Issue) -> bool {
         self.plugin_applies_to_issue(issue)
-            && self.rule_applies_to_issue(issue)
+            && is_rule_issue_match(&self.rules, issue)
             && self.glob_applies_to_issue(issue)
     }
 
     fn plugin_applies_to_issue(&self, issue: &Issue) -> bool {
         self.plugins.is_empty() || self.plugins.contains(&issue.tool.to_string())
-    }
-
-    fn rule_applies_to_issue(&self, issue: &Issue) -> bool {
-        self.rules.is_empty() || self.rules.contains(&issue.rule_key.to_string())
     }
 
     fn glob_applies_to_issue(&self, issue: &Issue) -> bool {

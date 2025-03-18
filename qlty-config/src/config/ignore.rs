@@ -88,7 +88,7 @@ impl Ignore {
 
     fn applies_to_issue(&self, issue: Issue) -> bool {
         self.plugin_applies_to_issue(&issue)
-            && self.rule_applies_to_issue(&issue)
+            && is_rule_issue_match(&self.rules, &issue)
             && self.glob_applies_to_issue(&issue)
             && self.level_applies_to_issue(&issue)
     }
@@ -106,27 +106,7 @@ impl Ignore {
         }
         self.plugins.contains(&issue.tool.to_string())
     }
-
-    fn rule_applies_to_issue(&self, issue: &Issue) -> bool {
-        if self.rules.is_empty() {
-            return true;
-        }
-
-        self.rules.iter().any(|rule| {
-            if rule.contains(':') {
-                let mut parts = rule.splitn(2, ':');
-
-                if let (Some(tool), Some(rule_key)) = (parts.next(), parts.next()) {
-                    tool == issue.tool && rule_key == issue.rule_key
-                } else {
-                    false
-                }
-            } else {
-                rule == &issue.rule_key
-            }
-        })
-    }
-
+    
     fn glob_applies_to_issue(&self, issue: &Issue) -> bool {
         if let Some(path) = issue.path() {
             self.matches_path(&path)
@@ -146,4 +126,24 @@ impl Ignore {
             _ => "unspecified".to_string(),
         }
     }
+}
+
+pub fn is_rule_issue_match(rules: &[String], issue: &Issue) -> bool {
+    if rules.is_empty() {
+        return true;
+    }
+
+    rules.iter().any(|rule| {
+        if rule.contains(':') {
+            let mut parts = rule.splitn(2, ':');
+
+            if let (Some(tool), Some(rule_key)) = (parts.next(), parts.next()) {
+                tool == issue.tool && rule_key == issue.rule_key
+            } else {
+                false
+            }
+        } else {
+            rule == &issue.rule_key
+        }
+    })
 }
