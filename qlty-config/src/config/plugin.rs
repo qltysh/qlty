@@ -786,7 +786,7 @@ impl<'de> Deserialize<'de> for ExtraPackage {
             (name, version)
         } else {
             let error_message = format!(
-                "Invalid extra package format, expected \"<name>@<version>\" got {}",
+                "Invalid extra package format, expected \"<name>@<version>\" got \"{}\"",
                 string
             );
             error!(error_message);
