@@ -106,7 +106,7 @@ impl Ignore {
         }
         self.plugins.contains(&issue.tool.to_string())
     }
-    
+
     fn glob_applies_to_issue(&self, issue: &Issue) -> bool {
         if let Some(path) = issue.path() {
             self.matches_path(&path)
