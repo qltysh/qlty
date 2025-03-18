@@ -111,7 +111,20 @@ impl Ignore {
         if self.rules.is_empty() {
             return true;
         }
-        self.rules.contains(&issue.rule_key.to_string())
+
+        self.rules.iter().any(|rule| {
+            if rule.contains(':') {
+                let mut parts = rule.splitn(2, ':');
+
+                if let (Some(tool), Some(rule_key)) = (parts.next(), parts.next()) {
+                    tool == issue.tool && rule_key == issue.rule_key
+                } else {
+                    false
+                }
+            } else {
+                rule == &issue.rule_key
+            }
+        })
     }
 
     fn glob_applies_to_issue(&self, issue: &Issue) -> bool {
