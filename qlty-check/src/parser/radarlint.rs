@@ -32,9 +32,11 @@ impl Parser for Radarlint {
         output.trim().lines().for_each(|radarlint_output| {
             let radarlint_issue: RadarlintIssue = serde_json::from_str(radarlint_output).unwrap();
 
+            let rule_key = radarlint_issue.rule_key.replace(":", "/");
+
             let issue = Issue {
                 tool: "radarlint".to_string(),
-                rule_key: radarlint_issue.rule_key,
+                rule_key,
                 message: radarlint_issue.primary_message,
                 level: Radarlint::severity_to_level(&radarlint_issue.severity).into(),
                 category: Category::Lint.into(),
@@ -100,7 +102,7 @@ mod test {
         let issues = Radarlint::default().parse("radarlint", input);
         insta::assert_yaml_snapshot!(issues.unwrap(), @r#"
         - tool: radarlint
-          ruleKey: "java:S1598"
+          ruleKey: java/S1598
           message: "This file \"Foo.in.java\" should be located in \"foo\" directory, not in \"/private/var/folders/b9/flqsg2gj0zs94d9802z004qw0000gn/T/plugins_Y7AmW8\"."
           level: LEVEL_HIGH
           category: CATEGORY_LINT
@@ -112,7 +114,7 @@ mod test {
               endLine: 1
               endColumn: 11
         - tool: radarlint
-          ruleKey: "java:S100"
+          ruleKey: java/S100
           message: "Rename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'."
           level: LEVEL_LOW
           category: CATEGORY_LINT
@@ -124,7 +126,7 @@ mod test {
               endLine: 4
               endColumn: 23
         - tool: radarlint
-          ruleKey: "java:S1172"
+          ruleKey: java/S1172
           message: "Remove this unused method parameter \"i\"."
           level: LEVEL_MEDIUM
           category: CATEGORY_LINT
@@ -136,7 +138,7 @@ mod test {
               endLine: 8
               endColumn: 24
         - tool: radarlint
-          ruleKey: "java:S100"
+          ruleKey: java/S100
           message: "Rename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'."
           level: LEVEL_LOW
           category: CATEGORY_LINT
@@ -148,7 +150,7 @@ mod test {
               endLine: 13
               endColumn: 31
         - tool: radarlint
-          ruleKey: "java:S106"
+          ruleKey: java/S106
           message: Replace this use of System.out by a logger.
           level: LEVEL_MEDIUM
           category: CATEGORY_LINT
@@ -160,7 +162,7 @@ mod test {
               endLine: 14
               endColumn: 14
         - tool: radarlint
-          ruleKey: "java:S1220"
+          ruleKey: java/S1220
           message: Move this file to a named package.
           level: LEVEL_LOW
           category: CATEGORY_LINT
