@@ -51,7 +51,7 @@ indicatif = "0.17.11"
 indoc = "2.0.5"
 insta = { version = "1.42.2", features = ["yaml", "redactions"] }
 itertools = "0.13.0"
-keyring = { version = "3.6.1", features = [
+keyring = { version = "3.6.2", features = [
     "apple-native",
     "windows-native",
     "linux-native",
