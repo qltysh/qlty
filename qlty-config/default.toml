@@ -309,6 +309,9 @@ globs = ["*.swift"]
 [file_types.openapi]
 globs = ["openapi.yaml", "openapi.*.yaml"]
 
+[file_types.scala]
+globs = ["*.scala"]
+
 [language.kotlin]
 globs = ["*.kt"]
 

@@ -1,0 +1,47 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=radarlint-scala fixture=foo version=1.1.3 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "foo.in.scala",
+        "range": {
+          "endColumn": 16,
+          "endLine": 36,
+          "startColumn": 10,
+          "startLine": 36,
+        },
+      },
+      "message": "Remove this unused "result" local variable.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "scala/S1481",
+      "snippet": "      val result = 10 / 0",
+      "snippetWithContext": "    val numbers = List(1, 2, 3, 4, 5)
+
+    // 🚨 S4034: Inefficient loop (should use \`foreach\`)
+    for (i <- 0 until numbers.length) {
+      println(numbers(i))
+    }
+  }
+
+  def emptyCatchBlock(): Unit = {
+    try {
+      val result = 10 / 0
+    } catch {
+      case e: ArithmeticException => // 🚨 S2221: Empty catch block (ignoring the exception)
+    }
+  }
+
+  def main(args: Array[String]): Unit = {
+    insecureDatabaseConnection()
+    inefficientLoop()
+    emptyCatchBlock()
+  }",
+      "tool": "radarlint-scala",
+    },
+  ],
+}
+`;

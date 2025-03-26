@@ -26,7 +26,7 @@ struct TextRange {
 pub struct Radarlint {}
 
 impl Parser for Radarlint {
-    fn parse(&self, _plugin_name: &str, output: &str) -> Result<Vec<Issue>> {
+    fn parse(&self, plugin_name: &str, output: &str) -> Result<Vec<Issue>> {
         let mut issues = vec![];
 
         output.trim().lines().for_each(|radarlint_output| {
@@ -35,7 +35,7 @@ impl Parser for Radarlint {
             let rule_key = radarlint_issue.rule_key.replace(":", "/");
 
             let issue = Issue {
-                tool: "radarlint".to_string(),
+                tool: plugin_name.to_string(),
                 rule_key,
                 message: radarlint_issue.primary_message,
                 level: Radarlint::severity_to_level(&radarlint_issue.severity).into(),

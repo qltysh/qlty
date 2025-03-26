@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`linter=radarlint fixture=batch version=1.0.1 1`] = `
+exports[`linter=radarlint-java fixture=batch version=1.1.3 1`] = `
 {
   "issues": [
     {
@@ -33,7 +33,7 @@ public class Foo {
   // invalid
   private void should_be_static() {
     System.out.println("Foo");",
-      "tool": "radarlint",
+      "tool": "radarlint-java",
     },
     {
       "category": "CATEGORY_LINT",
@@ -66,7 +66,7 @@ public class Foo {
   }
   
 }",
-      "tool": "radarlint",
+      "tool": "radarlint-java",
     },
     {
       "category": "CATEGORY_LINT",
@@ -98,7 +98,7 @@ public class Foo {
   }
   
 }",
-      "tool": "radarlint",
+      "tool": "radarlint-java",
     },
     {
       "category": "CATEGORY_LINT",
@@ -133,7 +133,7 @@ class HasIssue {
         String c = a;
         b = c;
 ",
-      "tool": "radarlint",
+      "tool": "radarlint-java",
     },
     {
       "category": "CATEGORY_LINT",
@@ -168,7 +168,7 @@ public class Foo {
   }
   
 }",
-      "tool": "radarlint",
+      "tool": "radarlint-java",
     },
     {
       "category": "CATEGORY_LINT",
@@ -197,7 +197,7 @@ class HasIssue {
         }
     }
 ",
-      "tool": "radarlint",
+      "tool": "radarlint-java",
     },
     {
       "category": "CATEGORY_LINT",
@@ -231,7 +231,7 @@ class HasIssue {
         String a = b;
         String c = a;
         b = c;",
-      "tool": "radarlint",
+      "tool": "radarlint-java",
     },
     {
       "category": "CATEGORY_LINT",
@@ -260,7 +260,7 @@ public class Foo {
     should_be_static();
   }
   ",
-      "tool": "radarlint",
+      "tool": "radarlint-java",
     },
     {
       "category": "CATEGORY_LINT",
@@ -289,7 +289,7 @@ class HasIssue {
         }
     }
 ",
-      "tool": "radarlint",
+      "tool": "radarlint-java",
     },
     {
       "category": "CATEGORY_LINT",
@@ -323,7 +323,7 @@ class HasIssue {
         lock.tryLock(); // Noncompliant
     }
 }",
-      "tool": "radarlint",
+      "tool": "radarlint-java",
     },
   ],
 }
