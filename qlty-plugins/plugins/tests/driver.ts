@@ -80,7 +80,9 @@ export class QltyDriver {
   }
 
   async setUp(input: string) {
-    fs.mkdirSync(path.resolve(this.sandboxPath, TEMP_SUBDIR), { recursive: true });
+    fs.mkdirSync(path.resolve(this.sandboxPath, TEMP_SUBDIR), {
+      recursive: true,
+    });
     this.debug(
       "Created sandbox %s from %s",
       this.sandboxPath,
