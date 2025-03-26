@@ -19,7 +19,7 @@ const execFilePromise = util.promisify(execFile);
 
 const FIXTURES_DIR = "fixtures";
 const TEMP_PREFIX = "plugins_";
-const TEMP_SUBDIR = "tmp";
+const TEMP_SUBDIR = ".qlty/tmp";
 const SNAPSHOTS_DIR = "__snapshots__";
 export const REPO_ROOT = path.resolve(__dirname, "..");
 
@@ -80,7 +80,7 @@ export class QltyDriver {
   }
 
   async setUp(input: string) {
-    fs.mkdirSync(path.resolve(this.sandboxPath, TEMP_SUBDIR));
+    fs.mkdirSync(path.resolve(this.sandboxPath, TEMP_SUBDIR), { recursive: true });
     this.debug(
       "Created sandbox %s from %s",
       this.sandboxPath,
@@ -325,7 +325,7 @@ default = true
   getGitIgnoreContents(): string {
     return `.qlty/logs/
 .qlty/out/
-/tmp/
+.qlty/tmp/
 `;
   }
 }
