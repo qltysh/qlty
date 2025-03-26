@@ -23,4 +23,4 @@ suggested = "targets"
 
 [[plugins.definitions.radarlint-js.environment]]
 name = "PATH"
-list = ["${runtime}/bin", "${runtime}/Content/Home/bin", "${env.PATH}"]
+list = ["${runtime}/bin", "${runtime}/Contents/Home/bin", "${env.PATH}"]
