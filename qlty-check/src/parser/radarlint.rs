@@ -32,7 +32,7 @@ impl Parser for Radarlint {
         output.trim().lines().for_each(|radarlint_output| {
             let radarlint_issue: RadarlintIssue = serde_json::from_str(radarlint_output).unwrap();
 
-            let rule_key = radarlint_issue.rule_key.replace(":", "/");
+            let rule_key = radarlint_issue.rule_key.replace(":", ".");
 
             let issue = Issue {
                 tool: plugin_name.to_string(),
