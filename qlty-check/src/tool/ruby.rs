@@ -42,6 +42,19 @@ pub trait PlatformRuby {
         self.install_load_path_script(tool)
     }
 
+    // Install a script that resets the $LOAD_PATH ($:) to move RUBYLIB paths out of the prepended values.
+    // Ruby has magical internal behavior that forces RUBYLIB to the front of $LOAD_PATH until it is modified.
+    // This is necessary because without this reset, the contents of RUBYLIB will always precede any load path
+    // adjustments by RubyGems, which forces builtin libraries to take precedence over the gemified counterparts.
+    // In other words, `require 'json'` will use the Ruby builtin version instead of the gem version.
+    //
+    // A side benefit of this method is that we can remove the compiled in values (/opt/hostedtoolcache/...) that
+    // may cause red-herring load issues in the future.
+    //
+    // This script is used in conjunction with RUBYOPT=-rqlty_load_path to always reset the load path on startup.
+    //
+    // Note that $:.unshift() is not used because even though RubyGems has not yet loaded any paths, using this
+    // method forces the added paths to always be prepended. RubyGems will add paths after these unshifted values.
     fn install_load_path_script(&self, tool: &dyn Tool) -> Result<()> {
         fs::write(
             join_path_string!(tool.directory(), "lib", "ruby", "qlty_load_path.rb"),
