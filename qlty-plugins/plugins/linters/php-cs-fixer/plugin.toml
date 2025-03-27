@@ -15,7 +15,7 @@ suggested = "targets"
 script = "php -d memory_limit=-1 ${linter}/vendor/bin/php-cs-fixer fix --using-cache=no --show-progress=none ${target}"
 success_codes = [0]
 output = "rewrite"
-batch = true
+batch = false
 cache_results = true
 driver_type = "formatter"
 suggested = "targets"
