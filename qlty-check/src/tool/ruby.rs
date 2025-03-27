@@ -531,7 +531,11 @@ pub mod test {
             );
             assert_eq!(env.get("BUNDLE_PATH"), None);
             assert_eq!(env.get("BUNDLE_GEMFILE"), None);
-            assert_eq!(env.get("RUBYOPT"), Some(&"-rqlty_load_path".to_string()));
+            if cfg!(windows) {
+                assert_eq!(env.get("RUBYOPT"), None);
+            } else {
+                assert_eq!(env.get("RUBYOPT"), Some(&"-rqlty_load_path".to_string()));
+            }
             Ok(())
         });
     }
