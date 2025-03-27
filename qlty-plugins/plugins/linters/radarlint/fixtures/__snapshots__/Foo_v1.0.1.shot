@@ -17,7 +17,7 @@ exports[`linter=radarlint fixture=Foo version=1.0.1 1`] = `
       },
       "message": "Rename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.",
       "mode": "MODE_BLOCK",
-      "ruleKey": "java/S100",
+      "ruleKey": "java.S100",
       "snippet": "  public void call_echo() {",
       "snippetWithContext": "package foo;
 
@@ -49,7 +49,7 @@ public class Foo {
       },
       "message": "Rename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.",
       "mode": "MODE_BLOCK",
-      "ruleKey": "java/S100",
+      "ruleKey": "java.S100",
       "snippet": "  private void should_be_static() {",
       "snippetWithContext": "public class Foo {
   public void call_echo() {
@@ -82,7 +82,7 @@ public class Foo {
       },
       "message": "Replace this use of System.out by a logger.",
       "mode": "MODE_BLOCK",
-      "ruleKey": "java/S106",
+      "ruleKey": "java.S106",
       "snippet": "    System.out.println("Foo");",
       "snippetWithContext": "  public void call_echo() {
     echo(3);
@@ -114,7 +114,7 @@ public class Foo {
       },
       "message": "Remove this unused method parameter "i".",
       "mode": "MODE_BLOCK",
-      "ruleKey": "java/S1172",
+      "ruleKey": "java.S1172",
       "snippet": "  public void echo(int i) {",
       "snippetWithContext": "package foo;
 
@@ -149,7 +149,7 @@ public class Foo {
       },
       "message": "This file "Foo.in.java" should be located in "foo" directory, not in "".",
       "mode": "MODE_BLOCK",
-      "ruleKey": "java/S1598",
+      "ruleKey": "java.S1598",
       "snippet": "package foo;",
       "snippetWithContext": "package foo;
 

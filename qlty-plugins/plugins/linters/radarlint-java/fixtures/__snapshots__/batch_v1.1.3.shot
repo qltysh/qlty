@@ -17,7 +17,7 @@ exports[`linter=radarlint-java fixture=batch version=1.1.3 1`] = `
       },
       "message": "Rename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.",
       "mode": "MODE_BLOCK",
-      "ruleKey": "java/S100",
+      "ruleKey": "java.S100",
       "snippet": "  public void call_echo() {",
       "snippetWithContext": "package foo;
 
@@ -49,7 +49,7 @@ public class Foo {
       },
       "message": "Rename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.",
       "mode": "MODE_BLOCK",
-      "ruleKey": "java/S100",
+      "ruleKey": "java.S100",
       "snippet": "  private void should_be_static() {",
       "snippetWithContext": "public class Foo {
   public void call_echo() {
@@ -82,7 +82,7 @@ public class Foo {
       },
       "message": "Replace this use of System.out by a logger.",
       "mode": "MODE_BLOCK",
-      "ruleKey": "java/S106",
+      "ruleKey": "java.S106",
       "snippet": "    System.out.println("Foo");",
       "snippetWithContext": "  public void call_echo() {
     echo(3);
@@ -114,7 +114,7 @@ public class Foo {
       },
       "message": "Replace this use of System.out by a logger.",
       "mode": "MODE_BLOCK",
-      "ruleKey": "java/S106",
+      "ruleKey": "java.S106",
       "snippet": "                System.out.println("Hello");",
       "snippetWithContext": "package pkg1;
 
@@ -149,7 +149,7 @@ class HasIssue {
       },
       "message": "Remove this unused method parameter "i".",
       "mode": "MODE_BLOCK",
-      "ruleKey": "java/S1172",
+      "ruleKey": "java.S1172",
       "snippet": "  public void echo(int i) {",
       "snippetWithContext": "package foo;
 
@@ -184,7 +184,7 @@ public class Foo {
       },
       "message": "Rename this package name to match the regular expression '^[a-z_]+(\\.[a-z_][a-z0-9_]*)*$'.",
       "mode": "MODE_BLOCK",
-      "ruleKey": "java/S120",
+      "ruleKey": "java.S120",
       "snippet": "package pkg1;",
       "snippetWithContext": "package pkg1;
 
@@ -213,7 +213,7 @@ class HasIssue {
       },
       "message": "Refactor the code in order to not assign to this loop counter from within the loop body.",
       "mode": "MODE_BLOCK",
-      "ruleKey": "java/S127",
+      "ruleKey": "java.S127",
       "snippet": "            for (int k = 0; k < 20; i++) {",
       "snippetWithContext": "package pkg1;
 
@@ -247,7 +247,7 @@ class HasIssue {
       },
       "message": "This file "Foo.java" should be located in "foo" directory, not in "".",
       "mode": "MODE_BLOCK",
-      "ruleKey": "java/S1598",
+      "ruleKey": "java.S1598",
       "snippet": "package foo;",
       "snippetWithContext": "package foo;
 
@@ -276,7 +276,7 @@ public class Foo {
       },
       "message": "This file "HasIssue.java" should be located in "pkg1" directory, not in "".",
       "mode": "MODE_BLOCK",
-      "ruleKey": "java/S1598",
+      "ruleKey": "java.S1598",
       "snippet": "package pkg1;",
       "snippetWithContext": "package pkg1;
 
@@ -305,7 +305,7 @@ class HasIssue {
       },
       "message": "Remove this useless assignment to local variable "b".",
       "mode": "MODE_BLOCK",
-      "ruleKey": "java/S1854",
+      "ruleKey": "java.S1854",
       "snippet": "        b = c;",
       "snippetWithContext": "            for (int k = 0; k < 20; i++) {
                 System.out.println("Hello");

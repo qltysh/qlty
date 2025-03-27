@@ -17,7 +17,7 @@ exports[`linter=radarlint-js fixture=foo version=1.1.3 1`] = `
       },
       "message": "Take the required action to fix the issue indicated by this comment.",
       "mode": "MODE_BLOCK",
-      "ruleKey": "javascript/S1134",
+      "ruleKey": "javascript.S1134",
       "snippet": "  // FIXME: This is a bug",
       "snippetWithContext": "// TODO: Refactor this function
 function main() {
@@ -40,7 +40,7 @@ function main() {
       },
       "message": "Complete the task associated to this "TODO" comment.",
       "mode": "MODE_BLOCK",
-      "ruleKey": "javascript/S1135",
+      "ruleKey": "javascript.S1135",
       "snippet": "// TODO: Refactor this function",
       "snippetWithContext": "// TODO: Refactor this function
 function main() {
