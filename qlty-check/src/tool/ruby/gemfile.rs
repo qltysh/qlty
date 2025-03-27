@@ -171,7 +171,10 @@ impl RubyGemfile {
                 .to_string(),
         );
 
-        env.insert("RUBYOPT".to_string(), "-rbundler/setup".to_string());
+        env.insert(
+            "RUBYOPT".to_string(),
+            "-rqlty_load_path -rbundler/setup".to_string(),
+        );
         env.insert("BUNDLE_JOBS".to_string(), "4".to_string());
         env.insert("BUNDLE_RETRY".to_string(), "3".to_string());
     }
@@ -237,7 +240,10 @@ mod test {
                 env.get("BUNDLE_GEMFILE").unwrap(),
                 &path_to_native_string(filtered_package_file_path.to_str().unwrap())
             );
-            assert_eq!(env.get("RUBYOPT").unwrap(), "-rbundler/setup");
+            assert_eq!(
+                env.get("RUBYOPT").unwrap(),
+                "-rqlty_load_path -rbundler/setup"
+            );
             assert_eq!(
                 split_paths(env.get("PATH").unwrap())
                     .take(2)
@@ -318,7 +324,10 @@ mod test {
                 env.get("BUNDLE_GEMFILE").unwrap(),
                 &path_to_native_string(filtered_package_file_path.to_str().unwrap())
             );
-            assert_eq!(env.get("RUBYOPT").unwrap(), "-rbundler/setup");
+            assert_eq!(
+                env.get("RUBYOPT").unwrap(),
+                "-rqlty_load_path -rbundler/setup"
+            );
             assert_eq!(
                 split_paths(env.get("PATH").unwrap())
                     .take(2)

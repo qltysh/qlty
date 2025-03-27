@@ -13,10 +13,11 @@ use qlty_analysis::join_path_string;
 use qlty_analysis::utils::fs::{path_to_native_string, path_to_string};
 use qlty_config::config::{Cpu, DownloadDef, System};
 use qlty_config::config::{OperatingSystem, PluginDef};
+use sha2::Digest;
 use std::collections::HashMap;
 use std::env::join_paths;
 use std::fmt::Debug;
-use std::fs::read_dir;
+use std::fs::{self, read_dir};
 use tracing::debug;
 
 #[derive(Debug, Clone)]
@@ -37,44 +38,63 @@ pub trait PlatformRuby {
 
     fn install(&self, tool: &dyn Tool, task: &ProgressTask, download: Download) -> Result<()> {
         task.set_message("Installing Ruby");
-        download.install(tool)
+        download.install(tool)?;
+        self.install_load_path_script(tool)
     }
 
-    fn insert_rubylib_env(&self, tool: &dyn Tool, env: &mut HashMap<String, String>) {
+    fn install_load_path_script(&self, tool: &dyn Tool) -> Result<()> {
+        fs::write(
+            join_path_string!(tool.directory(), "lib", "ruby", "qlty_load_path.rb"),
+            format!(
+                "$:.clear;$:.push({})",
+                self.rubylib_paths(tool)
+                    .iter()
+                    .map(|path| format!("{:?}", path))
+                    .collect_vec()
+                    .join(",")
+            ),
+        )?;
+        Ok(())
+    }
+
+    fn rubylib_paths(&self, tool: &dyn Tool) -> Vec<String> {
         let major_version = self.major_version(tool);
         let platform_directory = self.platform_directory(tool);
         let lib_prefix = join_path_string!(tool.directory(), "lib", "ruby");
+        ["site_ruby", "vendor_ruby", ""]
+            .iter()
+            .flat_map(|dir| {
+                let mut major_version = major_version.clone();
+                let entries_path = join_path_string!(&lib_prefix, dir);
+                if let Ok(entries) = read_dir(entries_path) {
+                    for entry in entries.flatten().filter(|entry| entry.path().is_dir()) {
+                        if path_to_string(entry.file_name()).starts_with(&major_version) {
+                            major_version = path_to_string(entry.file_name());
+                            break;
+                        }
+                    }
+                }
+
+                [
+                    join_path_string!(dir, &major_version),
+                    join_path_string!(dir, &major_version, &platform_directory),
+                    join_path_string!(dir),
+                ]
+                .iter()
+                .map(|path| join_path_string!(&lib_prefix, path))
+                .collect_vec()
+            })
+            .collect_vec()
+    }
+
+    fn insert_rubylib_env(&self, tool: &dyn Tool, env: &mut HashMap<String, String>) {
+        env.insert("RUBYOPT".to_string(), "-rqlty_load_path".to_string());
         env.insert(
             "RUBYLIB".to_string(),
-            join_paths(
-                ["site_ruby", "vendor_ruby", ""]
-                    .iter()
-                    .flat_map(|dir| {
-                        let mut major_version = major_version.clone();
-                        let entries_path = join_path_string!(&lib_prefix, dir);
-                        if let Ok(entries) = read_dir(entries_path) {
-                            for entry in entries.flatten().filter(|entry| entry.path().is_dir()) {
-                                if path_to_string(entry.file_name()).starts_with(&major_version) {
-                                    major_version = path_to_string(entry.file_name());
-                                    break;
-                                }
-                            }
-                        }
-
-                        [
-                            join_path_string!(dir, &major_version),
-                            join_path_string!(dir, &major_version, &platform_directory),
-                            join_path_string!(dir),
-                        ]
-                        .iter()
-                        .map(|path| join_path_string!(&lib_prefix, path))
-                        .collect_vec()
-                    })
-                    .collect_vec(),
-            )
-            .unwrap_or_default()
-            .to_string_lossy()
-            .to_string(),
+            join_paths(self.rubylib_paths(tool))
+                .unwrap_or_default()
+                .to_string_lossy()
+                .to_string(),
         );
     }
 
@@ -85,6 +105,7 @@ pub trait PlatformRuby {
         download: Download,
     ) -> Result<()> {
         download.update_hash(sha, &tool.name());
+        sha.update("qlty_load_path:v1".as_bytes());
         Ok(())
     }
 
@@ -510,7 +531,7 @@ pub mod test {
             );
             assert_eq!(env.get("BUNDLE_PATH"), None);
             assert_eq!(env.get("BUNDLE_GEMFILE"), None);
-            assert_eq!(env.get("RUBYOPT"), None);
+            assert_eq!(env.get("RUBYOPT"), Some(&"-rqlty_load_path".to_string()));
             Ok(())
         });
     }
