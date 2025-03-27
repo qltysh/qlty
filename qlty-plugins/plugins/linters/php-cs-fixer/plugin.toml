@@ -20,10 +20,12 @@ cache_results = true
 driver_type = "formatter"
 suggested = "targets"
 
+# To get the local php config, since php is installed by user and not qlty
 [[plugins.definitions.php-cs-fixer.environment]]
 name = "PHP_INI_SCAN_DIR"
 value = "${env.PHP_INI_SCAN_DIR}"
 
+# Make sure it ignores php version warnings
 [[plugins.definitions.php-cs-fixer.environment]]
 name = "PHP_CS_FIXER_IGNORE_ENV"
 value = "true"
