@@ -46,7 +46,7 @@ pub trait PlatformRuby {
         fs::write(
             join_path_string!(tool.directory(), "lib", "ruby", "qlty_load_path.rb"),
             format!(
-                "$:.clear;$:.push({})",
+                "$:.replace [{}]",
                 self.rubylib_paths(tool)
                     .iter()
                     .map(|path| format!("{:?}", path))
