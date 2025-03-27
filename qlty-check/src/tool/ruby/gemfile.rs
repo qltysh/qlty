@@ -4,6 +4,7 @@ use crate::tool::installations::initialize_installation;
 use crate::ui::ProgressBar;
 use crate::{tool::Tool, ui::ProgressTask};
 use anyhow::{bail, Context, Result};
+use itertools::Itertools;
 use qlty_analysis::{join_path_string, utils::fs::path_to_native_string};
 use std::{collections::HashMap, path::PathBuf};
 use tracing::{debug, info};
@@ -171,9 +172,17 @@ impl RubyGemfile {
                 .to_string(),
         );
 
+        let rubyopt_prefix = if let Some(runtime) = self.runtime() {
+            runtime.env().get("RUBYOPT").cloned()
+        } else {
+            None
+        };
         env.insert(
             "RUBYOPT".to_string(),
-            "-rqlty_load_path -rbundler/setup".to_string(),
+            [rubyopt_prefix, Some("-rbundler/setup".to_string())]
+                .iter()
+                .flatten()
+                .join(" "),
         );
         env.insert("BUNDLE_JOBS".to_string(), "4".to_string());
         env.insert("BUNDLE_RETRY".to_string(), "3".to_string());
@@ -240,10 +249,14 @@ mod test {
                 env.get("BUNDLE_GEMFILE").unwrap(),
                 &path_to_native_string(filtered_package_file_path.to_str().unwrap())
             );
-            assert_eq!(
-                env.get("RUBYOPT").unwrap(),
-                "-rqlty_load_path -rbundler/setup"
-            );
+            if cfg!(windows) {
+                assert_eq!(env.get("RUBYOPT").unwrap(), "-rbundler/setup");
+            } else {
+                assert_eq!(
+                    env.get("RUBYOPT").unwrap(),
+                    "-rqlty_load_path -rbundler/setup"
+                );
+            }
             assert_eq!(
                 split_paths(env.get("PATH").unwrap())
                     .take(2)
@@ -324,10 +337,14 @@ mod test {
                 env.get("BUNDLE_GEMFILE").unwrap(),
                 &path_to_native_string(filtered_package_file_path.to_str().unwrap())
             );
-            assert_eq!(
-                env.get("RUBYOPT").unwrap(),
-                "-rqlty_load_path -rbundler/setup"
-            );
+            if cfg!(windows) {
+                assert_eq!(env.get("RUBYOPT").unwrap(), "-rbundler/setup");
+            } else {
+                assert_eq!(
+                    env.get("RUBYOPT").unwrap(),
+                    "-rqlty_load_path -rbundler/setup"
+                );
+            }
             assert_eq!(
                 split_paths(env.get("PATH").unwrap())
                     .take(2)
