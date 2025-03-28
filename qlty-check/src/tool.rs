@@ -110,6 +110,10 @@ pub trait Tool: Debug + Sync + Send {
         )
     }
 
+    fn debug_files_directory(&self) -> String {
+        format!("{}-installation-debug-files", self.directory())
+    }
+
     fn runtime(&self) -> Option<Box<dyn Tool>> {
         None
     }
