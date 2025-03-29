@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 struct RadarlintIssue {
+    #[serde(default = "default_severity")]
     severity: String,
     rule_key: String,
     primary_message: String,
@@ -16,10 +17,10 @@ struct RadarlintIssue {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 struct TextRange {
-    start_line: u32,
-    start_line_offset: u32,
-    end_line: u32,
-    end_line_offset: u32,
+    start_line: i32,
+    start_line_offset: i32,
+    end_line: i32,
+    end_line_offset: i32,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
@@ -29,8 +30,16 @@ impl Parser for Radarlint {
     fn parse(&self, plugin_name: &str, output: &str) -> Result<Vec<Issue>> {
         let mut issues = vec![];
 
-        output.trim().lines().for_each(|radarlint_output| {
-            let radarlint_issue: RadarlintIssue = serde_json::from_str(radarlint_output).unwrap();
+        for (line_idx, radarlint_output) in output.trim().lines().enumerate() {
+            let radarlint_issue: RadarlintIssue =
+                serde_json::from_str(radarlint_output).map_err(|err| {
+                    anyhow::anyhow!(
+                        "Failed to parse Radarlint output at line {}: {}\nOutput: {}",
+                        line_idx + 1,
+                        err,
+                        radarlint_output
+                    )
+                })?;
 
             let rule_key = radarlint_issue.rule_key.replace(":", ".");
 
@@ -53,11 +62,12 @@ impl Parser for Radarlint {
                             })
                         },
                         |text_range| {
+                            // Convert values to u32, treating negative values as 0
                             Some(Range {
-                                start_line: text_range.start_line,
-                                start_column: text_range.start_line_offset,
-                                end_line: text_range.end_line,
-                                end_column: text_range.end_line_offset,
+                                start_line: text_range.start_line.max(0) as u32,
+                                start_column: text_range.start_line_offset.max(0) as u32,
+                                end_line: text_range.end_line.max(0) as u32,
+                                end_column: text_range.end_line_offset.max(0) as u32,
                                 ..Default::default()
                             })
                         },
@@ -67,10 +77,15 @@ impl Parser for Radarlint {
             };
 
             issues.push(issue);
-        });
+        }
 
         Ok(issues)
     }
+}
+
+// Default severity function for serde
+fn default_severity() -> String {
+    "MAJOR".to_string()
 }
 
 impl Radarlint {
@@ -170,5 +185,75 @@ mod test {
             path: "file:///Users/arslan/work/code_climate/plugins/Empty.java"
             range: {}
         "#);
+    }
+
+    #[test]
+    fn parse_fails_on_invalid_json() {
+        let input = r###"
+        {"severity":"MINOR","ruleKey":"java:S100","primaryMessage":"Valid issue","fileUri":"file:///path/to/file.java","textRange":{"startLine":1,"startLineOffset":2,"endLine":3,"endLineOffset":4}}
+        This is not valid JSON and should cause parser to return Err
+        {"severity":"MAJOR","ruleKey":"java:S101","primaryMessage":"Another valid issue","fileUri":"file:///path/to/another.java","textRange":{"startLine":5,"startLineOffset":6,"endLine":7,"endLineOffset":8}}
+        "###;
+
+        let result = Radarlint::default().parse("radarlint", input);
+        assert!(result.is_err());
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("Failed to parse Radarlint output"));
+    }
+
+    #[test]
+    fn parse_negative_range_values() {
+        let input = r###"
+        {"severity":"CRITICAL","ruleKey":"java:S1598","primaryMessage":"Issue with negative range","fileUri":"file:///path/to/file.java","textRange":{"startLine":-1,"startLineOffset":-1,"endLine":-1,"endLineOffset":-1}}
+        "###;
+
+        let issues = Radarlint::default().parse("radarlint", input).unwrap();
+        assert_eq!(issues.len(), 1);
+
+        let issue = &issues[0];
+        assert_eq!(issue.rule_key, "java.S1598");
+        let range = issue.location.as_ref().unwrap().range.as_ref().unwrap();
+        assert_eq!(range.start_line, 0);
+        assert_eq!(range.start_column, 0);
+        assert_eq!(range.end_line, 0);
+        assert_eq!(range.end_column, 0);
+    }
+
+    #[test]
+    fn parse_fails_on_missing_required_fields() {
+        let input1 = r###"
+        {"ruleKey":"missing:fields","primaryMessage":"Missing file_uri field"}
+        "###;
+        let result1 = Radarlint::default().parse("radarlint", input1);
+        assert!(result1.is_err());
+        let err_msg = result1.unwrap_err().to_string();
+        assert!(err_msg.contains("fileUri"));
+
+        let input2 = r###"
+        {"primaryMessage":"Missing rule_key field","fileUri":"file:///path/to/file.java"}
+        "###;
+        let result2 = Radarlint::default().parse("radarlint", input2);
+        assert!(result2.is_err());
+        let err_msg = result2.unwrap_err().to_string();
+        assert!(err_msg.contains("ruleKey"));
+
+        let input3 = r###"
+        {"ruleKey":"missing:message","fileUri":"file:///path/to/file.java"}
+        "###;
+        let result3 = Radarlint::default().parse("radarlint", input3);
+        assert!(result3.is_err());
+        let err_msg = result3.unwrap_err().to_string();
+        assert!(err_msg.contains("primaryMessage"));
+
+        let input4 = r###"
+        {"ruleKey":"missing:severity","primaryMessage":"Missing severity field","fileUri":"file:///path/to/file.java"}
+        "###;
+        let result4 = Radarlint::default().parse("radarlint", input4);
+        assert!(result4.is_ok());
+        let issues = result4.unwrap();
+        assert_eq!(issues.len(), 1);
+        assert_eq!(issues[0].level, 40);
     }
 }
