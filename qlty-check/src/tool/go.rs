@@ -178,11 +178,11 @@ impl Tool for GoPackage {
         Box::new(self.clone())
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
-        vec![
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
+        Ok(vec![
             join_path_string!(self.directory(), "bin"),
             join_path_string!(self.runtime.directory(), "bin"),
-        ]
+        ])
     }
 
     fn plugin(&self) -> Option<PluginDef> {

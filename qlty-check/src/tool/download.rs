@@ -364,8 +364,8 @@ impl Tool for DownloadTool {
         Ok(())
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
-        vec![self.directory()]
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
+        Ok(vec![self.directory()])
     }
 
     fn clone_box(&self) -> Box<dyn Tool> {

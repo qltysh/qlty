@@ -180,8 +180,8 @@ impl Tool for Ruby {
         self.platform_tool.post_install(self, task)
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
-        self.platform_tool.extra_env_paths(self)
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
+        Ok(self.platform_tool.extra_env_paths(self))
     }
 
     fn extra_env_vars(&self) -> HashMap<String, String> {
@@ -375,7 +375,7 @@ impl Tool for RubygemsPackage {
         env
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
         if self.plugin.package_file.is_some() {
             if let Ok(version_paths) = read_dir(join_path_string!(self.directory(), "ruby")) {
                 let paths = version_paths
@@ -385,11 +385,11 @@ impl Tool for RubygemsPackage {
                     .map(|entry| path_to_native_string(entry.path().join("bin")))
                     .collect_vec();
                 if !paths.is_empty() {
-                    return paths;
+                    return Ok(paths);
                 }
             }
         }
-        vec![join_path_string!(self.directory(), "bin"), self.directory()]
+        Ok(vec![join_path_string!(self.directory(), "bin"), self.directory()])
     }
 
     fn clone_box(&self) -> Box<dyn Tool> {
