@@ -43,5 +43,5 @@ impl WorkspaceEntry {
 }
 
 pub trait WorkspaceEntrySource: std::fmt::Debug + Send + Sync {
-    fn entries(&self) -> Arc<Vec<WorkspaceEntry>>;
+    fn entries(&self) -> Result<Arc<Vec<WorkspaceEntry>>>;
 }

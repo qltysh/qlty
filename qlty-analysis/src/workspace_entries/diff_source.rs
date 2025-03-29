@@ -1,5 +1,6 @@
 use super::workspace_entry::{WorkspaceEntry, WorkspaceEntryKind};
 use crate::WorkspaceEntrySource;
+use anyhow::Result;
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -53,8 +54,8 @@ impl DiffSource {
 }
 
 impl WorkspaceEntrySource for DiffSource {
-    fn entries(&self) -> Arc<Vec<WorkspaceEntry>> {
-        self.entries.clone()
+    fn entries(&self) -> Result<Arc<Vec<WorkspaceEntry>>> {
+        Ok(self.entries.clone())
     }
 }
 

@@ -74,7 +74,8 @@ impl WorkspaceEntryFinder {
 
         let mut workspace_entries = vec![];
 
-        for workspace_entry in self.source.entries().iter() {
+        let entries = self.source.entries()?;
+        for workspace_entry in entries.iter() {
             if let Some(workspace_entry) = self.matcher.matches(workspace_entry.clone()) {
                 trace!("Adding workspace entry: {:?}", &workspace_entry);
                 workspace_entries.push(workspace_entry);

@@ -1,5 +1,6 @@
 use super::workspace_entry::{WorkspaceEntry, WorkspaceEntrySource};
 use crate::ArgsSource;
+use anyhow::Result;
 use core::fmt;
 use std::{path::PathBuf, sync::Arc};
 
@@ -29,7 +30,7 @@ impl AllSource {
 }
 
 impl WorkspaceEntrySource for AllSource {
-    fn entries(&self) -> Arc<Vec<WorkspaceEntry>> {
+    fn entries(&self) -> Result<Arc<Vec<WorkspaceEntry>>> {
         self.iter.entries()
     }
 }
@@ -47,7 +48,7 @@ mod test {
         let source = AllSource::new(root.path().to_path_buf());
         let mut paths = vec![];
 
-        for workspace_entry in source.entries().iter() {
+        for workspace_entry in source.entries().unwrap().iter() {
             let workspace_entry = workspace_entry.clone();
             paths.push((workspace_entry.path, workspace_entry.kind));
         }
@@ -84,7 +85,7 @@ mod test {
         let source = AllSource::new(root.path().to_path_buf());
         let mut paths = vec![];
 
-        for workspace_entry in source.entries().iter() {
+        for workspace_entry in source.entries().unwrap().iter() {
             paths.push(workspace_entry.clone().path);
         }
 
