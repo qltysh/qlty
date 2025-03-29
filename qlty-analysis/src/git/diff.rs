@@ -10,7 +10,7 @@ use std::{
     collections::HashSet,
     path::{Path, PathBuf},
 };
-use tracing::{debug, trace, warn};
+use tracing::{debug, error, trace};
 
 const PLUS: char = '+';
 
@@ -107,12 +107,14 @@ impl GitDiff {
                             if let Ok(files) = GitDiff::traverse_directory(absolute_path) {
                                 for file in files {
                                     // Convert back to a relative path
+                                    // We handle strip_prefix failures gracefully here
                                     match file.strip_prefix(&repo_path) {
                                         Ok(relative_path) => {
                                             index.borrow_mut().insert_file(relative_path);
                                         }
                                         Err(e) => {
-                                            warn!(
+                                            // Log the error but don't break the overall process
+                                            error!(
                                                 "Failed to strip prefix from path: {:?}, error: {}",
                                                 file, e
                                             );
@@ -141,15 +143,13 @@ impl GitDiff {
             }),
         )?;
 
-        match Rc::try_unwrap(index) {
-            Ok(cell) => Ok(cell.into_inner()),
-            Err(rc) => {
-                // This should be unlikely to happen as we're the only ones with a reference,
-                // but handle it gracefully just in case.
-                warn!("Unable to unwrap Rc in plus_lines_index, creating a clone of the index");
-                Ok(rc.borrow().clone())
-            }
-        }
+        // Unwrapping the Rc should not fail; if it does, it's a fatal error
+        let cell = Rc::try_unwrap(index).map_err(|_| {
+            anyhow::anyhow!(
+                "Unable to unwrap Rc in plus_lines_index, likely due to lingering references"
+            )
+        })?;
+        Ok(cell.into_inner())
     }
 
     fn traverse_directory(path: PathBuf) -> Result<Vec<PathBuf>, std::io::Error> {
@@ -164,14 +164,11 @@ impl GitDiff {
                             files.push(relative_path);
                         }
                     } else {
-                        warn!(
-                            "Git diff returned a path that is neither a file nor a directory: {:?}",
-                            entry.path()
-                        );
+                        error!("Couldn't get file type for {:?}", entry.path());
                     }
                 }
                 Err(e) => {
-                    warn!("Error walking directory: {}", e);
+                    error!("Error walking directory: {}", e);
                     // Continue with the next entry instead of terminating
                 }
             }
@@ -251,10 +248,7 @@ impl GitDiff {
                 }
             }
         } else {
-            warn!(
-                "Git diff returned a path that is neither a file nor a directory: {:?}",
-                entry.path()
-            );
+            error!("Couldn't get file type for {:?}", entry.path());
         }
     }
 
