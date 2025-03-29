@@ -95,15 +95,15 @@ impl GitDiff {
     fn plus_lines_index(diff: &git2::Diff, repo_path: PathBuf) -> Result<FileIndex> {
         let index = Rc::new(RefCell::new(FileIndex::new()));
 
-        // Use a shared error to capture any strip_prefix failures
+        // Use a shared error to capture any failures
         // (we can't directly return from the closure because it must return bool)
-        let strip_prefix_error = Rc::new(RefCell::new(None));
-        let strip_prefix_error_clone = strip_prefix_error.clone();
+        let error_sentinel = Rc::new(RefCell::new(None));
+        let error_sentinel_clone = error_sentinel.clone();
 
         let result = diff.foreach(
             &mut |delta, _progress| {
                 // If we've already encountered an error, skip processing
-                if strip_prefix_error_clone.borrow().is_some() {
+                if error_sentinel_clone.borrow().is_some() {
                     return false;
                 }
 
@@ -123,7 +123,7 @@ impl GitDiff {
                                         }
                                         Err(e) => {
                                             // Set the error and bail
-                                            *strip_prefix_error_clone.borrow_mut() =
+                                            *error_sentinel_clone.borrow_mut() =
                                                 Some(anyhow::anyhow!(
                                                 "Failed to strip prefix from path: {:?}, error: {}",
                                                 file, e
@@ -154,14 +154,14 @@ impl GitDiff {
             }),
         );
 
-        // Check if we had a strip_prefix error
-        if let Some(err) = strip_prefix_error.borrow_mut().take() {
+        // Check if we had an error
+        if let Some(err) = error_sentinel.borrow_mut().take() {
             return Err(err);
         }
 
         // Check if diff.foreach itself had an error
         if let Err(e) = result {
-            // If we had a strip_prefix error, it will be returned above
+            // If we had an error from our error_sentinel, it will be returned above
             // This handles other foreach errors
             return Err(e.into());
         }
