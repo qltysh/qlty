@@ -94,11 +94,19 @@ impl GitDiff {
 
     fn plus_lines_index(diff: &git2::Diff, repo_path: PathBuf) -> Result<FileIndex> {
         let index = Rc::new(RefCell::new(FileIndex::new()));
-        // Track any prefix strip errors
-        let mut strip_prefix_errors = Vec::new();
 
-        diff.foreach(
+        // Use a shared error to capture any strip_prefix failures
+        // (we can't directly return from the closure because it must return bool)
+        let strip_prefix_error = Rc::new(RefCell::new(None));
+        let strip_prefix_error_clone = strip_prefix_error.clone();
+
+        let result = diff.foreach(
             &mut |delta, _progress| {
+                // If we've already encountered an error, skip processing
+                if strip_prefix_error_clone.borrow().is_some() {
+                    return false;
+                }
+
                 if delta.status() == git2::Delta::Untracked {
                     if let Some(new_path) = delta.new_file().path() {
                         // Construct the absolute path for checking fs
@@ -114,11 +122,13 @@ impl GitDiff {
                                             index.borrow_mut().insert_file(relative_path);
                                         }
                                         Err(e) => {
-                                            // Store the error for later
-                                            strip_prefix_errors.push(format!(
+                                            // Set the error and bail
+                                            *strip_prefix_error_clone.borrow_mut() =
+                                                Some(anyhow::anyhow!(
                                                 "Failed to strip prefix from path: {:?}, error: {}",
                                                 file, e
                                             ));
+                                            return false;
                                         }
                                     }
                                 }
@@ -142,14 +152,18 @@ impl GitDiff {
                 }
                 true
             }),
-        )?;
+        );
 
-        // After processing, if we encountered any strip_prefix errors, return an error
-        if !strip_prefix_errors.is_empty() {
-            return Err(anyhow::anyhow!(
-                "Strip prefix errors: {}",
-                strip_prefix_errors.join(", ")
-            ));
+        // Check if we had a strip_prefix error
+        if let Some(err) = strip_prefix_error.borrow_mut().take() {
+            return Err(err);
+        }
+
+        // Check if diff.foreach itself had an error
+        if let Err(e) = result {
+            // If we had a strip_prefix error, it will be returned above
+            // This handles other foreach errors
+            return Err(e.into());
         }
 
         // Unwrapping the Rc should not fail; if it does, it's a fatal error
