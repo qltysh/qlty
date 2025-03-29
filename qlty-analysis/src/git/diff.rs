@@ -94,6 +94,8 @@ impl GitDiff {
 
     fn plus_lines_index(diff: &git2::Diff, repo_path: PathBuf) -> Result<FileIndex> {
         let index = Rc::new(RefCell::new(FileIndex::new()));
+        // Track any prefix strip errors
+        let mut strip_prefix_errors = Vec::new();
 
         diff.foreach(
             &mut |delta, _progress| {
@@ -107,17 +109,16 @@ impl GitDiff {
                             if let Ok(files) = GitDiff::traverse_directory(absolute_path) {
                                 for file in files {
                                     // Convert back to a relative path
-                                    // We handle strip_prefix failures gracefully here
                                     match file.strip_prefix(&repo_path) {
                                         Ok(relative_path) => {
                                             index.borrow_mut().insert_file(relative_path);
                                         }
                                         Err(e) => {
-                                            // Log the error but don't break the overall process
-                                            error!(
+                                            // Store the error for later
+                                            strip_prefix_errors.push(format!(
                                                 "Failed to strip prefix from path: {:?}, error: {}",
                                                 file, e
-                                            );
+                                            ));
                                         }
                                     }
                                 }
@@ -142,6 +143,14 @@ impl GitDiff {
                 true
             }),
         )?;
+
+        // After processing, if we encountered any strip_prefix errors, return an error
+        if !strip_prefix_errors.is_empty() {
+            return Err(anyhow::anyhow!(
+                "Strip prefix errors: {}",
+                strip_prefix_errors.join(", ")
+            ));
+        }
 
         // Unwrapping the Rc should not fail; if it does, it's a fatal error
         let cell = Rc::try_unwrap(index).map_err(|_| {
