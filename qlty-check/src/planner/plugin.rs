@@ -40,7 +40,7 @@ mod tests {
     use crate::tool::null_tool::NullTool;
     use qlty_analysis::cache::NullCache;
     use std::path::PathBuf;
-    
+
     #[test]
     fn test_compute_workspace_entries_lock_error() {
         // Create a workspace_entry_finder_builder that will fail when locked
@@ -52,7 +52,7 @@ mod tests {
             panic!("This panic is intentional for testing");
         });
         let _ = handle.join(); // This should be an Err because the thread panicked
-        
+
         // Now create a PluginPlanner with the poisoned mutex
         let mut planner = PluginPlanner {
             formatters: false,
@@ -62,7 +62,9 @@ mod tests {
             plugin: PluginDef::default(),
             verb: ExecutionVerb::Check,
             settings: Settings::default(),
-            workspace: Workspace { root: PathBuf::from("/") },
+            workspace: Workspace {
+                root: PathBuf::from("/"),
+            },
             plugin_configs: vec![],
             issue_cache: IssueCache::new(Box::new(NullCache::new())),
             workspace_entries: Arc::new(vec![]),
@@ -75,7 +77,7 @@ mod tests {
             driver_planners: vec![],
             all_prefixes: vec![],
         };
-        
+
         // Verify that compute_workspace_entries returns an error instead of panicking
         let result = planner.compute_workspace_entries();
         assert!(result.is_err());
@@ -83,7 +85,11 @@ mod tests {
 }
 
 impl PluginPlanner {
-    pub fn new(planner: &Planner, active_plugin: ActivePlugin, all_prefixes: Vec<String>) -> Result<Self> {
+    pub fn new(
+        planner: &Planner,
+        active_plugin: ActivePlugin,
+        all_prefixes: Vec<String>,
+    ) -> Result<Self> {
         let plugin = active_plugin.plugin;
         let plugin_name = &active_plugin.name;
 
@@ -102,7 +108,9 @@ impl PluginPlanner {
             .context("Workspace entry finder builder is missing")?
             .clone();
 
-        let target_mode = planner.target_mode.clone()
+        let target_mode = planner
+            .target_mode
+            .clone()
             .context("Target mode is missing")?;
 
         Ok(Self {
@@ -169,9 +177,9 @@ impl PluginPlanner {
 
     fn compute_workspace_entries(&mut self) -> Result<()> {
         let mut workspace_entry_finder_builder =
-            self.workspace_entry_finder_builder
-                .lock()
-                .map_err(|_| anyhow::anyhow!("Failed to acquire lock on workspace_entry_finder_builder"))?;
+            self.workspace_entry_finder_builder.lock().map_err(|_| {
+                anyhow::anyhow!("Failed to acquire lock on workspace_entry_finder_builder")
+            })?;
         let prefix = workspace_entry_finder_builder.prefix.clone();
         if let Some(prefix) = &self.plugin.prefix {
             workspace_entry_finder_builder.prefix = Some(prefix.clone());

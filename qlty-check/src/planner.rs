@@ -9,7 +9,7 @@ use crate::patch_builder::PatchBuilder;
 use crate::planner::config_files::plugin_configs;
 use crate::planner::config_files::PluginConfigFile;
 use crate::Settings;
-use anyhow::{anyhow, bail, Error, Result};
+use anyhow::{bail, Error, Result};
 use check_filters::CheckFilters;
 use document_url_generator::DocumentUrlGenerator;
 use itertools::Itertools;
@@ -178,7 +178,11 @@ impl Planner {
                     .unwrap_or_default(),
             ) {
                 Ok(planner) => plugin_planners.push(planner),
-                Err(err) => bail!("Failed to create plugin planner for {}: {}", active_plugin.name, err),
+                Err(err) => bail!(
+                    "Failed to create plugin planner for {}: {}",
+                    active_plugin.name,
+                    err
+                ),
             }
         }
 
@@ -224,15 +228,19 @@ impl Planner {
                 return;
             }
         };
-        
-        let result = workspace_entry_finder_builder.clone().lock().map_err(|_| {
-            debug!("Failed to lock workspace entry finder builder");
-        }).and_then(|mut builder| {
-            builder.diff_line_filter().map_err(|_| {
-                debug!("Failed to get diff line filter");
+
+        let result = workspace_entry_finder_builder
+            .clone()
+            .lock()
+            .map_err(|_| {
+                debug!("Failed to lock workspace entry finder builder");
             })
-        });
-        
+            .and_then(|mut builder| {
+                builder.diff_line_filter().map_err(|_| {
+                    debug!("Failed to get diff line filter");
+                })
+            });
+
         if let Ok(diff_line_filter) = result {
             self.transformers.push(diff_line_filter);
 
@@ -279,10 +287,12 @@ impl Planner {
     }
 
     fn build_plan(&mut self) -> Result<Plan> {
-        let target_mode = self.target_mode.as_ref()
+        let target_mode = self
+            .target_mode
+            .as_ref()
             .ok_or_else(|| anyhow::anyhow!("Target mode not computed"))?
             .clone();
-            
+
         Ok(Plan {
             verb: self.verb,
             target_mode,
