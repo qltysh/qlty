@@ -62,33 +62,12 @@ impl Parser for Radarlint {
                             })
                         },
                         |text_range| {
-                            // Convert values to u32, treating -1 as non-existent (use 0 instead)
-                            let start_line = if text_range.start_line < 0 {
-                                0
-                            } else {
-                                text_range.start_line as u32
-                            };
-                            let start_column = if text_range.start_line_offset < 0 {
-                                0
-                            } else {
-                                text_range.start_line_offset as u32
-                            };
-                            let end_line = if text_range.end_line < 0 {
-                                0
-                            } else {
-                                text_range.end_line as u32
-                            };
-                            let end_column = if text_range.end_line_offset < 0 {
-                                0
-                            } else {
-                                text_range.end_line_offset as u32
-                            };
-
+                            // Convert values to u32, treating negative values as 0
                             Some(Range {
-                                start_line,
-                                start_column,
-                                end_line,
-                                end_column,
+                                start_line: text_range.start_line.max(0) as u32,
+                                start_column: text_range.start_line_offset.max(0) as u32,
+                                end_line: text_range.end_line.max(0) as u32,
+                                end_column: text_range.end_line_offset.max(0) as u32,
                                 ..Default::default()
                             })
                         },
