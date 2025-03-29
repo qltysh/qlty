@@ -36,7 +36,7 @@ impl Tool for NodeJS {
     }
 
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
-        self.download().update_hash(sha, &self.name());
+        self.download().update_hash(sha, &self.name())?;
         Ok(())
     }
 

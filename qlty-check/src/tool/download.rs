@@ -83,10 +83,11 @@ impl Download {
         }
     }
 
-    pub fn update_hash(&self, hasher: &mut Sha256, tool_name: &str) {
+    pub fn update_hash(&self, hasher: &mut Sha256, tool_name: &str) -> Result<()> {
         hasher.update(tool_name);
-        hasher.update(&self.url().unwrap());
+        hasher.update(&self.url()?);
         hasher.update(format!("{:?}", self.file_type()));
+        Ok(())
     }
 
     pub fn install(&self, tool: &dyn Tool) -> Result<()> {
@@ -193,7 +194,8 @@ impl Download {
                 let response_reader = response.into_reader();
                 let mut reader = BufReader::new(response_reader);
                 let mut tar: Vec<u8> = Vec::new();
-                lzma_rs::xz_decompress(&mut reader, &mut tar).unwrap();
+                lzma_rs::xz_decompress(&mut reader, &mut tar)
+                    .map_err(|e| anyhow!("Failed to decompress xz file: {:?}", e))?;
                 let cursor = Cursor::new(tar);
                 let mut archive = Archive::new(cursor);
                 self.extract_archive(&mut archive, directory)?;
@@ -250,13 +252,14 @@ impl Download {
                 self.extract_zip(file, directory)?;
                 Ok(())
             }
-            Err(_) => bail!("Error downloading file: {}", self.url().unwrap()),
+            Err(_) => bail!("Error downloading file: {}", self.url()?),
         }
     }
 
     fn extract_zip(&self, file: File, directory: &Path) -> Result<()> {
         info!("Extracting zip to {}", directory.display());
-        let mut archive = ZipArchive::new(file).unwrap();
+        let mut archive =
+            ZipArchive::new(file).map_err(|e| anyhow!("Failed to open zip archive: {}", e))?;
 
         let mut strip_component_count = 0;
         let strip_component = archive.file_names().count() > 1
@@ -267,14 +270,18 @@ impl Download {
 
         if strip_component {
             strip_component_count = 1;
+            let first_entry = archive.by_index(0)?;
+            let enclosed_name = first_entry
+                .enclosed_name()
+                .ok_or_else(|| anyhow!("Invalid path in zip archive"))?;
+            let first_component = enclosed_name
+                .components()
+                .next()
+                .ok_or_else(|| anyhow!("Empty path component in zip archive"))?;
+
             trace!(
                 "Detected shared root directory in zip, stripping: {}",
-                path_to_string(
-                    Path::new(&archive.by_index(0)?.enclosed_name().unwrap())
-                        .components()
-                        .next()
-                        .unwrap()
-                )
+                path_to_string(first_component)
             );
         }
 
@@ -353,7 +360,7 @@ impl Tool for DownloadTool {
     }
 
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
-        self.download.update_hash(sha, &self.name());
+        self.download.update_hash(sha, &self.name())?;
         Ok(())
     }
 
