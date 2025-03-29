@@ -185,14 +185,22 @@ impl RubyLinux {
         // decompress xz
         let mut tar_data: Vec<u8> = Vec::new();
         let mut buf_reader = BufReader::new(entry);
-        lzma_rs::xz_decompress(&mut buf_reader, &mut tar_data).unwrap();
+        lzma_rs::xz_decompress(&mut buf_reader, &mut tar_data)
+            .map_err(|e| anyhow::anyhow!("Failed to decompress XZ data: {}", e))?;
         let cursor = Cursor::new(tar_data);
 
         // extract matching extract_filenames from tar
         let mut data_archive = tar::Archive::new(cursor);
         for mut entry in data_archive.entries_with_seek()?.flatten() {
             let path = path_to_string(entry.path()?);
-            let filename = path.split('/').last().unwrap();
+
+            // Extract the filename from the path
+            let filename = match path.split('/').next_back() {
+                Some(filename) if !filename.is_empty() => filename,
+                Some(_) => bail!("Invalid path with empty filename component: {}", path),
+                None => bail!("Invalid path with no filename component: {}", path),
+            };
+
             let filename_matches = extract_filenames
                 .iter()
                 .find(|name| name.source == filename)
