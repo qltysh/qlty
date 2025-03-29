@@ -107,8 +107,17 @@ impl GitDiff {
                             if let Ok(files) = GitDiff::traverse_directory(absolute_path) {
                                 for file in files {
                                     // Convert back to a relative path
-                                    let relative_path = file.strip_prefix(&repo_path).unwrap();
-                                    index.borrow_mut().insert_file(relative_path);
+                                    match file.strip_prefix(&repo_path) {
+                                        Ok(relative_path) => {
+                                            index.borrow_mut().insert_file(relative_path);
+                                        }
+                                        Err(e) => {
+                                            warn!(
+                                                "Failed to strip prefix from path: {:?}, error: {}",
+                                                file, e
+                                            );
+                                        }
+                                    }
                                 }
                             }
                         } else {
@@ -132,25 +141,39 @@ impl GitDiff {
             }),
         )?;
 
-        Ok(Rc::try_unwrap(index).unwrap().into_inner())
+        match Rc::try_unwrap(index) {
+            Ok(cell) => Ok(cell.into_inner()),
+            Err(rc) => {
+                // This should be unlikely to happen as we're the only ones with a reference,
+                // but handle it gracefully just in case.
+                warn!("Unable to unwrap Rc in plus_lines_index, creating a clone of the index");
+                Ok(rc.borrow().clone())
+            }
+        }
     }
 
     fn traverse_directory(path: PathBuf) -> Result<Vec<PathBuf>, std::io::Error> {
         let mut files = Vec::new();
 
-        for entry in Self::walk_for_path(&path) {
-            let entry = entry.unwrap();
-
-            if let Some(file_type) = entry.file_type() {
-                if file_type.is_file() {
-                    let relative_path = entry.path().to_path_buf();
-                    files.push(relative_path);
+        for entry_result in Self::walk_for_path(&path) {
+            match entry_result {
+                Ok(entry) => {
+                    if let Some(file_type) = entry.file_type() {
+                        if file_type.is_file() {
+                            let relative_path = entry.path().to_path_buf();
+                            files.push(relative_path);
+                        }
+                    } else {
+                        warn!(
+                            "Git diff returned a path that is neither a file nor a directory: {:?}",
+                            entry.path()
+                        );
+                    }
                 }
-            } else {
-                warn!(
-                    "Git diff returned a path that is neither a file nor a directory: {:?}",
-                    entry.path()
-                );
+                Err(e) => {
+                    warn!("Error walking directory: {}", e);
+                    // Continue with the next entry instead of terminating
+                }
             }
         }
 
@@ -181,7 +204,9 @@ impl GitDiff {
         repository: &Repository,
     ) -> Result<HashSet<PathBuf>> {
         let mut delta_file_paths = HashSet::new();
-        let repository_work_dir = repository.workdir().unwrap();
+        let repository_work_dir = repository
+            .workdir()
+            .ok_or_else(|| anyhow::anyhow!("Repository workdir not found"))?;
 
         for path in delta_paths {
             let absolute_path = repository_work_dir.join(path);
@@ -234,7 +259,10 @@ impl GitDiff {
     }
 
     fn get_relative_path(path: &Path, repository: &Repository) -> Result<PathBuf> {
-        let relative_path = path.strip_prefix(repository.workdir().unwrap())?;
+        let workdir = repository
+            .workdir()
+            .ok_or_else(|| anyhow::anyhow!("Repository workdir not found"))?;
+        let relative_path = path.strip_prefix(workdir)?;
         Ok(relative_path.to_owned())
     }
 
