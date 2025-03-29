@@ -11,7 +11,7 @@ use serde_json::Value;
 use sha2::Digest;
 use std::env::split_paths;
 use std::path::PathBuf;
-use tracing::{debug, info};
+use tracing::{debug, error, info};
 
 use super::PhpPackage;
 
@@ -63,16 +63,10 @@ impl Tool for Composer {
         Box::new(self.clone())
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
-        match std::env::var("PATH") {
-            Ok(path) => split_paths(&path)
-                .map(path_to_native_string)
-                .collect_vec(),
-            Err(_) => {
-                debug!("PATH not found for composer, using empty path");
-                Vec::new()
-            }
-        }
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
+        std::env::var("PATH")
+            .with_context(|| "PATH environment variable not found for composer")
+            .map(|path| split_paths(&path).map(path_to_native_string).collect_vec())
     }
 }
 
@@ -81,8 +75,12 @@ impl Composer {
         info!("Installing composer package file");
         Self::update_composer_json(php_package)?;
         let composer_phar = PathBuf::from(self.directory()).join("composer.phar");
-        let composer_path = composer_phar.to_str()
-            .with_context(|| format!("Failed to convert composer path to string: {:?}", composer_phar))?;
+        let composer_path = composer_phar.to_str().with_context(|| {
+            format!(
+                "Failed to convert composer path to string: {:?}",
+                composer_phar
+            )
+        })?;
 
         let cmd = self
             .cmd
@@ -137,7 +135,10 @@ impl Composer {
     }
 
     fn filter_composer(php_package: &PhpPackage) -> Result<String> {
-        let package_file = php_package.plugin.package_file.as_ref()
+        let package_file = php_package
+            .plugin
+            .package_file
+            .as_ref()
             .with_context(|| "Missing package_file in plugin definition")?;
         let composer_file_contents = std::fs::read_to_string(package_file)?;
         let mut composer_json = serde_json::from_str::<Value>(&composer_file_contents)?;
@@ -183,7 +184,7 @@ impl Composer {
             data_json = match serde_json::from_str::<Value>(&contents) {
                 Ok(json) => json,
                 Err(err) => {
-                    debug!("Failed to parse existing composer.json: {}", err);
+                    error!("Failed to parse existing composer.json: {}", err);
                     Value::Object(serde_json::Map::new())
                 }
             };
