@@ -10,7 +10,7 @@ use std::{
     collections::HashSet,
     path::{Path, PathBuf},
 };
-use tracing::{debug, trace, warn};
+use tracing::{debug, error, trace};
 
 const PLUS: char = '+';
 
@@ -95,8 +95,18 @@ impl GitDiff {
     fn plus_lines_index(diff: &git2::Diff, repo_path: PathBuf) -> Result<FileIndex> {
         let index = Rc::new(RefCell::new(FileIndex::new()));
 
+        // Use a shared error to capture any failures
+        // (we can't directly return from the closure because it must return bool)
+        let error_sentinel = Rc::new(RefCell::new(None));
+        let error_sentinel_clone = error_sentinel.clone();
+
         diff.foreach(
             &mut |delta, _progress| {
+                // If we've already encountered an error, skip processing
+                if error_sentinel_clone.borrow().is_some() {
+                    return false;
+                }
+
                 if delta.status() == git2::Delta::Untracked {
                     if let Some(new_path) = delta.new_file().path() {
                         // Construct the absolute path for checking fs
@@ -107,8 +117,20 @@ impl GitDiff {
                             if let Ok(files) = GitDiff::traverse_directory(absolute_path) {
                                 for file in files {
                                     // Convert back to a relative path
-                                    let relative_path = file.strip_prefix(&repo_path).unwrap();
-                                    index.borrow_mut().insert_file(relative_path);
+                                    match file.strip_prefix(&repo_path) {
+                                        Ok(relative_path) => {
+                                            index.borrow_mut().insert_file(relative_path);
+                                        }
+                                        Err(e) => {
+                                            // Set the error and bail
+                                            *error_sentinel_clone.borrow_mut() =
+                                                Some(anyhow::anyhow!(
+                                                "Failed to strip prefix from path: {:?}, error: {}",
+                                                file, e
+                                            ));
+                                            return false;
+                                        }
+                                    }
                                 }
                             }
                         } else {
@@ -132,25 +154,39 @@ impl GitDiff {
             }),
         )?;
 
-        Ok(Rc::try_unwrap(index).unwrap().into_inner())
+        // Check if we had an error captured inside the closure
+        if let Some(err) = error_sentinel.borrow_mut().take() {
+            return Err(err);
+        }
+
+        // Unwrapping the Rc should not fail; if it does, it's a fatal error
+        let cell = Rc::try_unwrap(index).map_err(|_| {
+            anyhow::anyhow!(
+                "Unable to unwrap Rc in plus_lines_index, likely due to lingering references"
+            )
+        })?;
+        Ok(cell.into_inner())
     }
 
     fn traverse_directory(path: PathBuf) -> Result<Vec<PathBuf>, std::io::Error> {
         let mut files = Vec::new();
 
-        for entry in Self::walk_for_path(&path) {
-            let entry = entry.unwrap();
-
-            if let Some(file_type) = entry.file_type() {
-                if file_type.is_file() {
-                    let relative_path = entry.path().to_path_buf();
-                    files.push(relative_path);
+        for entry_result in Self::walk_for_path(&path) {
+            match entry_result {
+                Ok(entry) => {
+                    if let Some(file_type) = entry.file_type() {
+                        if file_type.is_file() {
+                            let relative_path = entry.path().to_path_buf();
+                            files.push(relative_path);
+                        }
+                    } else {
+                        error!("Couldn't get file type for {:?}", entry.path());
+                    }
                 }
-            } else {
-                warn!(
-                    "Git diff returned a path that is neither a file nor a directory: {:?}",
-                    entry.path()
-                );
+                Err(e) => {
+                    error!("Error walking directory: {}", e);
+                    // Continue with the next entry instead of terminating
+                }
             }
         }
 
@@ -181,7 +217,9 @@ impl GitDiff {
         repository: &Repository,
     ) -> Result<HashSet<PathBuf>> {
         let mut delta_file_paths = HashSet::new();
-        let repository_work_dir = repository.workdir().unwrap();
+        let repository_work_dir = repository
+            .workdir()
+            .ok_or_else(|| anyhow::anyhow!("Repository workdir not found"))?;
 
         for path in delta_paths {
             let absolute_path = repository_work_dir.join(path);
@@ -226,15 +264,15 @@ impl GitDiff {
                 }
             }
         } else {
-            warn!(
-                "Git diff returned a path that is neither a file nor a directory: {:?}",
-                entry.path()
-            );
+            error!("Couldn't get file type for {:?}", entry.path());
         }
     }
 
     fn get_relative_path(path: &Path, repository: &Repository) -> Result<PathBuf> {
-        let relative_path = path.strip_prefix(repository.workdir().unwrap())?;
+        let workdir = repository
+            .workdir()
+            .ok_or_else(|| anyhow::anyhow!("Repository workdir not found"))?;
+        let relative_path = path.strip_prefix(workdir)?;
         Ok(relative_path.to_owned())
     }
 
