@@ -532,7 +532,10 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn extra_env_paths(&self) -> Result<Vec<String>> {
-        Ok(vec![join_path_string!(self.directory(), "bin"), self.directory()])
+        Ok(vec![
+            join_path_string!(self.directory(), "bin"),
+            self.directory(),
+        ])
     }
 
     fn extra_env_vars(&self) -> HashMap<String, String> {
@@ -622,12 +625,16 @@ pub trait Tool: Debug + Sync + Send {
                 Vec::new()
             }
         };
-        
+
         if let Some(runtime) = self.runtime() {
             match runtime.extra_env_paths() {
                 Ok(runtime_paths) => paths.extend(runtime_paths),
                 Err(err) => {
-                    debug!("Failed to get runtime extra env paths for {}: {}", self.name(), err);
+                    debug!(
+                        "Failed to get runtime extra env paths for {}: {}",
+                        self.name(),
+                        err
+                    );
                 }
             }
         }
@@ -791,7 +798,10 @@ mod test {
         }
 
         fn extra_env_paths(&self) -> Result<Vec<String>> {
-            Ok(vec![join_path_string!(self.directory(), "bin"), self.directory()])
+            Ok(vec![
+                join_path_string!(self.directory(), "bin"),
+                self.directory(),
+            ])
         }
 
         fn install(&self, _task: &ProgressTask) -> Result<()> {
@@ -858,7 +868,10 @@ mod test {
         }
 
         fn extra_env_paths(&self) -> Result<Vec<String>> {
-            Ok(vec![join_path_string!(self.directory(), "bin"), self.directory()])
+            Ok(vec![
+                join_path_string!(self.directory(), "bin"),
+                self.directory(),
+            ])
         }
 
         fn install(&self, _task: &ProgressTask) -> Result<()> {

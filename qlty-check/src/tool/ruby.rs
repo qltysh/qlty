@@ -389,7 +389,10 @@ impl Tool for RubygemsPackage {
                 }
             }
         }
-        Ok(vec![join_path_string!(self.directory(), "bin"), self.directory()])
+        Ok(vec![
+            join_path_string!(self.directory(), "bin"),
+            self.directory(),
+        ])
     }
 
     fn clone_box(&self) -> Box<dyn Tool> {
