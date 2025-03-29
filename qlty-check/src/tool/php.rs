@@ -65,13 +65,15 @@ impl Tool for Php {
     }
 
     fn extra_env_paths(&self) -> Vec<String> {
-        split_paths(
-            &std::env::var("PATH")
-                .with_context(|| "PATH not found for php runtime")
-                .unwrap(),
-        )
-        .map(path_to_native_string)
-        .collect_vec()
+        match std::env::var("PATH") {
+            Ok(path) => split_paths(&path)
+                .map(path_to_native_string)
+                .collect_vec(),
+            Err(_) => {
+                debug!("PATH not found for php runtime, using empty path");
+                Vec::new()
+            }
+        }
     }
 }
 
@@ -152,11 +154,13 @@ impl Tool for PhpPackage {
         };
 
         let composer_phar = PathBuf::from(composer.directory()).join("composer.phar");
+        let composer_path = composer_phar.to_str()
+            .with_context(|| format!("Failed to convert composer path to string: {:?}", composer_phar))?;
 
         self.run_command(self.cmd.build(
             "php",
             vec![
-                &path_to_native_string(composer_phar.to_str().unwrap()),
+                &path_to_native_string(composer_path),
                 "require",
                 "--no-interaction",
                 format!("{}:{}", name, version).as_str(),

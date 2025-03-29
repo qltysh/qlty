@@ -64,13 +64,15 @@ impl Tool for Composer {
     }
 
     fn extra_env_paths(&self) -> Vec<String> {
-        split_paths(
-            &std::env::var("PATH")
-                .with_context(|| "PATH not found for composer")
-                .unwrap(),
-        )
-        .map(path_to_native_string)
-        .collect_vec()
+        match std::env::var("PATH") {
+            Ok(path) => split_paths(&path)
+                .map(path_to_native_string)
+                .collect_vec(),
+            Err(_) => {
+                debug!("PATH not found for composer, using empty path");
+                Vec::new()
+            }
+        }
     }
 }
 
@@ -79,13 +81,15 @@ impl Composer {
         info!("Installing composer package file");
         Self::update_composer_json(php_package)?;
         let composer_phar = PathBuf::from(self.directory()).join("composer.phar");
+        let composer_path = composer_phar.to_str()
+            .with_context(|| format!("Failed to convert composer path to string: {:?}", composer_phar))?;
 
         let cmd = self
             .cmd
             .build(
                 "php",
                 vec![
-                    &path_to_native_string(composer_phar.to_str().unwrap()),
+                    &path_to_native_string(composer_path),
                     "update",
                     "--no-interaction",
                     "--ignore-platform-reqs",
@@ -133,8 +137,9 @@ impl Composer {
     }
 
     fn filter_composer(php_package: &PhpPackage) -> Result<String> {
-        let composer_file_contents =
-            std::fs::read_to_string(php_package.plugin.package_file.as_ref().unwrap())?;
+        let package_file = php_package.plugin.package_file.as_ref()
+            .with_context(|| "Missing package_file in plugin definition")?;
+        let composer_file_contents = std::fs::read_to_string(package_file)?;
         let mut composer_json = serde_json::from_str::<Value>(&composer_file_contents)?;
         if let Some(root_object) = composer_json.as_object_mut() {
             // Remove autoloads that might be relative to project root
@@ -175,7 +180,13 @@ impl Composer {
             // use the original composer.json contents, merging package_file contents on top.
             // this will retain any existing dependencies provided by the initial tool installation
             let contents = std::fs::read_to_string(&staged_file)?;
-            data_json = serde_json::from_str::<Value>(&contents).unwrap_or_default();
+            data_json = match serde_json::from_str::<Value>(&contents) {
+                Ok(json) => json,
+                Err(err) => {
+                    debug!("Failed to parse existing composer.json: {}", err);
+                    Value::Object(serde_json::Map::new())
+                }
+            };
         }
 
         PackageJson::merge_json(&mut data_json, user_json);
