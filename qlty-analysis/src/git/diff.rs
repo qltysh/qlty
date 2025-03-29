@@ -100,7 +100,8 @@ impl GitDiff {
         let error_sentinel = Rc::new(RefCell::new(None));
         let error_sentinel_clone = error_sentinel.clone();
 
-        let result = diff.foreach(
+        // Use ? operator to immediately propagate errors from diff.foreach itself
+        diff.foreach(
             &mut |delta, _progress| {
                 // If we've already encountered an error, skip processing
                 if error_sentinel_clone.borrow().is_some() {
@@ -152,18 +153,11 @@ impl GitDiff {
                 }
                 true
             }),
-        );
+        )?;
 
-        // Check if we had an error
+        // Check if we had an error captured inside the closure
         if let Some(err) = error_sentinel.borrow_mut().take() {
             return Err(err);
-        }
-
-        // Check if diff.foreach itself had an error
-        if let Err(e) = result {
-            // If we had an error from our error_sentinel, it will be returned above
-            // This handles other foreach errors
-            return Err(e.into());
         }
 
         // Unwrapping the Rc should not fail; if it does, it's a fatal error
