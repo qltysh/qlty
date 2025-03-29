@@ -100,7 +100,6 @@ impl GitDiff {
         let error_sentinel = Rc::new(RefCell::new(None));
         let error_sentinel_clone = error_sentinel.clone();
 
-        // Use ? operator to immediately propagate errors from diff.foreach itself
         diff.foreach(
             &mut |delta, _progress| {
                 // If we've already encountered an error, skip processing
