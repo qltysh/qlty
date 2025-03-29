@@ -56,11 +56,11 @@ impl Tool for RubySource {
         Ok(())
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
-        vec![
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
+        Ok(vec![
             join_path_string!(self.directory(), "bin"),
             "/opt/homebrew/bin".to_string(),
-        ]
+        ])
     }
 
     fn extra_env_vars(&self) -> HashMap<String, String> {

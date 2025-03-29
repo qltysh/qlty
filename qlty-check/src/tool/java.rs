@@ -55,11 +55,11 @@ impl Tool for Java {
     }
 
     // So Java linux and macos releases have different directory structures
-    fn extra_env_paths(&self) -> Vec<String> {
-        vec![
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
+        Ok(vec![
             join_path_string!(self.directory(), "bin"),
             join_path_string!(self.directory(), "Contents", "Home", "bin"),
-        ]
+        ])
     }
 }
 
@@ -157,11 +157,11 @@ impl Tool for JavaPackage {
         Ok(())
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
         let mut paths = vec![self.directory(), join_path_string!(self.directory(), "bin")];
-        paths.extend(self.runtime.extra_env_paths());
+        paths.extend(self.runtime.extra_env_paths()?);
 
-        paths
+        Ok(paths)
     }
 
     fn clone_box(&self) -> Box<dyn Tool> {

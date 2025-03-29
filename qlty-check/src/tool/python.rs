@@ -191,8 +191,8 @@ impl Tool for PipVenvPackage {
         ))
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
-        vec![join_path_string!(self.directory(), BIN_DIRECTORY)]
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
+        Ok(vec![join_path_string!(self.directory(), BIN_DIRECTORY)])
     }
 
     fn extra_env_vars(&self) -> HashMap<String, String> {

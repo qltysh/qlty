@@ -64,14 +64,10 @@ impl Tool for Php {
         Box::new(self.clone())
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
-        split_paths(
-            &std::env::var("PATH")
-                .with_context(|| "PATH not found for php runtime")
-                .unwrap(),
-        )
-        .map(path_to_native_string)
-        .collect_vec()
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
+        std::env::var("PATH")
+            .with_context(|| "PATH environment variable not found for php runtime")
+            .map(|path| split_paths(&path).map(path_to_native_string).collect_vec())
     }
 }
 
@@ -152,11 +148,17 @@ impl Tool for PhpPackage {
         };
 
         let composer_phar = PathBuf::from(composer.directory()).join("composer.phar");
+        let composer_path = composer_phar.to_str().with_context(|| {
+            format!(
+                "Failed to convert composer path to string: {:?}",
+                composer_phar
+            )
+        })?;
 
         self.run_command(self.cmd.build(
             "php",
             vec![
-                &path_to_native_string(composer_phar.to_str().unwrap()),
+                &path_to_native_string(composer_path),
                 "require",
                 "--no-interaction",
                 format!("{}:{}", name, version).as_str(),
@@ -177,8 +179,8 @@ impl Tool for PhpPackage {
         Ok(())
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
-        vec![self.directory()]
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
+        Ok(vec![self.directory()])
     }
 
     fn clone_box(&self) -> Box<dyn Tool> {

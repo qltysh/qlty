@@ -193,13 +193,13 @@ impl Tool for NodePackage {
         )
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
-        let mut paths = self.runtime.extra_env_paths();
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
+        let mut paths = self.runtime.extra_env_paths()?;
         paths.insert(
             0,
             join_path_string!(self.directory(), "node_modules", ".bin"),
         );
-        paths
+        Ok(paths)
     }
 
     fn extra_env_vars(&self) -> HashMap<String, String> {
