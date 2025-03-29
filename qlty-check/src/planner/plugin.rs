@@ -3,7 +3,7 @@ use super::{config_files::PluginConfigFile, Planner, PluginWorkspaceEntryFinderB
 use crate::planner::driver::DriverPlanner;
 use crate::tool::tool_builder::ToolBuilder;
 use crate::{cache::IssueCache, executor::staging_area::StagingArea, tool::Tool};
-use anyhow::Result;
+use anyhow::{Context, Result};
 use qlty_analysis::{workspace_entries::TargetMode, WorkspaceEntry};
 use qlty_config::{
     config::{DriverDef, DriverType, PluginDef},
@@ -33,8 +33,63 @@ pub struct PluginPlanner {
     pub all_prefixes: Vec<String>,
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::executor::staging_area::Mode;
+    use crate::tool::null_tool::NullTool;
+    use qlty_analysis::cache::NullCache;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_compute_workspace_entries_lock_error() {
+        // Create a workspace_entry_finder_builder that will fail when locked
+        let broken_mutex = Arc::new(Mutex::new(PluginWorkspaceEntryFinderBuilder::default()));
+        // Poison the mutex by forcing a panic in a thread that holds the lock
+        let broken_mutex_clone = broken_mutex.clone();
+        let handle = std::thread::spawn(move || {
+            let _guard = broken_mutex_clone.lock().unwrap();
+            panic!("This panic is intentional for testing");
+        });
+        let _ = handle.join(); // This should be an Err because the thread panicked
+
+        // Now create a PluginPlanner with the poisoned mutex
+        let mut planner = PluginPlanner {
+            formatters: false,
+            target_mode: TargetMode::All,
+            workspace_entry_finder_builder: broken_mutex,
+            plugin_name: "test".to_string(),
+            plugin: PluginDef::default(),
+            verb: ExecutionVerb::Check,
+            settings: Settings::default(),
+            workspace: Workspace {
+                root: PathBuf::from("/"),
+            },
+            plugin_configs: vec![],
+            issue_cache: IssueCache::new(Box::new(NullCache::new())),
+            workspace_entries: Arc::new(vec![]),
+            staging_area: StagingArea::generate(Mode::Source, PathBuf::from("/"), None),
+            runtime_version: None,
+            tool: Box::new(NullTool {
+                plugin_name: "test".to_string(),
+                plugin: PluginDef::default(),
+            }),
+            driver_planners: vec![],
+            all_prefixes: vec![],
+        };
+
+        // Verify that compute_workspace_entries returns an error instead of panicking
+        let result = planner.compute_workspace_entries();
+        assert!(result.is_err());
+    }
+}
+
 impl PluginPlanner {
-    pub fn new(planner: &Planner, active_plugin: ActivePlugin, all_prefixes: Vec<String>) -> Self {
+    pub fn new(
+        planner: &Planner,
+        active_plugin: ActivePlugin,
+        all_prefixes: Vec<String>,
+    ) -> Result<Self> {
         let plugin = active_plugin.plugin;
         let plugin_name = &active_plugin.name;
 
@@ -45,15 +100,20 @@ impl PluginPlanner {
 
         let tool = ToolBuilder::new(&planner.config, plugin_name, &plugin)
             .build_tool()
-            .unwrap();
+            .context("Failed to build tool")?;
 
         let workspace_entry_finder_builder = planner
             .workspace_entry_finder_builder
             .clone()
-            .unwrap()
+            .context("Workspace entry finder builder is missing")?
             .clone();
 
-        Self {
+        let target_mode = planner
+            .target_mode
+            .clone()
+            .context("Target mode is missing")?;
+
+        Ok(Self {
             plugin_name: plugin_name.to_owned(),
             plugin,
             verb: planner.verb,
@@ -61,7 +121,7 @@ impl PluginPlanner {
             tool,
             runtime_version,
             workspace: planner.workspace.clone(),
-            target_mode: planner.target_mode.clone().unwrap(),
+            target_mode,
             workspace_entry_finder_builder,
             formatters: planner.settings.formatters,
             plugin_configs: planner
@@ -74,7 +134,7 @@ impl PluginPlanner {
             workspace_entries: Arc::new(vec![]),
             driver_planners: vec![],
             all_prefixes,
-        }
+        })
     }
 
     pub fn compute(&mut self) -> Result<()> {
@@ -117,7 +177,9 @@ impl PluginPlanner {
 
     fn compute_workspace_entries(&mut self) -> Result<()> {
         let mut workspace_entry_finder_builder =
-            self.workspace_entry_finder_builder.lock().unwrap();
+            self.workspace_entry_finder_builder.lock().map_err(|_| {
+                anyhow::anyhow!("Failed to acquire lock on workspace_entry_finder_builder")
+            })?;
         let prefix = workspace_entry_finder_builder.prefix.clone();
         if let Some(prefix) = &self.plugin.prefix {
             workspace_entry_finder_builder.prefix = Some(prefix.clone());
