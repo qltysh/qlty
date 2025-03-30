@@ -15,10 +15,7 @@ include.workspace = true
 [dependencies]
 anyhow.workspace = true
 flate2.workspace = true
-pbjson.workspace = true
 prost.workspace = true
-qlty-analysis.workspace = true
-qlty-config.workspace = true
 qlty-types.workspace = true
 serde.workspace = true
 serde_json.workspace = true

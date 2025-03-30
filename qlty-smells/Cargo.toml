@@ -24,7 +24,6 @@ qlty-types.workspace = true
 rayon.workspace = true
 serde.workspace = true
 similar.workspace = true
-tracing.workspace = true
 tree-sitter.workspace = true
 
 [dev-dependencies]
