@@ -90,7 +90,7 @@ cargo test
 
 ## Contributing
 
-1. Read the Guide to Contributing in CONTRIBUTING.md
+1. Read the Guide to Contributing in [CONTRIBUTING.md](https://github.com/qltysh/qlty/blob/main/CONTRIBUTING.md)
 2. Fork the repository and
 3. Submit a pull request.
 
