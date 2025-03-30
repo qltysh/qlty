@@ -170,93 +170,93 @@ impl SarifFormatter {
         }
 
         let results = self.issues.iter().map(|issue| {
-let mut result = json!({
-    "ruleId": format!("{}:{}", issue.tool, issue.rule_key),
-    "level": self.convert_level(Level::try_from(issue.level).unwrap_or(Level::Medium)),
-    "message": {
-        "text": issue.message
-    },
-    "locations": self.get_sarif_locations(&issue.location, issue.language)
-});
+            let mut result = json!({
+                "ruleId": format!("{}:{}", issue.tool, issue.rule_key),
+                "level": self.convert_level(Level::try_from(issue.level).unwrap_or(Level::Medium)),
+                "message": {
+                    "text": issue.message
+                },
+                "locations": self.get_sarif_locations(&issue.location, issue.language)
+            });
 
-// Add fingerprints if available
-if !issue.source_checksum.is_empty() {
-    result["fingerprints"] = json!({
-        "sourceHash/v1": issue.source_checksum,
-        "sourceHashVersion": issue.source_checksum_version
-    });
-}
+            // Add fingerprints if available
+            if !issue.source_checksum.is_empty() {
+                result["fingerprints"] = json!({
+                    "sourceHash/v1": issue.source_checksum,
+                    "sourceHashVersion": issue.source_checksum_version
+                });
+            }
 
-// Add partial fingerprints if available
-if !issue.partial_fingerprints.is_empty() {
-    let mut partial_fingerprints = Map::new();
-    for (key, value) in &issue.partial_fingerprints {
-        partial_fingerprints.insert(key.clone(), json!(value));
-    }
-    result["partialFingerprints"] = Value::Object(partial_fingerprints);
-}
+            // Add partial fingerprints if available
+            if !issue.partial_fingerprints.is_empty() {
+                let mut partial_fingerprints = Map::new();
+                for (key, value) in &issue.partial_fingerprints {
+                    partial_fingerprints.insert(key.clone(), json!(value));
+                }
+                result["partialFingerprints"] = Value::Object(partial_fingerprints);
+            }
 
-// Add related locations if available
-if !issue.other_locations.is_empty() {
-    result["relatedLocations"] = json!(self.get_related_locations(&issue.other_locations));
-}
+            // Add related locations if available
+            if !issue.other_locations.is_empty() {
+                result["relatedLocations"] = json!(self.get_related_locations(&issue.other_locations));
+            }
 
-// Add fixes if available
-if !issue.suggestions.is_empty() {
-    result["fixes"] = json!(self.get_fixes(&issue.suggestions));
-}
+            // Add fixes if available
+            if !issue.suggestions.is_empty() {
+                result["fixes"] = json!(self.get_fixes(&issue.suggestions));
+            }
 
-// Add category as taxa if available
-if issue.category != 0 {
-    if let Ok(category) = Category::try_from(issue.category) {
-        if category != Category::Unspecified {
-            let category_str = format!("{:?}", category).to_lowercase();
-            result["taxa"] = json!([{
-                "id": category_str,
-                "name": category_str
-            }]);
-        }
-    }
-}
+            // Add category as taxa if available
+            if issue.category != 0 {
+                if let Ok(category) = Category::try_from(issue.category) {
+                    if category != Category::Unspecified {
+                        let category_str = format!("{:?}", category).to_lowercase();
+                        result["taxa"] = json!([{
+                            "id": category_str,
+                            "name": category_str
+                        }]);
+                    }
+                }
+            }
 
-// Add properties including tags
-let mut properties = Map::new();
+            // Add properties including tags
+            let mut properties = Map::new();
 
-// Add tags if available
-if !issue.tags.is_empty() {
-    properties.insert("tags".to_string(), json!(issue.tags));
-}
+            // Add tags if available
+            if !issue.tags.is_empty() {
+                properties.insert("tags".to_string(), json!(issue.tags));
+            }
 
-// Add any additional properties if available
-if let Some(props) = &issue.properties {
-    for (key, value) in &props.fields {
-        properties.insert(key.clone(), serde_json::to_value(value).unwrap_or(Value::Null));
-    }
-}
+            // Add any additional properties if available
+            if let Some(props) = &issue.properties {
+                for (key, value) in &props.fields {
+                    properties.insert(key.clone(), serde_json::to_value(value).unwrap_or(Value::Null));
+                }
+            }
 
-if !properties.is_empty() {
-    result["properties"] = Value::Object(properties);
-}
+            if !properties.is_empty() {
+                result["properties"] = Value::Object(properties);
+            }
 
-result
+            result
         }).collect::<Vec<_>>();
 
         json!({
-        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
-        "version": "2.1.0",
-        "runs": [
-            {
-                "tool": {
-                    "driver": {
-                        "name": "qlty",
-                        "informationUri": "https://github.com/qlty/qlty",
-                        "rules": rules
-                    }
-                },
-                "results": results
-            }
-        ]
-                })
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "version": "2.1.0",
+            "runs": [
+                {
+                    "tool": {
+                        "driver": {
+                            "name": "qlty",
+                            "informationUri": "https://github.com/qlty/qlty",
+                            "rules": rules
+                        }
+                    },
+                    "results": results
+                }
+            ]
+        })
     }
 }
 
