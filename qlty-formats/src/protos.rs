@@ -3,7 +3,6 @@ use anyhow::Result;
 use prost::{bytes::BytesMut, Message};
 use std::io::Write;
 
-/// Formatter for multiple Protocol Buffer messages
 #[derive(Debug)]
 pub struct ProtosFormatter<T>
 where
@@ -18,14 +17,12 @@ where
     T: IntoIterator + Clone + 'static,
     T::Item: Message,
 {
-    /// Create a new Protocol Buffers formatter for a collection of messages
     pub fn new(records: T) -> Self {
         Self {
             records: records.clone(),
         }
     }
 
-    /// Create a boxed Protocol Buffers formatter for a collection of messages
     pub fn boxed(records: T) -> Box<dyn Formatter> {
         Box::new(Self::new(records))
     }
@@ -48,19 +45,16 @@ where
     }
 }
 
-/// Formatter for a single Protocol Buffer message
 #[derive(Debug)]
 pub struct ProtoFormatter<T: Message> {
     record: T,
 }
 
 impl<T: Message + 'static> ProtoFormatter<T> {
-    /// Create a new Protocol Buffer formatter for a single message
     pub fn new(record: T) -> Self {
         Self { record }
     }
 
-    /// Create a boxed Protocol Buffer formatter for a single message
     pub fn boxed(record: T) -> Box<dyn Formatter> {
         Box::new(Self::new(record))
     }

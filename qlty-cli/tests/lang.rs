@@ -1,7 +1,4 @@
-// Import directly from the helpers module
-#[path = "helpers.rs"]
-mod helpers;
-use helpers::setup_and_run_test_cases;
+use crate::helpers::setup_and_run_test_cases;
 
 #[test]
 fn rust_tests() {
