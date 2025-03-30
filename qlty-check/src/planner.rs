@@ -144,8 +144,7 @@ impl Planner {
 
         builder.compute()?;
 
-        self.workspace_entry_finder_builder =
-            Some(builder);
+        self.workspace_entry_finder_builder = Some(builder);
 
         Ok(())
     }

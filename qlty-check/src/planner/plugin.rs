@@ -47,9 +47,8 @@ impl PluginPlanner {
             .build_tool()
             .unwrap();
 
-        let workspace_entry_finder_builder = planner
-            .workspace_entry_finder_builder
-            .clone().unwrap();
+        let workspace_entry_finder_builder =
+            planner.workspace_entry_finder_builder.clone().unwrap();
 
         Self {
             plugin_name: plugin_name.to_owned(),
@@ -114,8 +113,7 @@ impl PluginPlanner {
     }
 
     fn compute_workspace_entries(&mut self) -> Result<()> {
-        let mut workspace_entry_finder_builder =
-            self.workspace_entry_finder_builder.clone();
+        let mut workspace_entry_finder_builder = self.workspace_entry_finder_builder.clone();
 
         let prefix = workspace_entry_finder_builder.prefix.clone();
         if let Some(prefix) = &self.plugin.prefix {

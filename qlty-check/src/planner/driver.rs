@@ -20,10 +20,7 @@ use qlty_config::{
 };
 use qlty_types::analysis::v1::ExecutionVerb;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use std::{
-    path::PathBuf,
-    sync::Arc,
-};
+use std::{path::PathBuf, sync::Arc};
 use tracing::{debug, error, info, trace};
 
 #[derive(Debug, Clone)]
@@ -116,9 +113,8 @@ impl DriverPlanner {
 
     fn compute_driver_workspace_entries(&mut self) -> Result<()> {
         if let Some(file_types) = &self.driver.file_types {
-            let mut workspace_entry_finder = self
-                .workspace_entry_finder_builder
-                .build(file_types)?;
+            let mut workspace_entry_finder =
+                self.workspace_entry_finder_builder.build(file_types)?;
 
             self.workspace_entries = match self.target_mode {
                 TargetMode::Sample(sample) => Arc::new(workspace_entry_finder.sample(sample)?),

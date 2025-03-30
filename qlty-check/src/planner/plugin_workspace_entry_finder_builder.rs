@@ -1,4 +1,4 @@
-use anyhow::{Result};
+use anyhow::Result;
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_analysis::workspace_entries::{IgnoreGroupsMatcher, TargetMode};
 use qlty_analysis::{
@@ -41,9 +41,9 @@ impl PluginWorkspaceEntryFinderBuilder {
 
     pub fn diff_line_filter(&mut self) -> Result<Box<dyn IssueTransformer>> {
         match self.mode {
-            TargetMode::HeadDiff | TargetMode::UpstreamDiff(_) => {
-                Ok(Box::new(self.git_diff.as_ref().unwrap().line_filter.clone()))
-            }
+            TargetMode::HeadDiff | TargetMode::UpstreamDiff(_) => Ok(Box::new(
+                self.git_diff.as_ref().unwrap().line_filter.clone(),
+            )),
             _ => Ok(Box::new(NullIssueTransformer)),
         }
     }
@@ -100,40 +100,43 @@ impl PluginWorkspaceEntryFinderBuilder {
         let cwd = Workspace::current_dir();
 
         self.source = Some(match self.mode {
-            TargetMode::All | TargetMode::Sample(_) => {
-                Arc::new(AllSource::new(self.root.clone()))
-            }
+            TargetMode::All | TargetMode::Sample(_) => Arc::new(AllSource::new(self.root.clone())),
             TargetMode::Paths(_) => Arc::new(ArgsSource::new(
                 self.root.clone(),
                 // Use absolute paths, so when running in a subdirectory, the paths are still correct
                 self.paths.iter().map(|p| cwd.join(p)).collect(),
             )),
-            TargetMode::UpstreamDiff(_) | TargetMode::HeadDiff | TargetMode::Index | TargetMode::IndexFile(_) => {
-                self.build_diff_source()?
-            }
+            TargetMode::UpstreamDiff(_)
+            | TargetMode::HeadDiff
+            | TargetMode::Index
+            | TargetMode::IndexFile(_) => self.build_diff_source()?,
         });
 
         Ok(())
     }
 
-    fn build_diff_source(
-        &self
-    ) -> Result<Arc<dyn WorkspaceEntrySource>> {
-        Ok(Arc::new(DiffSource::new(self.git_diff.as_ref().unwrap().changed_files.clone(), &self.root)))
+    fn build_diff_source(&self) -> Result<Arc<dyn WorkspaceEntrySource>> {
+        Ok(Arc::new(DiffSource::new(
+            self.git_diff.as_ref().unwrap().changed_files.clone(),
+            &self.root,
+        )))
     }
 
     fn compute_git_diff(&mut self) -> Result<()> {
         if self.needs_git_diff() {
             self.git_diff = Some(GitDiff::compute(self.mode.diff_mode(), &self.root)?);
         }
-        
+
         Ok(())
     }
 
     fn needs_git_diff(&self) -> bool {
         matches!(
             self.mode,
-            TargetMode::HeadDiff | TargetMode::UpstreamDiff(_) | TargetMode::Index | TargetMode::IndexFile(_)
+            TargetMode::HeadDiff
+                | TargetMode::UpstreamDiff(_)
+                | TargetMode::Index
+                | TargetMode::IndexFile(_)
         )
     }
 }
