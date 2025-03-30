@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use qlty_cloud::format::{JsonEachRowFormatter, JsonFormatter};
+use qlty_formats::{Formatter, JsonEachRowFormatter, JsonFormatter};
 use qlty_types::tests::v1::{CoverageMetadata, FileCoverage, ReportFile};
 use std::collections::HashMap;
 use std::fs::File;

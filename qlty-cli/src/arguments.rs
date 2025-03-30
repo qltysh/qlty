@@ -1,5 +1,4 @@
 use crate::commands::*;
-#[cfg(feature = "alpha")]
 use crate::commands::{auth, cache, config, plugins};
 use crate::{CommandError, CommandSuccess};
 use anyhow::Result;

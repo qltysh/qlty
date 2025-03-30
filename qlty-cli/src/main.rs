@@ -1,3 +1,3 @@
 pub fn main() {
-    qlty::run_command_line();
+    qlty_cli::run_command_line();
 }

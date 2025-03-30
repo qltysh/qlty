@@ -1,6 +1,5 @@
 [package]
-name = "qlty"
-default-run = "qlty"
+name = "qlty-cli"
 version.workspace = true
 authors.workspace = true
 description.workspace = true
@@ -9,92 +8,81 @@ homepage.workspace = true
 repository.workspace = true
 keywords.workspace = true
 categories.workspace = true
+license-file.workspace = true
 edition.workspace = true
-autotests = false
-
-[lib]
-doctest = false
-
-[[bin]]
-bench = false
-test = false
-path = "src/main.rs"
-name = "qlty"
-
-[[test]]
-name = "integration"
-path = "tests/tests.rs"
-
-[features]
-default = ["alpha"]
-alpha = []
+include.workspace = true
 
 [dependencies]
 anyhow.workspace = true
 base64.workspace = true
 bytesize.workspace = true
-cap.workspace = true
 chrono.workspace = true
-clap_complete.workspace = true
 clap.workspace = true
+clap_complete.workspace = true
 cli-table.workspace = true
 console.workspace = true
 dialoguer.workspace = true
-diffy.workspace = true
 duct.workspace = true
-git2.workspace = true
+fs_extra.workspace = true
 glob.workspace = true
-globset.workspace = true
+http.workspace = true
 indicatif.workspace = true
 itertools.workspace = true
-lazy_static.workspace = true
+keyring.workspace = true
 log.workspace = true
-mac_address.workspace = true
 md5.workspace = true
 num-format.workspace = true
-pathdiff.workspace = true
+once_cell.workspace = true
+path-absolutize.workspace = true
+cap.workspace = true
+diffy.workspace = true
+exec.workspace = true
+fork.workspace = true
+git2.workspace = true
+globset.workspace = true
+lazy_static.workspace = true
+mac_address.workspace = true
 pbjson-types.workspace = true
+pathdiff.workspace = true
 qlty-analysis.workspace = true
 qlty-check.workspace = true
 qlty-cloud.workspace = true
 qlty-config.workspace = true
 qlty-coverage.workspace = true
+qlty-formats.workspace = true
 qlty-smells.workspace = true
-qlty-test-utilities.workspace = true
 qlty-types.workspace = true
 rayon.workspace = true
 regex.workspace = true
-semver.workspace = true
 sentry-backtrace.workspace = true
-sentry.workspace = true
-serde_json.workspace = true
 serde_yaml.workspace = true
-serde-xml-rs.workspace = true
-serde.workspace = true
 similar.workspace = true
 supports-color.workspace = true
 syntect.workspace = true
 tabwriter.workspace = true
-tempfile.workspace = true
 termbg.workspace = true
 thiserror.workspace = true
 time.workspace = true
-toml_edit.workspace = true
-tracing-appender.workspace = true
-tracing-subscriber.workspace = true
-tracing.workspace = true
-ureq.workspace = true
 uuid.workspace = true
-webbrowser.workspace = true
-whoami.workspace = true
-keyring.workspace = true
-http.workspace = true
+rand.workspace = true
+semver.workspace = true
+sentry.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 serde-querystring.workspace = true
 tiny_http.workspace = true
+toml.workspace = true
+toml_edit.workspace = true
+tracing.workspace = true
+tracing-appender.workspace = true
+tracing-subscriber.workspace = true
+ureq.workspace = true
+url.workspace = true
+webbrowser.workspace = true
+whoami.workspace = true
 
 [dev-dependencies]
+indoc.workspace = true
+insta.workspace = true
+tracing-test.workspace = true
 trycmd.workspace = true
-
-[target.'cfg(unix)'.dependencies]
-exec.workspace = true
-fork.workspace = true

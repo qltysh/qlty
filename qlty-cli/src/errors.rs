@@ -1,18 +1,17 @@
 use thiserror::Error;
-
 use crate::CommandSuccess;
 
 #[derive(Error, Debug)]
 pub enum CommandError {
     #[error("Config error")]
     Config,
-
+    
     #[error("Lint error")]
     Lint,
-
+    
     #[error("{message}")]
     InvalidOptions { message: String },
-
+    
     #[error("Unknown error")]
     Unknown {
         #[from]
@@ -40,6 +39,7 @@ impl CommandError {
         }
     }
 }
+
 
 impl From<ureq::Error> for CommandError {
     fn from(err: ureq::Error) -> CommandError {

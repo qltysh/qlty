@@ -1,0 +1,24 @@
+[package]
+name = "qlty-formats"
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+license-file.workspace = true
+edition.workspace = true
+include.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+flate2.workspace = true
+pbjson.workspace = true
+prost.workspace = true
+qlty-analysis.workspace = true
+qlty-config.workspace = true
+qlty-types.workspace = true
+serde.workspace = true
+serde_json.workspace = true

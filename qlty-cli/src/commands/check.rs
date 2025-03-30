@@ -9,7 +9,7 @@ use clap::Args;
 use console::{style, Emoji};
 use qlty_check::planner::Plan;
 use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Report, Settings};
-use qlty_cloud::format::{JsonFormatter, SarifFormatter};
+use qlty_formats::{Formatter, JsonFormatter, SarifFormatter};
 use qlty_config::Workspace;
 use qlty_types::analysis::v1::ExecutionVerb;
 use qlty_types::analysis::v1::Level;
