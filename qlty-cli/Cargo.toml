@@ -99,8 +99,12 @@ whoami.workspace = true
 
 [dev-dependencies]
 indoc.workspace = true
-insta = { workspace = true, features = ["json", "redactions"] }
+insta.workspace = true
 tempfile.workspace = true
 tracing-test.workspace = true
 trycmd.workspace = true
 qlty-test-utilities.workspace = true
+
+[target.'cfg(unix)'.dependencies]
+exec.workspace = true
+fork.workspace = true
