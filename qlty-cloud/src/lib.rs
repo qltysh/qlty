@@ -1,9 +1,6 @@
-mod auth;
 pub mod export;
 pub mod format;
 
-use anyhow::Result;
-pub use auth::{clear_auth_token, load_or_retrieve_auth_token, store_auth_token};
 use qlty_config::version::QLTY_VERSION;
 use ureq::Request;
 
@@ -23,10 +20,6 @@ impl Default for Client {
 }
 
 impl Client {
-    pub fn authenticated() -> Result<Self> {
-        Ok(Self::new(None, Some(load_or_retrieve_auth_token()?)))
-    }
-
     pub fn new(base_url: Option<&str>, token: Option<String>) -> Self {
         Self {
             base_url: if let Some(url) = base_url {
