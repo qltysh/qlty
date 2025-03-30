@@ -1,21 +1,35 @@
 use super::Formatter;
-use qlty_types::analysis::v1::{Category, Issue, Language, Level, Location};
+use qlty_analysis::Report;
+use qlty_types::analysis::v1::{Category, Issue, Language, Level, Location, Message, MessageLevel};
 use serde_json::{json, Map, Value};
 use std::convert::TryFrom;
 use std::io::Write;
 
 #[derive(Debug)]
 pub struct SarifFormatter {
-    issues: Vec<Issue>,
+    report: Report,
 }
 
 impl SarifFormatter {
-    pub fn new(issues: Vec<Issue>) -> Self {
-        Self { issues }
+    pub fn new(report: Report) -> Self {
+        Self { report }
     }
 
-    pub fn boxed(issues: Vec<Issue>) -> Box<dyn Formatter> {
-        Box::new(Self::new(issues))
+    pub fn boxed(report: Report) -> Box<dyn Formatter> {
+        Box::new(Self::new(report))
+    }
+
+    pub fn from_issues(issues: Vec<Issue>) -> Self {
+        Self {
+            report: Report {
+                issues,
+                ..Report::default()
+            }
+        }
+    }
+
+    pub fn boxed_from_issues(issues: Vec<Issue>) -> Box<dyn Formatter> {
+        Box::new(Self::from_issues(issues))
     }
 
     fn convert_level(&self, level: Level) -> &'static str {
@@ -217,11 +231,56 @@ impl SarifFormatter {
         result
     }
 
+    fn convert_message_level(&self, level: MessageLevel) -> &'static str {
+        match level {
+            MessageLevel::Unspecified => "none",
+            MessageLevel::Debug => "note",
+            MessageLevel::Info => "note",
+            MessageLevel::Warning => "warning",
+            MessageLevel::Error => "error",
+            MessageLevel::Fatal => "error",
+        }
+    }
+
+    fn serialize_notification(&self, message: &Message) -> Value {
+        let level = MessageLevel::try_from(message.level).unwrap_or(MessageLevel::Info);
+        let level_str = self.convert_message_level(level);
+
+        let descriptor = json!({
+            "id": format!("qlty:message:{}", message.ty),
+            "name": message.module,
+            "shortDescription": {
+                "text": message.message
+            },
+            "fullDescription": {
+                "text": if !message.details.is_empty() { &message.details } else { &message.message }
+            },
+            "defaultConfiguration": {
+                "level": level_str
+            }
+        });
+
+        let mut notification = json!({
+            "level": level_str,
+            "message": {
+                "text": message.message
+            },
+            "descriptor": descriptor
+        });
+
+        if !message.details.is_empty() {
+            notification["message"]["text"] =
+                json!(format!("{}\n\n{}", message.message, message.details));
+        }
+
+        notification
+    }
+
     fn create_sarif_document(&self) -> Value {
         let mut rules = vec![];
         let mut rule_ids = std::collections::HashSet::new();
 
-        for issue in &self.issues {
+        for issue in &self.report.issues {
             if !rule_ids.contains(&issue.rule_key) {
                 rule_ids.insert(issue.rule_key.clone());
 
@@ -238,12 +297,20 @@ impl SarifFormatter {
         }
 
         let results = self
+            .report
             .issues
             .iter()
             .map(|issue| self.serialize_issue(issue))
             .collect::<Vec<_>>();
 
-        json!({
+        let notifications = self
+            .report
+            .messages
+            .iter()
+            .map(|message| self.serialize_notification(message))
+            .collect::<Vec<_>>();
+
+        let mut sarif = json!({
             "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
             "version": "2.1.0",
             "runs": [
@@ -258,7 +325,13 @@ impl SarifFormatter {
                     "results": results
                 }
             ]
-        })
+        });
+
+        if !notifications.is_empty() {
+            sarif["runs"][0]["tool"]["driver"]["notifications"] = json!(notifications);
+        }
+
+        sarif
     }
 }
 
@@ -398,8 +471,30 @@ mod test {
             ..Default::default()
         };
 
-        let issues = vec![comprehensive_issue, simple_issue];
-        let formatter = SarifFormatter::boxed(issues);
+        let info_message = Message {
+            message: "Info message".to_string(),
+            details: "Detailed info".to_string(),
+            level: MessageLevel::Info.into(),
+            module: "test-module".to_string(),
+            ty: "INFO".to_string(),
+            timestamp: None,
+            ..Default::default()
+        };
+
+        let warning_message = Message {
+            message: "Warning message".to_string(),
+            details: "".to_string(),
+            level: MessageLevel::Warning.into(),
+            module: "warning-module".to_string(),
+            ty: "WARNING".to_string(),
+            ..Default::default()
+        };
+
+        let mut report = Report::default();
+        report.issues = vec![comprehensive_issue, simple_issue];
+        report.messages = vec![info_message, warning_message];
+
+        let formatter = SarifFormatter::boxed(report);
         let output = formatter.read().unwrap();
         let output_str = String::from_utf8_lossy(&output);
 

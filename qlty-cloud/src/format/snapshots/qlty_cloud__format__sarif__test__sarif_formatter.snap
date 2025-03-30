@@ -19,6 +19,46 @@ expression: json_value
             {
               "id": "test-rule-2"
             }
+          ],
+          "notifications": [
+            {
+              "level": "note",
+              "message": {
+                "text": "Info message\n\nDetailed info"
+              },
+              "descriptor": {
+                "id": "qlty:message:INFO",
+                "name": "test-module",
+                "shortDescription": {
+                  "text": "Info message"
+                },
+                "fullDescription": {
+                  "text": "Detailed info"
+                },
+                "defaultConfiguration": {
+                  "level": "note"
+                }
+              }
+            },
+            {
+              "level": "warning",
+              "message": {
+                "text": "Warning message"
+              },
+              "descriptor": {
+                "id": "qlty:message:WARNING",
+                "name": "warning-module",
+                "shortDescription": {
+                  "text": "Warning message"
+                },
+                "fullDescription": {
+                  "text": "Warning message"
+                },
+                "defaultConfiguration": {
+                  "level": "warning"
+                }
+              }
+            }
           ]
         }
       },
