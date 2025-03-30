@@ -10,8 +10,12 @@ pub struct SarifFormatter {
 }
 
 impl SarifFormatter {
-    pub fn new(issues: Vec<Issue>) -> Box<dyn Formatter> {
-        Box::new(Self { issues })
+    pub fn new(issues: Vec<Issue>) -> Self {
+        Self { issues }
+    }
+    
+    pub fn boxed(issues: Vec<Issue>) -> Box<dyn Formatter> {
+        Box::new(Self::new(issues))
     }
 
     fn convert_level(&self, level: Level) -> &'static str {
@@ -161,13 +165,13 @@ mod test {
             },
         ];
 
-        let formatter = SarifFormatter::new(issues);
+        let formatter = SarifFormatter::boxed(issues);
         let output = formatter.read().unwrap();
         let output_str = String::from_utf8_lossy(&output);
 
         // Ensure the output is valid JSON
         let json_value: Value = serde_json::from_str(&output_str).unwrap();
-        
+
         // Use insta for snapshot testing
         insta::assert_json_snapshot!(json_value);
     }
