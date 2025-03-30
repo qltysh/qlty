@@ -2602,6 +2602,7 @@ version = "0.503.0"
 dependencies = [
  "anyhow",
  "flate2",
+ "insta",
  "pbjson",
  "prost",
  "qlty-analysis",
