@@ -11,9 +11,9 @@ expression: json_value
         "driver": {
           "name": "qlty",
           "informationUri": "https://github.com/qlty/qlty",
-          "semanticVersion": "0.503.0",
-          "version": "0.503.0 macos-arm64 (6b0aac6 debug 2025-03-29)",
-          "releaseDateUtc": "2025-03-29",
+          "semanticVersion": "[version]",
+          "version": "[version_string]",
+          "releaseDateUtc": "[date]",
           "rules": [
             {
               "id": "test-rule-1",

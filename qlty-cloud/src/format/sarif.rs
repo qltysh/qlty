@@ -504,6 +504,10 @@ mod test {
 
         let json_value: Value = serde_json::from_str(&output_str).unwrap();
 
-        insta::assert_json_snapshot!(json_value);
+        insta::assert_json_snapshot!(json_value, {
+            ".runs[0].tool.driver.semanticVersion" => "[version]",
+            ".runs[0].tool.driver.version" => "[version_string]",
+            ".runs[0].tool.driver.releaseDateUtc" => "[date]"
+        });
     }
 }
