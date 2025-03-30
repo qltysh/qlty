@@ -24,7 +24,7 @@ expression: json_value
       },
       "results": [
         {
-          "ruleId": "test-rule-1",
+          "ruleId": "test-tool:test-rule-1",
           "level": "error",
           "message": {
             "text": "Test message 1"
@@ -43,10 +43,16 @@ expression: json_value
                 }
               }
             }
+          ],
+          "taxa": [
+            {
+              "id": "lint",
+              "name": "lint"
+            }
           ]
         },
         {
-          "ruleId": "test-rule-2",
+          "ruleId": "test-tool:test-rule-2",
           "level": "warning",
           "message": {
             "text": "Test message 2"
@@ -64,6 +70,12 @@ expression: json_value
                   "endColumn": 2
                 }
               }
+            }
+          ],
+          "taxa": [
+            {
+              "id": "lint",
+              "name": "lint"
             }
           ]
         }
