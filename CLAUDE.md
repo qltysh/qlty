@@ -3,13 +3,11 @@
 ## Build & Test Commands
 
 - Typecheck (faster than build): `cargo check`
-- Build: `cargo build`
-- Run auto-formatter: `qlty fmt`
-- Run linter: `qlty check --fix --no-formatters`
+- Run both auto-formatting and linter: `qlty check --fix`
 - Run all tests: `cargo test`
+- Build: `cargo build`
 - Run specific test: `cargo test test_name_here`
-- With coverage: `cargo llvm-cov --lcov --output-path target/lcov.info -- --include-ignored`
-- Run project Makefile task: `cargo make task_name`
+- NEVER use `cargo insta review` to accept snapshots. Instead use `INSTA_UPDATE=always cargo test ...`
 
 ## Code Style Guidelines
 
@@ -20,7 +18,6 @@
 - Always use strong typing with enums for bounded sets of values
 - Imports: group std first, then external crates, then internal modules
 - Comprehensive error handling with proper context using `context()` or `with_context()`
-
 - Use descriptive variable names that clearly express intent
 - Write docstrings for public APIs and complex functions
 
@@ -36,7 +33,6 @@
 
 ## Development Workflow
 
-- Start chnages on a new branch which is branched from `main` with a descriptive name
-- Before committing, format the code, typecheck, lint, and run tests
-- In the commit message, include the EXACT instructions from me the user
+- Start changes on a new branch which is branched from `main` with a descriptive name
+- IMPORTANT: Before every commit, typecheck, run auto-formatting and linting, and run all the tests
 - Always open PRs in draft mode

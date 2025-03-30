@@ -1,5 +1,6 @@
 use super::Formatter;
 use qlty_analysis::Report;
+use qlty_config::version::{BUILD_DATE, LONG_VERSION, QLTY_VERSION};
 use qlty_types::analysis::v1::{Category, Issue, Language, Level, Location, Message, MessageLevel};
 use serde_json::{json, Map, Value};
 use std::convert::TryFrom;
@@ -24,7 +25,7 @@ impl SarifFormatter {
             report: Report {
                 issues,
                 ..Report::default()
-            }
+            },
         }
     }
 
@@ -319,6 +320,9 @@ impl SarifFormatter {
                         "driver": {
                             "name": "qlty",
                             "informationUri": "https://github.com/qlty/qlty",
+                            "semanticVersion": QLTY_VERSION,
+                            "version": LONG_VERSION.as_str(),
+                            "releaseDateUtc": BUILD_DATE,
                             "rules": rules
                         }
                     },
