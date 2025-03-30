@@ -1,4 +1,7 @@
-use crate::helpers::{setup_and_run_diff_test_cases, setup_and_run_test_cases};
+// Import directly from the helpers module
+#[path = "helpers.rs"]
+mod helpers;
+use helpers::{setup_and_run_diff_test_cases, setup_and_run_test_cases};
 use trycmd::TestCases;
 
 #[test]

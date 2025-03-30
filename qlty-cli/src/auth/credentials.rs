@@ -10,19 +10,19 @@ static ENTRY: LazyLock<Mutex<Option<Arc<Entry>>>> = LazyLock::new(|| Mutex::new(
 pub fn read_token() -> Result<String> {
     entry()?
         .get_password()
-        .with_context(|| format!("Failed to get access token"))
+        .with_context(|| "Failed to get access token".to_string())
 }
 
 pub fn write_token(token: &str) -> Result<()> {
     entry()?
         .set_password(token)
-        .with_context(|| format!("Failed to set access token"))
+        .with_context(|| "Failed to set access token".to_string())
 }
 
 pub fn delete_token() -> Result<()> {
     entry()?
         .delete_credential()
-        .with_context(|| format!("Failed to delete access token"))
+        .with_context(|| "Failed to delete access token".to_string())
 }
 
 #[allow(dead_code)]

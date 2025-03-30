@@ -1,3 +1,4 @@
+use crate::format::SarifFormatter;
 use crate::ui::ApplyMode;
 use crate::ui::ErrorsFormatter;
 use crate::ui::Steps;
@@ -9,9 +10,8 @@ use clap::Args;
 use console::{style, Emoji};
 use qlty_check::planner::Plan;
 use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Report, Settings};
-use qlty_formats::{Formatter, JsonFormatter};
-use crate::format::SarifFormatter;
 use qlty_config::Workspace;
+use qlty_formats::{Formatter, JsonFormatter};
 use qlty_types::analysis::v1::ExecutionVerb;
 use qlty_types::analysis::v1::Level;
 use std::io::BufRead as _;
@@ -302,7 +302,7 @@ impl Check {
         settings.paths = self.paths.clone();
         settings.trigger = self.trigger.into();
         settings.skip_errored_plugins = self.skip_errored_plugins;
-        
+
         // Get auth token if AI is enabled
         if settings.ai {
             settings.auth_token = match crate::auth::load_or_retrieve_auth_token() {

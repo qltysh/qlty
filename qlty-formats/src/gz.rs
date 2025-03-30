@@ -10,8 +10,13 @@ pub struct GzFormatter {
 
 impl GzFormatter {
     /// Create a new gzip formatter that wraps another formatter
-    pub fn new(formatter: Box<dyn Formatter>) -> Box<dyn Formatter> {
-        Box::new(GzFormatter { formatter })
+    pub fn new(formatter: Box<dyn Formatter>) -> Self {
+        GzFormatter { formatter }
+    }
+
+    /// Create a boxed gzip formatter that wraps another formatter
+    pub fn boxed(formatter: Box<dyn Formatter>) -> Box<dyn Formatter> {
+        Box::new(Self::new(formatter))
     }
 }
 

@@ -14,8 +14,13 @@ pub struct InvocationJsonFormatter {
 
 impl InvocationJsonFormatter {
     /// Create a new invocation JSON formatter
-    pub fn new(data: Vec<Invocation>) -> Box<dyn Formatter> {
-        Box::new(Self { data })
+    pub fn new(data: Vec<Invocation>) -> Self {
+        Self { data }
+    }
+
+    /// Create a boxed invocation JSON formatter
+    pub fn boxed(data: Vec<Invocation>) -> Box<dyn Formatter> {
+        Box::new(Self::new(data))
     }
 }
 

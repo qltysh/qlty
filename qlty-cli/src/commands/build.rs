@@ -1,3 +1,4 @@
+use crate::export::AnalysisExport;
 use crate::{Arguments, CommandError, CommandSuccess};
 use anyhow::Result;
 use clap::Args;
@@ -9,7 +10,6 @@ use qlty_analysis::{
     workspace_entries::{TargetMode, WorkspaceEntryFinderBuilder},
     Report,
 };
-use crate::export::AnalysisExport;
 use qlty_config::{QltyConfig, Workspace};
 use qlty_types::analysis::v1::{AnalysisResult, ExecutionVerb, Metadata};
 use rayon::prelude::*;
@@ -275,7 +275,7 @@ impl Build {
             emit_existing_issues: true,
             ..Default::default()
         };
-        
+
         // Get auth token if AI is enabled
         if settings.ai {
             settings.auth_token = match crate::auth::load_or_retrieve_auth_token() {
@@ -286,7 +286,7 @@ impl Build {
                 }
             };
         }
-        
+
         Ok(settings)
     }
 

@@ -3,7 +3,7 @@
 ## Build & Test Commands
 
 - Typecheck (faster than build): `cargo check`
-- Run both auto-formatting and linter: `qlty check --fix`
+- To auto-format or lint always used this command: `qlty check --fix`
 - Run all tests: `cargo test`
 - Build: `cargo build`
 - Run specific test: `cargo test test_name_here`

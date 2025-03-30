@@ -2,7 +2,8 @@ use anyhow::Result;
 use qlty_analysis::Report;
 use qlty_config::Workspace;
 use qlty_formats::{
-    CopyFormatter, GzFormatter, InvocationJsonFormatter, JsonEachRowFormatter, JsonFormatter,
+    CopyFormatter, Formatter, GzFormatter, InvocationJsonFormatter, JsonEachRowFormatter,
+    JsonFormatter,
 };
 use std::path::{Path, PathBuf};
 use tracing::info;
@@ -35,45 +36,57 @@ impl AnalysisExport {
     }
 
     fn export_json(&self) -> Result<()> {
-        JsonFormatter::boxed(self.report.metadata.clone())
+        Box::new(JsonFormatter::new(self.report.metadata.clone()))
             .write_to_file(&self.path.join("metadata.json"))?;
 
-        JsonEachRowFormatter::boxed(self.report.messages.clone())
+        Box::new(JsonEachRowFormatter::new(self.report.messages.clone()))
             .write_to_file(&self.path.join("messages.jsonl"))?;
 
-        InvocationJsonFormatter::new(self.report.invocations.clone())
-            .write_to_file(&self.path.join("invocations.jsonl"))?;
+        Box::new(InvocationJsonFormatter::new(
+            self.report.invocations.clone(),
+        ))
+        .write_to_file(&self.path.join("invocations.jsonl"))?;
 
-        JsonEachRowFormatter::boxed(self.report.issues.clone())
+        Box::new(JsonEachRowFormatter::new(self.report.issues.clone()))
             .write_to_file(&self.path.join("issues.jsonl"))?;
 
-        JsonEachRowFormatter::boxed(self.report.stats.clone())
+        Box::new(JsonEachRowFormatter::new(self.report.stats.clone()))
             .write_to_file(&self.path.join("stats.jsonl"))?;
 
-        CopyFormatter::boxed(Self::qlty_config_path()?)
+        Box::new(CopyFormatter::new(Self::qlty_config_path()?))
             .write_to_file(&self.path.join("qlty.toml"))?;
 
         Ok(())
     }
 
     fn export_json_gz(&self) -> Result<()> {
-        JsonFormatter::boxed(self.report.metadata.clone())
+        Box::new(JsonFormatter::new(self.report.metadata.clone()))
             .write_to_file(&self.path.join("metadata.json"))?;
 
-        GzFormatter::new(JsonEachRowFormatter::boxed(self.report.messages.clone()))
-            .write_to_file(&self.path.join("messages.json.gz"))?;
+        Box::new(GzFormatter::new(Box::new(JsonEachRowFormatter::new(
+            self.report.messages.clone(),
+        ))))
+        .write_to_file(&self.path.join("messages.json.gz"))?;
 
-        GzFormatter::new(InvocationJsonFormatter::new(self.report.invocations.clone()))
-            .write_to_file(&self.path.join("invocations.json.gz"))?;
+        Box::new(GzFormatter::new(Box::new(InvocationJsonFormatter::new(
+            self.report.invocations.clone(),
+        ))))
+        .write_to_file(&self.path.join("invocations.json.gz"))?;
 
-        GzFormatter::new(JsonEachRowFormatter::boxed(self.report.issues.clone()))
-            .write_to_file(&self.path.join("issues.json.gz"))?;
+        Box::new(GzFormatter::new(Box::new(JsonEachRowFormatter::new(
+            self.report.issues.clone(),
+        ))))
+        .write_to_file(&self.path.join("issues.json.gz"))?;
 
-        GzFormatter::new(JsonEachRowFormatter::boxed(self.report.stats.clone()))
-            .write_to_file(&self.path.join("stats.json.gz"))?;
+        Box::new(GzFormatter::new(Box::new(JsonEachRowFormatter::new(
+            self.report.stats.clone(),
+        ))))
+        .write_to_file(&self.path.join("stats.json.gz"))?;
 
-        GzFormatter::new(CopyFormatter::boxed(Self::qlty_config_path()?))
-            .write_to_file(&self.path.join("qlty.toml.gz"))?;
+        Box::new(GzFormatter::new(Box::new(CopyFormatter::new(
+            Self::qlty_config_path()?,
+        ))))
+        .write_to_file(&self.path.join("qlty.toml.gz"))?;
 
         Ok(())
     }

@@ -1,5 +1,5 @@
-use crate::publish::Report;
 use crate::export::CoverageExport;
+use crate::publish::Report;
 use anyhow::{Context, Result};
 use qlty_cloud::Client as QltyClient;
 use qlty_types::tests::v1::CoverageMetadata;

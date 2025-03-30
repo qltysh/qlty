@@ -14,7 +14,7 @@ impl<T: Serialize + 'static> JsonFormatter<T> {
     pub fn new(data: T) -> Self {
         Self { data }
     }
-    
+
     /// Create a boxed JSON formatter with the given data
     pub fn boxed(data: T) -> Box<dyn Formatter> {
         Box::new(Self { data })

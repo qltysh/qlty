@@ -84,5 +84,7 @@ whoami.workspace = true
 [dev-dependencies]
 indoc.workspace = true
 insta = { workspace = true, features = ["json", "redactions"] }
+tempfile.workspace = true
 tracing-test.workspace = true
 trycmd.workspace = true
+qlty-test-utilities.workspace = true

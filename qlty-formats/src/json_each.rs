@@ -14,7 +14,7 @@ impl<T: Serialize + 'static> JsonEachRowFormatter<T> {
     pub fn new(data: Vec<T>) -> Self {
         Self { data }
     }
-    
+
     /// Create a boxed JSON each row formatter with the given data
     pub fn boxed(data: Vec<T>) -> Box<dyn Formatter> {
         Box::new(Self { data })

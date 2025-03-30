@@ -2,7 +2,6 @@ use crate::{CommandError, CommandSuccess};
 use anyhow::Result;
 use clap::Args;
 use console::style;
-use qlty_formats::{Formatter, JsonEachRowFormatter};
 use qlty_config::version::LONG_VERSION;
 use qlty_coverage::{
     eprintln_unless,
@@ -10,6 +9,7 @@ use qlty_coverage::{
     print::{print_file_coverages_as_json, print_file_coverages_as_text},
     transform::{Planner, Processor, Settings},
 };
+use qlty_formats::{Formatter, JsonEachRowFormatter};
 use qlty_types::tests::v1::FileCoverage;
 use std::path::PathBuf;
 

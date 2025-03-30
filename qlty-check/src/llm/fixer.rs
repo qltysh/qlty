@@ -67,7 +67,7 @@ impl Fixer {
     pub fn new(plan: &Plan, progress: Progress) -> Self {
         // If auth_token is missing, use empty string as a fallback
         let auth_token = plan.settings.auth_token.clone().unwrap_or_default();
-        
+
         Self {
             progress,
             staging_area: plan.staging_area.clone(),

@@ -1,5 +1,5 @@
-use crate::{Arguments, CommandError, CommandSuccess};
 use crate::auth::clear_auth_token;
+use crate::{Arguments, CommandError, CommandSuccess};
 use anyhow::Result;
 use clap::Args;
 

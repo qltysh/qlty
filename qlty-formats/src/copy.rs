@@ -17,7 +17,7 @@ impl CopyFormatter {
     pub fn new(path: PathBuf) -> Self {
         Self { path }
     }
-    
+
     /// Create a boxed copy formatter with the given path
     pub fn boxed(path: PathBuf) -> Box<dyn Formatter> {
         Box::new(Self { path })

@@ -1,6 +1,6 @@
 pub mod allocator;
-pub mod auth;
 mod arguments;
+pub mod auth;
 mod commands;
 mod errors;
 pub mod export;

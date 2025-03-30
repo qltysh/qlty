@@ -44,14 +44,11 @@ pub fn load_or_retrieve_auth_token() -> Result<String> {
 
 fn validate_auth_token(auth_token: &String) -> Result<()> {
     let client = qlty_cloud::Client::new(None, Some(auth_token.into()));
-    client
-        .get("/user")
-        .call()
-        .inspect_err(|_| {
-            if let Err(err) = clear_auth_token() {
-                warn!("Failed to clear auth token: {}", err);
-            }
-        })?;
+    client.get("/user").call().inspect_err(|_| {
+        if let Err(err) = clear_auth_token() {
+            warn!("Failed to clear auth token: {}", err);
+        }
+    })?;
 
     Ok(())
 }
