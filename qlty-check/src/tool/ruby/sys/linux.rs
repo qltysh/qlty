@@ -196,8 +196,7 @@ impl RubyLinux {
 
             // Extract the filename from the path
             let filename = match path.split('/').next_back() {
-                Some(filename) if !filename.is_empty() => filename,
-                Some(_) => bail!("Invalid path with empty filename component: {}", path),
+                Some(filename)  => filename,
                 None => bail!("Invalid path with no filename component: {}", path),
             };
 
