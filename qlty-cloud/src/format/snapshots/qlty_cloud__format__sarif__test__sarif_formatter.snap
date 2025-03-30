@@ -1,0 +1,73 @@
+---
+source: qlty-cloud/src/format/sarif.rs
+expression: json_value
+---
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "qlty",
+          "informationUri": "https://github.com/qlty/qlty",
+          "rules": [
+            {
+              "id": "test-rule-1",
+              "helpUri": "https://example.com/docs/test-rule-1"
+            },
+            {
+              "id": "test-rule-2"
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "test-rule-1",
+          "level": "error",
+          "message": {
+            "text": "Test message 1"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/test.rs"
+                },
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 5,
+                  "endLine": 10,
+                  "endColumn": 20
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "test-rule-2",
+          "level": "warning",
+          "message": {
+            "text": "Test message 2"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/test2.rs"
+                },
+                "region": {
+                  "startLine": 15,
+                  "startColumn": 1,
+                  "endLine": 20,
+                  "endColumn": 2
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

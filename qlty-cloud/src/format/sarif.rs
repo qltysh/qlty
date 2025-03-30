@@ -167,23 +167,8 @@ mod test {
 
         // Ensure the output is valid JSON
         let json_value: Value = serde_json::from_str(&output_str).unwrap();
-
-        // Verify basic structure
-        assert!(json_value.is_object());
-        assert!(json_value.get("runs").is_some());
-
-        // Verify there are 2 results
-        let results = json_value["runs"][0]["results"].as_array().unwrap();
-        assert_eq!(results.len(), 2);
-
-        // Verify the first result
-        assert_eq!(results[0]["ruleId"], "test-rule-1");
-        assert_eq!(results[0]["level"], "error");
-        assert_eq!(results[0]["message"]["text"], "Test message 1");
-
-        // Verify the second result
-        assert_eq!(results[1]["ruleId"], "test-rule-2");
-        assert_eq!(results[1]["level"], "warning");
-        assert_eq!(results[1]["message"]["text"], "Test message 2");
+        
+        // Use insta for snapshot testing
+        insta::assert_json_snapshot!(json_value);
     }
 }
