@@ -9,7 +9,7 @@ use qlty_analysis::{
     workspace_entries::{TargetMode, WorkspaceEntryFinderBuilder},
     Report,
 };
-use qlty_cloud::export::AnalysisExport;
+use crate::export::AnalysisExport;
 use qlty_config::{QltyConfig, Workspace};
 use qlty_types::analysis::v1::{AnalysisResult, ExecutionVerb, Metadata};
 use rayon::prelude::*;

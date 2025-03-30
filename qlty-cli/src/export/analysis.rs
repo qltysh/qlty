@@ -1,9 +1,9 @@
-use crate::format::{
-    CopyFormatter, GzFormatter, InvocationJsonFormatter, JsonEachRowFormatter, JsonFormatter,
-};
 use anyhow::Result;
 use qlty_analysis::Report;
 use qlty_config::Workspace;
+use qlty_formats::{
+    CopyFormatter, GzFormatter, InvocationJsonFormatter, JsonEachRowFormatter, JsonFormatter,
+};
 use std::path::{Path, PathBuf};
 use tracing::info;
 
