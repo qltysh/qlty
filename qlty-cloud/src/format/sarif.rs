@@ -13,7 +13,7 @@ impl SarifFormatter {
     pub fn new(issues: Vec<Issue>) -> Self {
         Self { issues }
     }
-    
+
     pub fn boxed(issues: Vec<Issue>) -> Box<dyn Formatter> {
         Box::new(Self::new(issues))
     }
@@ -59,7 +59,6 @@ impl SarifFormatter {
         let mut rules = vec![];
         let mut rule_ids = std::collections::HashSet::new();
 
-        // Collect all unique rules
         for issue in &self.issues {
             if !rule_ids.contains(&issue.rule_key) {
                 rule_ids.insert(issue.rule_key.clone());
@@ -76,7 +75,6 @@ impl SarifFormatter {
             }
         }
 
-        // Convert issues to SARIF results
         let results = self.issues.iter().map(|issue| {
             json!({
                 "ruleId": issue.rule_key,
@@ -88,7 +86,6 @@ impl SarifFormatter {
             })
         }).collect::<Vec<_>>();
 
-        // Create the SARIF document
         json!({
             "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
             "version": "2.1.0",
@@ -169,10 +166,8 @@ mod test {
         let output = formatter.read().unwrap();
         let output_str = String::from_utf8_lossy(&output);
 
-        // Ensure the output is valid JSON
         let json_value: Value = serde_json::from_str(&output_str).unwrap();
 
-        // Use insta for snapshot testing
         insta::assert_json_snapshot!(json_value);
     }
 }
