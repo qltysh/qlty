@@ -25,6 +25,7 @@ pub struct Settings {
     pub trigger: CheckTrigger,
     pub skip_errored_plugins: bool,
     pub emit_existing_issues: bool,
+    pub auth_token: Option<String>,
 }
 
 impl Default for Settings {
@@ -51,6 +52,7 @@ impl Default for Settings {
             trigger: CheckTrigger::Manual,
             skip_errored_plugins: false,
             emit_existing_issues: false,
+            auth_token: None,
         }
     }
 }

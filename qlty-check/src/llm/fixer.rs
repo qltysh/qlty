@@ -34,6 +34,7 @@ pub struct Fixer {
     r#unsafe: bool,
     attempts_per_file: Arc<Mutex<HashMap<String, AtomicUsize>>>,
     total_attempts: Arc<AtomicUsize>,
+    auth_token: String,
 }
 
 impl IssueTransformer for Fixer {
@@ -64,12 +65,16 @@ impl IssueTransformer for Fixer {
 
 impl Fixer {
     pub fn new(plan: &Plan, progress: Progress) -> Self {
+        // If auth_token is missing, use empty string as a fallback
+        let auth_token = plan.settings.auth_token.clone().unwrap_or_default();
+        
         Self {
             progress,
             staging_area: plan.staging_area.clone(),
             r#unsafe: plan.settings.r#unsafe,
             attempts_per_file: Arc::new(Mutex::new(HashMap::new())),
             total_attempts: Arc::new(AtomicUsize::new(0)),
+            auth_token,
         }
     }
 
@@ -154,7 +159,7 @@ impl Fixer {
     }
 
     fn try_fix(&self, path: &String, issues: &[Issue]) -> Result<Vec<Issue>> {
-        let client = Client::authenticated()?;
+        let client = Client::new(None, Some(self.auth_token.clone()));
         let content = self.staging_area.read(path.clone().into())?;
         let response = API_THREAD_POOL.scope(|_| {
             client.post("/fixes/batch").send_json(json!({

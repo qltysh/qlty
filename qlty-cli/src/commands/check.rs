@@ -10,7 +10,6 @@ use console::{style, Emoji};
 use qlty_check::planner::Plan;
 use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Report, Settings};
 use qlty_cloud::format::{JsonFormatter, SarifFormatter};
-use qlty_cloud::load_or_retrieve_auth_token;
 use qlty_config::Workspace;
 use qlty_types::analysis::v1::ExecutionVerb;
 use qlty_types::analysis::v1::Level;
@@ -133,10 +132,6 @@ impl Check {
         workspace.fetch_sources()?;
 
         let settings = self.build_settings(&workspace)?;
-        if settings.ai {
-            // load the token early so that we can ask user to login first
-            load_or_retrieve_auth_token()?;
-        }
 
         let mut counter = 0;
         let mut dirty = true;
@@ -306,6 +301,17 @@ impl Check {
         settings.paths = self.paths.clone();
         settings.trigger = self.trigger.into();
         settings.skip_errored_plugins = self.skip_errored_plugins;
+        
+        // Get auth token if AI is enabled
+        if settings.ai {
+            settings.auth_token = match crate::auth::load_or_retrieve_auth_token() {
+                Ok(token) => Some(token),
+                Err(err) => {
+                    warn!("Failed to get auth token: {}", err);
+                    None
+                }
+            };
+        }
 
         Ok(settings)
     }

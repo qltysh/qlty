@@ -1,4 +1,4 @@
-use crate::{Arguments, CommandError, CommandSuccess};
+use crate::{auth::load_or_retrieve_auth_token, Arguments, CommandError, CommandSuccess};
 use anyhow::Result;
 use clap::Args;
 use qlty_cloud::Client;
@@ -7,8 +7,9 @@ pub struct Whoami {}
 
 impl Whoami {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
-        match Client::authenticated() {
-            Ok(client) => {
+        match load_or_retrieve_auth_token() {
+            Ok(token) => {
+                let client = Client::new(None, Some(token));
                 let json = client
                     .get("/user")
                     .call()?
