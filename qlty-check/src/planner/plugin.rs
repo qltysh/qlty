@@ -10,14 +10,14 @@ use qlty_config::{
     Workspace,
 };
 use qlty_types::analysis::v1::ExecutionVerb;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use tracing::{debug, info, trace};
 
 #[derive(Debug, Clone)]
 pub struct PluginPlanner {
     formatters: bool,
     pub target_mode: TargetMode,
-    pub workspace_entry_finder_builder: Arc<Mutex<PluginWorkspaceEntryFinderBuilder>>,
+    pub workspace_entry_finder_builder: PluginWorkspaceEntryFinderBuilder,
     pub plugin_name: String,
     pub plugin: PluginDef,
     pub verb: ExecutionVerb,
@@ -49,9 +49,7 @@ impl PluginPlanner {
 
         let workspace_entry_finder_builder = planner
             .workspace_entry_finder_builder
-            .clone()
-            .unwrap()
-            .clone();
+            .clone().unwrap();
 
         Self {
             plugin_name: plugin_name.to_owned(),
@@ -117,7 +115,8 @@ impl PluginPlanner {
 
     fn compute_workspace_entries(&mut self) -> Result<()> {
         let mut workspace_entry_finder_builder =
-            self.workspace_entry_finder_builder.lock().unwrap();
+            self.workspace_entry_finder_builder.clone();
+
         let prefix = workspace_entry_finder_builder.prefix.clone();
         if let Some(prefix) = &self.plugin.prefix {
             workspace_entry_finder_builder.prefix = Some(prefix.clone());
