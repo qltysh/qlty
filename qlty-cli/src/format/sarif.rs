@@ -1,5 +1,5 @@
 use anyhow::Result;
-use qlty_analysis::Report;
+use qlty_check::Report;
 use qlty_config::version::{BUILD_DATE, LONG_VERSION, QLTY_VERSION};
 use qlty_formats::Formatter;
 use qlty_types::analysis::v1::{Category, Issue, Language, Level, Location, Message, MessageLevel};
@@ -19,19 +19,6 @@ impl SarifFormatter {
 
     pub fn boxed(report: Report) -> Box<dyn Formatter> {
         Box::new(Self::new(report))
-    }
-
-    pub fn from_issues(issues: Vec<Issue>) -> Self {
-        Self {
-            report: Report {
-                issues,
-                ..Report::default()
-            },
-        }
-    }
-
-    pub fn boxed_from_issues(issues: Vec<Issue>) -> Box<dyn Formatter> {
-        Box::new(Self::from_issues(issues))
     }
 
     fn convert_level(&self, level: Level) -> &'static str {
@@ -353,9 +340,11 @@ impl Formatter for SarifFormatter {
 #[cfg(test)]
 mod test {
     use super::*;
+    use qlty_analysis::{workspace_entries::TargetMode, IssueCount};
     use qlty_types::analysis::v1::{
-        Category, Mode, Range, Replacement, Suggestion, SuggestionSource,
+        Category, ExecutionVerb, Mode, Range, Replacement, Suggestion, SuggestionSource,
     };
+    use std::collections::HashSet;
 
     #[test]
     fn test_sarif_formatter() {
@@ -495,9 +484,17 @@ mod test {
             ..Default::default()
         };
 
-        let mut report = Report::default();
-        report.issues = vec![comprehensive_issue, simple_issue];
-        report.messages = vec![info_message, warning_message];
+        let report = Report {
+            verb: ExecutionVerb::Check,
+            target_mode: TargetMode::default(),
+            messages: vec![info_message, warning_message],
+            invocations: vec![],
+            issues: vec![comprehensive_issue, simple_issue],
+            formatted: vec![],
+            fixed: HashSet::new(),
+            fixable: HashSet::new(),
+            counts: IssueCount::default(),
+        };
 
         let formatter = SarifFormatter::boxed(report);
         let output = formatter.read().unwrap();
