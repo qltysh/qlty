@@ -45,13 +45,8 @@ expression: json_value
               }
             }
           ],
-          "fingerprints": {
-            "sourceHash/v1": "abc123def456",
-            "sourceHashVersion": 1
-          },
           "partialFingerprints": {
-            "location-fingerprint": "def456",
-            "test-fingerprint": "abc123"
+            "sourceHash/1": "abc123def456"
           },
           "relatedLocations": [
             {

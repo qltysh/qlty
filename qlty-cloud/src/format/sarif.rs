@@ -41,7 +41,6 @@ impl SarifFormatter {
                     "endColumn": range.end_column
                 });
 
-                // Add sourceLanguage if language is specified
                 if language != 0 {
                     if let Ok(lang) = Language::try_from(language) {
                         if lang != Language::Unspecified {
@@ -149,7 +148,7 @@ impl SarifFormatter {
             .collect()
     }
 
-    fn process_issue(&self, issue: &Issue) -> Value {
+    fn serialize_issue(&self, issue: &Issue) -> Value {
         let mut result = json!({
             "ruleId": format!("{}:{}", issue.tool, issue.rule_key),
             "level": self.convert_level(Level::try_from(issue.level).unwrap_or(Level::Medium)),
@@ -159,34 +158,31 @@ impl SarifFormatter {
             "locations": self.get_sarif_locations(&issue.location, issue.language)
         });
 
-        // Add fingerprints if available
+        let mut partial_fingerprints = Map::new();
+
         if !issue.source_checksum.is_empty() {
-            result["fingerprints"] = json!({
-                "sourceHash/v1": issue.source_checksum,
-                "sourceHashVersion": issue.source_checksum_version
-            });
+            partial_fingerprints.insert(
+                format!("sourceHash/{}", issue.source_checksum_version),
+                json!(issue.source_checksum),
+            );
         }
 
-        // Add partial fingerprints if available
-        if !issue.partial_fingerprints.is_empty() {
-            let mut partial_fingerprints = Map::new();
-            for (key, value) in &issue.partial_fingerprints {
-                partial_fingerprints.insert(key.clone(), json!(value));
-            }
+        for (key, value) in &issue.partial_fingerprints {
+            partial_fingerprints.insert(key.clone(), json!(value));
+        }
+
+        if !partial_fingerprints.is_empty() {
             result["partialFingerprints"] = Value::Object(partial_fingerprints);
         }
 
-        // Add related locations if available
         if !issue.other_locations.is_empty() {
             result["relatedLocations"] = json!(self.get_related_locations(&issue.other_locations));
         }
 
-        // Add fixes if available
         if !issue.suggestions.is_empty() {
             result["fixes"] = json!(self.get_fixes(&issue.suggestions));
         }
 
-        // Add category as taxa if available
         if issue.category != 0 {
             if let Ok(category) = Category::try_from(issue.category) {
                 if category != Category::Unspecified {
@@ -199,15 +195,12 @@ impl SarifFormatter {
             }
         }
 
-        // Add properties including tags
         let mut properties = Map::new();
 
-        // Add tags if available
         if !issue.tags.is_empty() {
             properties.insert("tags".to_string(), json!(issue.tags));
         }
 
-        // Add any additional properties if available
         if let Some(props) = &issue.properties {
             for (key, value) in &props.fields {
                 properties.insert(
@@ -247,7 +240,7 @@ impl SarifFormatter {
         let results = self
             .issues
             .iter()
-            .map(|issue| self.process_issue(issue))
+            .map(|issue| self.serialize_issue(issue))
             .collect::<Vec<_>>();
 
         json!({
@@ -285,14 +278,9 @@ mod test {
     use qlty_types::analysis::v1::{
         Category, Mode, Range, Replacement, Suggestion, SuggestionSource,
     };
-    use std::collections::HashMap;
 
     #[test]
     fn test_sarif_formatter() {
-        let mut partial_fingerprints = HashMap::new();
-        partial_fingerprints.insert("test-fingerprint".to_string(), "abc123".to_string());
-        partial_fingerprints.insert("location-fingerprint".to_string(), "def456".to_string());
-
         let mut tags = Vec::new();
         tags.push("test-tag".to_string());
         tags.push("security".to_string());
@@ -382,7 +370,6 @@ mod test {
                     }],
                 },
             ],
-            partial_fingerprints,
             tags,
             mode: Mode::Block.into(),
             on_added_line: true,
