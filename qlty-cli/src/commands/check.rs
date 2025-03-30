@@ -9,7 +9,7 @@ use clap::Args;
 use console::{style, Emoji};
 use qlty_check::planner::Plan;
 use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Report, Settings};
-use qlty_cloud::format::JsonFormatter;
+use qlty_cloud::format::{JsonFormatter, SarifFormatter};
 use qlty_cloud::load_or_retrieve_auth_token;
 use qlty_config::Workspace;
 use qlty_types::analysis::v1::ExecutionVerb;
@@ -107,8 +107,12 @@ pub struct Check {
     fail_level: Level,
 
     /// JSON output
-    #[arg(long, hide = true)]
+    #[arg(long, hide = true, conflicts_with = "sarif")]
     json: bool,
+
+    /// SARIF output
+    #[arg(long, conflicts_with = "json")]
+    sarif: bool,
 
     /// Allow individual plugins to be skipped if they fail or crash
     #[arg(hide = true, long, conflicts_with = "fail_level")]
@@ -349,6 +353,10 @@ impl Check {
     fn write_stdout(&self, report: &Report, plan: &Plan, settings: &Settings) -> Result<bool> {
         if self.json {
             let formatter = JsonFormatter::new(report.issues.clone());
+            formatter.write_to(&mut std::io::stdout())?;
+            Ok(false)
+        } else if self.sarif {
+            let formatter = SarifFormatter::new(report.issues.clone());
             formatter.write_to(&mut std::io::stdout())?;
             Ok(false)
         } else {

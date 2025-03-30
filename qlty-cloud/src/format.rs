@@ -6,6 +6,7 @@ mod json;
 mod json_each;
 mod json_each_truncated;
 mod protos;
+mod sarif;
 
 pub use copy::CopyFormatter;
 pub use gz::GzFormatter;
@@ -13,6 +14,7 @@ pub use json::JsonFormatter;
 pub use json_each::JsonEachRowFormatter;
 pub use json_each_truncated::InvocationJsonFormatter;
 pub use protos::{ProtoFormatter, ProtosFormatter};
+pub use sarif::SarifFormatter;
 
 pub trait Formatter {
     fn write_to(&self, writer: &mut dyn std::io::Write) -> Result<()>;
