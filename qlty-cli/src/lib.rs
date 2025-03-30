@@ -1,4 +1,5 @@
 pub mod allocator;
+pub mod auth;
 mod arguments;
 mod commands;
 mod errors;
@@ -11,6 +12,7 @@ mod ui;
 mod upgrade;
 
 pub use arguments::Arguments;
+pub use auth::{clear_auth_token, load_or_retrieve_auth_token, store_auth_token};
 pub use errors::CommandError;
 pub use initializer::Initializer;
 pub use success::{CommandSuccess, Trigger};

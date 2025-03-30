@@ -87,6 +87,10 @@ ureq.workspace = true
 uuid.workspace = true
 webbrowser.workspace = true
 whoami.workspace = true
+keyring.workspace = true
+http.workspace = true
+serde-querystring.workspace = true
+tiny_http.workspace = true
 
 [dev-dependencies]
 trycmd.workspace = true
