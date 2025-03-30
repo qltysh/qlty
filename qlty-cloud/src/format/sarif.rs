@@ -282,50 +282,136 @@ impl Formatter for SarifFormatter {
 #[cfg(test)]
 mod test {
     use super::*;
-    use qlty_types::analysis::v1::{Category, Range};
+    use qlty_types::analysis::v1::{
+        Category, Mode, Range, Replacement, Suggestion, SuggestionSource,
+    };
+    use std::collections::HashMap;
 
     #[test]
     fn test_sarif_formatter() {
-        let issues = vec![
-            Issue {
-                rule_key: "test-rule-1".to_string(),
-                message: "Test message 1".to_string(),
-                level: Level::High.into(),
-                location: Some(Location {
-                    path: "src/test.rs".to_string(),
+        let mut partial_fingerprints = HashMap::new();
+        partial_fingerprints.insert("test-fingerprint".to_string(), "abc123".to_string());
+        partial_fingerprints.insert("location-fingerprint".to_string(), "def456".to_string());
+
+        let mut tags = Vec::new();
+        tags.push("test-tag".to_string());
+        tags.push("security".to_string());
+        tags.push("critical".to_string());
+
+        let comprehensive_issue = Issue {
+            rule_key: "test-rule-1".to_string(),
+            message: "Test message 1".to_string(),
+            level: Level::High.into(),
+            language: Language::Rust.into(),
+            location: Some(Location {
+                path: "src/test.rs".to_string(),
+                range: Some(Range {
+                    start_line: 10,
+                    start_column: 5,
+                    end_line: 10,
+                    end_column: 20,
+                    ..Default::default()
+                }),
+            }),
+            documentation_url: "https://example.com/docs/test-rule-1".to_string(),
+            tool: "test-tool".to_string(),
+            category: Category::Vulnerability.into(),
+            source_checksum: "abc123def456".to_string(),
+            source_checksum_version: 1,
+            other_locations: vec![
+                Location {
+                    path: "src/related.rs".to_string(),
                     range: Some(Range {
-                        start_line: 10,
-                        start_column: 5,
-                        end_line: 10,
-                        end_column: 20,
+                        start_line: 20,
+                        start_column: 3,
+                        end_line: 22,
+                        end_column: 10,
                         ..Default::default()
                     }),
-                }),
-                documentation_url: "https://example.com/docs/test-rule-1".to_string(),
-                tool: "test-tool".to_string(),
-                category: Category::Lint.into(),
-                ..Default::default()
-            },
-            Issue {
-                rule_key: "test-rule-2".to_string(),
-                message: "Test message 2".to_string(),
-                level: Level::Medium.into(),
-                location: Some(Location {
-                    path: "src/test2.rs".to_string(),
+                },
+                Location {
+                    path: "src/related2.rs".to_string(),
                     range: Some(Range {
-                        start_line: 15,
+                        start_line: 30,
                         start_column: 1,
-                        end_line: 20,
+                        end_line: 35,
                         end_column: 2,
                         ..Default::default()
                     }),
-                }),
-                tool: "test-tool".to_string(),
-                category: Category::Lint.into(),
-                ..Default::default()
-            },
-        ];
+                },
+            ],
+            suggestions: vec![
+                Suggestion {
+                    id: "suggestion-1".to_string(),
+                    description: "Fix by replacing with safer code".to_string(),
+                    patch: "some patch content".to_string(),
+                    r#unsafe: false,
+                    source: SuggestionSource::Tool.into(),
+                    replacements: vec![Replacement {
+                        data: "safeCode()".to_string(),
+                        location: Some(Location {
+                            path: "src/test.rs".to_string(),
+                            range: Some(Range {
+                                start_line: 10,
+                                start_column: 5,
+                                end_line: 10,
+                                end_column: 20,
+                                ..Default::default()
+                            }),
+                        }),
+                    }],
+                },
+                Suggestion {
+                    id: "suggestion-2".to_string(),
+                    description: "Alternative fix".to_string(),
+                    patch: "alternative patch content".to_string(),
+                    r#unsafe: true,
+                    source: SuggestionSource::Llm.into(),
+                    replacements: vec![Replacement {
+                        data: "differentSolution()".to_string(),
+                        location: Some(Location {
+                            path: "src/test.rs".to_string(),
+                            range: Some(Range {
+                                start_line: 10,
+                                start_column: 5,
+                                end_line: 10,
+                                end_column: 20,
+                                ..Default::default()
+                            }),
+                        }),
+                    }],
+                },
+            ],
+            partial_fingerprints,
+            tags,
+            mode: Mode::Block.into(),
+            on_added_line: true,
+            effort_minutes: 60,
+            value: 100,
+            ..Default::default()
+        };
 
+        let simple_issue = Issue {
+            rule_key: "test-rule-2".to_string(),
+            message: "Test message 2".to_string(),
+            level: Level::Medium.into(),
+            location: Some(Location {
+                path: "src/test2.rs".to_string(),
+                range: Some(Range {
+                    start_line: 15,
+                    start_column: 1,
+                    end_line: 20,
+                    end_column: 2,
+                    ..Default::default()
+                }),
+            }),
+            tool: "test-tool".to_string(),
+            language: Language::Typescript.into(),
+            category: Category::Lint.into(),
+            ..Default::default()
+        };
+
+        let issues = vec![comprehensive_issue, simple_issue];
         let formatter = SarifFormatter::boxed(issues);
         let output = formatter.read().unwrap();
         let output_str = String::from_utf8_lossy(&output);
