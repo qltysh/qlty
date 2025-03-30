@@ -15,9 +15,29 @@ impl<T: Serialize + 'static> JsonEachRowFormatter<T> {
         Self { data }
     }
 
+    /// Create a new JSON each row formatter with a reference to the given data
+    pub fn new_ref<'a>(data: &'a [T]) -> JsonEachRowFormatter<&'a T>
+    where
+        &'a T: Serialize + 'static,
+    {
+        JsonEachRowFormatter {
+            data: data.iter().collect(),
+        }
+    }
+
     /// Create a boxed JSON each row formatter with the given data
     pub fn boxed(data: Vec<T>) -> Box<dyn Formatter> {
         Box::new(Self { data })
+    }
+
+    /// Create a boxed JSON each row formatter with a reference to the given data
+    pub fn boxed_ref<'a>(data: &'a [T]) -> Box<dyn Formatter>
+    where
+        &'a T: Serialize + 'static,
+    {
+        Box::new(JsonEachRowFormatter {
+            data: data.iter().collect(),
+        })
     }
 }
 

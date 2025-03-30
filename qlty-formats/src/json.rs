@@ -15,9 +15,25 @@ impl<T: Serialize + 'static> JsonFormatter<T> {
         Self { data }
     }
 
+    /// Create a new JSON formatter with a reference to the given data
+    pub fn new_ref<'a>(data: &'a T) -> JsonFormatter<&'a T>
+    where
+        &'a T: Serialize + 'static,
+    {
+        JsonFormatter { data }
+    }
+
     /// Create a boxed JSON formatter with the given data
     pub fn boxed(data: T) -> Box<dyn Formatter> {
         Box::new(Self { data })
+    }
+
+    /// Create a boxed JSON formatter with a reference to the given data
+    pub fn boxed_ref<'a>(data: &'a T) -> Box<dyn Formatter + 'a>
+    where
+        &'a T: Serialize,
+    {
+        Box::new(JsonFormatter { data })
     }
 }
 

@@ -18,9 +18,21 @@ impl InvocationJsonFormatter {
         Self { data }
     }
 
+    /// Create a new invocation JSON formatter with a reference to the data
+    pub fn new_ref(data: &[Invocation]) -> Self {
+        Self {
+            data: data.to_vec(),
+        }
+    }
+
     /// Create a boxed invocation JSON formatter
     pub fn boxed(data: Vec<Invocation>) -> Box<dyn Formatter> {
         Box::new(Self::new(data))
+    }
+
+    /// Create a boxed invocation JSON formatter with a reference to the data
+    pub fn boxed_ref(data: &[Invocation]) -> Box<dyn Formatter> {
+        Box::new(Self::new_ref(data))
     }
 }
 

@@ -3,7 +3,7 @@ use anyhow::Result;
 use std::{
     fs::File,
     io::{copy, Write},
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 
 /// Formatter for copying file contents
@@ -18,9 +18,21 @@ impl CopyFormatter {
         Self { path }
     }
 
+    /// Create a new copy formatter with a reference to the given path
+    pub fn new_ref(path: &Path) -> Self {
+        Self {
+            path: path.to_path_buf(),
+        }
+    }
+
     /// Create a boxed copy formatter with the given path
     pub fn boxed(path: PathBuf) -> Box<dyn Formatter> {
         Box::new(Self { path })
+    }
+
+    /// Create a boxed copy formatter with a reference to the given path
+    pub fn boxed_ref(path: &Path) -> Box<dyn Formatter> {
+        Box::new(Self::new_ref(path))
     }
 }
 
