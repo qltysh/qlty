@@ -83,6 +83,6 @@ whoami.workspace = true
 
 [dev-dependencies]
 indoc.workspace = true
-insta.workspace = true
+insta = { workspace = true, features = ["json", "redactions"] }
 tracing-test.workspace = true
 trycmd.workspace = true

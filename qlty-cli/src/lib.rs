@@ -3,6 +3,7 @@ pub mod auth;
 mod arguments;
 mod commands;
 mod errors;
+pub mod format;
 mod initializer;
 mod logging;
 pub mod shell;

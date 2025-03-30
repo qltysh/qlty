@@ -7,7 +7,6 @@ pub mod json;
 pub mod json_each;
 pub mod json_each_truncated;
 pub mod protos;
-pub mod sarif;
 
 pub use copy::CopyFormatter;
 pub use gz::GzFormatter;
@@ -15,7 +14,6 @@ pub use json::JsonFormatter;
 pub use json_each::JsonEachRowFormatter;
 pub use json_each_truncated::InvocationJsonFormatter;
 pub use protos::{ProtoFormatter, ProtosFormatter};
-pub use sarif::SarifFormatter;
 
 /// Formatter trait for converting data to formatted output
 pub trait Formatter {

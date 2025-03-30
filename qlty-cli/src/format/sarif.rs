@@ -1,7 +1,7 @@
-use crate::Formatter;
 use anyhow::Result;
 use qlty_analysis::Report;
 use qlty_config::version::{BUILD_DATE, LONG_VERSION, QLTY_VERSION};
+use qlty_formats::Formatter;
 use qlty_types::analysis::v1::{Category, Issue, Language, Level, Location, Message, MessageLevel};
 use serde_json::{json, Map, Value};
 use std::convert::TryFrom;
