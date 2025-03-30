@@ -1,8 +1,8 @@
 pub mod analysis;
-pub mod coverage;
+// coverage module moved to qlty-coverage crate
 
 pub use analysis::AnalysisExport;
-pub use coverage::CoverageExport;
+// CoverageExport now available directly from qlty-coverage::export
 
 #[derive(Debug, Clone, Copy, Default)]
 pub enum ExportFormat {

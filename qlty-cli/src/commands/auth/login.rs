@@ -1,9 +1,9 @@
 use crate::{Arguments, CommandError, CommandSuccess};
+use crate::auth::{load_or_retrieve_auth_token, store_auth_token};
 use anyhow::{Context, Result};
 use clap::Args;
 use console::style;
 use dialoguer::Input;
-use qlty_cloud::{load_or_retrieve_auth_token, store_auth_token};
 
 #[derive(Args, Debug)]
 pub struct Login {

@@ -1,6 +1,7 @@
 use crate::publish::Report;
+use crate::export::CoverageExport;
 use anyhow::{Context, Result};
-use qlty_cloud::{export::CoverageExport, Client as QltyClient};
+use qlty_cloud::Client as QltyClient;
 use qlty_types::tests::v1::CoverageMetadata;
 use serde_json::Value;
 use std::path::PathBuf;

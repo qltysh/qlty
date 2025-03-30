@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use anyhow::Result;
-use qlty_cloud::export::CoverageExport;
+use crate::export::CoverageExport;
 use qlty_types::tests::v1::{CoverageMetadata, FileCoverage, ReportFile};
 use serde::Serialize;
 
