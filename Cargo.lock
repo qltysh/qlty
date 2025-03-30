@@ -2502,6 +2502,7 @@ dependencies = [
  "console",
  "flate2",
  "http",
+ "insta",
  "keyring",
  "prost",
  "qlty-analysis",
