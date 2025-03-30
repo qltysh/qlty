@@ -507,7 +507,8 @@ mod test {
         insta::assert_json_snapshot!(json_value, {
             ".runs[0].tool.driver.semanticVersion" => "[version]",
             ".runs[0].tool.driver.version" => "[version_string]",
-            ".runs[0].tool.driver.releaseDateUtc" => "[date]"
+            ".runs[0].tool.driver.releaseDateUtc" => "[date]",
+            ".runs[0].results[0].partialFingerprints" => insta::sorted_redaction()
         });
     }
 }
