@@ -104,7 +104,7 @@ impl RubyLinux {
             "https://ftp.debian.org/debian/pool/main/{}_{}.deb",
             package, ARCH
         );
-        let mut installation = initialize_installation(tool);
+        let mut installation = initialize_installation(tool)?;
         installation.download_url = Some(url.to_string());
         installation.download_file_type = Some(".deb".to_string());
         installation.download_binary_name = Some(package.to_string());
