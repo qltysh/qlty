@@ -139,7 +139,7 @@ uuid = { version = "1.14.0", features = ["v4"] }
 walkdir = "2.5.0"
 webbrowser = "1.0.4"
 whoami = "1.5.2"
-zip = "2.2.2"
+zip = "2.5.0"
 
 # Config for 'cargo dist'
 [workspace.metadata.dist]
