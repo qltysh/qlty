@@ -352,7 +352,7 @@ pub trait Tool: Debug + Sync + Send {
 
         let cmd = cmd
             .dir(self.directory())
-            .full_env(self.env())
+            .full_env(self.env()?)
             .stderr_capture()
             .stdout_capture();
 
@@ -449,7 +449,7 @@ pub trait Tool: Debug + Sync + Send {
     fn installed_version(&self) -> Result<String> {
         if let Some(ref verion_cmd) = self.version_command() {
             let command = Command::new(None, self.interpolate_variables(verion_cmd));
-            let env = self.env();
+            let env = self.env()?;
             let cmd_output = command
                 .cmd
                 .full_env(&env)
@@ -511,7 +511,7 @@ pub trait Tool: Debug + Sync + Send {
         }
     }
 
-    fn env(&self) -> HashMap<String, String> {
+    fn env(&self) -> Result<HashMap<String, String>> {
         let mut env = HashMap::new();
 
         for key in SYSTEM_ENV_KEYS {
@@ -520,15 +520,12 @@ pub trait Tool: Debug + Sync + Send {
             }
         }
 
-        let env_paths = match self.env_paths() {
-            Ok(paths) => paths,
-            Err(err) => {
-                debug!("Failed to get env paths for {}: {}", self.name(), err);
-                Vec::new()
-            }
-        };
+        let env_paths = self.env_paths()?;
 
-        let full_path = path_to_native_string(join_paths(env_paths).unwrap_or_default());
+        let full_path = path_to_native_string(
+            join_paths(env_paths)
+                .with_context(|| format!("Failed to join paths for {}", self.name()))?,
+        );
 
         env.insert("PATH".to_string(), full_path);
 
@@ -536,7 +533,7 @@ pub trait Tool: Debug + Sync + Send {
             env.insert(key, value);
         }
 
-        env
+        Ok(env)
     }
 
     fn extra_env_paths(&self) -> Result<Vec<String>> {
@@ -985,7 +982,7 @@ mod test {
             extra_env_vars: [("TEST".into(), "test".into())].iter().cloned().collect(),
             ..TestTool::default()
         };
-        let env = tool.env();
+        let env = tool.env().unwrap();
 
         for key in SYSTEM_ENV_KEYS {
             assert_eq!(env.get(*key), Some(&std::env::var(key).unwrap()));

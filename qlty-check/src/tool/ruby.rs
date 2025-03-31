@@ -370,7 +370,9 @@ impl Tool for RubygemsPackage {
             path_to_native_string(self.directory()),
         );
 
-        self.package_file_envs(&mut env);
+        if let Err(err) = self.package_file_envs(&mut env) {
+            debug!("Failed to add package file env vars: {}", err);
+        }
 
         env
     }
@@ -519,7 +521,7 @@ pub mod test {
     #[test]
     fn test_rubygems_package_env() {
         with_rubygems_package(|pkg, temp_path, _| {
-            let env = pkg.env();
+            let env = pkg.env().unwrap();
 
             if !cfg!(windows) {
                 assert_eq!(

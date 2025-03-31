@@ -56,7 +56,7 @@ impl PlatformRuby for RubyMacos {
                 ],
             )
             .dir(tool.directory())
-            .full_env(tool.env());
+            .full_env(tool.env()?);
 
         debug!("Running: {:?}", cmd);
 

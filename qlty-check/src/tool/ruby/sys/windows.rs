@@ -63,7 +63,7 @@ impl RubyWindows {
     fn verify_system_installation(tool: &dyn Tool) -> Result<()> {
         let cmd = Command::new(None, tool.version_command().unwrap_or_default())
             .cmd
-            .full_env(tool.env())
+            .full_env(tool.env()?)
             .stderr_to_stdout()
             .stdout_capture();
 

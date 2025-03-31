@@ -94,7 +94,7 @@ impl Composer {
                 ],
             )
             .dir(php_package.directory())
-            .full_env(self.env())
+            .full_env(self.env()?)
             .stderr_capture()
             .stdout_capture()
             .unchecked(); // Capture output for debugging

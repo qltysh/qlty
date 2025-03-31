@@ -106,7 +106,7 @@ impl Driver {
         let cmd = cmd_wrapper
             .cmd
             .dir(&plan.invocation_directory)
-            .full_env(plan.tool.env())
+            .full_env(plan.tool.env()?)
             .stderr_capture()
             .stdout_capture()
             .unchecked();
@@ -504,7 +504,7 @@ impl Driver {
         let cmd = cmd_wrapper
             .cmd
             .dir(dir)
-            .full_env(plan.tool.env())
+            .full_env(plan.tool.env()?)
             .stderr_capture()
             .stdout_capture()
             .unchecked();

@@ -357,7 +357,7 @@ mod test {
     #[test]
     fn test_pip_venv_package_env() {
         with_pip_venv_package(|pkg, _, _| {
-            let env = pkg.env();
+            let env = pkg.env().unwrap();
             let mut paths = vec![
                 join_path_string!(pkg.directory(), BIN_DIRECTORY),
                 join_path_string!(pkg.runtime.directory(), "bin"),

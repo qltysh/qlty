@@ -45,7 +45,7 @@ impl Tool for Php {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message("Verifying Php installation");
-        self.verify_installation(self.env())?;
+        self.verify_installation(self.env()?)?;
 
         task.set_message("Installing composer");
         let composer = Composer {

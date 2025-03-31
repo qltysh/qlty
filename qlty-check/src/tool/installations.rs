@@ -18,7 +18,7 @@ pub fn initialize_installation(tool: &dyn Tool) -> Installation {
         qlty_cli_version: QLTY_VERSION.to_string(),
         log_file_path: tool.install_log_path(),
         started_at: Some(Utc::now().into()),
-        env: tool.env(),
+        env: tool.env().unwrap_or_default(),
         ..Default::default()
     }
 }

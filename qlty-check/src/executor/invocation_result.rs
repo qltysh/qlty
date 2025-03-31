@@ -82,7 +82,7 @@ impl InvocationResult {
                     .collect(),
                 script: rerun.to_string(),
                 cwd: path_to_string(&plan.invocation_directory),
-                env: plan.tool.env(),
+                env: plan.tool.env().unwrap_or_default(),
                 started_at: Some(start_time.into()),
                 duration_secs: duration as f32,
                 exit_code: exec_result.exit_code,
