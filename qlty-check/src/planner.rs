@@ -22,7 +22,6 @@ use qlty_config::{QltyConfig, Workspace};
 use qlty_types::analysis::v1::ExecutionVerb;
 use rayon::prelude::*;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use tracing::{debug, info};
 
@@ -62,7 +61,7 @@ pub struct Planner {
     staging_area: StagingArea,
     issue_cache: IssueCache,
     target_mode: Option<TargetMode>,
-    workspace_entry_finder_builder: Option<Arc<Mutex<PluginWorkspaceEntryFinderBuilder>>>,
+    workspace_entry_finder_builder: Option<PluginWorkspaceEntryFinderBuilder>,
     cache_hits: Vec<IssuesCacheHit>,
     active_plugins: Vec<ActivePlugin>,
     plugin_configs: HashMap<String, Vec<PluginConfigFile>>,
@@ -145,7 +144,7 @@ impl Planner {
 
         builder.compute()?;
 
-        self.workspace_entry_finder_builder = Some(Arc::new(Mutex::new(builder)));
+        self.workspace_entry_finder_builder = Some(builder);
 
         Ok(())
     }
@@ -232,29 +231,20 @@ impl Planner {
             }
         };
 
-        let result = workspace_entry_finder_builder
-            .clone()
-            .lock()
-            .map_err(|_| {
-                debug!("Failed to lock workspace entry finder builder");
-            })
-            .and_then(|mut builder| {
-                builder.diff_line_filter().map_err(|_| {
-                    debug!("Failed to get diff line filter");
-                })
-            });
+        match workspace_entry_finder_builder.clone().diff_line_filter() {
+            Ok(diff_line_filter) => {
+                self.transformers.push(diff_line_filter);
 
-        if let Ok(diff_line_filter) = result {
-            self.transformers.push(diff_line_filter);
-
-            if !self.settings.emit_existing_issues {
-                match &self.target_mode.as_ref() {
-                    Some(TargetMode::UpstreamDiff(_)) | Some(TargetMode::HeadDiff) => {
-                        self.transformers.push(Box::new(DiffLineFilter));
+                if !self.settings.emit_existing_issues {
+                    match &self.target_mode.as_ref() {
+                        Some(TargetMode::UpstreamDiff(_)) | Some(TargetMode::HeadDiff) => {
+                            self.transformers.push(Box::new(DiffLineFilter));
+                        }
+                        _ => {}
                     }
-                    _ => {}
                 }
             }
+            Err(_) => {}
         }
 
         for ignore in &self.config.ignore {
