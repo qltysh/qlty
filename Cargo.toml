@@ -17,7 +17,7 @@ members = ["qlty*"]
 
 [workspace.dependencies]
 actix-web = "4.9.0"
-anyhow = { version = "1.0.95", features = ["backtrace"] }
+anyhow = { version = "1.0.97", features = ["backtrace"] }
 ar = "0.9.0"
 assert-json-diff = "2.0.2"
 base64 = "0.22.1"
