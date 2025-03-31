@@ -234,8 +234,8 @@ impl Planner {
             self.transformers.push(diff_line_filter);
 
             if !self.settings.emit_existing_issues {
-                match &self.target_mode.as_ref().unwrap() {
-                    TargetMode::UpstreamDiff(_) | TargetMode::HeadDiff => {
+                match &self.target_mode.as_ref() {
+                    Some(TargetMode::UpstreamDiff(_)) | Some(TargetMode::HeadDiff) => {
                         self.transformers.push(Box::new(DiffLineFilter));
                     }
                     _ => {}
@@ -276,9 +276,15 @@ impl Planner {
     }
 
     fn build_plan(&mut self) -> Result<Plan> {
+        let target_mode = self
+            .target_mode
+            .as_ref()
+            .ok_or_else(|| anyhow::anyhow!("Target mode not computed"))?
+            .clone();
+
         Ok(Plan {
             verb: self.verb,
-            target_mode: self.target_mode.as_ref().unwrap().clone(),
+            target_mode,
             settings: self.settings.clone(),
             workspace: self.workspace.clone(),
             config: self.config.clone(),

@@ -41,9 +41,9 @@ impl PluginWorkspaceEntryFinderBuilder {
 
     pub fn diff_line_filter(&mut self) -> Result<Box<dyn IssueTransformer>> {
         match self.mode {
-            TargetMode::HeadDiff | TargetMode::UpstreamDiff(_) => Ok(Box::new(
-                self.git_diff.as_ref().unwrap().line_filter.clone(),
-            )),
+            TargetMode::HeadDiff | TargetMode::UpstreamDiff(_) => {
+                Ok(Box::new(self.git_diff.as_ref().unwrap().line_filter.clone()))
+            }
             _ => Ok(Box::new(NullIssueTransformer)),
         }
     }
