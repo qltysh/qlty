@@ -102,7 +102,7 @@ impl Composer {
         let script = format!("{:?}", cmd);
         debug!(script);
 
-        let mut installation = initialize_installation(php_package);
+        let mut installation = initialize_installation(php_package)?;
         let result = cmd.run();
         let _ =
             finalize_installation_from_cmd_result(php_package, &result, &mut installation, script);

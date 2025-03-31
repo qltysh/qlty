@@ -33,7 +33,7 @@ impl RubyGemfile {
         let script = format!("{:?}", list_command);
         debug!(script);
 
-        let mut installation = initialize_installation(self);
+        let mut installation = initialize_installation(self)?;
         let result = list_command.run();
         let _ = finalize_installation_from_cmd_result(self, &result, &mut installation, script);
 

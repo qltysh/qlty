@@ -81,7 +81,7 @@ impl Php {
         let script = format!("{:?}", cmd);
         debug!(script);
 
-        let mut installation = initialize_installation(self);
+        let mut installation = initialize_installation(self)?;
         let result = cmd.run();
         finalize_installation_from_cmd_result(self, &result, &mut installation, script).ok();
 
@@ -191,13 +191,13 @@ impl Tool for PhpPackage {
         Some(self.plugin.clone())
     }
 
-    fn extra_env_vars(&self) -> HashMap<String, String> {
+    fn extra_env_vars(&self) -> Result<HashMap<String, String>> {
         let mut env = HashMap::new();
         env.insert(
             "COMPOSER_VENDOR_DIR".to_string(),
             path_to_native_string(PathBuf::from(format!("{}/vendor", self.directory()))),
         );
-        env
+        Ok(env)
     }
 }
 

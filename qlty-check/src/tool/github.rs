@@ -399,7 +399,7 @@ impl GitHubReleaseTool {
             request = request.set("Authorization", &format!("Bearer {}", auth_token));
         }
 
-        let mut installation = initialize_installation(self);
+        let mut installation = initialize_installation(self)?;
         let result = request.call();
         finalize_installation_from_assets_fetch(&mut installation, &result, url);
 
