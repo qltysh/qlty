@@ -124,20 +124,14 @@ impl PluginPlanner {
     }
 
     fn compute_workspace_entries(&mut self) -> Result<()> {
-        let mut workspace_entry_finder_builder = self.workspace_entry_finder_builder.clone();
-        let prefix = workspace_entry_finder_builder.prefix.clone();
-        if let Some(prefix) = &self.plugin.prefix {
-            workspace_entry_finder_builder.prefix = Some(prefix.clone());
-        };
-        let mut workspace_entry_finder =
-            workspace_entry_finder_builder.build(&self.plugin.file_types)?;
+        let mut workspace_entry_finder = self
+            .workspace_entry_finder_builder
+            .build(&self.plugin.file_types, self.plugin.prefix.clone())?;
 
         self.workspace_entries = match self.target_mode {
             TargetMode::Sample(sample) => Arc::new(workspace_entry_finder.sample(sample)?),
             _ => Arc::new(workspace_entry_finder.workspace_entries()?),
         };
-
-        workspace_entry_finder_builder.prefix = prefix;
 
         if self.workspace_entries.is_empty() {
             debug!("Found 0 workspace_entries for plugin {}", self.plugin_name);

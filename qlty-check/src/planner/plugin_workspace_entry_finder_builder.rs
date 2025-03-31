@@ -32,18 +32,22 @@ impl PluginWorkspaceEntryFinderBuilder {
         Ok(())
     }
 
-    pub fn build(&mut self, language_names: &[String]) -> Result<WorkspaceEntryFinder> {
+    pub fn build(
+        &mut self,
+        language_names: &[String],
+        prefix: Option<String>,
+    ) -> Result<WorkspaceEntryFinder> {
         Ok(WorkspaceEntryFinder::new(
             self.source()?,
-            self.matcher(language_names)?,
+            self.matcher(language_names, prefix)?,
         ))
     }
 
     pub fn diff_line_filter(&mut self) -> Result<Box<dyn IssueTransformer>> {
         match self.mode {
-            TargetMode::HeadDiff | TargetMode::UpstreamDiff(_) => {
-                Ok(Box::new(self.git_diff.as_ref().unwrap().line_filter.clone()))
-            }
+            TargetMode::HeadDiff | TargetMode::UpstreamDiff(_) => Ok(Box::new(
+                self.git_diff.as_ref().unwrap().line_filter.clone(),
+            )),
             _ => Ok(Box::new(NullIssueTransformer)),
         }
     }
@@ -52,7 +56,11 @@ impl PluginWorkspaceEntryFinderBuilder {
         Ok(self.source.as_ref().unwrap().clone())
     }
 
-    fn matcher(&self, language_names: &[String]) -> Result<Box<dyn WorkspaceEntryMatcher>> {
+    fn matcher(
+        &self,
+        language_names: &[String],
+        prefix: Option<String>,
+    ) -> Result<Box<dyn WorkspaceEntryMatcher>> {
         let mut matchers: Vec<Box<dyn WorkspaceEntryMatcher>> = vec![];
 
         matchers.push(Box::new(FileMatcher));
@@ -77,7 +85,7 @@ impl PluginWorkspaceEntryFinderBuilder {
             self.root.to_owned(),
         )));
 
-        if let Some(prefix) = &self.prefix {
+        if let Some(prefix) = prefix {
             matchers.push(Box::new(PrefixMatcher::new(
                 path_to_string(self.root.join(prefix)),
                 self.root.to_owned(),

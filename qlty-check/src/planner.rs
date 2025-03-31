@@ -188,7 +188,6 @@ impl Planner {
             }
         }
 
-
         let results = plugin_planners
             .par_iter_mut()
             .map(|planner| planner.compute())
