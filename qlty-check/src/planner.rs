@@ -22,6 +22,7 @@ use qlty_config::{QltyConfig, Workspace};
 use qlty_types::analysis::v1::ExecutionVerb;
 use rayon::prelude::*;
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use tracing::{debug, info};
 
@@ -61,7 +62,7 @@ pub struct Planner {
     staging_area: StagingArea,
     issue_cache: IssueCache,
     target_mode: Option<TargetMode>,
-    workspace_entry_finder_builder: Option<PluginWorkspaceEntryFinderBuilder>,
+    workspace_entry_finder_builder: Option<Arc<Mutex<PluginWorkspaceEntryFinderBuilder>>>,
     cache_hits: Vec<IssuesCacheHit>,
     active_plugins: Vec<ActivePlugin>,
     plugin_configs: HashMap<String, Vec<PluginConfigFile>>,
@@ -144,7 +145,7 @@ impl Planner {
 
         builder.compute()?;
 
-        self.workspace_entry_finder_builder = Some(builder);
+        self.workspace_entry_finder_builder = Some(Arc::new(Mutex::new(builder)));
 
         Ok(())
     }
@@ -171,14 +172,21 @@ impl Planner {
         }
 
         for active_plugin in &self.active_plugins {
-            plugin_planners.push(PluginPlanner::new(
+            match PluginPlanner::new(
                 self,
                 active_plugin.clone(),
                 plugin_prefixes
                     .get(&active_plugin.name)
                     .cloned()
                     .unwrap_or_default(),
-            ));
+            ) {
+                Ok(planner) => plugin_planners.push(planner),
+                Err(err) => bail!(
+                    "Failed to create plugin planner for {}: {}",
+                    active_plugin.name,
+                    err
+                ),
+            }
         }
 
         let results = plugin_planners
@@ -216,18 +224,32 @@ impl Planner {
     }
 
     fn compute_transformers(&mut self) {
-        if let Ok(diff_line_filter) = self
-            .workspace_entry_finder_builder
-            .as_mut()
-            .unwrap()
+        let workspace_entry_finder_builder = match self.workspace_entry_finder_builder.as_mut() {
+            Some(builder) => builder,
+            None => {
+                debug!("No workspace entry finder builder available for transformers");
+                return;
+            }
+        };
+
+        let result = workspace_entry_finder_builder
             .clone()
-            .diff_line_filter()
-        {
+            .lock()
+            .map_err(|_| {
+                debug!("Failed to lock workspace entry finder builder");
+            })
+            .and_then(|mut builder| {
+                builder.diff_line_filter().map_err(|_| {
+                    debug!("Failed to get diff line filter");
+                })
+            });
+
+        if let Ok(diff_line_filter) = result {
             self.transformers.push(diff_line_filter);
 
             if !self.settings.emit_existing_issues {
-                match &self.target_mode.as_ref().unwrap() {
-                    TargetMode::UpstreamDiff(_) | TargetMode::HeadDiff => {
+                match &self.target_mode.as_ref() {
+                    Some(TargetMode::UpstreamDiff(_)) | Some(TargetMode::HeadDiff) => {
                         self.transformers.push(Box::new(DiffLineFilter));
                     }
                     _ => {}
@@ -268,9 +290,15 @@ impl Planner {
     }
 
     fn build_plan(&mut self) -> Result<Plan> {
+        let target_mode = self
+            .target_mode
+            .as_ref()
+            .ok_or_else(|| anyhow::anyhow!("Target mode not computed"))?
+            .clone();
+
         Ok(Plan {
             verb: self.verb,
-            target_mode: self.target_mode.as_ref().unwrap().clone(),
+            target_mode,
             settings: self.settings.clone(),
             workspace: self.workspace.clone(),
             config: self.config.clone(),

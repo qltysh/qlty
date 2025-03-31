@@ -117,7 +117,7 @@ pub trait PlatformRuby {
         sha: &mut sha2::Sha256,
         download: Download,
     ) -> Result<()> {
-        download.update_hash(sha, &tool.name());
+        download.update_hash(sha, &tool.name())?;
         sha.update("qlty_load_path:v1".as_bytes());
         Ok(())
     }
