@@ -188,6 +188,7 @@ impl Planner {
             }
         }
 
+
         let results = plugin_planners
             .par_iter_mut()
             .map(|planner| planner.compute())
@@ -223,28 +224,23 @@ impl Planner {
     }
 
     fn compute_transformers(&mut self) {
-        let workspace_entry_finder_builder = match self.workspace_entry_finder_builder.as_mut() {
-            Some(builder) => builder,
-            None => {
-                debug!("No workspace entry finder builder available for transformers");
-                return;
-            }
-        };
+        if let Ok(diff_line_filter) = self
+            .workspace_entry_finder_builder
+            .as_mut()
+            .unwrap()
+            .clone()
+            .diff_line_filter()
+        {
+            self.transformers.push(diff_line_filter);
 
-        match workspace_entry_finder_builder.clone().diff_line_filter() {
-            Ok(diff_line_filter) => {
-                self.transformers.push(diff_line_filter);
-
-                if !self.settings.emit_existing_issues {
-                    match &self.target_mode.as_ref() {
-                        Some(TargetMode::UpstreamDiff(_)) | Some(TargetMode::HeadDiff) => {
-                            self.transformers.push(Box::new(DiffLineFilter));
-                        }
-                        _ => {}
+            if !self.settings.emit_existing_issues {
+                match &self.target_mode.as_ref().unwrap() {
+                    TargetMode::UpstreamDiff(_) | TargetMode::HeadDiff => {
+                        self.transformers.push(Box::new(DiffLineFilter));
                     }
+                    _ => {}
                 }
             }
-            Err(_) => {}
         }
 
         for ignore in &self.config.ignore {
@@ -280,15 +276,9 @@ impl Planner {
     }
 
     fn build_plan(&mut self) -> Result<Plan> {
-        let target_mode = self
-            .target_mode
-            .as_ref()
-            .ok_or_else(|| anyhow::anyhow!("Target mode not computed"))?
-            .clone();
-
         Ok(Plan {
             verb: self.verb,
-            target_mode,
+            target_mode: self.target_mode.as_ref().unwrap().clone(),
             settings: self.settings.clone(),
             workspace: self.workspace.clone(),
             config: self.config.clone(),
