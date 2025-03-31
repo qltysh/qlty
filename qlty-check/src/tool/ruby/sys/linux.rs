@@ -195,7 +195,7 @@ impl RubyLinux {
             let path = path_to_string(entry.path()?);
 
             // Extract the filename from the path
-            let filename = match path.split('/').last() {
+            let filename = match path.split('/').next_back() {
                 Some(filename) => filename,
                 None => bail!("Invalid path with no filename component: {}", path),
             };
