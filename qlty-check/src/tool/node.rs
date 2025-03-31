@@ -202,14 +202,14 @@ impl Tool for NodePackage {
         Ok(paths)
     }
 
-    fn extra_env_vars(&self) -> HashMap<String, String> {
-        let mut env = self.runtime.extra_env_vars();
+    fn extra_env_vars(&self) -> Result<HashMap<String, String>> {
+        let mut env = self.runtime.extra_env_vars()?;
         env.insert(
             "NODE_PATH".to_string(),
             join_path_string!(self.directory(), "node_modules"),
         );
 
-        env
+        Ok(env)
     }
 
     fn clone_box(&self) -> Box<dyn Tool> {

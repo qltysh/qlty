@@ -195,11 +195,11 @@ impl Tool for PipVenvPackage {
         Ok(vec![join_path_string!(self.directory(), BIN_DIRECTORY)])
     }
 
-    fn extra_env_vars(&self) -> HashMap<String, String> {
-        let mut env = self.runtime.extra_env_vars();
+    fn extra_env_vars(&self) -> Result<HashMap<String, String>> {
+        let mut env = self.runtime.extra_env_vars()?;
         env.insert("VIRTUAL_ENV".to_string(), self.directory());
 
-        env
+        Ok(env)
     }
 
     fn clone_box(&self) -> Box<dyn Tool> {

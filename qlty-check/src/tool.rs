@@ -348,7 +348,7 @@ pub trait Tool: Debug + Sync + Send {
     where
         Self: Sized,
     {
-        let mut installation = initialize_installation(self);
+        let mut installation = initialize_installation(self)?;
 
         let cmd = cmd
             .dir(self.directory())
@@ -529,7 +529,7 @@ pub trait Tool: Debug + Sync + Send {
 
         env.insert("PATH".to_string(), full_path);
 
-        for (key, value) in self.extra_env_vars_with_plugin_env() {
+        for (key, value) in self.extra_env_vars_with_plugin_env()? {
             env.insert(key, value);
         }
 
@@ -543,8 +543,8 @@ pub trait Tool: Debug + Sync + Send {
         ])
     }
 
-    fn extra_env_vars(&self) -> HashMap<String, String> {
-        HashMap::new()
+    fn extra_env_vars(&self) -> Result<HashMap<String, String>> {
+        Ok(HashMap::new())
     }
 
     fn install_log_file(&self) -> Result<std::fs::File> {
@@ -643,13 +643,13 @@ pub trait Tool: Debug + Sync + Send {
         Ok(paths.iter().map(path_to_native_string).collect())
     }
 
-    fn extra_env_vars_with_plugin_env(&self) -> HashMap<String, String> {
-        let mut env = self.extra_env_vars();
+    fn extra_env_vars_with_plugin_env(&self) -> Result<HashMap<String, String>> {
+        let mut env = self.extra_env_vars()?;
         if let Some(plugin) = self.plugin() {
             env.extend(self.load_environment_vars(&plugin.environment));
         }
 
-        env
+        Ok(env)
     }
 
     fn interpolate_variables(&self, value: &str) -> String {
@@ -784,8 +784,8 @@ mod test {
             self.plugin.clone()
         }
 
-        fn extra_env_vars(&self) -> HashMap<String, String> {
-            self.extra_env_vars.clone()
+        fn extra_env_vars(&self) -> Result<HashMap<String, String>> {
+            Ok(self.extra_env_vars.clone())
         }
 
         fn extra_env_paths(&self) -> Result<Vec<String>> {
@@ -854,8 +854,8 @@ mod test {
             self.plugin.clone()
         }
 
-        fn extra_env_vars(&self) -> HashMap<String, String> {
-            self.extra_env_vars.clone()
+        fn extra_env_vars(&self) -> Result<HashMap<String, String>> {
+            Ok(self.extra_env_vars.clone())
         }
 
         fn extra_env_paths(&self) -> Result<Vec<String>> {

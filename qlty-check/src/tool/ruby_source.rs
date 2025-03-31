@@ -63,13 +63,13 @@ impl Tool for RubySource {
         ])
     }
 
-    fn extra_env_vars(&self) -> HashMap<String, String> {
+    fn extra_env_vars(&self) -> Result<HashMap<String, String>> {
         let mut env = HashMap::new();
         env.insert(
             "LD_LIBRARY_PATH".to_string(),
             join_path_string!(self.directory(), "lib"),
         );
-        env
+        Ok(env)
     }
 
     fn version_command(&self) -> Option<String> {

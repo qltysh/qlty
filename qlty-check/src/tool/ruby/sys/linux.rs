@@ -54,8 +54,8 @@ impl PlatformRuby for RubyLinux {
         vec![join_path_string!(tool.directory(), "bin")]
     }
 
-    fn extra_env_vars(&self, tool: &dyn Tool, env: &mut HashMap<String, String>) {
-        self.insert_rubylib_env(tool, env);
+    fn extra_env_vars(&self, tool: &dyn Tool, env: &mut HashMap<String, String>) -> Result<()> {
+        self.insert_rubylib_env(tool, env)?;
         env.insert(
             "LD_LIBRARY_PATH".to_string(),
             join_path_string!(tool.directory(), "lib"),
@@ -64,6 +64,7 @@ impl PlatformRuby for RubyLinux {
             "PKG_CONFIG_PATH".to_string(),
             join_path_string!(tool.directory(), "lib", "pkgconfig"),
         );
+        Ok(())
     }
 
     fn platform_directory(&self, _tool: &dyn Tool) -> String {
@@ -265,7 +266,7 @@ mod test {
         let mut env = std::collections::HashMap::new();
         let runtime = RubyLinux::default();
         let platform_dir = runtime.platform_directory(&tool);
-        runtime.extra_env_vars(&tool, &mut env);
+        runtime.extra_env_vars(&tool, &mut env).unwrap();
         assert_eq!(
             *env.get("PKG_CONFIG_PATH").unwrap(),
             format!("{}/lib/pkgconfig", path_to_string(tempdir.path()))
@@ -305,7 +306,7 @@ mod test {
         };
         let mut env = std::collections::HashMap::new();
         let runtime = RubyLinux::default();
-        runtime.extra_env_vars(&tool, &mut env);
+        runtime.extra_env_vars(&tool, &mut env).unwrap();
         assert_eq!(
             *env.get("LD_LIBRARY_PATH").unwrap(),
             format!("{}/lib", path_to_string(tempdir.path()))
