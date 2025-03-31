@@ -1182,6 +1182,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "itertools"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b192c782037fadd9cfa75548310488aabdbf3d2da73885b31bd0abd03351285"
+dependencies = [
+ "either",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1708,7 +1717,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6eea3058763d6e656105d1403cb04e0a41b7bbac6362d413e7c33be0c32279c9"
 dependencies = [
  "heck",
- "itertools",
+ "itertools 0.13.0",
  "prost",
  "prost-types",
 ]
@@ -1889,7 +1898,7 @@ checksum = "0c1318b19085f08681016926435853bbf7858f9c082d0999b80550ff5d9abe15"
 dependencies = [
  "bytes",
  "heck",
- "itertools",
+ "itertools 0.13.0",
  "log",
  "multimap",
  "once_cell",
@@ -1909,7 +1918,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a56d757972c98b346a9b766e3f02746cde6dd1cd1d1d563472929fdd74bec4d"
 dependencies = [
  "anyhow",
- "itertools",
+ "itertools 0.14.0",
  "proc-macro2",
  "quote",
  "syn 2.0.87",
@@ -1935,7 +1944,7 @@ dependencies = [
  "globset",
  "ignore",
  "insta",
- "itertools",
+ "itertools 0.14.0",
  "lazy_static",
  "md5",
  "num_cpus",
@@ -1987,7 +1996,7 @@ dependencies = [
  "indicatif",
  "indoc",
  "insta",
- "itertools",
+ "itertools 0.14.0",
  "lazy_static",
  "lzma-rs",
  "num_cpus",
