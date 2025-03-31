@@ -520,7 +520,15 @@ pub trait Tool: Debug + Sync + Send {
             }
         }
 
-        let full_path = path_to_native_string(join_paths(self.env_paths()).unwrap_or_default());
+        let env_paths = match self.env_paths() {
+            Ok(paths) => paths,
+            Err(err) => {
+                debug!("Failed to get env paths for {}: {}", self.name(), err);
+                Vec::new()
+            }
+        };
+
+        let full_path = path_to_native_string(join_paths(env_paths).unwrap_or_default());
 
         env.insert("PATH".to_string(), full_path);
 
@@ -610,33 +618,19 @@ pub trait Tool: Debug + Sync + Send {
         None
     }
 
-    fn env_paths(&self) -> Vec<String> {
+    fn env_paths(&self) -> Result<Vec<String>> {
         if let Some(plugin) = self.plugin() {
             let plugin_env_paths = self.load_environment_paths(&plugin.environment);
             if !plugin_env_paths.is_empty() {
-                return plugin_env_paths;
+                return Ok(plugin_env_paths);
             }
         }
 
-        let mut paths = match self.extra_env_paths() {
-            Ok(paths) => paths,
-            Err(err) => {
-                debug!("Failed to get extra env paths for {}: {}", self.name(), err);
-                Vec::new()
-            }
-        };
+        let mut paths = self.extra_env_paths()?;
 
         if let Some(runtime) = self.runtime() {
-            match runtime.extra_env_paths() {
-                Ok(runtime_paths) => paths.extend(runtime_paths),
-                Err(err) => {
-                    debug!(
-                        "Failed to get runtime extra env paths for {}: {}",
-                        self.name(),
-                        err
-                    );
-                }
-            }
+            let runtime_paths = runtime.extra_env_paths()?;
+            paths.extend(runtime_paths);
         }
 
         if cfg!(windows) {
@@ -649,7 +643,7 @@ pub trait Tool: Debug + Sync + Send {
         } else {
             paths.extend(BASE_SHELL_PATH.iter().map(|s| s.to_string()));
         }
-        paths.iter().map(path_to_native_string).collect()
+        Ok(paths.iter().map(path_to_native_string).collect())
     }
 
     fn extra_env_vars_with_plugin_env(&self) -> HashMap<String, String> {
