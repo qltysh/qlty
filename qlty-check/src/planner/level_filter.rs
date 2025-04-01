@@ -8,7 +8,7 @@ pub struct LevelFilter {
 
 impl IssueTransformer for LevelFilter {
     fn transform(&self, issue: Issue) -> Option<Issue> {
-        if issue.level >= self.level.into() {
+        if issue.level >= self.level as i32 {
             Some(issue)
         } else {
             None
