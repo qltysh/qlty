@@ -310,8 +310,8 @@ impl Tool for GitHubReleaseTool {
         Ok(())
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
-        vec![self.directory()]
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
+        Ok(vec![self.directory()])
     }
 
     fn clone_box(&self) -> Box<dyn Tool> {
@@ -399,7 +399,7 @@ impl GitHubReleaseTool {
             request = request.set("Authorization", &format!("Bearer {}", auth_token));
         }
 
-        let mut installation = initialize_installation(self);
+        let mut installation = initialize_installation(self)?;
         let result = request.call();
         finalize_installation_from_assets_fetch(&mut installation, &result, url);
 

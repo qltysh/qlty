@@ -42,7 +42,7 @@ impl Tool for Go {
         Ok(())
     }
 
-    fn extra_env_vars(&self) -> HashMap<String, String> {
+    fn extra_env_vars(&self) -> Result<HashMap<String, String>> {
         let mut env = HashMap::new();
         env.insert("GOROOT".to_string(), self.directory());
         env.insert("GO111MODULE".to_string(), "on".to_string());
@@ -51,7 +51,7 @@ impl Tool for Go {
             "LD_LIBRARY_PATH".to_string(),
             join_path_string!(self.directory(), "lib"),
         );
-        env
+        Ok(env)
     }
 
     fn version_command(&self) -> Option<String> {
@@ -167,22 +167,22 @@ impl Tool for GoPackage {
         Ok(())
     }
 
-    fn extra_env_vars(&self) -> HashMap<String, String> {
-        let mut env = self.runtime.extra_env_vars();
+    fn extra_env_vars(&self) -> Result<HashMap<String, String>> {
+        let mut env = self.runtime.extra_env_vars()?;
         env.insert("GOPATH".to_string(), self.directory());
 
-        env
+        Ok(env)
     }
 
     fn clone_box(&self) -> Box<dyn Tool> {
         Box::new(self.clone())
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
-        vec![
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
+        Ok(vec![
             join_path_string!(self.directory(), "bin"),
             join_path_string!(self.runtime.directory(), "bin"),
-        ]
+        ])
     }
 
     fn plugin(&self) -> Option<PluginDef> {

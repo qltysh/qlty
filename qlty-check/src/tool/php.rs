@@ -45,7 +45,7 @@ impl Tool for Php {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message("Verifying Php installation");
-        self.verify_installation(self.env())?;
+        self.verify_installation(self.env()?)?;
 
         task.set_message("Installing composer");
         let composer = Composer {
@@ -64,14 +64,10 @@ impl Tool for Php {
         Box::new(self.clone())
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
-        split_paths(
-            &std::env::var("PATH")
-                .with_context(|| "PATH not found for php runtime")
-                .unwrap(),
-        )
-        .map(path_to_native_string)
-        .collect_vec()
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
+        std::env::var("PATH")
+            .with_context(|| "PATH environment variable not found for php runtime")
+            .map(|path| split_paths(&path).map(path_to_native_string).collect_vec())
     }
 }
 
@@ -85,7 +81,7 @@ impl Php {
         let script = format!("{:?}", cmd);
         debug!(script);
 
-        let mut installation = initialize_installation(self);
+        let mut installation = initialize_installation(self)?;
         let result = cmd.run();
         finalize_installation_from_cmd_result(self, &result, &mut installation, script).ok();
 
@@ -152,11 +148,17 @@ impl Tool for PhpPackage {
         };
 
         let composer_phar = PathBuf::from(composer.directory()).join("composer.phar");
+        let composer_path = composer_phar.to_str().with_context(|| {
+            format!(
+                "Failed to convert composer path to string: {:?}",
+                composer_phar
+            )
+        })?;
 
         self.run_command(self.cmd.build(
             "php",
             vec![
-                &path_to_native_string(composer_phar.to_str().unwrap()),
+                &path_to_native_string(composer_path),
                 "require",
                 "--no-interaction",
                 format!("{}:{}", name, version).as_str(),
@@ -177,8 +179,8 @@ impl Tool for PhpPackage {
         Ok(())
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
-        vec![self.directory()]
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
+        Ok(vec![self.directory()])
     }
 
     fn clone_box(&self) -> Box<dyn Tool> {
@@ -189,13 +191,13 @@ impl Tool for PhpPackage {
         Some(self.plugin.clone())
     }
 
-    fn extra_env_vars(&self) -> HashMap<String, String> {
+    fn extra_env_vars(&self) -> Result<HashMap<String, String>> {
         let mut env = HashMap::new();
         env.insert(
             "COMPOSER_VENDOR_DIR".to_string(),
             path_to_native_string(PathBuf::from(format!("{}/vendor", self.directory()))),
         );
-        env
+        Ok(env)
     }
 }
 

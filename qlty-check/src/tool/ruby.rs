@@ -7,7 +7,7 @@ use super::{Tool, ToolType};
 use crate::tool::download::Download;
 use crate::tool::RuntimeTool;
 use crate::ui::{ProgressBar, ProgressTask};
-use anyhow::Result;
+use anyhow::{Context, Result};
 use itertools::Itertools;
 use qlty_analysis::join_path_string;
 use qlty_analysis::utils::fs::{path_to_native_string, path_to_string};
@@ -29,7 +29,7 @@ pub struct Ruby {
 pub trait PlatformRuby {
     fn post_install(&self, tool: &dyn Tool, task: &ProgressTask) -> Result<()>;
     fn extra_env_paths(&self, tool: &dyn Tool) -> Vec<String>;
-    fn extra_env_vars(&self, tool: &dyn Tool, env: &mut HashMap<String, String>);
+    fn extra_env_vars(&self, tool: &dyn Tool, env: &mut HashMap<String, String>) -> Result<()>;
     fn platform_directory(&self, tool: &dyn Tool) -> String;
 
     fn version(&self, version: &String) -> Option<String> {
@@ -100,15 +100,16 @@ pub trait PlatformRuby {
             .collect_vec()
     }
 
-    fn insert_rubylib_env(&self, tool: &dyn Tool, env: &mut HashMap<String, String>) {
+    fn insert_rubylib_env(&self, tool: &dyn Tool, env: &mut HashMap<String, String>) -> Result<()> {
         env.insert("RUBYOPT".to_string(), "-rqlty_load_path".to_string());
         env.insert(
             "RUBYLIB".to_string(),
             join_paths(self.rubylib_paths(tool))
-                .unwrap_or_default()
+                .context(format!("Failed to join RUBYLIB paths for {}", tool.name()))?
                 .to_string_lossy()
                 .to_string(),
         );
+        Ok(())
     }
 
     fn update_hash(
@@ -180,14 +181,14 @@ impl Tool for Ruby {
         self.platform_tool.post_install(self, task)
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
-        self.platform_tool.extra_env_paths(self)
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
+        Ok(self.platform_tool.extra_env_paths(self))
     }
 
-    fn extra_env_vars(&self) -> HashMap<String, String> {
+    fn extra_env_vars(&self) -> Result<HashMap<String, String>> {
         let mut env = HashMap::new();
-        self.platform_tool.extra_env_vars(self, &mut env);
-        env
+        self.platform_tool.extra_env_vars(self, &mut env)?;
+        Ok(env)
     }
 
     fn version_command(&self) -> Option<String> {
@@ -359,8 +360,8 @@ impl Tool for RubygemsPackage {
         self.gemfile_install(task)
     }
 
-    fn extra_env_vars(&self) -> HashMap<String, String> {
-        let mut env = self.runtime.extra_env_vars();
+    fn extra_env_vars(&self) -> Result<HashMap<String, String>> {
+        let mut env = self.runtime.extra_env_vars()?;
         env.insert(
             "GEM_HOME".to_string(),
             path_to_native_string(self.directory()),
@@ -370,12 +371,12 @@ impl Tool for RubygemsPackage {
             path_to_native_string(self.directory()),
         );
 
-        self.package_file_envs(&mut env);
+        self.package_file_envs(&mut env)?;
 
-        env
+        Ok(env)
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
         if self.plugin.package_file.is_some() {
             if let Ok(version_paths) = read_dir(join_path_string!(self.directory(), "ruby")) {
                 let paths = version_paths
@@ -385,11 +386,14 @@ impl Tool for RubygemsPackage {
                     .map(|entry| path_to_native_string(entry.path().join("bin")))
                     .collect_vec();
                 if !paths.is_empty() {
-                    return paths;
+                    return Ok(paths);
                 }
             }
         }
-        vec![join_path_string!(self.directory(), "bin"), self.directory()]
+        Ok(vec![
+            join_path_string!(self.directory(), "bin"),
+            self.directory(),
+        ])
     }
 
     fn clone_box(&self) -> Box<dyn Tool> {
@@ -516,7 +520,7 @@ pub mod test {
     #[test]
     fn test_rubygems_package_env() {
         with_rubygems_package(|pkg, temp_path, _| {
-            let env = pkg.env();
+            let env = pkg.env().unwrap();
 
             if !cfg!(windows) {
                 assert_eq!(

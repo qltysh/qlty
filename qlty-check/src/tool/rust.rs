@@ -157,7 +157,7 @@ impl Tool for RustPackage {
         Ok(())
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
         self.runtime.extra_env_paths()
     }
 

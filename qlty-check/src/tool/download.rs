@@ -93,7 +93,7 @@ impl Download {
     pub fn install(&self, tool: &dyn Tool) -> Result<()> {
         let directory = PathBuf::from(tool.directory());
         let tool_name = tool.name();
-        let mut installation = initialize_installation(tool);
+        let mut installation = initialize_installation(tool)?;
 
         let result = match self.file_type() {
             DownloadFileType::Executable => self.install_executable(&directory, &tool_name),
@@ -371,8 +371,8 @@ impl Tool for DownloadTool {
         Ok(())
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
-        vec![self.directory()]
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
+        Ok(vec![self.directory()])
     }
 
     fn clone_box(&self) -> Box<dyn Tool> {

@@ -11,7 +11,7 @@ use serde_json::Value;
 use sha2::Digest;
 use std::env::split_paths;
 use std::path::PathBuf;
-use tracing::{debug, info};
+use tracing::{debug, error, info};
 
 use super::PhpPackage;
 
@@ -63,14 +63,10 @@ impl Tool for Composer {
         Box::new(self.clone())
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
-        split_paths(
-            &std::env::var("PATH")
-                .with_context(|| "PATH not found for composer")
-                .unwrap(),
-        )
-        .map(path_to_native_string)
-        .collect_vec()
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
+        std::env::var("PATH")
+            .with_context(|| "PATH environment variable not found for composer")
+            .map(|path| split_paths(&path).map(path_to_native_string).collect_vec())
     }
 }
 
@@ -79,20 +75,26 @@ impl Composer {
         info!("Installing composer package file");
         Self::update_composer_json(php_package)?;
         let composer_phar = PathBuf::from(self.directory()).join("composer.phar");
+        let composer_path = composer_phar.to_str().with_context(|| {
+            format!(
+                "Failed to convert composer path to string: {:?}",
+                composer_phar
+            )
+        })?;
 
         let cmd = self
             .cmd
             .build(
                 "php",
                 vec![
-                    &path_to_native_string(composer_phar.to_str().unwrap()),
+                    &path_to_native_string(composer_path),
                     "update",
                     "--no-interaction",
                     "--ignore-platform-reqs",
                 ],
             )
             .dir(php_package.directory())
-            .full_env(self.env())
+            .full_env(self.env()?)
             .stderr_capture()
             .stdout_capture()
             .unchecked(); // Capture output for debugging
@@ -100,7 +102,7 @@ impl Composer {
         let script = format!("{:?}", cmd);
         debug!(script);
 
-        let mut installation = initialize_installation(php_package);
+        let mut installation = initialize_installation(php_package)?;
         let result = cmd.run();
         let _ =
             finalize_installation_from_cmd_result(php_package, &result, &mut installation, script);
@@ -133,8 +135,12 @@ impl Composer {
     }
 
     fn filter_composer(php_package: &PhpPackage) -> Result<String> {
-        let composer_file_contents =
-            std::fs::read_to_string(php_package.plugin.package_file.as_ref().unwrap())?;
+        let package_file = php_package
+            .plugin
+            .package_file
+            .as_ref()
+            .with_context(|| "Missing package_file in plugin definition")?;
+        let composer_file_contents = std::fs::read_to_string(package_file)?;
         let mut composer_json = serde_json::from_str::<Value>(&composer_file_contents)?;
         if let Some(root_object) = composer_json.as_object_mut() {
             // Remove autoloads that might be relative to project root
@@ -175,7 +181,13 @@ impl Composer {
             // use the original composer.json contents, merging package_file contents on top.
             // this will retain any existing dependencies provided by the initial tool installation
             let contents = std::fs::read_to_string(&staged_file)?;
-            data_json = serde_json::from_str::<Value>(&contents).unwrap_or_default();
+            data_json = match serde_json::from_str::<Value>(&contents) {
+                Ok(json) => json,
+                Err(err) => {
+                    error!("Failed to parse existing composer.json: {}", err);
+                    Value::Object(serde_json::Map::new())
+                }
+            };
         }
 
         PackageJson::merge_json(&mut data_json, user_json);
