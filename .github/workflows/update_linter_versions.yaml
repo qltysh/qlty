@@ -1,0 +1,111 @@
+name: Update linter versions
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 12 * * 2" # every Tuesday at 12:00
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/update_linter_versions.yml'
+      - 'qlty-plugins/plugins/scripts/updateLinterVersions.ts'
+      - 'qlty-plugins/plugins/scripts/fetchLatestVersion/*.ts'
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  update-linter-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: 📦 Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: "npm"
+          cache-dependency-path: qlty-plugins/plugins/package-lock.json
+
+      - name: Install Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3
+
+      - name: Install Dependencies
+        working-directory: qlty-plugins/plugins
+        run: npm install
+
+      - name: 📦 Install qlty CLI
+        run: "curl https://qlty.sh/install.sh | bash"
+
+      - name: ⤵️ Move `qlty` into PATH
+        shell: bash
+        run: echo "$HOME/.qlty/bin" >> $GITHUB_PATH
+
+      - name: 🔍 Check qlty version
+        shell: bash
+        run: qlty --version
+
+      - name: Run update-linter-versions script
+        working-directory: qlty-plugins/plugins
+        run: npm run update-linter-versions
+
+      - name: Set Git config
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+      - name: Create a new branch
+        id: create_branch
+        run: |
+          git fetch origin main
+          git checkout main
+          git checkout -b update-linter-versions
+          git add --all ':!github_issues.json'
+          git commit -m "Update linter versions"
+          git push origin update-linter-versions --force
+
+      - name: Install GitHub CLI
+        run: sudo apt-get install gh
+
+      - name: Create Pull Request
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
+          PR_EXISTS=$(gh pr list --base main --head update-linter-versions --json number --jq '.[].number')
+          if [ -z "$PR_EXISTS" ]; then
+            gh pr create --base main --head update-linter-versions --title "chore: Update linter versions" --body "This pull request was automatically created by GitHub Actions to update linter versions."
+          else
+            echo "Pull request already exists. PR number: $PR_EXISTS"
+          fi
+
+      - name: Read Issues and Create in GitHub
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Path to the JSON file containing the issues
+            const filePath = path.join(process.env.GITHUB_WORKSPACE, 'qlty-plugins/plugins/github_issues.json');
+            const issuesData = fs.readFileSync(filePath, 'utf8');
+            const issues = JSON.parse(issuesData);
+
+            // Loop through each issue object and create it
+            for (const issue of issues) {
+              const { title, body, assignees } = issue;
+              console.log(`Creating issue: ${title}`);
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                assignees: assignees
+              });
+            }
