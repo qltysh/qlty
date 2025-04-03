@@ -25,7 +25,7 @@ impl Default for NullTool {
 
 impl Tool for NullTool {
     fn parent_directory(&self) -> String {
-        path_to_string(&self.parent_directory.join(self.name()))
+        path_to_string(self.parent_directory.join(self.name()))
     }
 
     fn name(&self) -> String {
