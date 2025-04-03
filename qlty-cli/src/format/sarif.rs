@@ -235,19 +235,17 @@ impl SarifFormatter {
         let level = MessageLevel::try_from(message.level).unwrap_or(MessageLevel::Info);
         let level_str = self.convert_message_level(level);
 
-        let descriptor = json!({
+        let mut descriptor = json!({
             "id": format!("qlty:message:{}", message.ty),
             "name": message.module,
             "shortDescription": {
                 "text": message.message
             },
-            "fullDescription": {
-                "text": if !message.details.is_empty() { &message.details } else { &message.message }
-            },
-            "defaultConfiguration": {
-                "level": level_str
-            }
         });
+
+        if !message.details.is_empty() {
+            descriptor["fullDescription"]["text"] = json!(message.details);
+        }
 
         let mut notification = json!({
             "level": level_str,
@@ -274,7 +272,7 @@ impl SarifFormatter {
                 rule_ids.insert(issue.rule_key.clone());
 
                 let mut rule = json!({
-                    "id": issue.rule_key
+                    "id": format!("{}:{}", issue.tool, issue.rule_key),
                 });
 
                 if !issue.documentation_url.is_empty() {
