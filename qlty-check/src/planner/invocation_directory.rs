@@ -1,9 +1,7 @@
 use std::path::{Path, PathBuf};
-
 use anyhow::{Context, Result};
 use qlty_analysis::{utils::fs::path_to_native_string, WorkspaceEntry};
 use qlty_config::config::{DriverDef, InvocationDirectoryType, PluginDef};
-
 use crate::Tool;
 
 #[derive(Debug, Clone)]
@@ -107,7 +105,7 @@ mod test {
     use crate::{
         planner::target::Target,
         tool::{
-            command_builder::test::{reroute_tools_root, ENV_LOCK},
+            command_builder::test::ENV_LOCK,
             null_tool::NullTool,
         },
     };
@@ -154,6 +152,7 @@ mod test {
             tool: Box::new(NullTool {
                 plugin_name: "mock_plugin".to_string(),
                 plugin: Default::default(),
+                ..Default::default()
             }),
             target_root: temp_path.clone(),
         };
@@ -247,15 +246,34 @@ mod test {
 
     #[test]
     fn test_compute_tool_directory_invocation_directory() {
-        let (temp_dir, invocation_directory_planner) = setup(InvocationDirectoryDef {
-            kind: InvocationDirectoryType::ToolDir,
-            path: None,
-        });
-        reroute_tools_root(&temp_dir, &*invocation_directory_planner.tool);
+        let (temp_dir, _) = sample_repo();
+        let planner = InvocationDirectoryPlanner {
+            driver: DriverDef {
+                invocation_directory_def: InvocationDirectoryDef {
+                    kind: InvocationDirectoryType::ToolDir,
+                    path: None,
+                },
+                ..Default::default()
+            },
+            plugin: PluginDef {
+                config_files: vec!["config_file.json".into()],
+                ..Default::default()
+            },
+            tool: Box::new(NullTool {
+                parent_directory: temp_dir
+                    .path()
+                    .to_path_buf()
+                    .join(".qlty")
+                    .join("cache")
+                    .join("tools")
+                    .join("null_tool"),
+                plugin_name: "mock_plugin".to_string(),
+                plugin: Default::default(),
+            }),
+            target_root: temp_dir.path().to_path_buf(),
+        };
 
-        let tool_directory = temp_dir
-            .path()
-            .join(invocation_directory_planner.tool.directory());
+        let tool_directory = temp_dir.path().join(planner.tool.directory());
 
         let targets_results = vec![
             (target_files("lib/hello.rb"), tool_directory.clone()),
@@ -264,7 +282,7 @@ mod test {
         ];
 
         for (target, result) in targets_results {
-            let invocation_directory = invocation_directory_planner.compute(&target).unwrap();
+            let invocation_directory = planner.compute(&target).unwrap();
             let result_str = path_to_string(result);
             let result = result_str.split("/./").last().unwrap_or(&result_str);
             assert!(invocation_directory.ends_with(result));
