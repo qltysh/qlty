@@ -21,7 +21,6 @@ pub struct PluginWorkspaceEntryFinderBuilder {
     pub file_types: HashMap<String, FileType>,
     pub ignores: Vec<Ignore>,
     pub git_diff: Option<GitDiff>,
-    pub prefix: Option<String>,
     pub source: Option<Arc<dyn WorkspaceEntrySource>>,
 }
 
