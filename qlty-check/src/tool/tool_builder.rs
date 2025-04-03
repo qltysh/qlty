@@ -138,6 +138,7 @@ impl ToolBuilder<'_> {
             Ok(Box::new(NullTool {
                 plugin_name: self.plugin_name.to_string(),
                 plugin: self.plugin.clone(),
+                ..Default::default()
             }))
         }
     }

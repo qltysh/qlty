@@ -77,7 +77,7 @@ const SYSTEM_ENV_KEYS: &[&str] = &[
     "HOMEPATH",
 ];
 
-fn tools_root() -> String {
+pub fn global_tools_root() -> String {
     path_to_string(
         Library::global_cache_root()
             .expect("Failed to get cache root")
@@ -117,7 +117,7 @@ pub trait Tool: Debug + Sync + Send {
     fn tool_type(&self) -> ToolType;
 
     fn parent_directory(&self) -> String {
-        path_to_string(PathBuf::from(tools_root()).join(self.name()))
+        path_to_string(PathBuf::from(global_tools_root()).join(self.name()))
     }
 
     fn fingerprint(&self) -> String {

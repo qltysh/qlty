@@ -1,10 +1,8 @@
-use std::path::{Path, PathBuf};
-
+use crate::Tool;
 use anyhow::{Context, Result};
 use qlty_analysis::{utils::fs::path_to_native_string, WorkspaceEntry};
 use qlty_config::config::{DriverDef, InvocationDirectoryType, PluginDef};
-
-use crate::Tool;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone)]
 pub struct InvocationDirectoryPlanner {
@@ -102,21 +100,12 @@ impl InvocationDirectoryPlanner {
 
 #[cfg(test)]
 mod test {
-    use std::{fs::File, time::SystemTime};
-
-    use crate::{
-        planner::target::Target,
-        tool::{
-            command_builder::test::{reroute_tools_root, ENV_LOCK},
-            null_tool::NullTool,
-        },
-    };
-
     use super::*;
+    use crate::{planner::target::Target, tool::null_tool::NullTool};
     use qlty_analysis::{utils::fs::path_to_string, WorkspaceEntryKind};
     use qlty_config::config::InvocationDirectoryDef;
     use qlty_test_utilities::git::sample_repo;
-    use tempfile::TempDir;
+    use std::{fs::File, time::SystemTime};
 
     fn target_files(path: &str) -> Target {
         Target {
@@ -128,59 +117,58 @@ mod test {
         }
     }
 
-    fn setup(
+    fn build_planner(
+        temp_dir: &Path,
         invocation_directory_def: InvocationDirectoryDef,
-    ) -> (TempDir, InvocationDirectoryPlanner) {
-        // This is needed for tests using reroute_tools_root
-        let _lock = ENV_LOCK.lock().unwrap_or_else(|err| {
-            ENV_LOCK.clear_poison();
-            err.into_inner()
-        });
-
-        let (temp_dir, _) = sample_repo();
-        let temp_path = temp_dir.path().to_path_buf();
-
-        let driver = DriverDef {
-            invocation_directory_def,
-            ..Default::default()
-        };
-
-        let invocation_directory_planner = InvocationDirectoryPlanner {
-            driver: driver.clone(),
+    ) -> InvocationDirectoryPlanner {
+        InvocationDirectoryPlanner {
+            driver: DriverDef {
+                invocation_directory_def,
+                ..Default::default()
+            },
             plugin: PluginDef {
                 config_files: vec!["config_file.json".into()],
                 ..Default::default()
             },
             tool: Box::new(NullTool {
+                parent_directory: temp_dir
+                    .to_path_buf()
+                    .join(".qlty")
+                    .join("cache")
+                    .join("tools")
+                    .join("null_tool"),
                 plugin_name: "mock_plugin".to_string(),
                 plugin: Default::default(),
             }),
-            target_root: temp_path.clone(),
-        };
-
-        (temp_dir, invocation_directory_planner)
+            target_root: temp_dir.to_path_buf(),
+        }
     }
 
     #[test]
     fn test_compute_root_invocation_directory() {
-        let (temp_dir, invocation_directory_planner) = setup(InvocationDirectoryDef {
-            kind: InvocationDirectoryType::Root,
-            path: None,
-        });
+        let (temp_dir, _) = sample_repo();
+        let planner = build_planner(
+            temp_dir.path(),
+            InvocationDirectoryDef {
+                kind: InvocationDirectoryType::Root,
+                path: None,
+            },
+        );
 
-        let invocation_directory = invocation_directory_planner
-            .compute(&target_files("lib/hello.rb"))
-            .unwrap();
-
+        let invocation_directory = planner.compute(&target_files("lib/hello.rb")).unwrap();
         assert_eq!(invocation_directory, temp_dir.path());
     }
 
     #[test]
     fn test_compute_root_or_parent_with_invocation_directory() {
-        let (temp_dir, invocation_directory_planner) = setup(InvocationDirectoryDef {
-            kind: InvocationDirectoryType::RootOrParentWith,
-            path: Some("config_file.json".into()),
-        });
+        let (temp_dir, _) = sample_repo();
+        let planner = build_planner(
+            temp_dir.path(),
+            InvocationDirectoryDef {
+                kind: InvocationDirectoryType::RootOrParentWith,
+                path: Some("config_file.json".into()),
+            },
+        );
 
         File::create(temp_dir.path().join("lib/config_file.json")).unwrap();
 
@@ -194,17 +182,21 @@ mod test {
         ];
 
         for (target, result) in targets_results {
-            let invocation_directory = invocation_directory_planner.compute(&target).unwrap();
+            let invocation_directory = planner.compute(&target).unwrap();
             assert_eq!(invocation_directory, result);
         }
     }
 
     #[test]
     fn test_compute_root_or_parent_with_any_config_invocation_directory() {
-        let (temp_dir, invocation_directory_planner) = setup(InvocationDirectoryDef {
-            kind: InvocationDirectoryType::RootOrParentWithAnyConfig,
-            path: None,
-        });
+        let (temp_dir, _) = sample_repo();
+        let planner = build_planner(
+            temp_dir.path(),
+            InvocationDirectoryDef {
+                kind: InvocationDirectoryType::RootOrParentWithAnyConfig,
+                path: None,
+            },
+        );
 
         File::create(temp_dir.path().join("lib/config_file.json")).unwrap();
 
@@ -218,17 +210,21 @@ mod test {
         ];
 
         for (target, result) in targets_results {
-            let invocation_directory = invocation_directory_planner.compute(&target).unwrap();
+            let invocation_directory = planner.compute(&target).unwrap();
             assert_eq!(invocation_directory, result);
         }
     }
 
     #[test]
     fn test_compute_target_directory_invocation_directory() {
-        let (temp_dir, invocation_directory_planner) = setup(InvocationDirectoryDef {
-            kind: InvocationDirectoryType::TargetDirectory,
-            path: None,
-        });
+        let (temp_dir, _) = sample_repo();
+        let planner = build_planner(
+            temp_dir.path(),
+            InvocationDirectoryDef {
+                kind: InvocationDirectoryType::TargetDirectory,
+                path: None,
+            },
+        );
 
         let targets_results = vec![
             (target_files("lib/hello.rb"), temp_dir.path().join("lib")),
@@ -240,22 +236,23 @@ mod test {
         ];
 
         for (target, result) in targets_results {
-            let invocation_directory = invocation_directory_planner.compute(&target).unwrap();
+            let invocation_directory = planner.compute(&target).unwrap();
             assert_eq!(invocation_directory, result);
         }
     }
 
     #[test]
     fn test_compute_tool_directory_invocation_directory() {
-        let (temp_dir, invocation_directory_planner) = setup(InvocationDirectoryDef {
-            kind: InvocationDirectoryType::ToolDir,
-            path: None,
-        });
-        reroute_tools_root(&temp_dir, &*invocation_directory_planner.tool);
+        let (temp_dir, _) = sample_repo();
+        let planner = build_planner(
+            temp_dir.path(),
+            InvocationDirectoryDef {
+                kind: InvocationDirectoryType::ToolDir,
+                path: None,
+            },
+        );
 
-        let tool_directory = temp_dir
-            .path()
-            .join(invocation_directory_planner.tool.directory());
+        let tool_directory = temp_dir.path().join(planner.tool.directory());
 
         let targets_results = vec![
             (target_files("lib/hello.rb"), tool_directory.clone()),
@@ -264,7 +261,7 @@ mod test {
         ];
 
         for (target, result) in targets_results {
-            let invocation_directory = invocation_directory_planner.compute(&target).unwrap();
+            let invocation_directory = planner.compute(&target).unwrap();
             let result_str = path_to_string(result);
             let result = result_str.split("/./").last().unwrap_or(&result_str);
             assert!(invocation_directory.ends_with(result));

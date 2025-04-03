@@ -291,6 +291,7 @@ mod test {
                 tool: Box::new(NullTool {
                     plugin_name: "mock_plugin".to_string(),
                     plugin: Default::default(),
+                    ..Default::default()
                 }),
                 target_root: PathBuf::from("/User/test/project_root/"),
             },
@@ -521,6 +522,7 @@ mod test {
                 tool: Box::new(NullTool {
                     plugin_name: "mock_plugin".to_string(),
                     plugin: Default::default(),
+                    ..Default::default()
                 }),
                 target_root: temp_path.clone(),
             },
