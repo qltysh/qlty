@@ -16,11 +16,11 @@ expression: json_value
           "releaseDateUtc": "[date]",
           "rules": [
             {
-              "id": "test-rule-1",
+              "id": "test-tool:test-rule-1",
               "helpUri": "https://example.com/docs/test-rule-1"
             },
             {
-              "id": "test-rule-2"
+              "id": "test-tool:test-rule-2"
             }
           ],
           "notifications": [
@@ -37,9 +37,6 @@ expression: json_value
                 },
                 "fullDescription": {
                   "text": "Detailed info"
-                },
-                "defaultConfiguration": {
-                  "level": "note"
                 }
               }
             },
@@ -53,12 +50,6 @@ expression: json_value
                 "name": "warning-module",
                 "shortDescription": {
                   "text": "Warning message"
-                },
-                "fullDescription": {
-                  "text": "Warning message"
-                },
-                "defaultConfiguration": {
-                  "level": "warning"
                 }
               }
             }
