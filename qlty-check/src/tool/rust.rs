@@ -25,7 +25,7 @@ impl Tool for Rust {
     }
 
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
-        self.download().update_hash(sha, &self.name());
+        self.download().update_hash(sha, &self.name())?;
         Ok(())
     }
 
@@ -157,7 +157,7 @@ impl Tool for RustPackage {
         Ok(())
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
         self.runtime.extra_env_paths()
     }
 

@@ -56,14 +56,14 @@ impl PlatformRuby for RubyMacos {
                 ],
             )
             .dir(tool.directory())
-            .full_env(tool.env());
+            .full_env(tool.env()?);
 
         debug!("Running: {:?}", cmd);
 
         let script = format!("{:?}", cmd);
         debug!(script);
 
-        let mut installation = initialize_installation(tool);
+        let mut installation = initialize_installation(tool)?;
         let result = cmd.run();
         finalize_installation_from_cmd_result(tool, &result, &mut installation, script).ok();
 
@@ -79,12 +79,13 @@ impl PlatformRuby for RubyMacos {
         ]
     }
 
-    fn extra_env_vars(&self, tool: &dyn Tool, env: &mut HashMap<String, String>) {
-        self.insert_rubylib_env(tool, env);
+    fn extra_env_vars(&self, tool: &dyn Tool, env: &mut HashMap<String, String>) -> Result<()> {
+        self.insert_rubylib_env(tool, env)?;
         env.insert(
             "PKG_CONFIG_PATH".to_string(),
             join_path_string!(tool.directory(), "lib", "pkgconfig"),
         );
+        Ok(())
     }
 
     /// On macOS this can be <arch>-darwin19 or <arch>-darwin22 depending on the
@@ -264,7 +265,7 @@ mod test {
         };
         let mut env = std::collections::HashMap::new();
         let runtime = RubyMacos::default();
-        runtime.extra_env_vars(&tool, &mut env);
+        runtime.extra_env_vars(&tool, &mut env).unwrap();
         assert_eq!(
             *env.get("PKG_CONFIG_PATH").unwrap(),
             format!("{}/lib/pkgconfig", path_to_string(tempdir.path()))
@@ -299,7 +300,7 @@ mod test {
         };
         let mut env = std::collections::HashMap::new();
         let runtime = RubyMacos::default();
-        runtime.extra_env_vars(&tool, &mut env);
+        runtime.extra_env_vars(&tool, &mut env).unwrap();
         assert_eq!(
             *env.get("PKG_CONFIG_PATH").unwrap(),
             format!("{}/lib/pkgconfig", path_to_string(tempdir.path()))

@@ -50,8 +50,9 @@ impl PlatformRuby for RubyWindows {
         .collect_vec()
     }
 
-    fn extra_env_vars(&self, _tool: &dyn Tool, _env: &mut HashMap<String, String>) {
+    fn extra_env_vars(&self, _tool: &dyn Tool, _env: &mut HashMap<String, String>) -> Result<()> {
         // Windows does not need any extra env vars
+        Ok(())
     }
 
     fn platform_directory(&self, _tool: &dyn Tool) -> String {
@@ -63,14 +64,14 @@ impl RubyWindows {
     fn verify_system_installation(tool: &dyn Tool) -> Result<()> {
         let cmd = Command::new(None, tool.version_command().unwrap_or_default())
             .cmd
-            .full_env(tool.env())
+            .full_env(tool.env()?)
             .stderr_to_stdout()
             .stdout_capture();
 
         let script = format!("{:?}", cmd);
         debug!("Verify system Ruby: {:?}", script);
 
-        let mut installation = initialize_installation(tool);
+        let mut installation = initialize_installation(tool)?;
         let result = cmd.run();
         let _ = finalize_installation_from_cmd_result(tool, &result, &mut installation, script);
 

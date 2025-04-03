@@ -24,7 +24,7 @@ impl RubyGemfile {
         let list_command = self
             .cmd
             .build("ruby", vec!["-S", "bundle", "list"])
-            .full_env(self.env())
+            .full_env(self.env()?)
             .dir(self.directory())
             .stderr_capture()
             .stdout_capture()
@@ -33,7 +33,7 @@ impl RubyGemfile {
         let script = format!("{:?}", list_command);
         debug!(script);
 
-        let mut installation = initialize_installation(self);
+        let mut installation = initialize_installation(self)?;
         let result = list_command.run();
         let _ = finalize_installation_from_cmd_result(self, &result, &mut installation, script);
 
@@ -144,7 +144,7 @@ impl RubyGemfile {
             .cmd
             .build("ruby", vec!["-rrubygems", "-e", script.as_str()])
             .env_remove("RUBYOPT")
-            .full_env(self.env())
+            .full_env(self.env()?)
             .dir(source.parent().unwrap())
             .stdin_path(source)
             .stdout_path(dest);
@@ -153,9 +153,9 @@ impl RubyGemfile {
         cmd.run().map(|_| ()).map_err(Into::into)
     }
 
-    pub fn package_file_envs(&self, env: &mut HashMap<String, String>) {
+    pub fn package_file_envs(&self, env: &mut HashMap<String, String>) -> Result<()> {
         if self.plugin.package_file.is_none() {
-            return;
+            return Ok(());
         }
 
         env.insert(
@@ -173,7 +173,7 @@ impl RubyGemfile {
         );
 
         let rubyopt_prefix = if let Some(runtime) = self.runtime() {
-            runtime.env().get("RUBYOPT").cloned()
+            runtime.env()?.get("RUBYOPT").cloned()
         } else {
             None
         };
@@ -186,6 +186,8 @@ impl RubyGemfile {
         );
         env.insert("BUNDLE_JOBS".to_string(), "4".to_string());
         env.insert("BUNDLE_RETRY".to_string(), "3".to_string());
+
+        Ok(())
     }
 
     fn package_file_name(&self) -> String {
@@ -238,7 +240,7 @@ mod test {
             assert_eq!(pkg.version(), Some("bundled".to_string()));
             assert_eq!(pkg.version_command(), None);
 
-            let env = pkg.env();
+            let env = pkg.env().unwrap();
             assert_eq!(
                 env.get("BUNDLE_PATH").unwrap(),
                 &path_to_native_string(pkg.directory())
@@ -325,7 +327,7 @@ mod test {
             assert_eq!(pkg.version(), Some("bundled".to_string()));
             assert_eq!(pkg.version_command(), None);
 
-            let env = pkg.env();
+            let env = pkg.env().unwrap();
             assert_eq!(
                 env.get("BUNDLE_PATH").unwrap(),
                 &path_to_native_string(pkg.directory())

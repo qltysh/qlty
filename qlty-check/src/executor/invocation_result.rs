@@ -82,7 +82,9 @@ impl InvocationResult {
                     .collect(),
                 script: rerun.to_string(),
                 cwd: path_to_string(&plan.invocation_directory),
-                env: plan.tool.env(),
+                env: plan.tool.env().with_context(|| {
+                    format!("Failed to get environment for {}", plan.tool.name())
+                })?,
                 started_at: Some(start_time.into()),
                 duration_secs: duration as f32,
                 exit_code: exec_result.exit_code,

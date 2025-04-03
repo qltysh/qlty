@@ -22,7 +22,6 @@ use qlty_config::{QltyConfig, Workspace};
 use qlty_types::analysis::v1::ExecutionVerb;
 use rayon::prelude::*;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use tracing::{debug, info};
 
@@ -62,7 +61,7 @@ pub struct Planner {
     staging_area: StagingArea,
     issue_cache: IssueCache,
     target_mode: Option<TargetMode>,
-    workspace_entry_finder_builder: Option<Arc<Mutex<PluginWorkspaceEntryFinderBuilder>>>,
+    workspace_entry_finder_builder: Option<PluginWorkspaceEntryFinderBuilder>,
     cache_hits: Vec<IssuesCacheHit>,
     active_plugins: Vec<ActivePlugin>,
     plugin_configs: HashMap<String, Vec<PluginConfigFile>>,
@@ -134,15 +133,18 @@ impl Planner {
     fn compute_workspace_entries_strategy(&mut self) -> Result<()> {
         self.target_mode = Some(self.compute_target_mode());
 
-        self.workspace_entry_finder_builder =
-            Some(Arc::new(Mutex::new(PluginWorkspaceEntryFinderBuilder {
-                mode: self.target_mode.as_ref().unwrap().clone(),
-                root: self.settings.root.clone(),
-                paths: self.settings.paths.clone(),
-                file_types: self.config.file_types.clone(),
-                ignores: self.config.ignore.clone(),
-                ..Default::default()
-            })));
+        let mut builder = PluginWorkspaceEntryFinderBuilder {
+            mode: self.target_mode.as_ref().unwrap().clone(),
+            root: self.settings.root.clone(),
+            paths: self.settings.paths.clone(),
+            file_types: self.config.file_types.clone(),
+            ignores: self.config.ignore.clone(),
+            ..Default::default()
+        };
+
+        builder.compute()?;
+
+        self.workspace_entry_finder_builder = Some(builder);
 
         Ok(())
     }
@@ -169,14 +171,21 @@ impl Planner {
         }
 
         for active_plugin in &self.active_plugins {
-            plugin_planners.push(PluginPlanner::new(
+            match PluginPlanner::new(
                 self,
                 active_plugin.clone(),
                 plugin_prefixes
                     .get(&active_plugin.name)
                     .cloned()
                     .unwrap_or_default(),
-            ));
+            ) {
+                Ok(planner) => plugin_planners.push(planner),
+                Err(err) => bail!(
+                    "Failed to create plugin planner for {}: {}",
+                    active_plugin.name,
+                    err
+                ),
+            }
         }
 
         let results = plugin_planners
@@ -219,15 +228,13 @@ impl Planner {
             .as_mut()
             .unwrap()
             .clone()
-            .lock()
-            .unwrap()
             .diff_line_filter()
         {
             self.transformers.push(diff_line_filter);
 
             if !self.settings.emit_existing_issues {
-                match &self.target_mode.as_ref().unwrap() {
-                    TargetMode::UpstreamDiff(_) | TargetMode::HeadDiff => {
+                match &self.target_mode.as_ref() {
+                    Some(TargetMode::UpstreamDiff(_)) | Some(TargetMode::HeadDiff) => {
                         self.transformers.push(Box::new(DiffLineFilter));
                     }
                     _ => {}
@@ -268,9 +275,15 @@ impl Planner {
     }
 
     fn build_plan(&mut self) -> Result<Plan> {
+        let target_mode = self
+            .target_mode
+            .as_ref()
+            .ok_or_else(|| anyhow::anyhow!("Target mode not computed"))?
+            .clone();
+
         Ok(Plan {
             verb: self.verb,
-            target_mode: self.target_mode.as_ref().unwrap().clone(),
+            target_mode,
             settings: self.settings.clone(),
             workspace: self.workspace.clone(),
             config: self.config.clone(),

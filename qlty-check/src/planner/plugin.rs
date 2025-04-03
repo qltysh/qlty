@@ -3,21 +3,21 @@ use super::{config_files::PluginConfigFile, Planner, PluginWorkspaceEntryFinderB
 use crate::planner::driver::DriverPlanner;
 use crate::tool::tool_builder::ToolBuilder;
 use crate::{cache::IssueCache, executor::staging_area::StagingArea, tool::Tool};
-use anyhow::Result;
+use anyhow::{Context, Result};
 use qlty_analysis::{workspace_entries::TargetMode, WorkspaceEntry};
 use qlty_config::{
     config::{DriverDef, DriverType, PluginDef},
     Workspace,
 };
 use qlty_types::analysis::v1::ExecutionVerb;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use tracing::{debug, info, trace};
 
 #[derive(Debug, Clone)]
 pub struct PluginPlanner {
     formatters: bool,
     pub target_mode: TargetMode,
-    pub workspace_entry_finder_builder: Arc<Mutex<PluginWorkspaceEntryFinderBuilder>>,
+    pub workspace_entry_finder_builder: PluginWorkspaceEntryFinderBuilder,
     pub plugin_name: String,
     pub plugin: PluginDef,
     pub verb: ExecutionVerb,
@@ -34,7 +34,11 @@ pub struct PluginPlanner {
 }
 
 impl PluginPlanner {
-    pub fn new(planner: &Planner, active_plugin: ActivePlugin, all_prefixes: Vec<String>) -> Self {
+    pub fn new(
+        planner: &Planner,
+        active_plugin: ActivePlugin,
+        all_prefixes: Vec<String>,
+    ) -> Result<Self> {
         let plugin = active_plugin.plugin;
         let plugin_name = &active_plugin.name;
 
@@ -45,15 +49,19 @@ impl PluginPlanner {
 
         let tool = ToolBuilder::new(&planner.config, plugin_name, &plugin)
             .build_tool()
-            .unwrap();
+            .context("Failed to build tool")?;
 
         let workspace_entry_finder_builder = planner
             .workspace_entry_finder_builder
             .clone()
-            .unwrap()
-            .clone();
+            .context("Workspace entry finder builder is missing")?;
 
-        Self {
+        let target_mode = planner
+            .target_mode
+            .clone()
+            .context("Target mode is missing")?;
+
+        Ok(Self {
             plugin_name: plugin_name.to_owned(),
             plugin,
             verb: planner.verb,
@@ -61,7 +69,7 @@ impl PluginPlanner {
             tool,
             runtime_version,
             workspace: planner.workspace.clone(),
-            target_mode: planner.target_mode.clone().unwrap(),
+            target_mode,
             workspace_entry_finder_builder,
             formatters: planner.settings.formatters,
             plugin_configs: planner
@@ -74,7 +82,7 @@ impl PluginPlanner {
             workspace_entries: Arc::new(vec![]),
             driver_planners: vec![],
             all_prefixes,
-        }
+        })
     }
 
     pub fn compute(&mut self) -> Result<()> {
@@ -116,21 +124,14 @@ impl PluginPlanner {
     }
 
     fn compute_workspace_entries(&mut self) -> Result<()> {
-        let mut workspace_entry_finder_builder =
-            self.workspace_entry_finder_builder.lock().unwrap();
-        let prefix = workspace_entry_finder_builder.prefix.clone();
-        if let Some(prefix) = &self.plugin.prefix {
-            workspace_entry_finder_builder.prefix = Some(prefix.clone());
-        };
-        let mut workspace_entry_finder =
-            workspace_entry_finder_builder.build(&self.plugin.file_types)?;
+        let mut workspace_entry_finder = self
+            .workspace_entry_finder_builder
+            .build(&self.plugin.file_types, self.plugin.prefix.clone())?;
 
         self.workspace_entries = match self.target_mode {
             TargetMode::Sample(sample) => Arc::new(workspace_entry_finder.sample(sample)?),
             _ => Arc::new(workspace_entry_finder.workspace_entries()?),
         };
-
-        workspace_entry_finder_builder.prefix = prefix;
 
         if self.workspace_entries.is_empty() {
             debug!("Found 0 workspace_entries for plugin {}", self.plugin_name);

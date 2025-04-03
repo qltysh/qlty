@@ -1,0 +1,3 @@
+bin.name = "qlty"
+args = ["check", "--no-cache", "--verbose", "subdir2"]
+fs.cwd = "subdir_from_subdir.in/subdir1"

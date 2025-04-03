@@ -41,7 +41,7 @@ impl Tool for Python {
     }
 
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
-        self.download().update_hash(sha, &self.name());
+        self.download().update_hash(sha, &self.name())?;
         Ok(())
     }
 
@@ -191,15 +191,15 @@ impl Tool for PipVenvPackage {
         ))
     }
 
-    fn extra_env_paths(&self) -> Vec<String> {
-        vec![join_path_string!(self.directory(), BIN_DIRECTORY)]
+    fn extra_env_paths(&self) -> Result<Vec<String>> {
+        Ok(vec![join_path_string!(self.directory(), BIN_DIRECTORY)])
     }
 
-    fn extra_env_vars(&self) -> HashMap<String, String> {
-        let mut env = self.runtime.extra_env_vars();
+    fn extra_env_vars(&self) -> Result<HashMap<String, String>> {
+        let mut env = self.runtime.extra_env_vars()?;
         env.insert("VIRTUAL_ENV".to_string(), self.directory());
 
-        env
+        Ok(env)
     }
 
     fn clone_box(&self) -> Box<dyn Tool> {
@@ -357,7 +357,7 @@ mod test {
     #[test]
     fn test_pip_venv_package_env() {
         with_pip_venv_package(|pkg, _, _| {
-            let env = pkg.env();
+            let env = pkg.env().unwrap();
             let mut paths = vec![
                 join_path_string!(pkg.directory(), BIN_DIRECTORY),
                 join_path_string!(pkg.runtime.directory(), "bin"),

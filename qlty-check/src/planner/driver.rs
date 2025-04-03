@@ -20,10 +20,7 @@ use qlty_config::{
 };
 use qlty_types::analysis::v1::ExecutionVerb;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use std::{
-    path::PathBuf,
-    sync::{Arc, Mutex},
-};
+use std::{path::PathBuf, sync::Arc};
 use tracing::{debug, error, info, trace};
 
 #[derive(Debug, Clone)]
@@ -42,7 +39,7 @@ pub struct DriverPlanner {
     tool: Box<dyn Tool>,
     workspace_entries: Arc<Vec<WorkspaceEntry>>,
     target_mode: TargetMode,
-    workspace_entry_finder_builder: Arc<Mutex<PluginWorkspaceEntryFinderBuilder>>,
+    workspace_entry_finder_builder: PluginWorkspaceEntryFinderBuilder,
     invocation_directory_planner: InvocationDirectoryPlanner,
     pub cache_hits: Vec<IssuesCacheHit>,
     pub invocations: Vec<InvocationPlan>,
@@ -118,9 +115,7 @@ impl DriverPlanner {
         if let Some(file_types) = &self.driver.file_types {
             let mut workspace_entry_finder = self
                 .workspace_entry_finder_builder
-                .lock()
-                .unwrap()
-                .build(file_types)?;
+                .build(file_types, self.plugin.prefix.clone())?;
 
             self.workspace_entries = match self.target_mode {
                 TargetMode::Sample(sample) => Arc::new(workspace_entry_finder.sample(sample)?),

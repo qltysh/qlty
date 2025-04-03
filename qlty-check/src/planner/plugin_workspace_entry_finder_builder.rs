@@ -1,4 +1,4 @@
-use anyhow::{bail, Result};
+use anyhow::Result;
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_analysis::workspace_entries::{IgnoreGroupsMatcher, TargetMode};
 use qlty_analysis::{
@@ -20,61 +20,46 @@ pub struct PluginWorkspaceEntryFinderBuilder {
     pub paths: Vec<PathBuf>,
     pub file_types: HashMap<String, FileType>,
     pub ignores: Vec<Ignore>,
-    pub cached_git_diff: Option<GitDiff>,
-    pub prefix: Option<String>,
+    pub git_diff: Option<GitDiff>,
     pub source: Option<Arc<dyn WorkspaceEntrySource>>,
 }
 
 impl PluginWorkspaceEntryFinderBuilder {
-    pub fn build(&mut self, language_names: &[String]) -> Result<WorkspaceEntryFinder> {
+    pub fn compute(&mut self) -> Result<()> {
+        self.compute_git_diff()?;
+        self.compute_source()?;
+        Ok(())
+    }
+
+    pub fn build(
+        &mut self,
+        language_names: &[String],
+        prefix: Option<String>,
+    ) -> Result<WorkspaceEntryFinder> {
         Ok(WorkspaceEntryFinder::new(
             self.source()?,
-            self.matcher(language_names)?,
+            self.matcher(language_names, prefix)?,
         ))
     }
 
     pub fn diff_line_filter(&mut self) -> Result<Box<dyn IssueTransformer>> {
         match self.mode {
-            TargetMode::HeadDiff | TargetMode::UpstreamDiff(_) => {
-                Ok(Box::new(self.git_diff()?.line_filter))
-            }
+            TargetMode::HeadDiff | TargetMode::UpstreamDiff(_) => Ok(Box::new(
+                self.git_diff.as_ref().unwrap().line_filter.clone(),
+            )),
             _ => Ok(Box::new(NullIssueTransformer)),
         }
     }
 
     fn source(&mut self) -> Result<Arc<dyn WorkspaceEntrySource>> {
-        if self.source.is_none() {
-            self.source = Some(match self.mode {
-                TargetMode::All | TargetMode::Sample(_) => {
-                    Arc::new(AllSource::new(self.root.clone()))
-                }
-                TargetMode::Paths(_) => Arc::new(ArgsSource::new(
-                    self.root.clone(),
-                    // Use absolute paths, so when running in a subdirectory, the paths are still correct
-                    self.paths.iter().map(|p| self.root.join(p)).collect(),
-                )),
-                TargetMode::UpstreamDiff(_) => {
-                    Arc::new(DiffSource::new(self.git_diff()?.changed_files, &self.root))
-                }
-                TargetMode::HeadDiff => {
-                    Arc::new(DiffSource::new(self.git_diff()?.changed_files, &self.root))
-                }
-                TargetMode::Index => {
-                    Arc::new(DiffSource::new(self.git_diff()?.changed_files, &self.root))
-                }
-                TargetMode::IndexFile(_) => {
-                    Arc::new(DiffSource::new(self.git_diff()?.changed_files, &self.root))
-                }
-            });
-        }
-        if let Some(source) = &self.source {
-            Ok(source.clone())
-        } else {
-            bail!("Invalid workspace source")
-        }
+        Ok(self.source.as_ref().unwrap().clone())
     }
 
-    fn matcher(&self, language_names: &[String]) -> Result<Box<dyn WorkspaceEntryMatcher>> {
+    fn matcher(
+        &self,
+        language_names: &[String],
+        prefix: Option<String>,
+    ) -> Result<Box<dyn WorkspaceEntryMatcher>> {
         let mut matchers: Vec<Box<dyn WorkspaceEntryMatcher>> = vec![];
 
         matchers.push(Box::new(FileMatcher));
@@ -99,7 +84,7 @@ impl PluginWorkspaceEntryFinderBuilder {
             self.root.to_owned(),
         )));
 
-        if let Some(prefix) = &self.prefix {
+        if let Some(prefix) = prefix {
             matchers.push(Box::new(PrefixMatcher::new(
                 path_to_string(self.root.join(prefix)),
                 self.root.to_owned(),
@@ -118,18 +103,47 @@ impl PluginWorkspaceEntryFinderBuilder {
         Ok(Box::new(AndMatcher::new(matchers)))
     }
 
-    fn git_diff(&mut self) -> Result<GitDiff> {
-        if let Some(diff) = &self.cached_git_diff {
-            return Ok(diff.clone());
-        }
+    fn compute_source(&mut self) -> Result<()> {
+        let cwd = Workspace::current_dir();
 
-        let diff = self.compute_git_diff()?;
-        self.cached_git_diff = Some(diff.clone());
-        Ok(diff)
+        self.source = Some(match self.mode {
+            TargetMode::All | TargetMode::Sample(_) => Arc::new(AllSource::new(self.root.clone())),
+            TargetMode::Paths(_) => Arc::new(ArgsSource::new(
+                self.root.clone(),
+                // Use absolute paths, so when running in a subdirectory, the paths are still correct
+                self.paths.iter().map(|p| cwd.join(p)).collect(),
+            )),
+            TargetMode::UpstreamDiff(_)
+            | TargetMode::HeadDiff
+            | TargetMode::Index
+            | TargetMode::IndexFile(_) => self.build_diff_source()?,
+        });
+
+        Ok(())
     }
 
-    fn compute_git_diff(&self) -> Result<GitDiff> {
-        let git_diff = GitDiff::compute(self.mode.diff_mode(), &self.root)?;
-        Ok(git_diff)
+    fn build_diff_source(&self) -> Result<Arc<dyn WorkspaceEntrySource>> {
+        Ok(Arc::new(DiffSource::new(
+            self.git_diff.as_ref().unwrap().changed_files.clone(),
+            &self.root,
+        )))
+    }
+
+    fn compute_git_diff(&mut self) -> Result<()> {
+        if self.needs_git_diff() {
+            self.git_diff = Some(GitDiff::compute(self.mode.diff_mode(), &self.root)?);
+        }
+
+        Ok(())
+    }
+
+    fn needs_git_diff(&self) -> bool {
+        matches!(
+            self.mode,
+            TargetMode::HeadDiff
+                | TargetMode::UpstreamDiff(_)
+                | TargetMode::Index
+                | TargetMode::IndexFile(_)
+        )
     }
 }
