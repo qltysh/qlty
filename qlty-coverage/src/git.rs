@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use git2::Repository;
 
 #[derive(Debug, Clone)]
@@ -13,7 +13,8 @@ pub struct CommitMetadata {
 }
 
 pub fn retrieve_commit_metadata() -> Result<CommitMetadata> {
-    let repo = Repository::discover(".")?;
+    let repo = Repository::discover(".")
+        .with_context(|| "Error opening git repository for retrieving commit metadata")?;
 
     let head = repo.head()?;
     let oid = head.peel_to_commit()?.id();
