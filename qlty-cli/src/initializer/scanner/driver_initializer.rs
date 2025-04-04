@@ -14,8 +14,15 @@ use std::{
 
 use super::{DriverCandidate, Scanner};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EnableReason {
+    None,
+    Config,
+    Target,
+}
+
 pub trait DriverInitializer: Debug + Send + Sync {
-    fn is_enabler(&self, path: &str) -> bool;
+    fn is_enabler(&self, path: &str) -> EnableReason;
     fn is_workspace_entry(&self, path: &str) -> bool;
     fn clone_box(&self) -> Box<dyn DriverInitializer>;
     fn driver_name(&self) -> String;
@@ -87,8 +94,12 @@ impl DriverInitializer for ConfigDriver {
         self.key.to_string()
     }
 
-    fn is_enabler(&self, path: &str) -> bool {
-        self.config_globset.is_match(path) && Path::new(path).is_file()
+    fn is_enabler(&self, path: &str) -> EnableReason {
+        if self.config_globset.is_match(path) && Path::new(path).is_file() {
+            EnableReason::Config
+        } else {
+            EnableReason::None
+        }
     }
 
     fn is_workspace_entry(&self, path: &str) -> bool {
@@ -165,10 +176,16 @@ impl DriverInitializer for TargetDriver {
         self.key.to_string()
     }
 
-    fn is_enabler(&self, path: &str) -> bool {
-        match self.driver_def.target.target_type {
+    fn is_enabler(&self, path: &str) -> EnableReason {
+        let is_enabled = match self.driver_def.target.target_type {
             TargetType::File => self.is_workspace_entry(path),
             _ => self.matches_target_def(path),
+        };
+
+        if is_enabled {
+            EnableReason::Target
+        } else {
+            EnableReason::None
         }
     }
 

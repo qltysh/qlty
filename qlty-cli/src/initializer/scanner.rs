@@ -7,7 +7,7 @@ mod package_json;
 use super::{Renderer, Settings, SourceSpec};
 use anyhow::Result;
 use driver_candidate::DriverCandidate;
-use driver_initializer::{ConfigDriver, DriverInitializer, TargetDriver};
+use driver_initializer::{ConfigDriver, DriverInitializer, EnableReason, TargetDriver};
 use indicatif::ProgressBar;
 use itertools::Itertools;
 use package_file::PackageFileScanner;
@@ -45,7 +45,7 @@ struct PluginToActivate {
     file_count: FilesCount,
     drivers: HashMap<Name, Box<dyn DriverInitializer>>,
     prefixes: HashSet<String>,
-    mode: IssueMode,
+    found_config: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -59,6 +59,7 @@ pub struct InstalledPlugin {
     pub package_filters: Vec<String>,
     pub prefix: Option<String>,
     pub mode: IssueMode,
+    pub found_config: bool,
 }
 
 #[derive(Debug, Default, Clone)]
@@ -67,7 +68,6 @@ struct PluginInitializer {
     package_file_candidate: Option<PackageFileCandidate>,
     package_file_candidate_filters: Vec<String>,
     driver_initializers: Vec<Box<dyn DriverInitializer>>,
-    mode: IssueMode,
 }
 
 impl Scanner {
@@ -135,12 +135,21 @@ impl Scanner {
                 }
 
                 for driver_initializer in &plugin_initializer.driver_initializers {
-                    if driver_initializer.is_enabler(path_osstr) {
-                        self.plugins_to_activate
+                    let enable_reason = driver_initializer.is_enabler(path_osstr);
+                    if enable_reason != EnableReason::None {
+                        let plugin_entry = self
+                            .plugins_to_activate
                             .entry(plugin_initializer.plugin_name.to_owned())
-                            .or_default()
+                            .or_default();
+
+                        plugin_entry
                             .drivers
                             .insert(driver_initializer.key(), driver_initializer.clone_box());
+
+                        // Check if this is a config file that enabled the plugin
+                        if enable_reason == EnableReason::Config {
+                            plugin_entry.found_config = true;
+                        }
                     }
                 }
 
@@ -152,13 +161,6 @@ impl Scanner {
                         .file_count;
 
                     *entry += 1;
-                }
-
-                if let Some(plugin_to_activate) = self
-                    .plugins_to_activate
-                    .get_mut(plugin_initializer.plugin_name.as_str())
-                {
-                    plugin_to_activate.mode = plugin_initializer.mode;
                 }
             }
 
@@ -275,7 +277,14 @@ impl Scanner {
                     package_file: package_file.clone(),
                     package_filters: package_filters.clone(),
                     prefix: prefix.cloned(),
-                    mode: plugin_to_activate.mode,
+                    mode: if plugin_to_activate.found_config {
+                        plugin
+                            .suggested_mode_with_config
+                            .unwrap_or(plugin.suggested_mode)
+                    } else {
+                        plugin.suggested_mode
+                    },
+                    found_config: plugin_to_activate.found_config,
                 });
             }
         }
@@ -316,28 +325,10 @@ impl Scanner {
             plugin_def.package_file_candidate_filters.clone()
         };
 
-        // Use suggested_mode_with_config if it's set and a config file exists
-        let mode = if let Some(suggested_mode_with_config) = plugin_def.suggested_mode_with_config {
-            // Check if any of the config files exist in the workspace root
-            let has_config = plugin_def
-                .config_files
-                .iter()
-                .any(|config_file| self.settings.workspace.root.join(config_file).exists());
-
-            if has_config {
-                suggested_mode_with_config
-            } else {
-                plugin_def.suggested_mode
-            }
-        } else {
-            plugin_def.suggested_mode
-        };
-
         let mut plugin_initializer = PluginInitializer {
             plugin_name: plugin_name.to_owned(),
             package_file_candidate: plugin_def.package_file_candidate,
             package_file_candidate_filters,
-            mode,
             ..Default::default()
         };
 
@@ -441,8 +432,8 @@ impl PluginInitializer {
 
 #[cfg(test)]
 mod test {
+    use globset::GlobSetBuilder;
     use qlty_analysis::utils::fs::path_to_native_string;
-    use qlty_config::config::DriverDef;
     use qlty_config::{
         sources::{LocalSource, Source},
         Workspace,
@@ -451,6 +442,7 @@ mod test {
     use std::fs::{self, File};
     use tempfile::TempDir;
 
+    use super::driver_initializer::TargetDriver;
     use super::*;
 
     #[derive(Default, Clone, Debug)]
@@ -559,57 +551,6 @@ config_files = ["config.toml"]
     }
 
     #[test]
-    fn test_build_plugin_initializer_without_config() {
-        let (scanner, _td) = create_scanner();
-
-        let mut plugin_def = PluginDef::default();
-        plugin_def.suggested_mode = IssueMode::Monitor;
-        plugin_def.suggested_mode_with_config = Some(IssueMode::Block);
-
-        let mut driver_def = DriverDef::default();
-        driver_def.suggested = SuggestionMode::Targets;
-        driver_def.script = "echo test".to_string();
-        plugin_def
-            .drivers
-            .insert("test_driver".to_string(), driver_def);
-
-        let plugin_initializer = scanner
-            .build_plugin_initializer("test", &plugin_def)
-            .unwrap();
-
-        assert!(plugin_initializer.is_some());
-        assert_eq!(plugin_initializer.unwrap().mode, IssueMode::Monitor);
-    }
-
-    #[test]
-    fn test_build_plugin_initializer_with_config() {
-        let (scanner, td) = create_scanner();
-
-        // Create config file
-        let config_file = "config.toml";
-        File::create(td.path().join(config_file)).unwrap();
-
-        let mut plugin_def = PluginDef::default();
-        plugin_def.suggested_mode = IssueMode::Monitor;
-        plugin_def.suggested_mode_with_config = Some(IssueMode::Block);
-        plugin_def.config_files = vec![PathBuf::from(config_file)];
-
-        let mut driver_def = DriverDef::default();
-        driver_def.suggested = SuggestionMode::Targets;
-        driver_def.script = "echo test".to_string();
-        plugin_def
-            .drivers
-            .insert("test_driver".to_string(), driver_def);
-
-        let plugin_initializer = scanner
-            .build_plugin_initializer("test", &plugin_def)
-            .unwrap();
-
-        assert!(plugin_initializer.is_some());
-        assert_eq!(plugin_initializer.unwrap().mode, IssueMode::Block);
-    }
-
-    #[test]
     fn test_prepare() {
         // gotta keep td in scope otherwise it vanishes
         let (mut scanner, _td) = create_scanner();
@@ -709,7 +650,6 @@ config_files = ["config.toml"]
             package_file_candidate: None,
             package_file_candidate_filters: vec![],
             driver_initializers: vec![],
-            mode: IssueMode::Block,
         };
 
         let path = "deep/package.json";
@@ -883,5 +823,172 @@ config_files = ["config.toml"]
         assert_eq!(installed_plugin.files_count, 7);
         assert_eq!(installed_plugin.config_files.len(), 0);
         assert_eq!(installed_plugin.package_file, None);
+    }
+
+    #[test]
+    fn test_mode_with_found_config() {
+        // Create a scanner with a test repo
+        let (mut scanner, td) = create_scanner();
+
+        scanner.prepare().unwrap();
+
+        // Create a config file to trigger found_config = true
+        let config_file = "config.toml";
+        File::create(td.path().join(config_file)).unwrap();
+
+        // Set the mode values for testing
+        let mut modified_source = scanner.sources_only_config().unwrap();
+        let plugin_def = modified_source
+            .plugins
+            .definitions
+            .get_mut("exists")
+            .unwrap();
+        plugin_def.suggested_mode = IssueMode::Monitor;
+        plugin_def.suggested_mode_with_config = Some(IssueMode::Block);
+
+        // Ensure the plugin has the config file in its config_files
+        plugin_def.config_files = vec![PathBuf::from(config_file)];
+
+        // We need to use Targets mode for the test since Config mode requires
+        // that the config file be present when calling build_plugin_initializer
+        plugin_def.drivers.get_mut("lint").unwrap().suggested = SuggestionMode::Targets;
+
+        scanner.sources_only_config = modified_source;
+
+        // Manually create a plugin_to_activate with found_config = true
+        let mut plugin_to_activate = PluginToActivate::default();
+        plugin_to_activate.found_config = true;
+        plugin_to_activate.file_count = 1;
+
+        // Create a driver entry
+        let driver_def = scanner
+            .sources_only_config
+            .plugins
+            .definitions
+            .get("exists")
+            .unwrap()
+            .drivers
+            .get("lint")
+            .unwrap()
+            .clone();
+
+        // We need to manually create a driver to insert
+        plugin_to_activate.drivers.insert(
+            "lint".to_string(),
+            Box::new(TargetDriver {
+                workspace_entries_globset: GlobSetBuilder::new().build().unwrap(),
+                key: "exists.lint".to_string(),
+                driver_name: "lint".to_string(),
+                version: "latest".to_string(),
+                driver_def,
+                workspace_root: scanner.settings.workspace.root.clone(),
+            }),
+        );
+
+        // Insert the plugin_to_activate directly
+        scanner
+            .plugins_to_activate
+            .insert("exists".to_string(), plugin_to_activate);
+
+        // Process the plugins and create the InstalledPlugin entries
+        assert!(scanner.compute_plugin_details().is_ok());
+
+        // The plugin should be in the list
+        assert!(scanner
+            .plugins
+            .iter()
+            .find(|p| p.name == "exists")
+            .is_some());
+
+        // Get the plugin and verify its mode and found_config
+        let installed_plugin = scanner.plugins.iter().find(|p| p.name == "exists").unwrap();
+        assert!(
+            installed_plugin.found_config,
+            "Plugin should have found_config=true"
+        );
+        assert_eq!(
+            installed_plugin.mode,
+            IssueMode::Block,
+            "Plugin should use suggested_mode_with_config (Block) when found_config is true"
+        );
+    }
+
+    #[test]
+    fn test_mode_without_found_config() {
+        // Create a scanner with a test repo
+        let (mut scanner, _td) = create_scanner();
+
+        scanner.prepare().unwrap();
+
+        // Set the mode values for testing
+        let mut modified_source = scanner.sources_only_config().unwrap();
+        let plugin_def = modified_source
+            .plugins
+            .definitions
+            .get_mut("exists")
+            .unwrap();
+        plugin_def.suggested_mode = IssueMode::Monitor;
+        plugin_def.suggested_mode_with_config = Some(IssueMode::Block);
+
+        // We're explicitly NOT creating the config file, so found_config should be false
+
+        scanner.sources_only_config = modified_source;
+
+        // Manually create a plugin_to_activate with found_config = false
+        let mut plugin_to_activate = PluginToActivate::default();
+        plugin_to_activate.found_config = false; // Explicitly set to false
+        plugin_to_activate.file_count = 1;
+
+        // Create a driver entry
+        let driver_def = scanner
+            .sources_only_config
+            .plugins
+            .definitions
+            .get("exists")
+            .unwrap()
+            .drivers
+            .get("lint")
+            .unwrap()
+            .clone();
+
+        // We need to manually create a driver to insert
+        plugin_to_activate.drivers.insert(
+            "lint".to_string(),
+            Box::new(TargetDriver {
+                workspace_entries_globset: GlobSetBuilder::new().build().unwrap(),
+                key: "exists.lint".to_string(),
+                driver_name: "lint".to_string(),
+                version: "latest".to_string(),
+                driver_def,
+                workspace_root: scanner.settings.workspace.root.clone(),
+            }),
+        );
+
+        // Insert the plugin_to_activate directly
+        scanner
+            .plugins_to_activate
+            .insert("exists".to_string(), plugin_to_activate);
+
+        // Process the plugins and create the InstalledPlugin entries
+        assert!(scanner.compute_plugin_details().is_ok());
+
+        // The plugin should be in the list
+        assert!(scanner
+            .plugins
+            .iter()
+            .find(|p| p.name == "exists")
+            .is_some());
+
+        // Get the plugin and verify its mode and found_config
+        let installed_plugin = scanner.plugins.iter().find(|p| p.name == "exists").unwrap();
+        assert!(
+            !installed_plugin.found_config,
+            "Plugin should have found_config=false"
+        );
+        assert_eq!(
+            installed_plugin.mode,
+            IssueMode::Monitor,
+            "Plugin should use suggested_mode (Monitor) when found_config is false"
+        );
     }
 }
