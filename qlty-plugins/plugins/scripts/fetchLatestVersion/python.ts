@@ -1,4 +1,11 @@
 import fetch from "node-fetch";
+import { z } from "zod";
+
+const PyPiResponseSchema = z.object({
+  info: z.object({
+    version: z.string(),
+  }),
+});
 
 export async function fetchLatestVersionForPython(
   pipPackage: string,
@@ -10,12 +17,12 @@ export async function fetchLatestVersionForPython(
     throw new Error(`Failed to fetch from PyPI, status: ${response.status}`);
   }
 
-  const json = (await response.json()) as { info?: { version?: string } };
-  const versionString = json.info?.version;
+  const rawJson = await response.json();
 
-  if (!versionString) {
-    throw new Error("Version not found in the response");
+  const parsed = PyPiResponseSchema.safeParse(rawJson);
+  if (!parsed.success) {
+    throw new Error(`Invalid PyPI response: ${parsed.error.message}`);
   }
 
-  return versionString;
+  return parsed.data.info.version;
 }
