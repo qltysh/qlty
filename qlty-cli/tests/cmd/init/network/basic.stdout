@@ -64,9 +64,11 @@ name = "checkov"
 
 [[plugin]]
 name = "golangci-lint"
+mode = "comment"
 
 [[plugin]]
 name = "ripgrep"
+mode = "comment"
 
 [[plugin]]
 name = "shellcheck"
