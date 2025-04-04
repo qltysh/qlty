@@ -7,8 +7,8 @@ const PackagistResponseSchema = z.object({
     z.array(
       z.object({
         version: z.string(),
-      })
-    )
+      }),
+    ),
   ),
 });
 
@@ -19,7 +19,9 @@ export async function fetchLatestVersionForPhp(
 
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`Failed to fetch from Packagist, status: ${response.status}`);
+    throw new Error(
+      `Failed to fetch from Packagist, status: ${response.status}`,
+    );
   }
 
   const rawJson = await response.json();
