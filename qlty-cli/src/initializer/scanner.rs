@@ -316,11 +316,28 @@ impl Scanner {
             plugin_def.package_file_candidate_filters.clone()
         };
 
+        // Use suggested_mode_with_config if it's set and a config file exists
+        let mode = if let Some(suggested_mode_with_config) = plugin_def.suggested_mode_with_config {
+            // Check if any of the config files exist in the workspace root
+            let has_config = plugin_def
+                .config_files
+                .iter()
+                .any(|config_file| self.settings.workspace.root.join(config_file).exists());
+
+            if has_config {
+                suggested_mode_with_config
+            } else {
+                plugin_def.suggested_mode
+            }
+        } else {
+            plugin_def.suggested_mode
+        };
+
         let mut plugin_initializer = PluginInitializer {
             plugin_name: plugin_name.to_owned(),
             package_file_candidate: plugin_def.package_file_candidate,
             package_file_candidate_filters,
-            mode: plugin_def.suggested_mode,
+            mode,
             ..Default::default()
         };
 

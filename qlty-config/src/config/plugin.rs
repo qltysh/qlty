@@ -404,6 +404,9 @@ pub struct PluginDef {
 
     #[serde(default)]
     pub suggested_mode: IssueMode,
+
+    #[serde(default)]
+    pub suggested_mode_with_config: Option<IssueMode>,
 }
 
 fn default_idempotent() -> bool {
