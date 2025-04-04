@@ -137,11 +137,6 @@ async function main(): Promise<void> {
           { stdio: "inherit" },
         );
 
-        execSync(
-          `QLTY_PLUGINS_LINTER_VERSION=${latestLinterVersion} npm test ${linter}.test.ts -- --updateSnapshot`,
-          { stdio: "inherit" },
-        );
-
         console.log(`Yay! ${linterLabel} passed the tests!`);
         updateLinterTomlVersions(linter, latestLinterVersion, true);
         successfulLinters.push(linter);
