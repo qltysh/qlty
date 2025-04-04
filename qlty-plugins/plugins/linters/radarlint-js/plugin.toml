@@ -19,7 +19,7 @@ output_format = "radarlint"
 output_missing = "parse"
 batch = true
 cache_results = true
-suggested = "targets"
+suggested = "never"
 
 [[plugins.definitions.radarlint-js.environment]]
 name = "PATH"

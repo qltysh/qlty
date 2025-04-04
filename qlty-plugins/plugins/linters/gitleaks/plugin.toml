@@ -14,7 +14,6 @@ version_command = "gitleaks version"
 config_files = [".gitleaks.toml", ".gitleaks.config"]
 description = "SAST tool for detecting and preventing hardcoded secrets like passwords, api keys, and tokens in git repos"
 security = true
-suggested = "config"
 
 [plugins.definitions.gitleaks.drivers.lint]
 script = "gitleaks detect --no-git --source=${target} --exit-code=101 -f sarif -r ${tmpfile}"

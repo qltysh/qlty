@@ -32,10 +32,8 @@ config_files = [
 ]
 affects_cache = ["package.json", ".editorconfig", ".prettierignore"]
 description = "JS, CSS, HTML, JSON, TS, GraphQL, MD and YML formatter"
-suggested = "targets"
 package_file_candidate = "package.json"
 package_file_candidate_filters = ["prettier"]
-
 
 [plugins.definitions.prettier.drivers.format]
 script = "prettier --config ${config_file} -w ${target}"

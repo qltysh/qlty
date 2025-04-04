@@ -18,6 +18,7 @@ output = "stdout"
 output_format = "sqlfluff"
 batch = true
 output_missing = "parse"
+suggested = "config"
 
 [plugins.definitions.sqlfluff.drivers.fix]
 script = "sqlfluff fix --disable-progress-bar --quiet --dialect ansi ${target}"
@@ -25,3 +26,4 @@ success_codes = [0]
 output = "rewrite"
 batch = true
 driver_type = "formatter"
+suggested = "config"

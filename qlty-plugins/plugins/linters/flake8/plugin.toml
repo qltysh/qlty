@@ -11,7 +11,6 @@ known_good_version = "7.1.1"
 version_command = "flake8 --version"
 issue_url_format = "https://flake8.pycqa.org/en/latest/user/error-codes.html"
 description = "Python linter"
-suggested = "config"
 
 [plugins.definitions.flake8.drivers.lint]
 script = "flake8 ${target} --output-file ${tmpfile} --exit-zero"

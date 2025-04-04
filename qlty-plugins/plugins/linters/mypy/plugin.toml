@@ -11,7 +11,6 @@ known_good_version = "1.12.1"
 version_command = "mypy --version"
 description = "Static type checker for Python"
 issue_url_format = "https://mypy.readthedocs.io/en/stable/error_code_list.html"
-suggested = "config"
 
 [plugins.definitions.mypy.drivers.format]
 script = "mypy --ignore-missing-imports --follow-imports=silent --show-error-codes --show-column-numbers ${target}"

@@ -7,7 +7,6 @@ known_good_version = "6.2.0"
 version_command = "stree version"
 config_files = [".streerc"]
 description = "Ruby auto-formatter"
-suggested = "config"
 
 [plugins.definitions.ruby-stree.drivers.format]
 script = "stree write ${target}"

@@ -14,7 +14,6 @@ version_command = "trivy --version"
 description = "Comprehensive and versatile security scanner"
 security = true
 idempotent = false
-suggested = "targets"
 
 [plugins.definitions.trivy.drivers.fs-vuln]
 # Defining file_types at driver level since each works with different files

@@ -10,7 +10,6 @@ version_command = "yamllint --version"
 config_files = [".yamllint", ".yamllint.yml", ".yamllint.yaml"]
 issue_url_format = "https://yamllint.readthedocs.io/en/stable/rules.html#module-yamllint.rules.${rule}"
 description = "YAML file formatter"
-suggested = "targets"
 
 [plugins.definitions.yamllint.drivers.format]
 script = "yamllint -f parsable ${target}"

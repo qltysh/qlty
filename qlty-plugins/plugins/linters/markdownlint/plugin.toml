@@ -9,7 +9,7 @@ latest_version = "0.42.0"
 known_good_version = "0.41.0"
 version_command = "markdownlint --version"
 description = "Markdown file linter and formatter"
-suggested = "targets"
+suggested_mode = "comment"
 
 [plugins.definitions.markdownlint.drivers.lint]
 script = "markdownlint --json ${target}"

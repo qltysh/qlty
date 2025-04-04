@@ -14,7 +14,6 @@ known_good_version = "1.7.3"
 version_command = "actionlint --version"
 issue_url_format = "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
 description = "Static checker for GitHub Actions workflow files"
-suggested = "targets"
 
 [plugins.definitions.actionlint.drivers.lint]
 script = "actionlint -format \"{{json .}}\" ${target}"

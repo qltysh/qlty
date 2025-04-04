@@ -10,7 +10,6 @@ version_command = "checkov --version"
 config_files = [".checkov.yml", ".checkov.yaml"]
 description = "Static code analysis tool for infrastructure as code (IaC) and also a software composition analysis (SCA) tool for images and open source packages"
 security = true
-suggested = "targets"
 
 [plugins.definitions.checkov.drivers.format]
 # The comma after ${tmpfile} is absolutely necessary

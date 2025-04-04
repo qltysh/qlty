@@ -13,7 +13,6 @@ latest_version = "0.53.0"
 known_good_version = "0.52.0"
 version_command = "tflint --version"
 description = "A pluggable Terraform linter"
-suggested = "config"
 
 [plugins.definitions.tflint.drivers.lint]
 script = "tflint --format=sarif --force"

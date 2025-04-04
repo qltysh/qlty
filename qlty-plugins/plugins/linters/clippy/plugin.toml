@@ -9,7 +9,6 @@ known_good_version = "1.82.0"
 config_files = ["clippy.toml", ".clippy.toml"]
 affects_cache = ["Cargo.toml", "Cargo.lock"]
 description = "Rust linter"
-suggested = "targets"
 
 [plugins.definitions.clippy.drivers.lint]
 script = "cargo clippy --message-format json --locked -- --cap-lints=warn --no-deps"

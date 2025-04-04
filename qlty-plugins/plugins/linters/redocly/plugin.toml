@@ -9,6 +9,7 @@ latest_version = "1.25.8"
 known_good_version = "1.25.8"
 version_command = "redocly --version"
 description = "Identify problems found in OpenAPI or Arazzo descriptions"
+suggested_mode = "comment"
 
 [plugins.definitions.redocly.drivers.lint]
 script = "redocly lint --format=github-actions ${target}"

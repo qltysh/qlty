@@ -22,3 +22,4 @@ batch = true
 cache_results = true
 max_batch = 40
 output_missing = "parse"
+suggested = "config"

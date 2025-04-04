@@ -29,3 +29,4 @@ output = "stdout"
 output_format = "knip"
 skip_upstream = true
 output_missing = "parse"
+suggested = "config"

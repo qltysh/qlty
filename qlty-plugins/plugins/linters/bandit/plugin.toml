@@ -10,7 +10,6 @@ version_command = "bandit --version"
 config_files = [".bandit"]
 description = "Tool designed to find common security issues in Python"
 security = true
-suggested = "targets"
 
 [plugins.definitions.bandit.drivers.lint]
 script = "bandit --exit-zero --ini .bandit --format json --output ${tmpfile} ${target}"

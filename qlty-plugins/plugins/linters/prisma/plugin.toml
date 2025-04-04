@@ -14,3 +14,4 @@ script = "prisma format --schema=${target}"
 success_codes = [0]
 output = "rewrite"
 driver_type = "formatter"
+suggested = "targets"

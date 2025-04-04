@@ -9,7 +9,6 @@ known_good_version = "6.2.2"
 version_command = "brakeman --version"
 config_files = ["brakeman.ignore"]
 description = "A vulnerability scanner for Ruby"
-suggested = "targets"
 
 [plugins.definitions.brakeman.drivers.lint]
 script = "brakeman --format sarif --no-pager"

@@ -9,7 +9,6 @@ latest_version = "3.73.1"
 known_good_version = "3.73.1"
 version_command = "php ${linter}/vendor/bin/php-cs-fixer --version"
 description = "PHP Coding Standards Fixer"
-suggested = "targets"
 
 [plugins.definitions.php-cs-fixer.drivers.formatter]
 script = "php -d memory_limit=-1 ${linter}/vendor/bin/php-cs-fixer fix --using-cache=no --show-progress=none ${target}"

@@ -12,7 +12,7 @@ latest_version = "3.3.0"
 known_good_version = "3.3.0"
 version_command = "dotenv-linter --version"
 description = "Dotenv file linter"
-suggested = "targets"
+suggested_mode = "comment"
 output_missing = "parse"
 
 [plugins.definitions.dotenv-linter.drivers.format]

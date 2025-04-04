@@ -9,7 +9,7 @@ latest_version = "5.2.11"
 known_good_version = "5.2.11"
 version_command = "coffeelint --version"
 description = "A style checker for coffescript."
-suggested = "targets"
+suggested_mode = "comment"
 
 [plugins.definitions.coffeelint.drivers.lint]
 script = "coffeelint --reporter raw ${target}"

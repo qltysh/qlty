@@ -9,7 +9,6 @@ known_good_version = "1.67.0"
 version_command = "rubocop --version"
 config_files = [".rubocop.yml", ".rubocop_*.yml"]
 description = "Ruby linter and code formatter"
-suggested = "targets"
 package_file_candidate = "Gemfile"
 package_file_candidate_filters = ["rubocop", "standard"]
 

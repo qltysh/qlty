@@ -59,7 +59,6 @@ issue_url_format = "https://osv.dev/${rule}"
 description = "Vulnerability scanner for lockfiles"
 security = true
 idempotent = false
-suggested = "targets"
 
 [plugins.definitions.osv-scanner.drivers.lint]
 script = "osv-scanner --lockfile=${target} --format sarif"

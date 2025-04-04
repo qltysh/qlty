@@ -13,7 +13,6 @@ known_good_version = "3.82.12"
 version_command = "trufflehog --version"
 description = "Security tool that scans code to find secrets accidentally committed"
 security = true
-suggested = "targets"
 
 [plugins.definitions.trufflehog.drivers.lint]
 script = "trufflehog filesystem --json --fail --only-verified --no-update ${target}"

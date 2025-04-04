@@ -20,7 +20,7 @@ config_files = [
 affects_cache = ["go.mod", "go.sum"]
 description = "A powerful Go linter runner"
 security = true
-suggested = "targets"
+suggested_mode = "comment"
 
 [plugins.definitions.golangci-lint.drivers.lint]
 script = "golangci-lint run --out-format json --timeout 10m --exclude gofmt --allow-parallel-runners --issues-exit-code 0 ${target}"

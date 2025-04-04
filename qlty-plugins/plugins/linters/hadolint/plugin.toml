@@ -13,7 +13,6 @@ known_good_version = "2.12.1-beta"
 version_command = "hadolint --version"
 issue_url_format = "https://github.com/hadolint/hadolint/wiki/${rule}"
 description = "Dockerfile linter"
-suggested = "targets"
 
 [plugins.definitions.hadolint.drivers.lint]
 script = "hadolint ${target} -f json --no-fail"

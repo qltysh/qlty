@@ -9,7 +9,6 @@ known_good_version = "0.5.3"
 version_command = "ruff version"
 config_files = ["ruff.toml"]
 description = "Python code formatter"
-suggested = "targets"
 
 [plugins.definitions.ruff.drivers.format]
 script = "ruff check --exit-zero --output-format json --output-file ${tmpfile} ${target}"

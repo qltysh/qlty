@@ -29,7 +29,6 @@ latest_version = "16.10.0"
 known_good_version = "14.6.1"
 version_command = "stylelint --version"
 description = "CSS and SASS linter and code formatter"
-suggested = "config"
 package_file_candidate = "package.json"
 package_file_candidate_filters = ["stylelint"]
 

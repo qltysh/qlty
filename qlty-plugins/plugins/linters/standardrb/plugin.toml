@@ -9,7 +9,6 @@ known_good_version = "1.41.1"
 version_command = "standardrb --version"
 config_files = [".standard.yml"]
 description = "Ruby linter and code formatter"
-suggested = "config"
 
 [plugins.definitions.standardrb.drivers.lint]
 script = "standardrb ${target} --format json"

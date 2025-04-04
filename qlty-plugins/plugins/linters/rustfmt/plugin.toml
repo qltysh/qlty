@@ -9,7 +9,6 @@ known_good_version = "1.82.0"
 config_files = ["rustfmt.toml", ".rustfmt.toml"]
 affects_cache = ["Cargo.toml", "Cargo.lock"]
 description = "Rust code formatter"
-suggested = "config"
 
 [plugins.definitions.rustfmt.drivers.format]
 script = "rustfmt ${target}"

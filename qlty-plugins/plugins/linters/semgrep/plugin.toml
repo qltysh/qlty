@@ -9,7 +9,6 @@ latest_version = "1.92.0"
 known_good_version = "1.92.0"
 version_command = "semgrep --version"
 description = "Static analysis tool for searching code, finding bugs, and enforcing code standards"
-suggested = "config"
 supported_platforms = ["linux", "macos"]
 
 [plugins.definitions.semgrep.drivers.lint]

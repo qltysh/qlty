@@ -14,7 +14,6 @@ known_good_version = "0.10.0"
 version_command = "shellcheck --version"
 issue_url_format = "https://github.com/koalaman/shellcheck/wiki/SC${rule}"
 description = "Tool that gives warnings and suggestions for bash/sh shell scripts"
-suggested = "targets"
 
 [plugins.definitions.shellcheck.drivers.lint]
 script = "shellcheck -f json ${target}"

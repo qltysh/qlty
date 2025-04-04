@@ -9,7 +9,7 @@ latest_version = "3.10.3"
 known_good_version = "3.10.3"
 version_command = "php ${linter}/vendor/bin/phpcs --version"
 description = "PHP code linter"
-suggested = "targets"
+suggested_mode = "comment"
 
 [plugins.definitions.php-codesniffer.drivers.lint]
 script = "php -d memory_limit=-1 ${linter}/vendor/bin/phpcs --report=json -q ${autoload_script} ${target}"

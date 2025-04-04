@@ -9,7 +9,6 @@ known_good_version = "3.8.0"
 version_command = "shfmt --version"
 affects_cache = [".editorconfig"]
 description = "Shell code formatter"
-suggested = "targets"
 
 [plugins.definitions.shfmt.drivers.format]
 script = "shfmt -w -s ${target}"
