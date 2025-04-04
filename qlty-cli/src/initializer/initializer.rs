@@ -65,7 +65,7 @@ impl Initializer {
                 package_file: installed_plugin.package_file.clone(),
                 package_filters: installed_plugin.package_filters.clone(),
                 prefix: installed_plugin.prefix.clone(),
-                mode: installed_plugin.mode.clone(),
+                mode: installed_plugin.mode,
             });
         }
 

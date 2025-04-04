@@ -158,7 +158,7 @@ impl Scanner {
                     .plugins_to_activate
                     .get_mut(plugin_initializer.plugin_name.as_str())
                 {
-                    plugin_to_activate.mode = plugin_initializer.mode.clone();
+                    plugin_to_activate.mode = plugin_initializer.mode;
                 }
             }
 
@@ -275,7 +275,7 @@ impl Scanner {
                     package_file: package_file.clone(),
                     package_filters: package_filters.clone(),
                     prefix: prefix.cloned(),
-                    mode: plugin_to_activate.mode.clone(),
+                    mode: plugin_to_activate.mode,
                 });
             }
         }
@@ -320,7 +320,7 @@ impl Scanner {
             plugin_name: plugin_name.to_owned(),
             package_file_candidate: plugin_def.package_file_candidate,
             package_file_candidate_filters,
-            mode: plugin_def.suggested_mode.clone(),
+            mode: plugin_def.suggested_mode,
             ..Default::default()
         };
 
