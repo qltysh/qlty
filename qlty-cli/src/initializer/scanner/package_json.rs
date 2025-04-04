@@ -193,8 +193,7 @@ mod test {
             &PluginInitializer {
                 plugin_name: plugin_name.to_owned(),
                 package_file_candidate_filters: vec![plugin_name.to_owned()],
-                package_file_candidate: None,
-                driver_initializers: vec![],
+                ..Default::default()
             },
         )
         .unwrap();
@@ -220,8 +219,7 @@ mod test {
             &PluginInitializer {
                 plugin_name: plugin_name.to_owned(),
                 package_file_candidate_filters: vec![plugin_name.to_owned()],
-                package_file_candidate: None,
-                driver_initializers: vec![],
+                ..Default::default()
             },
         )
         .unwrap();

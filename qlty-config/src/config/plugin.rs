@@ -401,6 +401,9 @@ pub struct PluginDef {
 
     #[serde(default)]
     pub supported_platforms: Vec<Platform>,
+
+    #[serde(default)]
+    pub suggested_mode: IssueMode,
 }
 
 fn default_idempotent() -> bool {

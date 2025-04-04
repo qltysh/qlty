@@ -4,6 +4,7 @@ config_version = "0"
 file_types = ["shell"]
 latest_version = "0.10.0"
 known_good_version = "0.10.0"
+suggested_mode = "comment"
 
 [plugins.definitions.single_driver.drivers.first]
 script = "exit 0"

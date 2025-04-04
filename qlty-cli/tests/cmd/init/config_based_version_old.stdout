@@ -71,6 +71,7 @@ drivers = [
 
 [[plugin]]
 name = "single_driver"
+mode = "comment"
 
 [[plugin]]
 name = "versioned_config"

@@ -12,7 +12,7 @@ use indicatif::ProgressBar;
 use itertools::Itertools;
 use package_file::PackageFileScanner;
 use qlty_config::{
-    config::{Builder, Ignore, PackageFileCandidate, PluginDef, SuggestionMode},
+    config::{Builder, Ignore, IssueMode, PackageFileCandidate, PluginDef, SuggestionMode},
     sources::{SourceFetch, SourceFile},
     QltyConfig,
 };
@@ -45,6 +45,7 @@ struct PluginToActivate {
     file_count: FilesCount,
     drivers: HashMap<Name, Box<dyn DriverInitializer>>,
     prefixes: HashSet<String>,
+    mode: IssueMode,
 }
 
 #[derive(Debug, Clone)]
@@ -57,6 +58,7 @@ pub struct InstalledPlugin {
     pub package_file: Option<String>,
     pub package_filters: Vec<String>,
     pub prefix: Option<String>,
+    pub mode: IssueMode,
 }
 
 #[derive(Debug, Default, Clone)]
@@ -65,6 +67,7 @@ struct PluginInitializer {
     package_file_candidate: Option<PackageFileCandidate>,
     package_file_candidate_filters: Vec<String>,
     driver_initializers: Vec<Box<dyn DriverInitializer>>,
+    mode: IssueMode,
 }
 
 impl Scanner {
@@ -149,6 +152,13 @@ impl Scanner {
                         .file_count;
 
                     *entry += 1;
+                }
+
+                if let Some(plugin_to_activate) = self
+                    .plugins_to_activate
+                    .get_mut(plugin_initializer.plugin_name.as_str())
+                {
+                    plugin_to_activate.mode = plugin_initializer.mode.clone();
                 }
             }
 
@@ -265,6 +275,7 @@ impl Scanner {
                     package_file: package_file.clone(),
                     package_filters: package_filters.clone(),
                     prefix: prefix.cloned(),
+                    mode: plugin_to_activate.mode.clone(),
                 });
             }
         }
@@ -309,6 +320,7 @@ impl Scanner {
             plugin_name: plugin_name.to_owned(),
             package_file_candidate: plugin_def.package_file_candidate,
             package_file_candidate_filters,
+            mode: plugin_def.suggested_mode.clone(),
             ..Default::default()
         };
 
@@ -628,6 +640,7 @@ config_files = ["config.toml"]
             package_file_candidate: None,
             package_file_candidate_filters: vec![],
             driver_initializers: vec![],
+            mode: IssueMode::Block,
         };
 
         let path = "deep/package.json";

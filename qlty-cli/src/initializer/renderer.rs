@@ -3,6 +3,7 @@ use crate::initializer::SourceRefSpec;
 use super::SourceSpec;
 use anyhow::{bail, Result};
 use itertools::Itertools;
+use qlty_config::config::IssueMode;
 
 #[derive(Debug, Clone, Default)]
 pub struct PluginActivation {
@@ -12,6 +13,7 @@ pub struct PluginActivation {
     pub package_file: Option<String>,
     pub package_filters: Vec<String>,
     pub prefix: Option<String>,
+    pub mode: IssueMode,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -141,6 +143,10 @@ impl Renderer {
 
         if let Some(prefix) = &plugin.prefix {
             toml.push_str(&format!("prefix = \"{}\"\n", prefix));
+        }
+
+        if plugin.mode != IssueMode::Block {
+            toml.push_str(&format!("mode = \"{}\"\n", plugin.mode.to_str()));
         }
 
         Ok(toml)

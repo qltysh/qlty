@@ -128,8 +128,7 @@ mod test {
         let plugin_initializer = PluginInitializer {
             package_file_candidate: Some(PackageFileCandidate::PackageJson),
             plugin_name: "my_plugin".to_owned(),
-            package_file_candidate_filters: vec![],
-            driver_initializers: vec![],
+            ..Default::default()
         };
 
         let temp_dir = tempdir().unwrap();
@@ -163,8 +162,7 @@ mod test {
         let plugin_initializer = PluginInitializer {
             package_file_candidate: Some(PackageFileCandidate::Gemfile),
             plugin_name: "my_plugin".to_owned(),
-            package_file_candidate_filters: vec![],
-            driver_initializers: vec![],
+            ..Default::default()
         };
 
         let temp_dir = tempdir().unwrap();
@@ -285,7 +283,7 @@ end
             package_file_candidate: Some(PackageFileCandidate::PackageJson),
             plugin_name: plugin_name.to_owned(),
             package_file_candidate_filters: vec![plugin_name.to_owned()],
-            driver_initializers: vec![],
+            ..Default::default()
         };
 
         let package_filters = PackageFileScanner::check_plugin_packages(
@@ -360,7 +358,7 @@ end
             package_file_candidate: Some(PackageFileCandidate::Gemfile),
             plugin_name: plugin_name.to_owned(),
             package_file_candidate_filters,
-            driver_initializers: vec![],
+            ..Default::default()
         };
 
         let package_filters = PackageFileScanner::check_plugin_packages(

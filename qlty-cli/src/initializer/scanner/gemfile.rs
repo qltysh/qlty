@@ -211,8 +211,7 @@ gem "rubyplugin3", "0.1.0"
             &PluginInitializer {
                 plugin_name: plugin_name.to_owned(),
                 package_file_candidate_filters: vec![plugin_name.to_owned()],
-                package_file_candidate: None,
-                driver_initializers: vec![],
+                ..Default::default()
             },
             "Gemfile",
         );
@@ -237,8 +236,7 @@ gem "rubyplugin3", "0.1.0"
             &PluginInitializer {
                 plugin_name: plugin_name.to_owned(),
                 package_file_candidate_filters: vec![plugin_name.to_owned()],
-                package_file_candidate: None,
-                driver_initializers: vec![],
+                ..Default::default()
             },
             "Gemfile",
         );
@@ -364,8 +362,7 @@ end
             &PluginInitializer {
                 plugin_name: plugin_name.to_owned(),
                 package_file_candidate_filters: vec![plugin_name.to_owned()],
-                package_file_candidate: None,
-                driver_initializers: vec![],
+                ..Default::default()
             },
         );
 

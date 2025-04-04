@@ -71,4 +71,5 @@ drivers = [
 
 [[plugin]]
 name = "single_driver"
+mode = "comment"
 
