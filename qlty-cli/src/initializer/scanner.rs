@@ -442,6 +442,7 @@ impl PluginInitializer {
 #[cfg(test)]
 mod test {
     use qlty_analysis::utils::fs::path_to_native_string;
+    use qlty_config::config::DriverDef;
     use qlty_config::{
         sources::{LocalSource, Source},
         Workspace,
@@ -555,6 +556,39 @@ config_files = ["config.toml"]
             .suggested = suggestion;
 
         scanner.sources_only_config = modified_source;
+    }
+
+    #[test]
+    fn test_build_plugin_initializer_with_config() {
+        // Test specifically that build_plugin_initializer selects the correct mode
+        let (scanner, td) = create_scanner();
+
+        // Create config file
+        let config_file = "config.toml";
+        File::create(td.path().join(config_file)).unwrap();
+
+        // Set up plugin definition with both mode values and driver
+        let mut plugin_def = PluginDef::default();
+        plugin_def.suggested_mode = IssueMode::Monitor;
+        plugin_def.suggested_mode_with_config = Some(IssueMode::Block);
+        plugin_def.config_files = vec![PathBuf::from(config_file)];
+
+        // Add a driver with Targets suggestion mode
+        let mut driver_def = DriverDef::default();
+        driver_def.suggested = SuggestionMode::Targets;
+        driver_def.script = "echo test".to_string();
+        plugin_def
+            .drivers
+            .insert("test_driver".to_string(), driver_def);
+
+        // Call build_plugin_initializer directly
+        let plugin_initializer = scanner
+            .build_plugin_initializer("test", &plugin_def)
+            .unwrap();
+
+        // Plugin initializer should exist and have Monitor mode due to config file
+        assert!(plugin_initializer.is_some());
+        assert_eq!(plugin_initializer.unwrap().mode, IssueMode::Block);
     }
 
     #[test]
