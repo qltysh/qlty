@@ -200,6 +200,28 @@ impl Composer {
 
         std::fs::write(staged_file, final_composer_file)?;
 
+        if php_package.plugin.package_filters.is_empty() {
+            let package_file = php_package
+                .plugin
+                .package_file
+                .as_ref()
+                .with_context(|| "Missing package_file in plugin definition")?;
+
+            let package_file_path = PathBuf::from(package_file);
+            if let Some(parent_dir) = package_file_path.parent() {
+                let lock_file = parent_dir.join("composer.lock");
+
+                if lock_file.exists() {
+                    let staging_lock_file = install_dir.join("composer.lock");
+                    debug!(
+                        "Copying lock file from {:?} to {:?}",
+                        lock_file, staging_lock_file
+                    );
+                    std::fs::copy(lock_file, staging_lock_file)?;
+                }
+            }
+        }
+
         Ok(())
     }
 }
@@ -213,6 +235,7 @@ pub mod test {
     };
     use qlty_analysis::utils::fs::path_to_string;
     use qlty_config::config::PluginDef;
+    use std::path::PathBuf;
     use std::sync::{Arc, Mutex};
     use tempfile::tempdir;
 
@@ -384,6 +407,103 @@ pub mod test {
                         "other-tool-dev": "1.0.0"
                     }
                 })
+            );
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_lock_file_copying_with_empty_filters() {
+        with_php_package(|pkg, tempdir, _| {
+            // Create parent directory with composer.json and composer.lock
+            let parent_dir = tempdir.path().join("project");
+            std::fs::create_dir_all(&parent_dir)?;
+
+            // Create composer.json file
+            let user_composer_file = parent_dir.join("composer.json");
+            let composer_contents = r#"{
+                "require": {
+                    "phpstan/phpstan": "^1.10.0"
+                }
+            }"#;
+            std::fs::write(&user_composer_file, composer_contents)?;
+
+            // Create composer.lock file
+            let lock_file = parent_dir.join("composer.lock");
+            let lock_contents = r#"{
+                "packages": [{
+                    "name": "phpstan/phpstan",
+                    "version": "1.10.35"
+                }]
+            }"#;
+            std::fs::write(&lock_file, lock_contents)?;
+
+            // Configure package and execute
+            pkg.plugin.package_file = Some(path_to_string(&user_composer_file));
+            pkg.plugin.package_filters = vec![]; // Empty filters should trigger lock file copying
+            reroute_tools_root(tempdir, pkg);
+
+            let install_dir = PathBuf::from(pkg.directory());
+            std::fs::create_dir_all(&install_dir)?;
+
+            Composer::update_composer_json(pkg)?;
+
+            // Verify lock file was copied
+            let staged_lock_file = install_dir.join("composer.lock");
+            assert!(staged_lock_file.exists(), "Lock file was not copied");
+
+            let lock_content = std::fs::read_to_string(&staged_lock_file)?;
+            assert!(
+                lock_content.contains("phpstan/phpstan"),
+                "Lock file contents are incorrect"
+            );
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_lock_file_not_copied_with_filters() {
+        with_php_package(|pkg, tempdir, _| {
+            // Create parent directory with composer.json and composer.lock
+            let parent_dir = tempdir.path().join("project");
+            std::fs::create_dir_all(&parent_dir)?;
+
+            // Create composer.json file
+            let user_composer_file = parent_dir.join("composer.json");
+            let composer_contents = r#"{
+                "require": {
+                    "phpstan/phpstan": "^1.10.0"
+                }
+            }"#;
+            std::fs::write(&user_composer_file, composer_contents)?;
+
+            // Create composer.lock file
+            let lock_file = parent_dir.join("composer.lock");
+            let lock_contents = r#"{
+                "packages": [{
+                    "name": "phpstan/phpstan",
+                    "version": "1.10.35"
+                }]
+            }"#;
+            std::fs::write(&lock_file, lock_contents)?;
+
+            // Configure package with filters
+            pkg.plugin.package_file = Some(path_to_string(&user_composer_file));
+            pkg.plugin.package_filters = vec!["phpstan".to_string()]; // With filters, lock file should not be copied
+            reroute_tools_root(tempdir, pkg);
+
+            let install_dir = PathBuf::from(pkg.directory());
+            std::fs::create_dir_all(&install_dir)?;
+
+            Composer::update_composer_json(pkg)?;
+
+            // Verify lock file was not copied
+            let staged_lock_file = install_dir.join("composer.lock");
+            assert!(
+                !staged_lock_file.exists(),
+                "Lock file was copied but should not have been"
             );
 
             Ok(())
