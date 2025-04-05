@@ -106,19 +106,19 @@ impl RubyGemfile {
 
         if self.plugin.package_filters.is_empty() {
             let package_file_path = PathBuf::from(package_file);
-            let lock_file = package_file_path.with_extension("lock");
+            if let Some(parent_dir) = package_file_path.parent() {
+                let lock_file = parent_dir.join("Gemfile.lock");
+                if lock_file.exists() {
+                    let staging_lock_file = join_path_string!(self.directory(), "Gemfile.lock");
 
-            if lock_file.exists() {
-                let staging_lock_file =
-                    join_path_string!(self.directory(), lock_file.file_name().unwrap());
+                    debug!(
+                        "Copying lock file from {} to {}",
+                        lock_file.display(),
+                        staging_lock_file
+                    );
 
-                debug!(
-                    "Copying lock file from {} to {}",
-                    lock_file.display(),
-                    staging_lock_file
-                );
-
-                std::fs::copy(lock_file, staging_lock_file)?;
+                    std::fs::copy(lock_file, staging_lock_file)?;
+                }
             }
         }
 
