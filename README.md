@@ -8,15 +8,30 @@ As a Git-aware tool, Qlty CLI makes adopting linting into the development workfl
 
 Qlty CLI is implemented in Rust, supported by [Qlty Software](https://qlty.sh), free to use, and is published under a [Fair Source](https://fair.io/) license.
 
-## Features
+### 📖 Table of Contents
 
-- 🐞 Linting (for every programming language)
-- 🖌️ Auto-formatting
-- 🚨 Security scanning (IaC, SAST, SCA, and more)
-- 📊 Complexity metrics and duplication
-- 💩 Maintainability smells
+- [✨ Key Features](#-key-features)
+- [📦 Installation](#-installation)
+- [🚀 Quick Start](#-quick-start)
+  - [✔️ Configuration](#whats-next)
+  - [→ What's Next?](#whats-next)
+- [🔍 Reference](#-reference)
+  - [📚 Documentation](#-docs)
+  - [🔌 Creating Plugins](#-plugins)
+- [👋 Get Help](#-get-help)
+- [🌟 Contributing](#-contributors)
+- [📄 License](#-license)
 
-## Installation
+## ✨ Key Features
+
+| | Feature | Advantage |
+|-|-|-|
+| 🐞 | Linting | Blazing fast linting for 15+ languages |
+| 🖌️ | Auto-formatting | Keep code consistent from humans and robots |
+| 💩 | Maintainability | Address code smells like duplication and complexity |
+| 🚨 | Security scanning | Find vulnerabilities with SAST, SCA, IaC checks |
+
+## 📦 Installation
 
 Qlty CLI is available for MacOS, Linux, and Windows.
 
@@ -32,7 +47,7 @@ curl https://qlty.sh | bash
 powershell -c "iwr https://qlty.sh | iex"
 ```
 
-## Usage
+## 🚀 Quick Start
 
 Setup Qlty within a Git repository:
 
