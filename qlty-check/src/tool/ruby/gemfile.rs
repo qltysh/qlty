@@ -104,6 +104,24 @@ impl RubyGemfile {
         let new_package_file_path = join_path_string!(self.directory(), package_file_name);
         std::fs::write(new_package_file_path, new_package_file_contents.join("\n"))?;
 
+        if self.plugin.package_filters.is_empty() {
+            let package_file_path = PathBuf::from(package_file);
+            if let Some(parent_dir) = package_file_path.parent() {
+                let lock_file = parent_dir.join("Gemfile.lock");
+                if lock_file.exists() {
+                    let staging_lock_file = join_path_string!(self.directory(), "Gemfile.lock");
+
+                    debug!(
+                        "Copying lock file from {} to {}",
+                        lock_file.display(),
+                        staging_lock_file
+                    );
+
+                    std::fs::copy(lock_file, staging_lock_file)?;
+                }
+            }
+        }
+
         Ok(())
     }
 
@@ -418,6 +436,65 @@ mod test {
                 "#}
                 .trim_end()
             );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_lock_file_copied_without_filters() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            let lock_file = temp_path.path().join("Gemfile.lock");
+
+            // Write a Gemfile and Gemfile.lock
+            std::fs::write(&req_file, "source 'https://rubygems.org'").unwrap();
+            std::fs::write(&lock_file, "GEM\n  specs:\n    rake (13.0.1)").unwrap();
+
+            // Setup the plugin
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            pkg.plugin.package_filters = vec![];
+            reroute_tools_root(temp_path, pkg);
+
+            // Run copy_package_file
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            let copied_lock_path = Path::new(&pkg.directory()).join("Gemfile.lock");
+            assert!(copied_lock_path.exists(), "Expected lock file to be copied");
+
+            let copied_content = std::fs::read_to_string(copied_lock_path).unwrap();
+            assert!(
+                copied_content.contains("rake"),
+                "Expected lock file to contain copied contents"
+            );
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_lock_file_not_copied_with_filters() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            let lock_file = temp_path.path().join("Gemfile.lock");
+
+            // Write a Gemfile and Gemfile.lock
+            std::fs::write(&req_file, "source 'https://rubygems.org'").unwrap();
+            std::fs::write(&lock_file, "GEM\n  specs:\n    rake (13.0.1)").unwrap();
+
+            // Setup the plugin with filters
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            pkg.plugin.package_filters = vec!["somefilter".to_string()];
+            reroute_tools_root(temp_path, pkg);
+
+            // Run copy_package_file
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            let copied_lock_path = Path::new(&pkg.directory()).join("Gemfile.lock");
+            assert!(
+                !copied_lock_path.exists(),
+                "Expected lock file NOT to be copied"
+            );
+
             Ok(())
         });
     }
