@@ -66,6 +66,27 @@ impl PackageJson {
         let final_package_file = serde_json::to_string_pretty(&user_json)?;
         debug!("Writing {} package.json: {}", tool_name, final_package_file);
 
+        if self.plugin.package_filters.is_empty() {
+            if let Some(package_file) = &self.plugin.package_file {
+                let package_file_path = PathBuf::from(package_file);
+                if let Some(parent_path) = package_file_path.parent() {
+                    let lock_file = parent_path.join("package-lock.json");
+
+                    if lock_file.exists() {
+                        let staged_file_parent = staged_file.parent().unwrap();
+                        let staging_lock_file = staged_file_parent.join("package-lock.json");
+
+                        debug!(
+                            "Copying lock file from {} to {}",
+                            lock_file.display(),
+                            staging_lock_file.display()
+                        );
+                        std::fs::copy(lock_file, staging_lock_file)?;
+                    }
+                }
+            }
+        }
+
         std::fs::write(staged_file, final_package_file)?;
 
         Ok(())
@@ -277,6 +298,111 @@ mod test {
                     .replace('\n', "")
                     .replace(' ', ""),
                 "{\"dependencies\":{\"eslint\":\"1.0.0\",\"eslint-plugin\":\"file:/Some/Path/to/packages/eslint-plugin\"}}".to_string()
+            );
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_lock_file_copying_with_empty_filters() {
+        with_node_package(|pkg, tempdir, _| {
+            // Create package.json file
+            let parent_dir = tempdir.path().join("project");
+            std::fs::create_dir_all(&parent_dir)?;
+            let user_package_file = parent_dir.join("package.json");
+            let user_file_contents = r#"{
+                "dependencies": {
+                    "eslint": "8.0.0"
+                }
+            }"#;
+            std::fs::write(&user_package_file, user_file_contents)?;
+
+            // Create package-lock.json file
+            let lock_file = parent_dir.join("package-lock.json");
+            let lock_contents = r#"{
+                "name": "test-project",
+                "lockfileVersion": 2,
+                "requires": true,
+                "packages": {
+                    "": {
+                        "dependencies": {
+                            "eslint": "8.0.0"
+                        }
+                    }
+                }
+            }"#;
+            std::fs::write(&lock_file, lock_contents)?;
+
+            // Configure package and execute
+            pkg.plugin.package_file = Some(path_to_string(&user_package_file));
+            pkg.plugin.package_filters = vec![]; // Empty filters should trigger lock file copying
+            reroute_tools_root(&tempdir, pkg);
+
+            let stage_path = Path::new(&pkg.directory()).join("package.json");
+            std::fs::write(&stage_path, r#"{"dependencies":{"eslint":"1.0.0"}}"#)?;
+
+            pkg.update_package_json("eslint", &Some("package.json".to_string()))?;
+
+            // Verify lock file was copied
+            let staged_lock_file = Path::new(&pkg.directory()).join("package-lock.json");
+            assert!(staged_lock_file.exists(), "Lock file was not copied");
+
+            let lock_content = std::fs::read_to_string(&staged_lock_file)?;
+            assert!(
+                lock_content.contains("eslint"),
+                "Lock file contents are incorrect"
+            );
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_lock_file_not_copied_with_filters() {
+        with_node_package(|pkg, tempdir, _| {
+            // Create package.json file
+            let parent_dir = tempdir.path().join("project");
+            std::fs::create_dir_all(&parent_dir)?;
+            let user_package_file = parent_dir.join("package.json");
+            let user_file_contents = r#"{
+                "dependencies": {
+                    "eslint": "8.0.0"
+                }
+            }"#;
+            std::fs::write(&user_package_file, user_file_contents)?;
+
+            // Create package-lock.json file
+            let lock_file = parent_dir.join("package-lock.json");
+            let lock_contents = r#"{
+                "name": "test-project",
+                "lockfileVersion": 2,
+                "requires": true,
+                "packages": {
+                    "": {
+                        "dependencies": {
+                            "eslint": "8.0.0"
+                        }
+                    }
+                }
+            }"#;
+            std::fs::write(&lock_file, lock_contents)?;
+
+            // Configure package and execute
+            pkg.plugin.package_file = Some(path_to_string(&user_package_file));
+            pkg.plugin.package_filters = vec!["eslint".to_string()]; // With filters, lock file should not be copied
+            reroute_tools_root(&tempdir, pkg);
+
+            let stage_path = Path::new(&pkg.directory()).join("package.json");
+            std::fs::write(&stage_path, r#"{"dependencies":{"eslint":"1.0.0"}}"#)?;
+
+            pkg.update_package_json("eslint", &Some("package.json".to_string()))?;
+
+            // Verify lock file was not copied
+            let staged_lock_file = Path::new(&pkg.directory()).join("package-lock.json");
+            assert!(
+                !staged_lock_file.exists(),
+                "Lock file was copied but should not have been"
             );
 
             Ok(())
