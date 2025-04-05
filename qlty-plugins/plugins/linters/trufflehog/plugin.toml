@@ -8,7 +8,7 @@ strip_components = 0
 [plugins.definitions.trufflehog]
 releases = ["trufflehog"]
 file_types = ["ALL"]
-latest_version = "3.82.12"
+latest_version = "3.88.22"
 known_good_version = "3.82.12"
 version_command = "trufflehog --version"
 description = "Security tool that scans code to find secrets accidentally committed"

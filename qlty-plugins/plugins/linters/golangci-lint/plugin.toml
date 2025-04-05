@@ -9,7 +9,7 @@ strip_components = 1
 releases = ["golangci-lint"]
 runtime = "go"
 file_types = ["go"]
-latest_version = "1.61.0"
+latest_version = "2.0.2"
 known_good_version = "1.61.0"
 config_files = [
   ".golangci.json",

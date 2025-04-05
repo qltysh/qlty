@@ -5,8 +5,8 @@ runtime = "python"
 package = "black"
 file_types = ["python"]
 affects_cache = ["pyproject.toml"]
-latest_version = "24.10.0"
-known_good_version = "24.10.0"
+latest_version = "25.1.0"
+known_good_version = "25.1.0"
 version_command = "black --version"
 description = "Python formatter"
 

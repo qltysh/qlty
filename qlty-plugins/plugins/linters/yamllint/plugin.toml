@@ -4,8 +4,8 @@
 runtime = "python"
 package = "yamllint"
 file_types = ["yaml"]
-latest_version = "1.35.1"
-known_good_version = "1.35.1"
+latest_version = "1.37.0"
+known_good_version = "1.37.0"
 version_command = "yamllint --version"
 config_files = [".yamllint", ".yamllint.yml", ".yamllint.yaml"]
 issue_url_format = "https://yamllint.readthedocs.io/en/stable/rules.html#module-yamllint.rules.${rule}"

@@ -4,8 +4,8 @@ config_version = "0"
 runnable_archive_url = "https://github.com/google/google-java-format/releases/download/v${version}/google-java-format-${version}-all-deps.jar"
 runtime = "java"
 file_types = ["java"]
-latest_version = "1.24.0"
-known_good_version = "1.24.0"
+latest_version = "1.26.0"
+known_good_version = "1.26.0"
 version_command = "java -jar ${linter}/google-java-format --version"
 description = "Java formatter"
 

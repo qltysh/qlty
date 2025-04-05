@@ -4,8 +4,8 @@ config_version = "0"
 runtime = "node"
 package = "prisma"
 file_types = ["prisma"]
-latest_version = "5.21.1"
-known_good_version = "5.21.1"
+latest_version = "6.5.0"
+known_good_version = "6.5.0"
 version_command = "prisma version"
 description = "Prisma schema formatter"
 

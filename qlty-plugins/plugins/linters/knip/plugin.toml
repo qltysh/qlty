@@ -15,7 +15,7 @@ config_files = [
   "knip.config.js",
 ]
 affects_cache = ["package.json"]
-latest_version = "5.33.3"
+latest_version = "5.46.5"
 known_good_version = "5.21.2"
 version_command = "knip --version"
 description = "Find unused files, dependencies, and exports in JavaScript and TypeScript projects"

@@ -15,8 +15,8 @@ file_types = [
   "typescript",
   "yaml",
 ]
-latest_version = "3.3.3"
-known_good_version = "3.3.3"
+latest_version = "3.5.3"
+known_good_version = "3.5.3"
 version_command = "prettier --version"
 config_files = [
   ".prettierrc.cjs",

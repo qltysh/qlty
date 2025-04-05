@@ -8,8 +8,8 @@ strip_components = 0
 [plugins.definitions.gitleaks]
 releases = ["gitleaks"]
 file_types = ["ALL"]
-latest_version = "8.21.1"
-known_good_version = "8.21.1"
+latest_version = "8.24.2"
+known_good_version = "8.24.2"
 version_command = "gitleaks version"
 config_files = [".gitleaks.toml", ".gitleaks.config"]
 description = "SAST tool for detecting and preventing hardcoded secrets like passwords, api keys, and tokens in git repos"
