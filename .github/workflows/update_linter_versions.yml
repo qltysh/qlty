@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || 'main' }}
 
       - name: 📦 Use Node.js
         uses: actions/setup-node@v4
