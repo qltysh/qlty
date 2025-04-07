@@ -805,7 +805,7 @@ impl<'de> Deserialize<'de> for ExtraPackage {
 }
 
 fn default_plugin_version() -> String {
-    "latest".to_string()
+    "known_good".to_string()
 }
 
 fn default_plugin_drivers() -> Vec<String> {
