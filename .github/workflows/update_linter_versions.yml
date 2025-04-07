@@ -69,6 +69,7 @@ jobs:
           git checkout -b update-linter-versions
           git add --all ':!github_issues.json'
           git commit -m "Update linter versions"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
           git push origin update-linter-versions --force
 
       - name: Install GitHub CLI
