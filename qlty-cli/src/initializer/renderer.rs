@@ -128,7 +128,7 @@ impl Renderer {
         }
 
         if let Some(version) = &plugin.version {
-            if version != "latest" {
+            if version != "known_good" {
                 toml.push_str(&format!("version = \"{}\"\n", version));
             }
         }
@@ -314,7 +314,7 @@ name = "foo"
             &vec![],
             &vec![PluginActivation {
                 name: "foo".to_string(),
-                version: Some("latest".to_string()),
+                version: Some("known_good".to_string()),
                 ..Default::default()
             }],
         );

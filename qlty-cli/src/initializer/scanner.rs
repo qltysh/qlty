@@ -575,7 +575,7 @@ config_files = ["config.toml"]
             .is_some());
 
         let installed_plugin = scanner.plugins.iter().find(|p| p.name == "exists").unwrap();
-        assert_eq!(installed_plugin.version, "latest");
+        assert_eq!(installed_plugin.version, "known_good");
         assert_eq!(installed_plugin.files_count, 7);
         assert_eq!(installed_plugin.config_files.len(), 0);
         assert_eq!(installed_plugin.package_file, None);
@@ -778,7 +778,7 @@ config_files = ["config.toml"]
             .is_some());
 
         let installed_plugin = scanner.plugins.iter().find(|p| p.name == "exists").unwrap();
-        assert_eq!(installed_plugin.version, "latest");
+        assert_eq!(installed_plugin.version, "known_good");
         assert_eq!(installed_plugin.files_count, 7);
         assert_eq!(
             installed_plugin
@@ -810,7 +810,7 @@ config_files = ["config.toml"]
             .is_some());
 
         let installed_plugin = scanner.plugins.iter().find(|p| p.name == "exists").unwrap();
-        assert_eq!(installed_plugin.version, "latest");
+        assert_eq!(installed_plugin.version, "known_good");
         assert_eq!(installed_plugin.files_count, 7);
         assert_eq!(installed_plugin.config_files.len(), 0);
         assert_eq!(installed_plugin.package_file, None);

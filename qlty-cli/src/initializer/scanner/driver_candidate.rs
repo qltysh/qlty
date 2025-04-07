@@ -18,11 +18,11 @@ impl DriverCandidate {
                     key: driver_name.clone(),
                     name: driver_name.clone(),
                     driver: driver.clone(),
-                    version: Self::get_driver_version(driver, plugin_def),
+                    version: Self::get_version(driver),
                 });
             } else {
                 for driver_version in &driver.version {
-                    let version = Self::get_driver_version(driver_version, plugin_def);
+                    let version = Self::get_version(driver_version);
 
                     driver_candidates.push(DriverCandidate {
                         key: format!("{}@{}", driver_name, version),
@@ -37,22 +37,11 @@ impl DriverCandidate {
         driver_candidates
     }
 
-    fn get_driver_version(driver: &DriverDef, plugin: &PluginDef) -> String {
-        let latest_version = plugin.latest_version.clone();
-        let known_good_version = Self::get_known_good_version(driver, plugin);
-
-        if latest_version.as_ref() == known_good_version.as_ref() {
-            "latest".to_owned()
-        } else {
-            known_good_version.unwrap()
-        }
-    }
-
-    fn get_known_good_version(driver: &DriverDef, plugin: &PluginDef) -> Option<String> {
+    fn get_version(driver: &DriverDef) -> String {
         if let Some(driver_known_good_version) = &driver.known_good_version {
-            Some(driver_known_good_version.clone())
+            driver_known_good_version.clone()
         } else {
-            plugin.known_good_version.clone()
+            "known_good".to_string()
         }
     }
 }
