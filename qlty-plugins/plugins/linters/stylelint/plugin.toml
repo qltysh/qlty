@@ -25,7 +25,7 @@ config_files = [
   "stylelintrc.*.yaml",
   "stylelintrc.*.yml",
 ]
-latest_version = "16.17.0"
+latest_version = "16.18.0"
 known_good_version = "14.6.1"
 version_command = "stylelint --version"
 description = "CSS and SASS linter and code formatter"
