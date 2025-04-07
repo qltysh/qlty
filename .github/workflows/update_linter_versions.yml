@@ -56,34 +56,19 @@ jobs:
         working-directory: qlty-plugins/plugins
         run: npm run update-linter-versions
 
-      - name: Set Git config
-        run: |
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-
-      - name: Create a new branch
-        id: create_branch
-        run: |
-          git fetch origin main
-          git checkout main
-          git checkout -b update-linter-versions
-          git add --all ':!github_issues.json'
-          git commit -m "Update linter versions"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-          git push origin update-linter-versions --force
-
-      - name: Install GitHub CLI
-        run: sudo apt-get install gh
-
       - name: Create Pull Request
-        run: |
-          echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
-          PR_EXISTS=$(gh pr list --base main --head update-linter-versions --json number --jq '.[].number')
-          if [ -z "$PR_EXISTS" ]; then
-            gh pr create --base main --head update-linter-versions --title "chore: Update linter versions" --body "This pull request was automatically created by GitHub Actions to update linter versions."
-          else
-            echo "Pull request already exists. PR number: $PR_EXISTS"
-          fi
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: Update linter versions"
+          title: "chore: Update linter versions"
+          body: "This pull request was automatically created by GitHub Actions to update linter versions."
+          branch: update-linter-versions
+          signoff: true
+          sign-commits: true
+          delete-branch: true
+          add-paths: |
+            qlty-plugins/plugins/linters/**
 
       - name: Read Issues and Create in GitHub
         uses: actions/github-script@v6
