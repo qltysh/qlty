@@ -9,7 +9,7 @@ strip_components = 0
 releases = ["vale"]
 config_files = [".vale.ini"]
 file_types = ["ALL"]
-latest_version = "3.11.1"
+latest_version = "3.11.2"
 known_good_version = "3.11.1"
 # v3.6.1 does not return a clean version but is needed for Windows support: https://github.com/errata-ai/vale/issues/863
 # # version_command = "vale --version"
