@@ -2,7 +2,7 @@ config_version = "0"
 
 [plugins.definitions.multi_driver]
 file_types = ["javascript"]
-latest_version = "0.10.0"
+known_good_version = "0.10.0"
 
 [[plugins.definitions.multi_driver.drivers.lint.version]]
 version_matcher = ">=0.10.0"
@@ -21,7 +21,7 @@ name = "multi_driver"
 
 [plugins.definitions.multi_driver_with_issue]
 file_types = ["javascript"]
-latest_version = "0.10.0"
+known_good_version = "0.10.0"
 
 [[plugins.definitions.multi_driver_with_issue.drivers.lint.version]]
 version_matcher = ">=0.10.0"
