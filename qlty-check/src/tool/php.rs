@@ -134,7 +134,11 @@ impl Tool for PhpPackage {
     }
 
     fn version_command(&self) -> Option<String> {
-        self.plugin.version_command.clone()
+        if self.plugin.package_file.is_none() {
+            self.plugin.version_command.clone()
+        } else {
+            None
+        }
     }
 
     fn version_regex(&self) -> String {
