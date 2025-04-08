@@ -48,6 +48,6 @@ fn main() {
         std::env::var("PROFILE").unwrap()
     );
 
-    let build_date = chrono::Utc::now().format("%Y-%m-%d").to_string();
+    let build_date = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
     println!("cargo:rustc-env=BUILD_DATE={}", build_date);
 }
