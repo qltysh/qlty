@@ -17,5 +17,5 @@ runs_from = { type = "target_directory" }
 success_codes = [0, 1, 3]
 output = "stdout"
 output_format = "sarif"
-suggested = "targets"
+suggested = "config"
 output_missing = "parse"
