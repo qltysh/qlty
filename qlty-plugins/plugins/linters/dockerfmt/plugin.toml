@@ -1,0 +1,23 @@
+config_version = "0"
+
+[plugins.releases.dockerfmt]
+github = "reteps/dockerfmt"
+download_type = "targz"
+strip_components = 0
+
+[plugins.definitions.dockerfmt]
+releases = ["dockerfmt"]
+file_types = ["docker"]
+latest_version = "0.2.6"
+known_good_version = "0.2.6"
+version_command = "dockerfmt version"
+description = "Dockerfile format and parser. A modern dockfmt."
+
+[plugins.definitions.dockerfmt.drivers.format]
+script = "dockerfmt --format ${target}"
+success_codes = [0]
+output = "rewrite"
+cache_results = true
+batch = true
+driver_type = "formatter"
+suggested = "targets"
