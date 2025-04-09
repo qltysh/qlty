@@ -54,7 +54,7 @@ pub struct OriginalUriBaseIds {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RootPath {
-    pub uri: String,
+    pub uri: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -145,11 +145,11 @@ impl Sarif {
             };
 
             let artifact_location = &location.physical_location.artifact_location.uri;
-            let path = if let Some(original_uri_base) = original_uri_base_ids {
-                Sarif::merge_paths(&original_uri_base.root_path.uri, artifact_location)
-            } else {
-                artifact_location.into()
-            };
+            let path = original_uri_base_ids
+                .and_then(|original_uri_base| original_uri_base.root_path.uri)
+                .map(|base_uri| Sarif::merge_paths(&base_uri, artifact_location))
+                .unwrap_or_else(|| artifact_location.into());
+
             return Some(Location { path, range });
         }
 
@@ -1011,5 +1011,142 @@ mod test {
               endLine: 21
               endColumn: 14
         "#);
+    }
+
+    #[test]
+    fn parse_brakeman_7_output() {
+        let input = r###"
+{
+    "version": "2.1.0",
+    "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0.json",
+    "runs": [
+      {
+        "tool": {
+          "driver": {
+            "name": "Brakeman",
+            "informationUri": "https://brakemanscanner.org",
+            "semanticVersion": "7.0.2",
+            "rules": [
+              {
+                "id": "BRAKE0120",
+                "name": "EOLRails/Unmaintained Dependency",
+                "fullDescription": {
+                  "text": "Checks for unsupported versions of Rails."
+                },
+                "helpUri": "https://brakemanscanner.org/docs/warning_types/unmaintained_dependency/",
+                "help": {
+                  "text": "More info: https://brakemanscanner.org/docs/warning_types/unmaintained_dependency/.",
+                  "markdown": "[More info](https://brakemanscanner.org/docs/warning_types/unmaintained_dependency/)."
+                },
+                "properties": {
+                  "tags": [
+                    "EOLRails"
+                  ]
+                }
+              },
+              {
+                "id": "BRAKE0013",
+                "name": "Evaluation/Dangerous Eval",
+                "fullDescription": {
+                  "text": "Searches for evaluation of user input."
+                },
+                "helpUri": "https://brakemanscanner.org/docs/warning_types/dangerous_eval/",
+                "help": {
+                  "text": "More info: https://brakemanscanner.org/docs/warning_types/dangerous_eval/.",
+                  "markdown": "[More info](https://brakemanscanner.org/docs/warning_types/dangerous_eval/)."
+                },
+                "properties": {
+                  "tags": [
+                    "Evaluation"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "results": [
+          {
+            "ruleId": "BRAKE0120",
+            "ruleIndex": 0,
+            "level": "error",
+            "message": {
+              "text": "Support for Rails 5.2.8.1 ended on 2022-06-01."
+            },
+            "locations": [
+              {
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "Gemfile.lock",
+                    "uriBaseId": "%SRCROOT%"
+                  },
+                  "region": {
+                    "startLine": 105
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ruleId": "BRAKE0013",
+            "ruleIndex": 1,
+            "level": "error",
+            "message": {
+              "text": "Parameter value evaluated as code."
+            },
+            "locations": [
+              {
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "app/helpers/users_helper.rb",
+                    "uriBaseId": "%SRCROOT%"
+                  },
+                  "region": {
+                    "startLine": 3
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "originalUriBaseIds": {
+          "%SRCROOT%": {
+            "description": {
+              "text": "Base path for application"
+            }
+          }
+        }
+      }
+    ]
+  }
+        "###;
+        let issues = Sarif::default().parse("sarif", input);
+        insta::assert_yaml_snapshot!(issues.unwrap(), @r###"
+        - tool: sarif
+          ruleKey: BRAKE0120
+          message: Support for Rails 5.2.8.1 ended on 2022-06-01.
+          level: LEVEL_HIGH
+          category: CATEGORY_LINT
+          documentationUrl: "https://brakemanscanner.org/docs/warning_types/unmaintained_dependency/"
+          location:
+            path: Gemfile.lock
+            range:
+              startLine: 105
+              startColumn: 1
+              endLine: 105
+              endColumn: 1
+        - tool: sarif
+          ruleKey: BRAKE0013
+          message: Parameter value evaluated as code.
+          level: LEVEL_HIGH
+          category: CATEGORY_LINT
+          documentationUrl: "https://brakemanscanner.org/docs/warning_types/dangerous_eval/"
+          location:
+            path: app/helpers/users_helper.rb
+            range:
+              startLine: 3
+              startColumn: 1
+              endLine: 3
+              endColumn: 1
+        "###);
     }
 }
