@@ -60,13 +60,6 @@ name = "default"
 default = true
 
 [[plugin]]
-name = "checkov"
-
-[[plugin]]
-name = "golangci-lint"
-mode = "comment"
-
-[[plugin]]
 name = "ripgrep"
 mode = "comment"
 
@@ -75,13 +68,6 @@ name = "shellcheck"
 
 [[plugin]]
 name = "shfmt"
-
-[[plugin]]
-name = "trivy"
-drivers = [
-  "config",
-  "fs-vuln",
-]
 
 [[plugin]]
 name = "trufflehog"
