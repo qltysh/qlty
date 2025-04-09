@@ -145,13 +145,12 @@ impl Scanner {
                 }
 
                 if plugin_initializer.matches_workspace_entry(path_osstr) {
-                    let entry: &mut u32 = &mut self
+                    if let Some(entry) = self
                         .plugins_to_activate
-                        .entry(plugin_initializer.plugin_name.to_owned())
-                        .or_default()
-                        .file_count;
-
-                    *entry += 1;
+                        .get_mut(&plugin_initializer.plugin_name)
+                    {
+                        entry.file_count += 1;
+                    }
                 }
 
                 if let Some(plugin_to_activate) = self
