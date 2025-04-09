@@ -1,15 +1,9 @@
 use anyhow::Result;
 use globset::{Glob, GlobSet, GlobSetBuilder};
-use qlty_analysis::{WorkspaceEntry, WorkspaceEntryKind};
-use qlty_check::{
-    executor::staging_area::{Mode, StagingArea},
-    planner::target::TargetFinder,
-};
-use qlty_config::config::{DriverDef, PluginDef, TargetType};
+use qlty_config::config::{DriverDef, PluginDef};
 use std::{
     fmt::Debug,
     path::{Path, PathBuf},
-    time::SystemTime,
 };
 
 use super::{DriverCandidate, Scanner};
@@ -106,8 +100,6 @@ pub struct TargetDriver {
     pub key: String,
     pub driver_name: String,
     pub version: String,
-    pub driver_def: DriverDef,
-    pub workspace_root: PathBuf,
 }
 
 impl TargetDriver {
@@ -124,31 +116,7 @@ impl TargetDriver {
             key: candidate.key,
             driver_name: candidate.name,
             version: candidate.version,
-            driver_def: candidate.driver,
-            workspace_root: scanner.settings.workspace.root.clone(),
         })
-    }
-
-    fn matches_target_def(&self, path: &str) -> bool {
-        let workspace_entry = WorkspaceEntry {
-            path: PathBuf::from(path),
-            kind: WorkspaceEntryKind::File,
-            // attrs below don't matter in this flow
-            content_modified: SystemTime::now(),
-            contents_size: 0,
-            language_name: None,
-        };
-
-        let staging_area = StagingArea::new(
-            self.workspace_root.clone(),
-            self.workspace_root.clone(),
-            Mode::ReadOnly,
-        );
-
-        let target = TargetFinder::new(staging_area, self.driver_def.target.clone())
-            .resolve_target_for_entry(&workspace_entry);
-
-        matches!(target, Ok(Some(_)))
     }
 }
 
@@ -166,10 +134,7 @@ impl DriverInitializer for TargetDriver {
     }
 
     fn is_enabler(&self, path: &str) -> bool {
-        match self.driver_def.target.target_type {
-            TargetType::File | TargetType::Literal => self.is_workspace_entry(path),
-            _ => self.matches_target_def(path),
-        }
+        self.is_workspace_entry(path)
     }
 
     fn is_workspace_entry(&self, path: &str) -> bool {
