@@ -167,7 +167,7 @@ impl DriverInitializer for TargetDriver {
 
     fn is_enabler(&self, path: &str) -> bool {
         match self.driver_def.target.target_type {
-            TargetType::File => self.is_workspace_entry(path),
+            TargetType::File | TargetType::Literal => self.is_workspace_entry(path),
             _ => self.matches_target_def(path),
         }
     }
