@@ -14,7 +14,7 @@ version_command = "dockerfmt version"
 description = "Dockerfile format and parser. A modern dockfmt."
 
 [plugins.definitions.dockerfmt.drivers.format]
-script = "dockerfmt --format ${target}"
+script = "dockerfmt --write ${target}"
 success_codes = [0]
 output = "rewrite"
 cache_results = true
