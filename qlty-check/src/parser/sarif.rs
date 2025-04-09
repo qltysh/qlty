@@ -1014,7 +1014,7 @@ mod test {
     }
 
     #[test]
-    fn parse_brakeman_7_output() {
+    fn parse_missing_uri_in_original_uri_base_ids() {
         let input = r###"
 {
     "version": "2.1.0",
