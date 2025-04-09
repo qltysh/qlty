@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=dockerfmt fixture=Dockerfile version=0.2.6 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_STYLE",
+      "level": "LEVEL_FMT",
+      "location": {
+        "path": "Dockerfile.in",
+      },
+      "message": "Incorrect formatting, autoformat by running \`qlty fmt\`.",
+      "mode": "MODE_BLOCK",
+      "onAddedLine": true,
+      "ruleKey": "fmt",
+      "tool": "dockerfmt",
+    },
+  ],
+}
+`;
