@@ -8,10 +8,6 @@ on:
   pull_request:
     branches:
       - main
-    paths:
-      - ".github/workflows/update_linter_versions.yml"
-      - "qlty-plugins/plugins/scripts/updateLinterVersions.ts"
-      - "qlty-plugins/plugins/scripts/fetchLatestVersion/*.ts"
 
 permissions:
   contents: write
