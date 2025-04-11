@@ -97,7 +97,10 @@ impl Publish {
 
         if let Some(total_parts) = self.total_parts_count {
             if total_parts == 0 {
-                eprintln!("{}", style("Error: total_parts_count must be greater than 0.").red());
+                eprintln!(
+                    "{}",
+                    style("Error: total_parts_count must be greater than 0.").red()
+                );
                 std::process::exit(1);
             }
         }
