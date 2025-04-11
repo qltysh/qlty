@@ -18,4 +18,5 @@ pub struct Settings {
     pub strip_prefix: Option<String>,
 
     pub skip_missing_files: bool,
+    pub total_parts_count: Option<u32>,
 }

@@ -83,12 +83,24 @@ pub struct Publish {
 
     #[arg(long, hide = true)]
     pub skip_missing_files: bool,
+
+    #[arg(long)]
+    /// The total number of parts that qlty cloud should expect. Each call to qlty publish will upload one part.
+    /// (The total parts count is per coverage tag e.g. if you have 2 tags each with 3 parts, you should set this to 3)
+    pub total_parts_count: Option<u32>,
 }
 
 impl Publish {
     // TODO: Use CommandSuccess and CommandError, which is not straight forward since those types aren't available here.
     pub fn execute(&self, _args: &crate::Arguments) -> Result<CommandSuccess, CommandError> {
         self.print_initial_messages();
+
+        if let Some(total_parts) = self.total_parts_count {
+            if total_parts == 0 {
+                eprintln!("{}", style("Error: total_parts_count must be greater than 0.").red());
+                std::process::exit(1);
+            }
+        }
 
         let token = match self.load_auth_token() {
             Ok(token) => token,
@@ -99,7 +111,7 @@ impl Publish {
         };
 
         eprintln_unless!(self.quiet, "  Retrieving CI metadata...");
-        let plan = Planner::new(
+        let plan: qlty_coverage::publish::Plan = Planner::new(
             &Self::load_config(),
             &Settings {
                 override_build_id: self.override_build_id.clone(),
@@ -112,6 +124,7 @@ impl Publish {
                 report_format: self.report_format,
                 paths: self.paths.clone(),
                 skip_missing_files: self.skip_missing_files,
+                total_parts_count: self.total_parts_count,
             },
         )
         .compute()?;
@@ -315,6 +328,7 @@ mod tests {
             quiet: true,
             paths: vec![],
             skip_missing_files: false,
+            total_parts_count: None,
         }
     }
 
