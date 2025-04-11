@@ -114,7 +114,7 @@ impl Publish {
         };
 
         eprintln_unless!(self.quiet, "  Retrieving CI metadata...");
-        let plan: qlty_coverage::publish::Plan = Planner::new(
+        let plan = Planner::new(
             &Self::load_config(),
             &Settings {
                 override_build_id: self.override_build_id.clone(),
