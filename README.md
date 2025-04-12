@@ -106,8 +106,7 @@ Auto-format the codebase:
 qlty fmt --all
 ```
 
-### Maintinability and quality metrics
-
+### Maintainability and quality metrics
 Scan for code smells like duplication:
 
 ```bash
