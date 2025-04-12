@@ -1,38 +1,89 @@
 # Qlty CLI
 
-Qlty CLI is a multi-language code linter, auto-formatter, and security scanner.
+## Universal linting, auto-formatting, maintainability, and security scanning
 
-Engineering teams use Qlty CLI for static analysis and auto-formatting of all of their code using a single tool with fast, consistent results.
+[Qlty CLI](https://qlty.sh) is a multi-language code quality CLI for linting, auto-formatting, maintainability, and security with support for 50+ static analysis tools.
 
-As a Git-aware tool, Qlty CLI makes adopting linting into the development workflow easy by limiting results to only _new_ issues.
+With Qlty CLI, polyglot team can take advantage of the best code quality static analysis with fast, consistent, and unified results through a single tool. Configuration is done through a simple `.qlty/qlty.toml` file in your repository, which can be auto-generated based on the languages you use.
 
-Qlty CLI is implemented in Rust, supported by [Qlty Software](https://qlty.sh), free to use, and is published under a [Fair Source](https://fair.io/) license.
+The Qlty CLI and this Visual Studio Code extension are **completely free for all use**, including for commercial projects, with no limits on contributors.
 
-## Features
+## 📖 Table of Contents
 
-- 🐞 Linting (for every programming language)
-- 🖌️ Auto-formatting
-- 🚨 Security scanning (IaC, SAST, SCA, and more)
-- 📊 Complexity metrics and duplication
-- 💩 Maintainability smells
+- [✨ Key Features](TODO)
+- [🚀 Quick Start](TODO)
+  - [📦 Installation](TODO)
+  - [Setting up Qlty in a new repository](TODO)
+  - [Linting and auto-formatting](TODO)
+  - [Maintinability and quality metrics](TODO)
+  - [Configuration](TODO)
+- [🧹 Available Linters](TODO)
+- [🖥️ System Requirements](TODO)
+- [🛟 Help or Feedback](TODO)
+- [🧑‍💻 Contributing](TODO)
+- [⚖️ License](TODO)
 
-## Installation
+## ✨ Key Features
 
-Qlty CLI is available for MacOS, Linux, and Windows.
+### What We Do
 
-### Install on MacOS or Linux
+| | Feature | Advantage |
+|-----|-----|-----|
+| 🐛 | Linting | Comprehensive language support in one tool |
+| 🖌️ | Auto-formatting | Consistent code style everywhere |
+| 💩 | Maintainability | Code smells like copy-paste detection and complexity |
+| 🚨 | Security scanning | SAST, SCA, secret detection, IaC analysis, and more |
+| 🚦 | Code coverage | Total coverage and diff coverage |
+| 📊 | Quality metrics | Complexity, duplication, LOC, etc. |
+
+### How We Do It
+
+| | Feature | Advantage |
+|-----|-----|-----|
+| 🌲 | Git-aware | Focus on newly introduced quality issues |
+| ⚡ | Auto-initialization | Get up and running in two minutes |
+| ✅ | Autofixes | Including tool-generated and AI-generated fixes |
+| ⚙️ | Config as code | Version controlled with maximum flexibility |
+| 🏎️ | Caching and concurrency | The absolute fastest way to run static analysis |
+| 🪝 | Git hooks | Integrate with pre-commit and pre-push hooks |
+| 🤖 | Pull request reviews | Automated feedback in comments and statuses |
+| 🌐 | Runs anywhere | Mac, Linux, and Windows with no dependency on Docker |
+| 🦀 | Written in Rust | Fast execution and easy to contribute |
+| 🎁 | 100% free | Including for commercial projects, with no contibutor limits |
+| ⚖️ | Fair Source | Public on GitHub with delayed open source publication (DOSP). PRs accepted! |
+
+💡 Learn more in the [Documentation]().
+
+### Qlty Software: Code quality and coverage done right
+
+Qlty CLI is part of Qlty Software's comprehensive platform for code quality. Bring code quality into every step of your software devleopment workflow with:
+
+- [Qlty CLI](https://github.com/qltysh/qlty) -- Polyglot code quality CLI written in Rust 
+- [Qlty Cloud](https://qlty.sh) -- Automated code review and quality trends
+- [Visual Studio Code Extension](TODO) -- Linting and auto-formatting in your IDE
+- [GitHub Action](https://github.com/qltysh/qlty-action) -- Run Qlty CLI within your CI workflows
+- [Chrome and Firefox Extension](TODO) -- Adds code coverage data to GitHub.com
+
+## 🚀 Quick Start
+
+### Installation
+
+The fastest way to install Qlty CLI is using our installer scripts which install our native binaries:
 
 ```bash
-curl https://qlty.sh | bash
-```
+# Install on MacOS or Linux
+curl https://qlty.sh | bash 
 
-### Install on Windows
 
-```bash
+# Install on Windows
 powershell -c "iwr https://qlty.sh | iex"
 ```
 
-## Usage
+We also package the CLI as a [Docker image](https://github.com/qltysh/qlty/pkgs/container/qlty) on GitHub Container Registry (GHCR).
+
+_Note:_ To achieve the fastest performance, the Qlty CLI does _not_ depend on running linters via Docker. The Docker packages are for cases where running Docker containers is preferred over native binaries.
+
+### Setting up Qlty in a new repository
 
 Setup Qlty within a Git repository:
 
@@ -40,6 +91,8 @@ Setup Qlty within a Git repository:
 cd my_repo/
 qlty init
 ```
+
+### Linting and auto-formatting
 
 View a sample of lint issues:
 
@@ -53,6 +106,8 @@ Auto-format the codebase:
 qlty fmt --all
 ```
 
+### Maintinability and quality metrics
+
 Scan for code smells like duplication:
 
 ```bash
@@ -65,38 +120,39 @@ Review a summary of code quality metrics:
 qlty metrics --all --max-depth=2 --sort complexity --limit 10
 ```
 
-## Plugins
-
-Qlty CLI is powered by a set of 40+ plugins for static analysis tools like linters, auto-formatters, and security scanners. Plugin definitions can be found in the [`plugins/linters` directory](https://github.com/qltysh/qlty/tree/main/qlty-plugins/plugins/linters/).
-
-Creating a plugin can be as easy as writing a small plugin definition TOML file. If the tool has a custom output format (instead of a standard like [SARIF](https://sarifweb.azurewebsites.net/)), then writing a simple output parser in Rust is also needed.
-
-We also happily accept requests for new plugins via [GitHub issues](https://github.com/qltysh/qlty/issues/new/choose).
-
-## Configuration
+### Configuration
 
 Qlty CLI is configured using a `.qlty/qlty.toml` file in your Git repository. You can generate a default configuration with `qlty init` and then customize it.
 
 Read our documentation about [configuration](https://docs.qlty.sh/analysis-configuration) for more information.
 
-## Development
+## 🧹 Available Linters
 
-Developing on Qlty CLI requires a working [Rust toolchain](https://rustup.rs/).
+Over X,000 code quality rules are available via the Qlty CLI through its 50+ linter plugins.
 
-```bash
-cargo build
-cargo test
+<!-- Qlty CLI is powered by a set of 40+ plugins for static analysis tools like linters, auto-formatters, and security scanners. Plugin definitions can be found in the [`plugins/linters` directory](https://github.com/qltysh/qlty/tree/main/qlty-plugins/plugins/linters/). -->
+
+To enable new plugins by adding them to your `.qlty/qlty.toml` file run:
+
+```sh
+qlty plugins enable <NAME>
 ```
 
-## Contributing
+| Technology | Available code quality tools |
+|-|-|
+| TODO | TODO|
 
-1. Read the Guide to Contributing in [CONTRIBUTING.md](https://github.com/qltysh/qlty/blob/main/CONTRIBUTING.md)
-2. Fork the repository and
-3. Submit a pull request.
+The full list of plugins are available on GitHub. LINK.
 
-Contributions require agreeing to our [Contributor License Agreement](https://gist.github.com/brynary/00d59e41ffd852636a2f8a8f5f5aa69b) (CLA).
+## 🖥️ System Requirements
 
-## Support
+Qlty CLI is available for MacOS, Linux, and Windows on x86 and ARM platforms.
+
+### Additional requirements for PHP linters
+
+Certain PHP linters require a working installation of PHP available in your `$PATH`. To install PHP, use [Homebrew](https://brew.sh/) or an alternative method.
+
+## 🛟 Help or Feedback
 
 - Read the [documentation](https://docs.qlty.sh)
 - Join our [Discord](https://qlty.sh/discord) chat
@@ -105,16 +161,33 @@ Contributions require agreeing to our [Contributor License Agreement](https://gi
 - [Bug reports](https://github.com/qltysh/qlty/issues/new/choose) via GitHub Issues
 - [Plugin request](https://github.com/qltysh/qlty/issues/new/choose) via GitHub Issues
 
-## License
+## 🧑‍💻 Contributing
 
-Qlty CLI is licensed under the Qlty Source License, which is a Fair Source license that is a fork of the version of the Functional Source License (FSL). Qlty CLI is free to use, modify, and distribute in accordance with the FSL.
+### Adding plugins
+
+Creating a plugin can be as easy as writing a small plugin definition TOML file. If the tool has a custom output format (instead of a standard like [SARIF](https://sarifweb.azurewebsites.net/)), then writing a simple output parser in Rust is also needed.
+
+We also happily accept requests for new plugins via [GitHub issues](https://github.com/qltysh/qlty/issues/new/choose).
+
+### Developing the CLI
+
+Developing on Qlty CLI requires a working [Rust toolchain](https://rustup.rs/) and adheres to the standard Rust development process:
+
+```bash
+git clone https://github.com/qltysh/qlty.git
+cd qlty
+cargo build
+cargo test
+```
+
+## ⚖️ License
+
+Qlty CLI is licensed under the Business Source License 1.1 (BSL). Qlty CLI is free to use, modify, and distribute in accordance with the BSL.
 
 This codebase transitions into Open Source via a Delayed Open Source Publication (DOSP). More details are available in LICENSE.md.
 
-Licenses for code incorporated into Qlty CLI can be found in the docs/licenses folder.
-
-## Acknowledgments
+### Acknowledgements
 
 We would like to thank all of the developers of code quality tooling like linters and meta-linters as well as everyone who has contributed to the field of open source static analysis. Qlty CLI stands on the shoulders of decades of this excellent work.
 
-Development of Qlty CLI is sponsored by [Qlty Software](https://qlty.sh).
+Licenses for code incorporated into Qlty CLI can be found in the docs/licenses folder.

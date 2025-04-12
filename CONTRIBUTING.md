@@ -47,6 +47,8 @@ The community will be able to reply right away, and the Qlty team aims to reply 
 > ### Legal Notice
 >
 > When contributing to this project, you must agree that you have authored 100% of the content, that you have the necessary rights to the content and that the content you contribute may be provided under the project license.
+>
+> Contributions require agreeing to our [Contributor License Agreement](https://gist.github.com/brynary/00d59e41ffd852636a2f8a8f5f5aa69b) (CLA).
 
 ### Reporting Bugs
 
