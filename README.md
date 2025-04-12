@@ -56,7 +56,7 @@ The Qlty CLI and this Visual Studio Code extension are **completely free for all
 
 ### Qlty Software: Code quality and coverage done right
 
-Qlty CLI is part of Qlty Software's comprehensive platform for code quality. Bring code quality into every step of your software devleopment workflow with:
+Qlty CLI is part of Qlty Software's comprehensive platform for code quality. Bring code quality into every step of your software development workflow with:
 
 - [Qlty CLI](https://github.com/qltysh/qlty) -- Polyglot code quality CLI written in Rust 
 - [Qlty Cloud](https://qlty.sh) -- Automated code review and quality trends
