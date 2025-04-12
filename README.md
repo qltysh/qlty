@@ -140,7 +140,42 @@ qlty plugins enable <NAME>
 
 | Technology | Available code quality tools |
 |-|-|
-| TODO | TODO|
+| All files | gitleaks, ripgrep, semgrep, trivy, trufflehog, vale |
+| Apex | pmd |
+| C/C++ | osv-scanner, trivy |
+| CloudFormation | checkov |
+| CoffeeScript | coffeelint |
+| CSS | biome, prettier, stylelint |
+| Dart | osv-scanner, trivy |
+| Docker | checkov, dockerfmt, hadolint, radarlint, trivy |
+| Dotenv | dotenv-linter |
+| Elixer | osv-scanner, trivy |
+| Erlang | osv-scanner, trivy |
+| GitHub Actions | actionlint |
+| Go | gofmt, golangci-lint, osv-scanner, radarlint |
+| GraphQL | prettier |
+| HTML | prettier |
+| Java | checkstyle, google-java-format, osv-scanner, pmd, radarlint, trivy |
+| JavaScript | biome, eslint, knip, osv-scanner, oxc, prettier, radarlint, trivy |
+| JSON | biome, prettier |
+| Kotlin | osv-scanner, radarlint, trivy |
+| Kubernetes | kube-linter |
+| Markdown | markdownlint, prettier |
+| OpenAPI | redocly |
+| PHP | osv-scanner, php-codesniffer, php-cs-fixer, phpstan, radarlint, trivy |
+| Prisma | prisma |
+| Python | bandit, black, flake8, mypy, osv-scanner, radarlint, ruff, trivy |
+| R | osv-scanner, trivy |
+| Ruby | brakeman, osv-scanner, radarlint, reek, rubocop, ruby-stree, standardrb, trivy |
+| Rust | clippy, osv-scanner, rustfmt, trivy |
+| SASS | prettier, stylelint |
+| Scala | radarlint |
+| Shell | shellcheck, shfmt |
+| SQL | sqlfluff |
+| Swift | swiftlint | 
+| Terraform | checkov, osv-scanner, radarlint, radarlint, tflint, trivy, trivy |
+| TypeScript | biome, eslint, knip, oxc, prettier |
+| YAML | prettier, trivy, yamllint |
 
 The full list of plugins are available on GitHub. LINK.
 
@@ -180,11 +215,17 @@ cargo build
 cargo test
 ```
 
+### More information
+
+More information about how to contribute can be found in CONTRIBUTING.md.
+
+Reports of security vulnerabilities should be handled with the process outlined in SECURITY.md.
+
 ## ⚖️ License
 
-Qlty CLI is licensed under the Business Source License 1.1 (BSL). Qlty CLI is free to use, modify, and distribute in accordance with the BSL.
+Qlty CLI is published under a [Fair Source](https://fair.io/) license. As Fair Source, the Qlty CLI is free to use (including in commercial contexts), modify, and distribute in accordance with its license.
 
-This codebase transitions into Open Source via a Delayed Open Source Publication (DOSP). More details are available in LICENSE.md.
+This code is made available under the Business Source License 1.1 (BSL) and transitions into Open Source via a Delayed Open Source Publication (DOSP). More details are available in LICENSE.md.
 
 ### Acknowledgements
 
