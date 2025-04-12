@@ -49,7 +49,7 @@ The Qlty CLI and this Visual Studio Code extension are **completely free for all
 | 🤖 | Pull request reviews | Automated feedback in comments and statuses |
 | 🌐 | Runs anywhere | Mac, Linux, and Windows with no dependency on Docker |
 | 🦀 | Written in Rust | Fast execution and easy to contribute |
-| 🎁 | 100% free | Including for commercial projects, with no contibutor limits |
+| 🎁 | 100% free | Including for commercial projects, with no contributor limits |
 | ⚖️ | Fair Source | Public on GitHub with delayed open source publication (DOSP). PRs accepted! |
 
 💡 Learn more in the [Documentation]().
