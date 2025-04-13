@@ -52,7 +52,7 @@ The Qlty CLI and this Visual Studio Code extension are **completely free for all
 | 🎁 | 100% free | Including for commercial projects, with no contributor limits |
 | ⚖️ | Fair Source | Public on GitHub with delayed open source publication (DOSP). PRs accepted! |
 
-💡 Learn more in the [Documentation]().
+💡 Learn more in the [Documentation](https://docs.qlty.sh/).
 
 ### Qlty Software: Code quality and coverage done right
 
