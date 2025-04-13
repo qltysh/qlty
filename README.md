@@ -10,18 +10,18 @@ The Qlty CLI and this Visual Studio Code extension are **completely free for all
 
 ## 📖 Table of Contents
 
-- [✨ Key Features](TODO)
-- [🚀 Quick Start](TODO)
-  - [📦 Installation](TODO)
-  - [Setting up Qlty in a new repository](TODO)
-  - [Linting and auto-formatting](TODO)
-  - [Maintinability and quality metrics](TODO)
-  - [Configuration](TODO)
-- [🧹 Available Linters](TODO)
-- [🖥️ System Requirements](TODO)
-- [🛟 Help or Feedback](TODO)
-- [🧑‍💻 Contributing](TODO)
-- [⚖️ License](TODO)
+- [✨ Key Features](#-key-features)
+- [🚀 Quick Start](#-quick-start)
+  - [📦 Installation](#-quick-start)
+  - [Setting up Qlty in a new repository](#setting-up-qlty-in-a-new-repository)
+  - [Linting and auto-formatting](#linting-and-auto-formatting)
+  - [Maintinability and quality metrics](#maintainability-and-quality-metrics)
+  - [Configuration](#configuration)
+- [🧹 Available Linters](#-available-linters)
+- [🖥️ System Requirements](#-system-requirements)
+- [🛟 Help or Feedback](#-help-or-feedback)
+- [🧑‍💻 Contributing](#-contributing)
+- [⚖️ License](#️-license)
 
 ## ✨ Key Features
 
@@ -60,9 +60,9 @@ Qlty CLI is part of Qlty Software's comprehensive platform for code quality. Bri
 
 - [Qlty CLI](https://github.com/qltysh/qlty) -- Polyglot code quality CLI written in Rust 
 - [Qlty Cloud](https://qlty.sh) -- Automated code review and quality trends
-- [Visual Studio Code Extension](TODO) -- Linting and auto-formatting in your IDE
+- [Visual Studio Code Extension](https://github.com/qltysh/qlty-vscode) -- Linting and auto-formatting in your IDE
 - [GitHub Action](https://github.com/qltysh/qlty-action) -- Run Qlty CLI within your CI workflows
-- [Chrome and Firefox Extension](TODO) -- Adds code coverage data to GitHub.com
+- [Chrome and Firefox Extension](https://github.com/qltysh/qlty-browser) -- Adds code coverage data to GitHub.com
 
 ## 🚀 Quick Start
 
