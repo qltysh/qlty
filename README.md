@@ -18,7 +18,7 @@ The Qlty CLI and this Visual Studio Code extension are **completely free for all
   - [Maintinability and quality metrics](#maintainability-and-quality-metrics)
   - [Configuration](#configuration)
 - [🧹 Available Linters](#-available-linters)
-- [🖥️ System Requirements](#-system-requirements)
+- [🖥️ System Requirements](#%EF%B8%8F-system-requirements)
 - [🛟 Help or Feedback](#-help-or-feedback)
 - [🧑‍💻 Contributing](#-contributing)
 - [⚖️ License](#️-license)
