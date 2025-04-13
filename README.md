@@ -127,9 +127,7 @@ Read our documentation about [configuration](https://docs.qlty.sh/analysis-confi
 
 ## 🧹 Available Linters
 
-Over X,000 code quality rules are available via the Qlty CLI through its 50+ linter plugins.
-
-<!-- Qlty CLI is powered by a set of 40+ plugins for static analysis tools like linters, auto-formatters, and security scanners. Plugin definitions can be found in the [`plugins/linters` directory](https://github.com/qltysh/qlty/tree/main/qlty-plugins/plugins/linters/). -->
+Over 20,000 code quality rules are available via the Qlty CLI through its 60+ linter plugins.
 
 To enable new plugins by adding them to your `.qlty/qlty.toml` file run:
 
