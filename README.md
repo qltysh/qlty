@@ -174,7 +174,7 @@ qlty plugins enable <NAME>
 | TypeScript | biome, eslint, knip, oxc, prettier |
 | YAML | prettier, trivy, yamllint |
 
-The full list of plugins are available on GitHub. LINK.
+The [full list of plugins](https://github.com/qltysh/qlty/tree/main/qlty-plugins/plugins/linters) is available on GitHub.
 
 ## 🖥️ System Requirements
 
