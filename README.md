@@ -27,30 +27,30 @@ The Qlty CLI and this Visual Studio Code extension are **completely free for all
 
 ### What We Do
 
-| | Feature | Advantage |
-|-----|-----|-----|
-| 🐛 | Linting | Comprehensive language support in one tool |
-| 🖌️ | Auto-formatting | Consistent code style everywhere |
-| 💩 | Maintainability | Code smells like copy-paste detection and complexity |
-| 🚨 | Security scanning | SAST, SCA, secret detection, IaC analysis, and more |
-| 🚦 | Code coverage | Total coverage and diff coverage |
-| 📊 | Quality metrics | Complexity, duplication, LOC, etc. |
+|     | Feature           | Advantage                                            |
+| --- | ----------------- | ---------------------------------------------------- |
+| 🐛  | Linting           | Comprehensive language support in one tool           |
+| 🖌️  | Auto-formatting   | Consistent code style everywhere                     |
+| 💩  | Maintainability   | Code smells like copy-paste detection and complexity |
+| 🚨  | Security scanning | SAST, SCA, secret detection, IaC analysis, and more  |
+| 🚦  | Code coverage     | Total coverage and diff coverage                     |
+| 📊  | Quality metrics   | Complexity, duplication, LOC, etc.                   |
 
 ### How We Do It
 
-| | Feature | Advantage |
-|-----|-----|-----|
-| 🌲 | Git-aware | Focus on newly introduced quality issues |
-| ⚡ | Auto-initialization | Get up and running in two minutes |
-| ✅ | Autofixes | Including tool-generated and AI-generated fixes |
-| ⚙️ | Config as code | Version controlled with maximum flexibility |
-| 🏎️ | Caching and concurrency | The absolute fastest way to run static analysis |
-| 🪝 | Git hooks | Integrate with pre-commit and pre-push hooks |
-| 🤖 | Pull request reviews | Automated feedback in comments and statuses |
-| 🌐 | Runs anywhere | Mac, Linux, and Windows with no dependency on Docker |
-| 🦀 | Written in Rust | Fast execution and easy to contribute |
-| 🎁 | 100% free | Including for commercial projects, with no contributor limits |
-| ⚖️ | Fair Source | Public on GitHub with delayed open source publication (DOSP). PRs accepted! |
+|     | Feature                 | Advantage                                                                   |
+| --- | ----------------------- | --------------------------------------------------------------------------- |
+| 🌲  | Git-aware               | Focus on newly introduced quality issues                                    |
+| ⚡  | Auto-initialization     | Get up and running in two minutes                                           |
+| ✅  | Autofixes               | Including tool-generated and AI-generated fixes                             |
+| ⚙️  | Config as code          | Version controlled with maximum flexibility                                 |
+| 🏎️  | Caching and concurrency | The absolute fastest way to run static analysis                             |
+| 🪝  | Git hooks               | Integrate with pre-commit and pre-push hooks                                |
+| 🤖  | Pull request reviews    | Automated feedback in comments and statuses                                 |
+| 🌐  | Runs anywhere           | Mac, Linux, and Windows with no dependency on Docker                        |
+| 🦀  | Written in Rust         | Fast execution and easy to contribute                                       |
+| 🎁  | 100% free               | Including for commercial projects, with no contributor limits               |
+| ⚖️  | Fair Source             | Public on GitHub with delayed open source publication (DOSP). PRs accepted! |
 
 💡 Learn more in the [Documentation](https://docs.qlty.sh/).
 
@@ -58,7 +58,7 @@ The Qlty CLI and this Visual Studio Code extension are **completely free for all
 
 Qlty CLI is part of Qlty Software's comprehensive platform for code quality. Bring code quality into every step of your software development workflow with:
 
-- [Qlty CLI](https://github.com/qltysh/qlty) -- Polyglot code quality CLI written in Rust 
+- [Qlty CLI](https://github.com/qltysh/qlty) -- Polyglot code quality CLI written in Rust
 - [Qlty Cloud](https://qlty.sh) -- Automated code review and quality trends
 - [Visual Studio Code Extension](https://github.com/qltysh/qlty-vscode) -- Linting and auto-formatting in your IDE
 - [GitHub Action](https://github.com/qltysh/qlty-action) -- Run Qlty CLI within your CI workflows
@@ -72,7 +72,7 @@ The fastest way to install Qlty CLI is using our installer scripts which install
 
 ```bash
 # Install on MacOS or Linux
-curl https://qlty.sh | bash 
+curl https://qlty.sh | bash
 
 
 # Install on Windows
@@ -107,6 +107,7 @@ qlty fmt --all
 ```
 
 ### Maintainability and quality metrics
+
 Scan for code smells like duplication:
 
 ```bash
@@ -135,44 +136,44 @@ To enable new plugins by adding them to your `.qlty/qlty.toml` file run:
 qlty plugins enable <NAME>
 ```
 
-| Technology | Available code quality tools |
-|-|-|
-| All files | gitleaks, ripgrep, semgrep, trivy, trufflehog, vale |
-| Apex | pmd |
-| C/C++ | osv-scanner, trivy |
-| CloudFormation | checkov |
-| CoffeeScript | coffeelint |
-| CSS | biome, prettier, stylelint |
-| Dart | osv-scanner, trivy |
-| Docker | checkov, dockerfmt, hadolint, radarlint, trivy |
-| Dotenv | dotenv-linter |
-| Elixer | osv-scanner, trivy |
-| Erlang | osv-scanner, trivy |
-| GitHub Actions | actionlint |
-| Go | gofmt, golangci-lint, osv-scanner, radarlint |
-| GraphQL | prettier |
-| HTML | prettier |
-| Java | checkstyle, google-java-format, osv-scanner, pmd, radarlint, trivy |
-| JavaScript | biome, eslint, knip, osv-scanner, oxc, prettier, radarlint, trivy |
-| JSON | biome, prettier |
-| Kotlin | osv-scanner, radarlint, trivy |
-| Kubernetes | kube-linter |
-| Markdown | markdownlint, prettier |
-| OpenAPI | redocly |
-| PHP | osv-scanner, php-codesniffer, php-cs-fixer, phpstan, radarlint, trivy |
-| Prisma | prisma |
-| Python | bandit, black, flake8, mypy, osv-scanner, radarlint, ruff, trivy |
-| R | osv-scanner, trivy |
-| Ruby | brakeman, osv-scanner, radarlint, reek, rubocop, ruby-stree, standardrb, trivy |
-| Rust | clippy, osv-scanner, rustfmt, trivy |
-| SASS | prettier, stylelint |
-| Scala | radarlint |
-| Shell | shellcheck, shfmt |
-| SQL | sqlfluff |
-| Swift | swiftlint | 
-| Terraform | checkov, osv-scanner, radarlint, radarlint, tflint, trivy, trivy |
-| TypeScript | biome, eslint, knip, oxc, prettier |
-| YAML | prettier, trivy, yamllint |
+| Technology     | Available code quality tools                                                   |
+| -------------- | ------------------------------------------------------------------------------ |
+| All files      | gitleaks, ripgrep, semgrep, trivy, trufflehog, vale                            |
+| Apex           | pmd                                                                            |
+| C/C++          | osv-scanner, trivy                                                             |
+| CloudFormation | checkov                                                                        |
+| CoffeeScript   | coffeelint                                                                     |
+| CSS            | biome, prettier, stylelint                                                     |
+| Dart           | osv-scanner, trivy                                                             |
+| Docker         | checkov, dockerfmt, hadolint, radarlint, trivy                                 |
+| Dotenv         | dotenv-linter                                                                  |
+| Elixer         | osv-scanner, trivy                                                             |
+| Erlang         | osv-scanner, trivy                                                             |
+| GitHub Actions | actionlint                                                                     |
+| Go             | gofmt, golangci-lint, osv-scanner, radarlint                                   |
+| GraphQL        | prettier                                                                       |
+| HTML           | prettier                                                                       |
+| Java           | checkstyle, google-java-format, osv-scanner, pmd, radarlint, trivy             |
+| JavaScript     | biome, eslint, knip, osv-scanner, oxc, prettier, radarlint, trivy              |
+| JSON           | biome, prettier                                                                |
+| Kotlin         | osv-scanner, radarlint, trivy                                                  |
+| Kubernetes     | kube-linter                                                                    |
+| Markdown       | markdownlint, prettier                                                         |
+| OpenAPI        | redocly                                                                        |
+| PHP            | osv-scanner, php-codesniffer, php-cs-fixer, phpstan, radarlint, trivy          |
+| Prisma         | prisma                                                                         |
+| Python         | bandit, black, flake8, mypy, osv-scanner, radarlint, ruff, trivy               |
+| R              | osv-scanner, trivy                                                             |
+| Ruby           | brakeman, osv-scanner, radarlint, reek, rubocop, ruby-stree, standardrb, trivy |
+| Rust           | clippy, osv-scanner, rustfmt, trivy                                            |
+| SASS           | prettier, stylelint                                                            |
+| Scala          | radarlint                                                                      |
+| Shell          | shellcheck, shfmt                                                              |
+| SQL            | sqlfluff                                                                       |
+| Swift          | swiftlint                                                                      |
+| Terraform      | checkov, osv-scanner, radarlint, radarlint, tflint, trivy, trivy               |
+| TypeScript     | biome, eslint, knip, oxc, prettier                                             |
+| YAML           | prettier, trivy, yamllint                                                      |
 
 The [full list of plugins](https://github.com/qltysh/qlty/tree/main/qlty-plugins/plugins/linters) is available on GitHub.
 
