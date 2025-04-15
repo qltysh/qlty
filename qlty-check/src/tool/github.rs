@@ -196,25 +196,10 @@ impl GitHubRelease {
         &self,
         candidates: &[GitHubReleaseAsset],
     ) -> Option<GitHubReleaseAsset> {
-        let mut result = candidates
+        candidates
             .iter()
-            .find(|a| self.is_x86_64(&a.name) && self.is_windows(&a.name))
-            .cloned();
-        if result.is_none() {
-            // FIXME(loren): hacky solution to find non-Windows suffixed zip files. This works for shellcheck,
-            // but may break apart for other tools.
-            result = candidates
-                .iter()
-                .find(|a| {
-                    a.name.ends_with(".zip")
-                        && !self.is_macos(&a.name)
-                        && !self.is_linux(&a.name)
-                        && !self.is_aarch64(&a.name)
-                })
-                .cloned();
-        }
-
-        result
+            .find(|a| !self.is_aarch64(&a.name) && self.is_windows(&a))
+            .cloned()
     }
 
     fn windows_aarch64_asset(
@@ -223,7 +208,7 @@ impl GitHubRelease {
     ) -> Option<GitHubReleaseAsset> {
         candidates
             .iter()
-            .find(|a| self.is_aarch64(&a.name) && self.is_windows(&a.name))
+            .find(|a| self.is_aarch64(&a.name) && self.is_windows(&a))
             .cloned()
     }
 
@@ -249,18 +234,36 @@ impl GitHubRelease {
         filename.to_lowercase().contains("macos") || filename.to_lowercase().contains("darwin")
     }
 
-    fn is_windows(&self, filename: &str) -> bool {
-        filename.to_lowercase().contains("windows")
+    fn is_windows(&self, candidate: &GitHubReleaseAsset) -> bool {
+        candidate.name.to_lowercase().contains("windows")
+            || self
+                .allowed_content_types_windows()
+                .contains(&candidate.content_type)
+            // FIXME(loren): hacky solution to find non-Windows suffixed zip files. This works for shellcheck,
+            // but may break apart for other tools.
+            || (candidate.name.ends_with(".zip")
+                && !self.is_macos(&candidate.name)
+                && !self.is_linux(&candidate.name))
     }
 
     fn allowed_content_types(&self) -> Vec<String> {
         [
             "application/octet-stream",
             "application/gzip",
-            "application/x-ms-dos-executable",
             "application/x-gtar",
             "application/x-xz",
             "application/zip",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .chain(self.allowed_content_types_windows())
+        .collect::<Vec<_>>()
+    }
+
+    fn allowed_content_types_windows(&self) -> Vec<String> {
+        [
+            "application/x-ms-dos-executable",
+            "application/x-msdownload",
         ]
         .iter()
         .map(|s| s.to_string())
@@ -446,20 +449,22 @@ mod test {
         );
 
         let tests = vec![
-            ("tool-v0.7.0.windows.x86_64.zip", true),
-            ("tool-v0.7.0.zip", true),
-            ("tool-v0.7.0.tar.gz", false),
-            ("tool-v0.7.0.linux.zip", false),
-            ("tool-v0.7.0.linux.x86_64.zip", false),
-            ("tool-v0.7.0.linux.x86_64.tar.gz", false),
-            ("tool-v0.7.0.macos.x86_64.zip", false),
-            ("tool-v0.7.0.aarch64.tar.gz", false),
+            ("tool-v0.7.0.windows.x86_64.zip", "application/zip", true),
+            ("any_filename.ext", "application/x-msdownload", true),
+            ("any_filename.ext", "application/x-ms-dos-executable", true),
+            ("tool-v0.7.0.zip", "application/zip", true),
+            ("tool-v0.7.0.tar.gz", "application/gzip", false),
+            ("tool-v0.7.0.linux.zip", "application/zip", false),
+            ("tool-v0.7.0.linux.x86_64.zip", "application/zip", false),
+            ("tool-v0.7.0.linux.x86_64.tar.gz", "application/gzip", false),
+            ("tool-v0.7.0.macos.x86_64.zip", "application/zip", false),
+            ("tool-v0.7.0.aarch64.tar.gz", "application/gzip", false),
         ];
 
-        for (name, matches) in tests {
+        for (name, content_type, matches) in tests {
             let asset = GitHubReleaseAsset {
                 name: name.into(),
-                content_type: "application/zip".into(),
+                content_type: content_type.into(),
                 browser_download_url: "https://example.org".into(),
             };
 
