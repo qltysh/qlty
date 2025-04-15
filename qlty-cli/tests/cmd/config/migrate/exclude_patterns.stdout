@@ -1,0 +1,24 @@
+config_version = "0"
+exclude_patterns = ["lib/foundation.js", "**/*.rb"]
+
+[smells.boolean_logic]
+threshold = 4
+
+[smells.file_complexity]
+threshold = 55
+
+[smells.return_statements]
+threshold = 4
+
+[smells.nested_control_flow]
+threshold = 4
+
+[smells.function_parameters]
+threshold = 4
+
+[smells.function_complexity]
+threshold = 5
+
+[smells.duplication]
+threshold = 22
+

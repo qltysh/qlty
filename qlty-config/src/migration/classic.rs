@@ -55,10 +55,11 @@ pub struct Checks {
     pub similar_code: Option<Check>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct ClassicConfig {
     pub prepare: Option<Prepare>,
     pub checks: Option<Checks>,
+    pub exclude_patterns: Option<Vec<String>>,
 }
 
 impl ClassicConfig {

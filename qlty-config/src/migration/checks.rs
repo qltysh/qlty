@@ -240,6 +240,7 @@ mod test {
                 similar_code: None,
                 identical_code: None,
             }),
+            exclude_patterns: None,
         }
     }
 
@@ -391,6 +392,7 @@ mod test {
                 }),
                 ..Default::default()
             }),
+            exclude_patterns: None,
         };
 
         CheckMigration::migrate_duplication_check(
@@ -431,6 +433,7 @@ mod test {
 
         let classic_config = ClassicConfig {
             prepare: None,
+            exclude_patterns: None,
             checks: Some(Checks {
                 complex_logic: Some(Check {
                     enabled: Some(true),
@@ -547,6 +550,7 @@ mod test {
         let classic_config = ClassicConfig {
             prepare: None,
             checks: None,
+            exclude_patterns: None,
         };
 
         CheckMigration::migrate_maintainability_checks(&classic_config, &mut smells_table)?;

@@ -150,11 +150,133 @@ impl MigrateConfig {
         Ok(())
     }
 
+    fn migrate_exclude_patterns(&mut self, classic_config: &ClassicConfig) -> Result<()> {
+        if let Some(classic_exclude_patterns) = &classic_config.exclude_patterns {
+            let target_array = self
+                .document
+                .get_mut("exclude_patterns")
+                .and_then(|item| item.as_array_mut());
+
+            match target_array {
+                Some(existing_array) => {
+                    for pattern in classic_exclude_patterns {
+                        existing_array.push(pattern);
+                    }
+                }
+                None => {
+                    let mut new_array = toml_edit::Array::new();
+                    for pattern in classic_exclude_patterns {
+                        new_array.push(pattern);
+                    }
+                    self.document["exclude_patterns"] =
+                        toml_edit::Item::Value(toml_edit::Value::Array(new_array));
+                }
+            }
+        }
+
+        Ok(())
+    }
+
     fn apply_migrations(&mut self) -> Result<()> {
         let classic_config = ClassicConfig::load(self.settings.classic_config_path.as_path())?;
         self.migrate_prepare_statement(&classic_config)?;
         self.migrate_checks(&classic_config)?;
+        self.migrate_exclude_patterns(&classic_config)?;
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use toml_edit::DocumentMut;
+
+    fn basic_settings() -> MigrationSettings {
+        MigrationSettings {
+            root_path: PathBuf::from("."),
+            qlty_config: QltyConfig::default(),
+            qlty_config_path: PathBuf::from("qlty.toml"),
+            classic_config_path: PathBuf::from("classic.toml"),
+            dry_run: true,
+        }
+    }
+
+    #[test]
+    fn test_migrate_with_no_existing_excludes() {
+        let doc = "[settings]\n".parse::<DocumentMut>().unwrap();
+
+        let config = ClassicConfig {
+            exclude_patterns: Some(vec!["target/".to_string(), "node_modules/".to_string()]),
+            ..Default::default()
+        };
+
+        let settings = basic_settings();
+        let mut migrator = MigrateConfig {
+            settings,
+            document: doc,
+        };
+
+        migrator.migrate_exclude_patterns(&config).unwrap();
+
+        let arr = migrator
+            .document
+            .get("exclude_patterns")
+            .and_then(|item| item.as_array())
+            .unwrap();
+
+        let values: Vec<_> = arr.iter().map(|v| v.as_str().unwrap()).collect();
+        assert_eq!(values, vec!["target/", "node_modules/"]);
+    }
+
+    #[test]
+    fn test_migrate_appends_to_existing_excludes() {
+        let doc = r#"
+exclude_patterns = ["dist/", "build/"]
+"#
+        .parse::<DocumentMut>()
+        .unwrap();
+
+        let config = ClassicConfig {
+            exclude_patterns: Some(vec!["target/".to_string()]),
+            ..Default::default()
+        };
+
+        let settings = basic_settings();
+        let mut migrator = MigrateConfig {
+            settings,
+            document: doc,
+        };
+
+        migrator.migrate_exclude_patterns(&config).unwrap();
+
+        let arr = migrator
+            .document
+            .get("exclude_patterns")
+            .and_then(|item| item.as_array())
+            .unwrap();
+
+        let values: Vec<_> = arr.iter().map(|v| v.as_str().unwrap()).collect();
+        assert_eq!(values, vec!["dist/", "build/", "target/"]);
+    }
+
+    #[test]
+    fn test_migrate_with_no_patterns_does_nothing() {
+        let doc = "[settings]\n".parse::<DocumentMut>().unwrap();
+
+        let config = ClassicConfig {
+            exclude_patterns: None,
+            ..Default::default()
+        };
+
+        let settings = basic_settings();
+        let mut migrator = MigrateConfig {
+            settings,
+            document: doc.clone(),
+        };
+
+        migrator.migrate_exclude_patterns(&config).unwrap();
+
+        assert_eq!(migrator.document.to_string(), doc.to_string());
     }
 }
