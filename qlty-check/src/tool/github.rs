@@ -198,7 +198,7 @@ impl GitHubRelease {
     ) -> Option<GitHubReleaseAsset> {
         candidates
             .iter()
-            .find(|a| !self.is_aarch64(&a.name) && self.is_windows(&a))
+            .find(|a| !self.is_aarch64(&a.name) && self.is_windows(a))
             .cloned()
     }
 
