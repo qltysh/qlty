@@ -6,7 +6,7 @@ download_type = "zip"
 strip_components = 1
 runtime = "java"
 latest_version = "7.12.0"
-known_good_version = "7.0.0"
+known_good_version = "7.12.0"
 version_command = "pmd --version"
 description = "Java linter"
 
