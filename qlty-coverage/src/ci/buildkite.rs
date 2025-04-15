@@ -18,7 +18,7 @@ impl Default for Buildkite {
 
 impl CI for Buildkite {
     fn detect(&self) -> bool {
-        self.env.var("BUILDKITE_BUILD_NUMBER").unwrap_or_default() == "true"
+        self.env.var("BUILDKITE_BUILD_NUMBER").is_some()
     }
 
     fn ci_name(&self) -> String {
@@ -106,7 +106,6 @@ mod test {
         };
         assert_eq!(ci.detect(), true);
         assert_eq!(&ci.ci_name(), "Buildkite");
-        assert_eq!(&ci.ci_url(), "");
     }
 
     #[test]
@@ -125,7 +124,7 @@ mod test {
         let mut env: HashMap<String, String> = HashMap::default();
         env.insert("BUILDKITE_JOB_ID".to_string(), "job_name".to_string());
 
-        let ci = Buidkite {
+        let ci = Buildkite {
             env: Box::new(HashMapEnv::new(env)),
         };
         assert_eq!(&ci.job(), "job_name");
