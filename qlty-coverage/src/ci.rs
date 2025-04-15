@@ -1,9 +1,11 @@
+mod buildkite;
 mod circleci;
 mod codefresh;
 mod github;
 mod gitlab;
 mod semaphore;
 
+pub use buildkite::Buildkite;
 pub use circleci::CircleCI;
 pub use codefresh::Codefresh;
 pub use github::GitHub;
@@ -61,10 +63,11 @@ pub fn current() -> Option<Box<dyn CI>> {
 
 pub fn all() -> Vec<Box<dyn CI>> {
     vec![
-        Box::<GitHub>::default(),
-        Box::<GitLab>::default(),
+        Box::<Buildkite>::default(),
         Box::<CircleCI>::default(),
         Box::<Codefresh>::default(),
+        Box::<GitHub>::default(),
+        Box::<GitLab>::default(),
         Box::<Semaphore>::default(),
     ]
 }
