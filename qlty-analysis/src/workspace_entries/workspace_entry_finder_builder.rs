@@ -117,7 +117,7 @@ impl WorkspaceEntryFinderBuilder {
 
             if !language.interpreters.is_empty() {
                 debug!(
-                    "Matching {} with interpretters: {:?}",
+                    "Matching {} with interpreters: {:?}",
                     language_name, language.interpreters
                 );
                 interpreters.insert(language_name.to_string(), language.interpreters.to_owned());

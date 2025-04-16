@@ -23,6 +23,11 @@ impl IgnoreGroup {
         for ignore in ignores {
             if ignore.file_patterns.is_empty() {
                 continue;
+            } else if !ignore.rules.is_empty() {
+                // If specific rules are defined, this is not a blanket ignore group.
+                // It is only ignored in the context of a specific rule, but we still need to
+                // process the files.
+                continue;
             }
 
             for pattern in &ignore.file_patterns {
@@ -66,6 +71,14 @@ mod tests {
     fn build_ignore(file_patterns: Vec<&str>) -> Ignore {
         Ignore {
             file_patterns: file_patterns.iter().map(|s| s.to_string()).collect(),
+            ..Default::default()
+        }
+    }
+
+    fn build_ignore_with_rules(file_patterns: Vec<&str>, rules: Vec<String>) -> Ignore {
+        Ignore {
+            file_patterns: file_patterns.iter().map(|s| s.to_string()).collect(),
+            rules,
             ..Default::default()
         }
     }
@@ -145,5 +158,18 @@ mod tests {
 
         assert_eq!(result[2].ignores, vec!["qux/"]);
         assert_eq!(result[2].negate, true);
+    }
+
+    #[test]
+    fn test_ignore_with_rules() {
+        let ignore1 = build_ignore_with_rules(vec!["src/"], vec!["rule1".to_string()]);
+        let ignore2 = build_ignore(vec!["target/"]);
+
+        let ignores: Vec<&Ignore> = vec![&ignore1, &ignore2];
+        let result = IgnoreGroup::build_from_ignores(&ignores);
+
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].ignores, vec!["target/"]);
+        assert_eq!(result[0].negate, false);
     }
 }
