@@ -214,16 +214,16 @@ impl GitHubRelease {
 
     fn is_x86_64(&self, filename: &str) -> bool {
         let lower_case_filename = filename.to_lowercase();
-
-        lower_case_filename.contains("x86_64")
-            || lower_case_filename.contains("amd64")
-            || lower_case_filename.contains("x64")
-            || lower_case_filename.contains("64bit")
-            || lower_case_filename.contains("64-bit")
+        ["x86_64", "amd64", "x64", "64bit", "64-bit"]
+            .iter()
+            .any(|s| lower_case_filename.contains(s))
     }
 
     fn is_aarch64(&self, filename: &str) -> bool {
-        filename.to_lowercase().contains("aarch64") || filename.to_lowercase().contains("arm64")
+        let lower_case_filename = filename.to_lowercase();
+        ["aarch64", "arm64", "armv8", "arm64e", "armv7", "armv6"]
+            .iter()
+            .any(|s| lower_case_filename.contains(s))
     }
 
     fn is_linux(&self, filename: &str) -> bool {
@@ -450,6 +450,9 @@ mod test {
 
         let tests = vec![
             ("tool-v0.7.0.windows.x86_64.zip", "application/zip", true),
+            ("tool-v0.7.0_windows_armv6.zip", "application/zip", false),
+            ("tool-v0.7.0_windows_armv7.zip", "application/zip", false),
+            ("tool-v0.7.0_windows_arm64.zip", "application/zip", false),
             ("any_filename.ext", "application/x-msdownload", true),
             ("any_filename.ext", "application/x-ms-dos-executable", true),
             ("tool-v0.7.0.zip", "application/zip", true),
