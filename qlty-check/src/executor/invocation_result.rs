@@ -331,7 +331,7 @@ impl InvocationResult {
             match self.plan.driver.output_missing {
                 OutputMissing::Error => {
                     self.invocation.exit_result =
-                        qlty_types::analysis::v1::ExitResult::UnknownError.into();
+                        qlty_types::analysis::v1::ExitResult::OutputMissingError.into();
                     self.log_error_output();
                 }
                 OutputMissing::NoIssues => {
