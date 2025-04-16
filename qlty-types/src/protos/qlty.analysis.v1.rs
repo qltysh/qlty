@@ -640,6 +640,7 @@ pub enum ExitResult {
     KnownError = 2,
     UnknownError = 3,
     NoIssues = 4,
+    MissingOutputError = 5,
 }
 impl ExitResult {
     /// String value of the enum field names used in the ProtoBuf definition.
@@ -653,6 +654,7 @@ impl ExitResult {
             Self::KnownError => "EXIT_RESULT_KNOWN_ERROR",
             Self::UnknownError => "EXIT_RESULT_UNKNOWN_ERROR",
             Self::NoIssues => "EXIT_RESULT_NO_ISSUES",
+            Self::MissingOutputError => "EXIT_RESULT_MISSING_OUTPUT_ERROR",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.
@@ -663,6 +665,7 @@ impl ExitResult {
             "EXIT_RESULT_KNOWN_ERROR" => Some(Self::KnownError),
             "EXIT_RESULT_UNKNOWN_ERROR" => Some(Self::UnknownError),
             "EXIT_RESULT_NO_ISSUES" => Some(Self::NoIssues),
+            "EXIT_RESULT_MISSING_OUTPUT_ERROR" => Some(Self::MissingOutputError),
             _ => None,
         }
     }
