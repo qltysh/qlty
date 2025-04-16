@@ -2,7 +2,7 @@ use super::WorkspaceEntryMatcher;
 use crate::{code::language_detector::get_language_from_shebang, WorkspaceEntry};
 use std::collections::HashMap;
 
-/// Matches workspace entries that have a sheband line that includes an interpreter
+/// Matches workspace entries that have a shebang line that includes an interpreter
 /// This requires reading the contents of the file.
 #[derive(Debug)]
 pub struct LanguagesShebangMatcher {
