@@ -75,13 +75,14 @@ jobs:
 
             // Loop through each issue object and create it
             for (const issue of issues) {
-              const { title, body, assignees } = issue;
-              console.log(`Creating issue: ${title}`);
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: title,
-                body: body,
-                assignees: assignees
-              });
+              console.log("Issue: ", issue);
+            //   const { title, body, assignees } = issue;
+            //   console.log(`Creating issue: ${title}`);
+            //   await github.rest.issues.create({
+            //     owner: context.repo.owner,
+            //     repo: context.repo.repo,
+            //     title: title,
+            //     body: body,
+            //     assignees: assignees
+            //   });
             }
