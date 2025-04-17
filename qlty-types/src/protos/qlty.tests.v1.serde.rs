@@ -103,10 +103,13 @@ impl serde::Serialize for CoverageMetadata {
         if self.total_parts_count.is_some() {
             len += 1;
         }
-        if self.ci_action_version.is_some() {
+        if self.uploader_tool.is_some() {
             len += 1;
         }
-        if !self.generation_command.is_empty() {
+        if self.uploader_tool_version.is_some() {
+            len += 1;
+        }
+        if !self.publish_command.is_empty() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("qlty.tests.v1.CoverageMetadata", len)?;
@@ -206,11 +209,14 @@ impl serde::Serialize for CoverageMetadata {
         if let Some(v) = self.total_parts_count.as_ref() {
             struct_ser.serialize_field("totalPartsCount", v)?;
         }
-        if let Some(v) = self.ci_action_version.as_ref() {
-            struct_ser.serialize_field("ciActionVersion", v)?;
+        if let Some(v) = self.uploader_tool.as_ref() {
+            struct_ser.serialize_field("uploaderTool", v)?;
         }
-        if !self.generation_command.is_empty() {
-            struct_ser.serialize_field("generationCommand", &self.generation_command)?;
+        if let Some(v) = self.uploader_tool_version.as_ref() {
+            struct_ser.serialize_field("uploaderToolVersion", v)?;
+        }
+        if !self.publish_command.is_empty() {
+            struct_ser.serialize_field("publishCommand", &self.publish_command)?;
         }
         struct_ser.end()
     }
@@ -279,10 +285,12 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             "cliVersion",
             "total_parts_count",
             "totalPartsCount",
-            "ci_action_version",
-            "ciActionVersion",
-            "generation_command",
-            "generationCommand",
+            "uploader_tool",
+            "uploaderTool",
+            "uploader_tool_version",
+            "uploaderToolVersion",
+            "publish_command",
+            "publishCommand",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -319,8 +327,9 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             UploadedAt,
             CliVersion,
             TotalPartsCount,
-            CiActionVersion,
-            GenerationCommand,
+            UploaderTool,
+            UploaderToolVersion,
+            PublishCommand,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -374,8 +383,9 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                             "uploadedAt" | "uploaded_at" => Ok(GeneratedField::UploadedAt),
                             "cliVersion" | "cli_version" => Ok(GeneratedField::CliVersion),
                             "totalPartsCount" | "total_parts_count" => Ok(GeneratedField::TotalPartsCount),
-                            "ciActionVersion" | "ci_action_version" => Ok(GeneratedField::CiActionVersion),
-                            "generationCommand" | "generation_command" => Ok(GeneratedField::GenerationCommand),
+                            "uploaderTool" | "uploader_tool" => Ok(GeneratedField::UploaderTool),
+                            "uploaderToolVersion" | "uploader_tool_version" => Ok(GeneratedField::UploaderToolVersion),
+                            "publishCommand" | "publish_command" => Ok(GeneratedField::PublishCommand),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -427,8 +437,9 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                 let mut uploaded_at__ = None;
                 let mut cli_version__ = None;
                 let mut total_parts_count__ = None;
-                let mut ci_action_version__ = None;
-                let mut generation_command__ = None;
+                let mut uploader_tool__ = None;
+                let mut uploader_tool_version__ = None;
+                let mut publish_command__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::UploadId => {
@@ -625,17 +636,23 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                                 map_.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
-                        GeneratedField::CiActionVersion => {
-                            if ci_action_version__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("ciActionVersion"));
+                        GeneratedField::UploaderTool => {
+                            if uploader_tool__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("uploaderTool"));
                             }
-                            ci_action_version__ = map_.next_value()?;
+                            uploader_tool__ = map_.next_value()?;
                         }
-                        GeneratedField::GenerationCommand => {
-                            if generation_command__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("generationCommand"));
+                        GeneratedField::UploaderToolVersion => {
+                            if uploader_tool_version__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("uploaderToolVersion"));
                             }
-                            generation_command__ = Some(map_.next_value()?);
+                            uploader_tool_version__ = map_.next_value()?;
+                        }
+                        GeneratedField::PublishCommand => {
+                            if publish_command__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("publishCommand"));
+                            }
+                            publish_command__ = Some(map_.next_value()?);
                         }
                     }
                 }
@@ -672,8 +689,9 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                     uploaded_at: uploaded_at__,
                     cli_version: cli_version__.unwrap_or_default(),
                     total_parts_count: total_parts_count__,
-                    ci_action_version: ci_action_version__,
-                    generation_command: generation_command__.unwrap_or_default(),
+                    uploader_tool: uploader_tool__,
+                    uploader_tool_version: uploader_tool_version__,
+                    publish_command: publish_command__.unwrap_or_default(),
                 })
             }
         }

@@ -67,9 +67,11 @@ pub struct CoverageMetadata {
     #[prost(uint32, optional, tag="32")]
     pub total_parts_count: ::core::option::Option<u32>,
     #[prost(string, optional, tag="33")]
-    pub ci_action_version: ::core::option::Option<::prost::alloc::string::String>,
+    pub uploader_tool: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(string, optional, tag="35")]
+    pub uploader_tool_version: ::core::option::Option<::prost::alloc::string::String>,
     #[prost(string, tag="34")]
-    pub generation_command: ::prost::alloc::string::String,
+    pub publish_command: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ReportFile {
