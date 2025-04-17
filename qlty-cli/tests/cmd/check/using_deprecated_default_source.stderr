@@ -7,4 +7,7 @@ Please change the default source in your qlty.toml to:
 name = "default"
 default = true
 
-❌ Please update your qlty.toml to use the new source format.
+
+   ERROR   
+
+ > Please update your qlty.toml to use the new source format.
