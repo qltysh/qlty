@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1744897603401" clover="3.2.0">
+  <project timestamp="1744897603401" name="All files">
+    <metrics statements="150" coveredstatements="144" conditionals="105" coveredconditionals="90" methods="55" coveredmethods="50" elements="310" coveredelements="284" complexity="0" loc="150" ncloc="150" packages="2" files="6" classes="6"/>
+    <package name="src">
+      <metrics statements="129" coveredstatements="123" conditionals="102" coveredconditionals="87" methods="45" coveredmethods="40"/>
+      <file name="action.ts" path="/Users/bhelmkamp/p/qltysh/qlty-action/coverage/src/action.ts">
+        <metrics statements="48" coveredstatements="46" conditionals="28" coveredconditionals="17" methods="9" coveredmethods="7"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="20" count="5" type="stmt"/>
+        <line num="35" count="5" type="stmt"/>
+        <line num="57" count="5" type="stmt"/>
+        <line num="58" count="5" type="stmt"/>
+        <line num="59" count="5" type="stmt"/>
+        <line num="60" count="5" type="stmt"/>
+        <line num="61" count="5" type="stmt"/>
+        <line num="65" count="5" type="stmt"/>
+        <line num="66" count="5" type="stmt"/>
+        <line num="68" count="5" type="stmt"/>
+        <line num="69" count="5" type="stmt"/>
+        <line num="70" count="5" type="stmt"/>
+        <line num="72" count="5" type="stmt"/>
+        <line num="74" count="5" type="stmt"/>
+        <line num="75" count="5" type="stmt"/>
+        <line num="80" count="5" type="stmt"/>
+        <line num="81" count="5" type="stmt"/>
+        <line num="85" count="0" type="stmt"/>
+        <line num="88" count="0" type="stmt"/>
+        <line num="93" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="94" count="1" type="stmt"/>
+        <line num="97" count="1" type="stmt"/>
+        <line num="98" count="1" type="stmt"/>
+        <line num="100" count="1" type="stmt"/>
+        <line num="106" count="5" type="stmt"/>
+        <line num="108" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="109" count="1" type="stmt"/>
+        <line num="112" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="113" count="1" type="stmt"/>
+        <line num="116" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="117" count="1" type="stmt"/>
+        <line num="123" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="124" count="1" type="stmt"/>
+        <line num="127" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="128" count="1" type="stmt"/>
+        <line num="134" count="5" type="stmt"/>
+        <line num="139" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="140" count="3" type="stmt"/>
+        <line num="144" count="3" type="stmt"/>
+        <line num="147" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="148" count="1" type="stmt"/>
+        <line num="151" count="5" type="stmt"/>
+        <line num="152" count="5" type="stmt"/>
+        <line num="156" count="5" type="stmt"/>
+        <line num="165" count="1" type="stmt"/>
+        <line num="166" count="1" type="stmt"/>
+        <line num="176" count="3" type="stmt"/>
+      </file>
+      <file name="installer.ts" path="/Users/bhelmkamp/p/qltysh/qlty-action/coverage/src/installer.ts">
+        <metrics statements="36" coveredstatements="35" conditionals="18" coveredconditionals="18" methods="11" coveredmethods="10"/>
+        <line num="8" count="2" type="stmt"/>
+        <line num="14" count="11" type="stmt"/>
+        <line num="17" count="0" type="stmt"/>
+        <line num="21" count="5" type="stmt"/>
+        <line num="29" count="11" type="stmt"/>
+        <line num="30" count="11" type="stmt"/>
+        <line num="31" count="11" type="stmt"/>
+        <line num="35" count="6" type="stmt"/>
+        <line num="39" count="11" type="stmt"/>
+        <line num="40" count="11" type="stmt"/>
+        <line num="44" count="11" type="cond" truecount="4" falsecount="0"/>
+        <line num="45" count="7" type="stmt"/>
+        <line num="46" count="4" type="cond" truecount="4" falsecount="0"/>
+        <line num="47" count="1" type="stmt"/>
+        <line num="48" count="3" type="cond" truecount="4" falsecount="0"/>
+        <line num="49" count="1" type="stmt"/>
+        <line num="50" count="2" type="cond" truecount="4" falsecount="0"/>
+        <line num="51" count="1" type="stmt"/>
+        <line num="53" count="1" type="stmt"/>
+        <line num="56" count="1" type="stmt"/>
+        <line num="59" count="10" type="stmt"/>
+        <line num="60" count="10" type="stmt"/>
+        <line num="61" count="10" type="stmt"/>
+        <line num="62" count="10" type="stmt"/>
+        <line num="67" count="10" type="stmt"/>
+        <line num="68" count="10" type="stmt"/>
+        <line num="69" count="10" type="stmt"/>
+        <line num="89" count="11" type="stmt"/>
+        <line num="90" count="11" type="stmt"/>
+        <line num="94" count="11" type="stmt"/>
+        <line num="98" count="11" type="stmt"/>
+        <line num="103" count="11" type="stmt"/>
+        <line num="106" count="10" type="stmt"/>
+        <line num="107" count="10" type="stmt"/>
+        <line num="115" count="10" type="stmt"/>
+        <line num="123" count="10" type="stmt"/>
+      </file>
+      <file name="settings.ts" path="/Users/bhelmkamp/p/qltysh/qlty-action/coverage/src/settings.ts">
+        <metrics statements="45" coveredstatements="42" conditionals="56" coveredconditionals="52" methods="25" coveredmethods="23"/>
+        <line num="29" count="3" type="stmt"/>
+        <line num="30" count="19" type="cond" truecount="2" falsecount="0"/>
+        <line num="31" count="19" type="cond" truecount="2" falsecount="0"/>
+        <line num="33" count="19" type="cond" truecount="2" falsecount="0"/>
+        <line num="34" count="19" type="cond" truecount="2" falsecount="0"/>
+        <line num="37" count="19" type="cond" truecount="2" falsecount="0"/>
+        <line num="39" count="19" type="cond" truecount="2" falsecount="0"/>
+        <line num="40" count="2" type="stmt"/>
+        <line num="41" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="49" count="3" type="stmt"/>
+        <line num="60" count="19" type="stmt"/>
+        <line num="83" count="19" type="stmt"/>
+        <line num="87" count="19" type="stmt"/>
+        <line num="88" count="19" type="stmt"/>
+        <line num="89" count="19" type="stmt"/>
+        <line num="93" count="10" type="stmt"/>
+        <line num="95" count="10" type="cond" truecount="4" falsecount="0"/>
+        <line num="96" count="1" type="stmt"/>
+        <line num="99" count="9" type="cond" truecount="4" falsecount="0"/>
+        <line num="100" count="1" type="stmt"/>
+        <line num="107" count="10" type="cond" truecount="2" falsecount="0"/>
+        <line num="108" count="1" type="stmt"/>
+        <line num="110" count="9" type="stmt"/>
+        <line num="112" count="9" type="cond" truecount="2" falsecount="0"/>
+        <line num="113" count="1" type="stmt"/>
+        <line num="115" count="8" type="stmt"/>
+        <line num="121" count="7" type="stmt"/>
+        <line num="123" count="8" type="stmt"/>
+        <line num="125" count="7" type="stmt"/>
+        <line num="126" count="7" type="stmt"/>
+        <line num="130" count="38" type="stmt"/>
+        <line num="136" count="19" type="cond" truecount="2" falsecount="0"/>
+        <line num="137" count="4" type="stmt"/>
+        <line num="140" count="15" type="stmt"/>
+        <line num="145" count="7" type="stmt"/>
+        <line num="151" count="0" type="stmt"/>
+        <line num="155" count="19" type="stmt"/>
+        <line num="159" count="0" type="stmt"/>
+        <line num="160" count="0" type="stmt"/>
+        <line num="166" count="7" type="stmt"/>
+        <line num="168" count="9" type="stmt"/>
+        <line num="177" count="19" type="stmt"/>
+        <line num="193" count="133" type="cond" truecount="2" falsecount="0"/>
+        <line num="200" count="76" type="stmt"/>
+        <line num="204" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.util">
+      <metrics statements="21" coveredstatements="21" conditionals="3" coveredconditionals="3" methods="10" coveredmethods="10"/>
+      <file name="exec.ts" path="/Users/bhelmkamp/p/qltysh/qlty-action/coverage/src/util/exec.ts">
+        <metrics statements="4" coveredstatements="4" conditionals="3" coveredconditionals="3" methods="2" coveredmethods="2"/>
+        <line num="15" count="5" type="stmt"/>
+        <line num="23" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="24" count="2" type="stmt"/>
+        <line num="26" count="3" type="stmt"/>
+      </file>
+      <file name="output.ts" path="/Users/bhelmkamp/p/qltysh/qlty-action/coverage/src/util/output.ts">
+        <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="4" coveredmethods="4"/>
+        <line num="9" count="16" type="stmt"/>
+        <line num="10" count="16" type="stmt"/>
+        <line num="11" count="16" type="stmt"/>
+        <line num="12" count="16" type="stmt"/>
+        <line num="15" count="10" type="stmt"/>
+        <line num="19" count="5" type="stmt"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="27" count="3" type="stmt"/>
+      </file>
+      <file name="output_tracker.ts" path="/Users/bhelmkamp/p/qltysh/qlty-action/coverage/src/util/output_tracker.ts">
+        <metrics statements="9" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="4" coveredmethods="4"/>
+        <line num="10" count="11" type="stmt"/>
+        <line num="14" count="11" type="stmt"/>
+        <line num="15" count="11" type="stmt"/>
+        <line num="16" count="11" type="stmt"/>
+        <line num="18" count="11" type="stmt"/>
+        <line num="19" count="11" type="stmt"/>
+        <line num="23" count="7" type="stmt"/>
+        <line num="24" count="7" type="stmt"/>
+        <line num="25" count="7" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>
