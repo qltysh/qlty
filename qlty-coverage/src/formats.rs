@@ -37,7 +37,7 @@ impl TryFrom<&Path> for Formats {
 
     fn try_from(path: &Path) -> Result<Self> {
         match path.extension().and_then(std::ffi::OsStr::to_str) {
-            Some("info") => Ok(Formats::Lcov),
+            Some("info") | Some("lcov") => Ok(Formats::Lcov),
             Some("json") => Ok(Formats::Simplecov),
             Some("jsonl") => Ok(Formats::Qlty),
             Some("out") => Ok(Formats::Coverprofile),
