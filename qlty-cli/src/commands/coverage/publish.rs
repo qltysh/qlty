@@ -103,73 +103,78 @@ impl Publish {
             printed_settings = true;
         }
         if let Some(report_format) = &self.report_format {
-            eprintln_unless!(self.quiet, "    report-format: {:?}", report_format);
+            eprintln_unless!(self.quiet, "    report-format: {}", report_format);
             printed_settings = true;
         }
         if self.output_dir.is_some() {
-            eprintln_unless!(self.quiet, "    output-dir: {:?}", self.output_dir);
+            eprintln_unless!(
+                self.quiet,
+                "    output-dir: {}",
+                self.output_dir.as_ref().unwrap().to_string_lossy()
+            );
             printed_settings = true;
         }
         if self.tag.is_some() {
-            eprintln_unless!(self.quiet, "    tag: {:?}", self.tag);
+            eprintln_unless!(self.quiet, "    tag: {}", self.tag.as_ref().unwrap());
             printed_settings = true;
         }
         if self.override_build_id.is_some() {
             eprintln_unless!(
                 self.quiet,
-                "    override-build-id: {:?}",
-                self.override_build_id
+                "    override-build-id: {}",
+                self.override_build_id.as_ref().unwrap()
             );
             printed_settings = true;
         }
         if self.override_branch.is_some() {
             eprintln_unless!(
                 self.quiet,
-                "    override-branch: {:?}",
-                self.override_branch
+                "    override-branch: {}",
+                self.override_branch.as_ref().unwrap()
             );
             printed_settings = true;
         }
         if self.override_commit_sha.is_some() {
             eprintln_unless!(
                 self.quiet,
-                "    override-commit-sha: {:?}",
-                self.override_commit_sha
+                "    override-commit-sha: {}",
+                self.override_commit_sha.as_ref().unwrap()
             );
             printed_settings = true;
         }
         if self.override_pr_number.is_some() {
             eprintln_unless!(
                 self.quiet,
-                "    override-pr-number: {:?}",
-                self.override_pr_number
+                "    override-pr-number: {}",
+                self.override_pr_number.as_ref().unwrap()
             );
             printed_settings = true;
         }
         if self.transform_add_prefix.is_some() {
             eprintln_unless!(
                 self.quiet,
-                "    transform-add-prefix: {:?}",
-                self.transform_add_prefix
+                "    transform-add-prefix: {}",
+                self.transform_add_prefix.as_ref().unwrap()
             );
             printed_settings = true;
         }
         if self.transform_strip_prefix.is_some() {
             eprintln_unless!(
                 self.quiet,
-                "    transform-strip-prefix: {:?}",
-                self.transform_strip_prefix
+                "    transform-strip-prefix: {}",
+                self.transform_strip_prefix.as_ref().unwrap()
             );
             printed_settings = true;
         }
         if self.project.is_some() {
-            eprintln_unless!(self.quiet, "    project: {:?}", self.project);
+            eprintln_unless!(
+                self.quiet,
+                "    project: {}",
+                self.project.as_ref().unwrap()
+            );
             printed_settings = true;
         }
-        if !self.paths.is_empty() {
-            eprintln_unless!(self.quiet, "    paths: {:?}", self.paths);
-            printed_settings = true;
-        }
+
         if self.skip_missing_files {
             eprintln_unless!(
                 self.quiet,
@@ -178,11 +183,12 @@ impl Publish {
             );
             printed_settings = true;
         }
+
         if self.total_parts_count.is_some() {
             eprintln_unless!(
                 self.quiet,
-                "    total-parts-count: {:?}",
-                self.total_parts_count
+                "    total-parts-count: {}",
+                self.total_parts_count.as_ref().unwrap()
             );
             printed_settings = true;
         }

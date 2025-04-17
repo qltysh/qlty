@@ -51,8 +51,9 @@ impl TryFrom<&Path> for Formats {
                     Ok(Formats::Cobertura)
                 }
             }
-            _ => bail!(
-                "Unsupported file format for coverage report: {}",
+            Some(other) => bail!("Unknown file extension for coverage report: {}\nSpecify the format with --report-format=FORMAT", other),
+            None => bail!(
+                "Could not determine a report format by file extension: {}\nSpecify the format with --report-format=FORMAT",
                 path.display()
             ),
         }
