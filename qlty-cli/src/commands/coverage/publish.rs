@@ -97,21 +97,129 @@ impl Publish {
         self.print_initial_messages();
         eprintln_unless!(self.quiet, "{}", style(" SETTINGS ").bold().reverse(),);
         eprintln_unless!(self.quiet, "");
-        eprintln_unless!(self.quiet, "    tag: foo");
-        eprintln_unless!(self.quiet, "    strip-prefix: foo");
-        eprintln_unless!(self.quiet, "    skip-missing-parts: false");
-        eprintln_unless!(self.quiet, "    total-parts-count: 42");
+        let mut printed_settings = false;
+        if self.dry_run {
+            eprintln_unless!(self.quiet, "    dry-run: {}", self.dry_run);
+            printed_settings = true;
+        }
+        if let Some(report_format) = &self.report_format {
+            eprintln_unless!(self.quiet, "    report-format: {:?}", report_format);
+            printed_settings = true;
+        }
+        if self.output_dir.is_some() {
+            eprintln_unless!(self.quiet, "    output-dir: {:?}", self.output_dir);
+            printed_settings = true;
+        }
+        if self.tag.is_some() {
+            eprintln_unless!(self.quiet, "    tag: {:?}", self.tag);
+            printed_settings = true;
+        }
+        if self.override_build_id.is_some() {
+            eprintln_unless!(
+                self.quiet,
+                "    override-build-id: {:?}",
+                self.override_build_id
+            );
+            printed_settings = true;
+        }
+        if self.override_branch.is_some() {
+            eprintln_unless!(
+                self.quiet,
+                "    override-branch: {:?}",
+                self.override_branch
+            );
+            printed_settings = true;
+        }
+        if self.override_commit_sha.is_some() {
+            eprintln_unless!(
+                self.quiet,
+                "    override-commit-sha: {:?}",
+                self.override_commit_sha
+            );
+            printed_settings = true;
+        }
+        if self.override_pr_number.is_some() {
+            eprintln_unless!(
+                self.quiet,
+                "    override-pr-number: {:?}",
+                self.override_pr_number
+            );
+            printed_settings = true;
+        }
+        if self.transform_add_prefix.is_some() {
+            eprintln_unless!(
+                self.quiet,
+                "    transform-add-prefix: {:?}",
+                self.transform_add_prefix
+            );
+            printed_settings = true;
+        }
+        if self.transform_strip_prefix.is_some() {
+            eprintln_unless!(
+                self.quiet,
+                "    transform-strip-prefix: {:?}",
+                self.transform_strip_prefix
+            );
+            printed_settings = true;
+        }
+        if self.project.is_some() {
+            eprintln_unless!(self.quiet, "    project: {:?}", self.project);
+            printed_settings = true;
+        }
+        if !self.paths.is_empty() {
+            eprintln_unless!(self.quiet, "    paths: {:?}", self.paths);
+            printed_settings = true;
+        }
+        if self.skip_missing_files {
+            eprintln_unless!(
+                self.quiet,
+                "    skip-missing-files: {}",
+                self.skip_missing_files
+            );
+            printed_settings = true;
+        }
+        if self.total_parts_count.is_some() {
+            eprintln_unless!(
+                self.quiet,
+                "    total-parts-count: {:?}",
+                self.total_parts_count
+            );
+            printed_settings = true;
+        }
+
+        if !printed_settings {
+            eprintln_unless!(self.quiet, "    No settings provided");
+        }
         eprintln_unless!(self.quiet, "");
-        eprintln_unless!(
-            self.quiet,
-            "{}",
-            style(" AUTHENTICATING... ").bold().reverse(),
-        );
-        eprintln_unless!(self.quiet, "");
-        eprintln_unless!(self.quiet, "    Method: OIDC");
-        eprintln_unless!(self.quiet, "    Token: qltcp_abcXXXXXX");
-        eprintln_unless!(self.quiet, "    Project: qltysh/qlty");
-        eprintln_unless!(self.quiet, "");
+
+        self.validate_options()?;
+
+        let token = match self.load_auth_token() {
+            Ok(token) => token,
+            Err(err) => {
+                eprintln!("{}", style(format!("{}", err)).red());
+                std::process::exit(1);
+            }
+        };
+
+        let plan = Planner::new(
+            &Self::load_config(),
+            &Settings {
+                override_build_id: self.override_build_id.clone(),
+                override_commit_sha: self.override_commit_sha.clone(),
+                override_branch: self.override_branch.clone(),
+                override_pull_request_number: self.override_pr_number.clone(),
+                add_prefix: self.transform_add_prefix.clone(),
+                strip_prefix: self.transform_strip_prefix.clone(),
+                tag: self.tag.clone(),
+                report_format: self.report_format,
+                paths: self.paths.clone(),
+                skip_missing_files: self.skip_missing_files,
+                total_parts_count: self.total_parts_count,
+            },
+        )
+        .compute()?;
+
         eprintln_unless!(self.quiet, "{}", style(" METADATA ").bold().reverse(),);
         eprintln_unless!(self.quiet, "");
         eprintln_unless!(self.quiet, "    CI: GitHub");
@@ -150,131 +258,75 @@ impl Publish {
         eprintln_unless!(self.quiet, "    Total Lines:        3,405");
         eprintln_unless!(self.quiet, "    Coverage            34.5%");
         eprintln_unless!(self.quiet, "");
-        eprintln_unless!(self.quiet, "{}", style(" EXPORTING... ").bold().reverse(),);
-        eprintln_unless!(self.quiet, "");
-        eprintln_unless!(self.quiet, "    Exported: tmp/qlty-coverage/coverage.zip");
-        eprintln_unless!(self.quiet, "");
-        eprintln_unless!(self.quiet, "{}", style(" UPLOADING... ").bold().reverse(),);
-        eprintln_unless!(self.quiet, "");
-        eprintln_unless!(self.quiet, "    Uploaded 771 B in 0.26s!");
-        eprintln_unless!(
-            self.quiet,
-            "    https://qlty.sh/gh/WORKSPACE/projects/PROJECT/coverage/uploads/ID"
-        );
-        eprintln_unless!(self.quiet, "");
 
-        return CommandSuccess::ok();
-
-        self.print_initial_messages();
-        self.validate_options()?;
-
-        let token = match self.load_auth_token() {
-            Ok(token) => token,
-            Err(err) => {
-                eprintln!("{}", style(format!("{}", err)).red());
-                std::process::exit(1);
-            }
-        };
-
-        eprintln_unless!(self.quiet, "  Retrieving CI metadata...");
-        let plan = Planner::new(
-            &Self::load_config(),
-            &Settings {
-                override_build_id: self.override_build_id.clone(),
-                override_commit_sha: self.override_commit_sha.clone(),
-                override_branch: self.override_branch.clone(),
-                override_pull_request_number: self.override_pr_number.clone(),
-                add_prefix: self.transform_add_prefix.clone(),
-                strip_prefix: self.transform_strip_prefix.clone(),
-                tag: self.tag.clone(),
-                report_format: self.report_format,
-                paths: self.paths.clone(),
-                skip_missing_files: self.skip_missing_files,
-                total_parts_count: self.total_parts_count,
-            },
-        )
-        .compute()?;
-
-        eprintln_unless!(
-            self.quiet,
-            "{}",
-            style(format!(
-                "  → {} CI commit {:?} on branch {:?}",
-                plan.metadata.ci, plan.metadata.commit_sha, plan.metadata.branch
-            ))
-            .dim()
-        );
-        eprintln_unless!(self.quiet, "");
-
-        eprintln_unless!(self.quiet, "  Reading code coverage data...");
         let results = Reader::new(&plan).read()?;
         let mut report = Processor::new(&plan, results).compute()?;
-        eprintln_unless!(
-            self.quiet,
-            "{}",
-            style(format!(
-                "  → Found {} files with code coverage data",
-                report.report_files.len()
-            ))
-            .dim()
-        );
-        eprintln_unless!(self.quiet, "");
 
         if self.print {
             self.show_report(&report)?;
         }
 
+        eprintln_unless!(self.quiet, "{}", style(" EXPORTING... ").bold().reverse(),);
+        eprintln_unless!(self.quiet, "");
+
+        let export = report.export_to(self.output_dir.clone())?;
+        eprintln_unless!(
+            self.quiet,
+            "    Exported: {:?}",
+            export.to.as_ref().unwrap()
+        );
+
         if self.dry_run {
-            eprintln_unless!(self.quiet, "  Exporting code coverage data...");
-            let export = report.export_to(self.output_dir.clone())?;
-            eprintln_unless!(
-                self.quiet,
-                "{}",
-                style(format!("  → Exported to {:?}", export.to.as_ref().unwrap())).dim()
-            );
             return CommandSuccess::ok();
         }
 
-        eprintln_unless!(self.quiet, "  Authenticating with Qlty...");
+        eprintln_unless!(self.quiet, "");
+        eprintln_unless!(
+            self.quiet,
+            "{}",
+            style(" AUTHENTICATING... ").bold().reverse(),
+        );
+        eprintln_unless!(self.quiet, "");
 
         match Upload::prepare(&token, &mut report) {
             Ok(upload) => {
-                eprintln_unless!(self.quiet, "  Exporting code coverage data...");
-                let export = report.export_to(self.output_dir.clone())?;
-
-                eprintln_unless!(
-                    self.quiet,
-                    "{}",
-                    style(format!("  → Exported to {:?}", export.to.as_ref().unwrap())).dim()
-                );
+                eprintln_unless!(self.quiet, "    Method: OIDC");
+                eprintln_unless!(self.quiet, "    Token: {}", token);
+                // eprintln_unless!(self.quiet, "    Project: qltysh/qlty"); // ???
                 eprintln_unless!(self.quiet, "");
 
+                eprintln_unless!(self.quiet, "{}", style(" UPLOADING... ").bold().reverse(),);
+                eprintln_unless!(self.quiet, "");
+                eprintln_unless!(self.quiet, "    Uploaded 771 B in 0.26s!");
                 eprintln_unless!(
                     self.quiet,
-                    "{}",
-                    style(format!("  → Using coverage token {:?}", token)).dim()
+                    "    https://qlty.sh/gh/WORKSPACE/projects/PROJECT/coverage/uploads/ID"
                 );
                 eprintln_unless!(self.quiet, "");
-
-                eprintln_unless!(self.quiet, "  Uploading coverage data...");
 
                 let timer = Instant::now();
                 upload.upload(&export)?;
 
                 let bytes = export.total_size_bytes()?;
+                // eprintln_unless!(
+                //     self.quiet,
+                //     "{}",
+                //     style(format!(
+                //         "  → Uploaded {} in {:.2}s!",
+                //         HumanBytes(bytes),
+                //         timer.elapsed().as_secs_f32()
+                //     ))
+                //     .dim()
+                // );
+
+                // eprintln_unless!(self.quiet, "");
+                // eprintln_unless!(self.quiet, "View upload at https://qlty.sh");
+                eprintln_unless!(self.quiet, "    Uploaded 771 B in 0.26s!");
                 eprintln_unless!(
                     self.quiet,
-                    "{}",
-                    style(format!(
-                        "  → Uploaded {} in {:.2}s!",
-                        HumanBytes(bytes),
-                        timer.elapsed().as_secs_f32()
-                    ))
-                    .dim()
+                    "    https://qlty.sh/gh/WORKSPACE/projects/PROJECT/coverage/uploads/ID"
                 );
-
                 eprintln_unless!(self.quiet, "");
-                eprintln_unless!(self.quiet, "View upload at https://qlty.sh");
             }
             Err(err) => {
                 eprintln!("{}", style(format!("  → {}", err)).red());
