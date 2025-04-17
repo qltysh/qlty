@@ -163,9 +163,9 @@ fn handle_result(
                 CommandError::Unknown { ref source } => {
                     error!("Command failed: {}", command);
                     error!("{:?}", source);
-                    eprintln!("");
+                    eprintln!();
                     eprintln!("{}", style("   ERROR   ").red().bold().reverse());
-                    eprintln!("");
+                    eprintln!();
 
                     let error_message = format!("{:?}", source);
                     let error_message = error_message
