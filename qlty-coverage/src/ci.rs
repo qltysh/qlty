@@ -13,6 +13,8 @@ pub use gitlab::GitLab;
 use qlty_types::tests::v1::CoverageMetadata;
 pub use semaphore::Semaphore;
 
+const QLTY_CI_ACTION_VERSION: &str = "QLTY_CI_ACTION_VERSION";
+
 pub trait CI {
     fn detect(&self) -> bool;
 
@@ -51,7 +53,7 @@ pub trait CI {
             commit_sha: self.commit_sha(),
             branch: self.branch(),
             pull_request_number: self.pull_number(),
-            coverage_tool: std::env::var("QLTY_COVERAGE_TOOL").ok(),
+            ci_action_version: std::env::var(QLTY_CI_ACTION_VERSION).ok(),
             generation_command: std::env::args().collect::<Vec<String>>().join(" "),
             ..Default::default()
         }

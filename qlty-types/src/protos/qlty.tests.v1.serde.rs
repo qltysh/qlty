@@ -103,7 +103,7 @@ impl serde::Serialize for CoverageMetadata {
         if self.total_parts_count.is_some() {
             len += 1;
         }
-        if self.coverage_tool.is_some() {
+        if self.ci_action_version.is_some() {
             len += 1;
         }
         if !self.generation_command.is_empty() {
@@ -206,8 +206,8 @@ impl serde::Serialize for CoverageMetadata {
         if let Some(v) = self.total_parts_count.as_ref() {
             struct_ser.serialize_field("totalPartsCount", v)?;
         }
-        if let Some(v) = self.coverage_tool.as_ref() {
-            struct_ser.serialize_field("coverageTool", v)?;
+        if let Some(v) = self.ci_action_version.as_ref() {
+            struct_ser.serialize_field("ciActionVersion", v)?;
         }
         if !self.generation_command.is_empty() {
             struct_ser.serialize_field("generationCommand", &self.generation_command)?;
@@ -279,8 +279,8 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             "cliVersion",
             "total_parts_count",
             "totalPartsCount",
-            "coverage_tool",
-            "coverageTool",
+            "ci_action_version",
+            "ciActionVersion",
             "generation_command",
             "generationCommand",
         ];
@@ -319,7 +319,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             UploadedAt,
             CliVersion,
             TotalPartsCount,
-            CoverageTool,
+            CiActionVersion,
             GenerationCommand,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -374,7 +374,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                             "uploadedAt" | "uploaded_at" => Ok(GeneratedField::UploadedAt),
                             "cliVersion" | "cli_version" => Ok(GeneratedField::CliVersion),
                             "totalPartsCount" | "total_parts_count" => Ok(GeneratedField::TotalPartsCount),
-                            "coverageTool" | "coverage_tool" => Ok(GeneratedField::CoverageTool),
+                            "ciActionVersion" | "ci_action_version" => Ok(GeneratedField::CiActionVersion),
                             "generationCommand" | "generation_command" => Ok(GeneratedField::GenerationCommand),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -427,7 +427,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                 let mut uploaded_at__ = None;
                 let mut cli_version__ = None;
                 let mut total_parts_count__ = None;
-                let mut coverage_tool__ = None;
+                let mut ci_action_version__ = None;
                 let mut generation_command__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
@@ -625,11 +625,11 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                                 map_.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
-                        GeneratedField::CoverageTool => {
-                            if coverage_tool__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("coverageTool"));
+                        GeneratedField::CiActionVersion => {
+                            if ci_action_version__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("ciActionVersion"));
                             }
-                            coverage_tool__ = map_.next_value()?;
+                            ci_action_version__ = map_.next_value()?;
                         }
                         GeneratedField::GenerationCommand => {
                             if generation_command__.is_some() {
@@ -672,7 +672,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                     uploaded_at: uploaded_at__,
                     cli_version: cli_version__.unwrap_or_default(),
                     total_parts_count: total_parts_count__,
-                    coverage_tool: coverage_tool__,
+                    ci_action_version: ci_action_version__,
                     generation_command: generation_command__.unwrap_or_default(),
                 })
             }
