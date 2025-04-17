@@ -4,6 +4,7 @@ use clap::Args;
 use console::style;
 use git2::Repository;
 use indicatif::HumanBytes;
+use num_format::{Locale, ToFormattedString as _};
 use qlty_config::version::LONG_VERSION;
 use qlty_config::{QltyConfig, Workspace};
 use qlty_coverage::ci::{GitHub, CI};
@@ -93,6 +94,77 @@ pub struct Publish {
 impl Publish {
     // TODO: Use CommandSuccess and CommandError, which is not straight forward since those types aren't available here.
     pub fn execute(&self, _args: &crate::Arguments) -> Result<CommandSuccess, CommandError> {
+        self.print_initial_messages();
+        eprintln_unless!(self.quiet, "{}", style(" SETTINGS ").bold().reverse(),);
+        eprintln_unless!(self.quiet, "");
+        eprintln_unless!(self.quiet, "    tag: foo");
+        eprintln_unless!(self.quiet, "    strip-prefix: foo");
+        eprintln_unless!(self.quiet, "    skip-missing-parts: false");
+        eprintln_unless!(self.quiet, "    total-parts-count: 42");
+        eprintln_unless!(self.quiet, "");
+        eprintln_unless!(
+            self.quiet,
+            "{}",
+            style(" AUTHENTICATING... ").bold().reverse(),
+        );
+        eprintln_unless!(self.quiet, "");
+        eprintln_unless!(self.quiet, "    Method: OIDC");
+        eprintln_unless!(self.quiet, "    Token: qltcp_abcXXXXXX");
+        eprintln_unless!(self.quiet, "    Project: qltysh/qlty");
+        eprintln_unless!(self.quiet, "");
+        eprintln_unless!(self.quiet, "{}", style(" METADATA ").bold().reverse(),);
+        eprintln_unless!(self.quiet, "");
+        eprintln_unless!(self.quiet, "    CI: GitHub");
+        eprintln_unless!(self.quiet, "    Commit: deadbeef");
+        eprintln_unless!(self.quiet, "    Pull Request: #1234");
+        eprintln_unless!(self.quiet, "    Branch: features/mine");
+        eprintln_unless!(self.quiet, "    Build: https://URL");
+        eprintln_unless!(self.quiet, "");
+        eprintln_unless!(
+            self.quiet,
+            "{}{}{}",
+            style(" COVERAGE FILES: ").bold().reverse(),
+            style(2.to_formatted_string(&Locale::en)).bold().reverse(),
+            style(" ").bold().reverse()
+        );
+        eprintln_unless!(self.quiet, "");
+        eprintln_unless!(self.quiet, "    File        Format      Size");
+        eprintln_unless!(self.quiet, "    -----------------------------");
+        eprintln_unless!(self.quiet, "    file1.lcov  LCOV        3 mb");
+        eprintln_unless!(self.quiet, "    file2.lcov  LCOV        1 mb");
+        eprintln_unless!(self.quiet, "");
+        eprintln_unless!(
+            self.quiet,
+            "{}",
+            style(" CODE FILES: 85,432 ").bold().reverse(),
+        );
+        eprintln_unless!(self.quiet, "");
+        eprintln_unless!(self.quiet, "    Found:      941 files");
+        eprintln_unless!(self.quiet, "    Missing:      0 files");
+        eprintln_unless!(self.quiet, "");
+        eprintln_unless!(self.quiet, "{}", style(" LINE COVERAGE ").bold().reverse(),);
+        eprintln_unless!(self.quiet, "");
+        eprintln_unless!(self.quiet, "    Covered Lines:      1,302");
+        eprintln_unless!(self.quiet, "    Uncoverd Lines:     2,402");
+        eprintln_unless!(self.quiet, "    -------------------------");
+        eprintln_unless!(self.quiet, "    Total Lines:        3,405");
+        eprintln_unless!(self.quiet, "    Coverage            34.5%");
+        eprintln_unless!(self.quiet, "");
+        eprintln_unless!(self.quiet, "{}", style(" EXPORTING... ").bold().reverse(),);
+        eprintln_unless!(self.quiet, "");
+        eprintln_unless!(self.quiet, "    Exported: tmp/qlty-coverage/coverage.zip");
+        eprintln_unless!(self.quiet, "");
+        eprintln_unless!(self.quiet, "{}", style(" UPLOADING... ").bold().reverse(),);
+        eprintln_unless!(self.quiet, "");
+        eprintln_unless!(self.quiet, "    Uploaded 771 B in 0.26s!");
+        eprintln_unless!(
+            self.quiet,
+            "    https://qlty.sh/gh/WORKSPACE/projects/PROJECT/coverage/uploads/ID"
+        );
+        eprintln_unless!(self.quiet, "");
+
+        return CommandSuccess::ok();
+
         self.print_initial_messages();
         self.validate_options()?;
 
