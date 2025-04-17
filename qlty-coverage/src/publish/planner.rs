@@ -51,6 +51,8 @@ impl Planner {
         } else {
             CoverageMetadata {
                 ci: "unknown".to_string(),
+                coverage_tool: std::env::var("QLTY_COVERAGE_TOOL").ok(),
+                generation_command: std::env::args().collect::<Vec<String>>().join(" "),
                 ..CoverageMetadata::default()
             }
         };

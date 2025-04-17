@@ -51,7 +51,8 @@ pub trait CI {
             commit_sha: self.commit_sha(),
             branch: self.branch(),
             pull_request_number: self.pull_number(),
-
+            coverage_tool: std::env::var("QLTY_COVERAGE_TOOL").ok(),
+            generation_command: std::env::args().collect::<Vec<String>>().join(" "),
             ..Default::default()
         }
     }

@@ -103,6 +103,12 @@ impl serde::Serialize for CoverageMetadata {
         if self.total_parts_count.is_some() {
             len += 1;
         }
+        if self.coverage_tool.is_some() {
+            len += 1;
+        }
+        if !self.generation_command.is_empty() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("qlty.tests.v1.CoverageMetadata", len)?;
         if !self.upload_id.is_empty() {
             struct_ser.serialize_field("uploadId", &self.upload_id)?;
@@ -200,6 +206,12 @@ impl serde::Serialize for CoverageMetadata {
         if let Some(v) = self.total_parts_count.as_ref() {
             struct_ser.serialize_field("totalPartsCount", v)?;
         }
+        if let Some(v) = self.coverage_tool.as_ref() {
+            struct_ser.serialize_field("coverageTool", v)?;
+        }
+        if !self.generation_command.is_empty() {
+            struct_ser.serialize_field("generationCommand", &self.generation_command)?;
+        }
         struct_ser.end()
     }
 }
@@ -267,6 +279,10 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             "cliVersion",
             "total_parts_count",
             "totalPartsCount",
+            "coverage_tool",
+            "coverageTool",
+            "generation_command",
+            "generationCommand",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -303,6 +319,8 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             UploadedAt,
             CliVersion,
             TotalPartsCount,
+            CoverageTool,
+            GenerationCommand,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -356,6 +374,8 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                             "uploadedAt" | "uploaded_at" => Ok(GeneratedField::UploadedAt),
                             "cliVersion" | "cli_version" => Ok(GeneratedField::CliVersion),
                             "totalPartsCount" | "total_parts_count" => Ok(GeneratedField::TotalPartsCount),
+                            "coverageTool" | "coverage_tool" => Ok(GeneratedField::CoverageTool),
+                            "generationCommand" | "generation_command" => Ok(GeneratedField::GenerationCommand),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -407,6 +427,8 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                 let mut uploaded_at__ = None;
                 let mut cli_version__ = None;
                 let mut total_parts_count__ = None;
+                let mut coverage_tool__ = None;
+                let mut generation_command__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::UploadId => {
@@ -603,6 +625,18 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                                 map_.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
+                        GeneratedField::CoverageTool => {
+                            if coverage_tool__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("coverageTool"));
+                            }
+                            coverage_tool__ = map_.next_value()?;
+                        }
+                        GeneratedField::GenerationCommand => {
+                            if generation_command__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("generationCommand"));
+                            }
+                            generation_command__ = Some(map_.next_value()?);
+                        }
                     }
                 }
                 Ok(CoverageMetadata {
@@ -638,6 +672,8 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                     uploaded_at: uploaded_at__,
                     cli_version: cli_version__.unwrap_or_default(),
                     total_parts_count: total_parts_count__,
+                    coverage_tool: coverage_tool__,
+                    generation_command: generation_command__.unwrap_or_default(),
                 })
             }
         }
