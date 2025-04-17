@@ -387,6 +387,7 @@ impl InvocationResult {
                     category: Category::Style.into(),
                     level: Level::Fmt.into(),
                     rule_key: "fmt".to_string(),
+                    mode: IssueMode::Comment.into(),
                     tool: self.plan.plugin_name.clone(),
                     location: Some(Location {
                         path: prefixed_target_path_string.clone(),
