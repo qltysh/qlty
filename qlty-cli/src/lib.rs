@@ -163,7 +163,17 @@ fn handle_result(
                 CommandError::Unknown { ref source } => {
                     error!("Command failed: {}", command);
                     error!("{:?}", source);
-                    eprintln!("❌ {:?}", source);
+                    eprintln!();
+                    eprintln!("{}", style("   ERROR   ").red().bold().reverse());
+                    eprintln!();
+
+                    let error_message = format!("{:?}", source);
+                    let error_message = error_message
+                        .lines()
+                        .map(|line| format!(" {} {}", style(">").red().bold(), line))
+                        .collect::<Vec<_>>()
+                        .join("\n");
+                    eprintln!("{}", error_message);
                 }
             }
 

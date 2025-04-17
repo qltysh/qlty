@@ -11,7 +11,7 @@ use qlty_coverage::ci::{GitHub, CI};
 use qlty_coverage::eprintln_unless;
 use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
-use qlty_coverage::publish::{Planner, Processor, Reader, Report, Settings, Upload};
+use qlty_coverage::publish::{Plan, Planner, Processor, Reader, Report, Settings, Upload};
 use std::path::PathBuf;
 use std::time::Instant;
 use tracing::debug;
@@ -194,13 +194,7 @@ impl Publish {
 
         self.validate_options()?;
 
-        let token = match self.load_auth_token() {
-            Ok(token) => token,
-            Err(err) => {
-                eprintln!("{}", style(format!("{}", err)).red());
-                std::process::exit(1);
-            }
-        };
+        let token = self.load_auth_token()?;
 
         let plan = Planner::new(
             &Self::load_config(),
@@ -219,6 +213,8 @@ impl Publish {
             },
         )
         .compute()?;
+
+        self.validate_plan(&plan)?;
 
         eprintln_unless!(self.quiet, "{}", style(" METADATA ").bold().reverse(),);
         eprintln_unless!(self.quiet, "");
@@ -241,6 +237,7 @@ impl Publish {
         eprintln_unless!(self.quiet, "    file1.lcov  LCOV        3 mb");
         eprintln_unless!(self.quiet, "    file2.lcov  LCOV        1 mb");
         eprintln_unless!(self.quiet, "");
+
         eprintln_unless!(
             self.quiet,
             "{}",
@@ -288,53 +285,59 @@ impl Publish {
         );
         eprintln_unless!(self.quiet, "");
 
-        match Upload::prepare(&token, &mut report) {
-            Ok(upload) => {
-                eprintln_unless!(self.quiet, "    Method: OIDC");
-                eprintln_unless!(self.quiet, "    Token: {}", token);
-                // eprintln_unless!(self.quiet, "    Project: qltysh/qlty"); // ???
-                eprintln_unless!(self.quiet, "");
+        let upload = Upload::prepare(&token, &mut report)?;
 
-                eprintln_unless!(self.quiet, "{}", style(" UPLOADING... ").bold().reverse(),);
-                eprintln_unless!(self.quiet, "");
-                eprintln_unless!(self.quiet, "    Uploaded 771 B in 0.26s!");
-                eprintln_unless!(
-                    self.quiet,
-                    "    https://qlty.sh/gh/WORKSPACE/projects/PROJECT/coverage/uploads/ID"
-                );
-                eprintln_unless!(self.quiet, "");
+        eprintln_unless!(self.quiet, "    Method: OIDC");
+        eprintln_unless!(self.quiet, "    Token: {}", token);
+        // eprintln_unless!(self.quiet, "    Project: qltysh/qlty"); // ???
+        eprintln_unless!(self.quiet, "");
 
-                let timer = Instant::now();
-                upload.upload(&export)?;
+        eprintln_unless!(self.quiet, "{}", style(" UPLOADING... ").bold().reverse(),);
+        eprintln_unless!(self.quiet, "");
+        eprintln_unless!(self.quiet, "    Uploaded 771 B in 0.26s!");
+        eprintln_unless!(
+            self.quiet,
+            "    https://qlty.sh/gh/WORKSPACE/projects/PROJECT/coverage/uploads/ID"
+        );
+        eprintln_unless!(self.quiet, "");
 
-                let bytes = export.total_size_bytes()?;
-                // eprintln_unless!(
-                //     self.quiet,
-                //     "{}",
-                //     style(format!(
-                //         "  → Uploaded {} in {:.2}s!",
-                //         HumanBytes(bytes),
-                //         timer.elapsed().as_secs_f32()
-                //     ))
-                //     .dim()
-                // );
+        let timer = Instant::now();
+        upload.upload(&export)?;
 
-                // eprintln_unless!(self.quiet, "");
-                // eprintln_unless!(self.quiet, "View upload at https://qlty.sh");
-                eprintln_unless!(self.quiet, "    Uploaded 771 B in 0.26s!");
-                eprintln_unless!(
-                    self.quiet,
-                    "    https://qlty.sh/gh/WORKSPACE/projects/PROJECT/coverage/uploads/ID"
-                );
-                eprintln_unless!(self.quiet, "");
-            }
-            Err(err) => {
-                eprintln!("{}", style(format!("  → {}", err)).red());
-                std::process::exit(1);
-            }
-        }
+        let bytes = export.total_size_bytes()?;
+        // eprintln_unless!(
+        //     self.quiet,
+        //     "{}",
+        //     style(format!(
+        //         "  → Uploaded {} in {:.2}s!",
+        //         HumanBytes(bytes),
+        //         timer.elapsed().as_secs_f32()
+        //     ))
+        //     .dim()
+        // );
+
+        // eprintln_unless!(self.quiet, "");
+        // eprintln_unless!(self.quiet, "View upload at https://qlty.sh");
+        eprintln_unless!(self.quiet, "    Uploaded 771 B in 0.26s!");
+        eprintln_unless!(
+            self.quiet,
+            "    https://qlty.sh/gh/WORKSPACE/projects/PROJECT/coverage/uploads/ID"
+        );
+        eprintln_unless!(self.quiet, "");
 
         CommandSuccess::ok()
+    }
+
+    fn validate_plan(&self, plan: &Plan) -> Result<()> {
+        if plan.metadata.commit_sha.is_empty() {
+            bail!("Unable to determine commit SHA from the environment.\nPlease provide it using --override-commit-sha")
+        }
+
+        if plan.report_files.is_empty() {
+            bail!("No coverage reports data files were provided.")
+        }
+
+        Ok(())
     }
 
     fn print_initial_messages(&self) {
