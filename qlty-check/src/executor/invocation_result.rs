@@ -7,7 +7,7 @@ use anyhow::{Context, Result};
 use chrono::prelude::*;
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_config::{
-    config::{OutputDestination, OutputMissing, TargetType},
+    config::{IssueMode, OutputDestination, OutputMissing, TargetType},
     version::QLTY_VERSION,
 };
 use qlty_types::analysis::v1::{
@@ -387,7 +387,7 @@ impl InvocationResult {
                     category: Category::Style.into(),
                     level: Level::Fmt.into(),
                     rule_key: "fmt".to_string(),
-                    mode: IssueMode::Comment.into(),
+                    mode: IssueMode::Comment as i32,
                     tool: self.plan.plugin_name.clone(),
                     location: Some(Location {
                         path: prefixed_target_path_string.clone(),
