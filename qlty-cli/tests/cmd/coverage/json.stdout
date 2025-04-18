@@ -92,5 +92,11 @@
       "uploadedAt": "[..]",
       "branch": "feature-branch-1"
     }
-  ]
+  ],
+  "coverage_metrics": {
+    "covered_lines": 24,
+    "uncovered_lines": 2,
+    "total_lines": 26,
+    "coverage_percentage": 92.3076923076923
+  }
 }

@@ -1,11 +1,35 @@
 qlty [..] [..]-[..] ([..] debug [..])
 https://qlty.sh/d/coverage
 
-  Retrieving CI metadata...
-  → unknown CI commit "822641a8a442eab5981096a0d734ac180aa40106" on branch ""
+ SETTINGS 
 
-  Reading code coverage data...
-  → Found 1 files with code coverage data
+    dry-run: true
+    override-build-id: 123
+    override-commit-sha: 822641a8a442eab5981096a0d734ac180aa40106
 
-  Exporting code coverage data...
-  → Exported to "tmp/qlty-coverage"
+ METADATA 
+
+    CI: unknown
+    Commit: 822641a8a442eab5981096a0d734ac180aa40106
+    Build ID: 123
+
+ COVERAGE FILES: 1 
+
+    Coverage File  Format  Size
+    lcov.info      lcov    956 B
+
+ COVERAGE DATA 
+
+    2 unique code file paths
+
+    Covered Lines:      26
+    Uncovered Lines:     3
+    ----------------------------
+    Total Lines:        29
+
+    Coverage            89.7%
+
+ EXPORTING... 
+
+    Exported: tmp/qlty-coverage
+

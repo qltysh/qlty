@@ -87,5 +87,11 @@
       "commitSha": "2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67",
       "uploadedAt": "[..]"
     }
-  ]
+  ],
+  "coverage_metrics": {
+    "covered_lines": 24,
+    "uncovered_lines": 2,
+    "total_lines": 26,
+    "coverage_percentage": 92.3076923076923
+  }
 }

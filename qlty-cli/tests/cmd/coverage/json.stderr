@@ -1,11 +1,37 @@
 qlty [..] [..]-[..] ([..] debug [..])
 https://qlty.sh/d/coverage
 
-  Retrieving CI metadata...
-  → GitHub CI commit "2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67" on branch "feature-branch-1"
+ SETTINGS 
 
-  Reading code coverage data...
-  → Found 1 files with code coverage data
+    dry-run: true
+    tag: rails
+    override-commit-sha: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
+    transform-add-prefix: rails/
 
-  Exporting code coverage data...
-  → Exported to "tmp/qlty-coverage"
+ METADATA 
+
+    CI: GitHub
+    Commit: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
+    Branch: feature-branch-1
+    Build ID: 42:2
+
+ COVERAGE FILES: 1 
+
+    Coverage File  Format  Size
+    lcov.info      lcov    903 B
+
+ COVERAGE DATA 
+
+    1 unique code file paths
+
+    Covered Lines:      24
+    Uncovered Lines:     2
+    ----------------------------
+    Total Lines:        26
+
+    Coverage            92.3%
+
+ EXPORTING... 
+
+    Exported: tmp/qlty-coverage
+
