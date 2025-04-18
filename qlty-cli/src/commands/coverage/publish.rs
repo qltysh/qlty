@@ -393,20 +393,12 @@ impl Publish {
         upload.upload(&export)?;
 
         let bytes = export.total_size_bytes()?;
-        // eprintln_unless!(
-        //     self.quiet,
-        //     "{}",
-        //     style(format!(
-        //         "  → Uploaded {} in {:.2}s!",
-        //         HumanBytes(bytes),
-        //         timer.elapsed().as_secs_f32()
-        //     ))
-        //     .dim()
-        // );
-
-        // eprintln_unless!(self.quiet, "");
-        // eprintln_unless!(self.quiet, "View upload at https://qlty.sh");
-        eprintln_unless!(self.quiet, "    Uploaded 771 B in 0.26s!");
+        eprintln_unless!(
+            self.quiet,
+            "    Uploaded {} in {:.2}s!",
+            HumanBytes(bytes),
+            timer.elapsed().as_secs_f32()
+        );
         eprintln_unless!(
             self.quiet,
             "    https://qlty.sh/gh/WORKSPACE/projects/PROJECT/coverage/uploads/ID"
