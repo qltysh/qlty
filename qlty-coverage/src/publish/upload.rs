@@ -13,6 +13,7 @@ const LEGACY_API_URL: &str = "https://qlty.sh/api";
 pub struct Upload {
     pub id: String,
     pub project_id: String,
+    pub url: String,
     pub coverage_url: String,
 }
 
@@ -46,6 +47,12 @@ impl Upload {
             .with_context(|| format!("Unable to find project ID in response body: {:?}", response))
             .context("Failed to extract project ID from response")?;
 
+        let url = response
+            .get("data")
+            .and_then(|data| data.get("url"))
+            .and_then(|url| url.as_str())
+            .unwrap_or_default(); // Optional
+
         report.set_upload_id(id);
         report.set_project_id(project_id);
 
@@ -53,6 +60,7 @@ impl Upload {
             id: id.to_string(),
             project_id: project_id.to_string(),
             coverage_url: coverage_url.to_string(),
+            url: url.to_string(),
         })
     }
 

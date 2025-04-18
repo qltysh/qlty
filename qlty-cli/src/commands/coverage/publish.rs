@@ -170,14 +170,10 @@ impl Publish {
         self.print_authentication_info(&token);
 
         let upload = Upload::prepare(&token, &mut report)?;
-
-        self.print_upload_start();
-
         let timer = Instant::now();
         upload.upload(&export)?;
-
         let bytes = export.total_size_bytes()?;
-        self.print_upload_complete(bytes, timer.elapsed().as_secs_f32());
+        self.print_upload_complete(bytes, timer.elapsed().as_secs_f32(), &upload.url);
 
         CommandSuccess::ok()
     }
@@ -506,27 +502,22 @@ impl Publish {
         eprintln_unless!(self.quiet, "");
     }
 
-    fn print_upload_start(&self) {
-        self.print_section_header(" UPLOADING... ");
-        eprintln_unless!(self.quiet, "    Uploaded 771 B in 0.26s!");
-        eprintln_unless!(
-            self.quiet,
-            "    https://qlty.sh/gh/WORKSPACE/projects/PROJECT/coverage/uploads/ID"
-        );
-        eprintln_unless!(self.quiet, "");
-    }
-
-    fn print_upload_complete(&self, bytes: u64, elapsed_seconds: f32) {
+    fn print_upload_complete(&self, bytes: u64, elapsed_seconds: f32, url: &str) {
         eprintln_unless!(
             self.quiet,
             "    Uploaded {} in {:.2}s!",
             HumanBytes(bytes),
             elapsed_seconds
         );
-        eprintln_unless!(
-            self.quiet,
-            "    https://qlty.sh/gh/WORKSPACE/projects/PROJECT/coverage/uploads/ID"
-        );
+
+        if !url.is_empty() {
+            eprintln_unless!(
+                self.quiet,
+                "    {}",
+                style(format!("View report: {}", url)).bold()
+            );
+        }
+
         eprintln_unless!(self.quiet, "");
     }
 
