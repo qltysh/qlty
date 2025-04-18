@@ -81,11 +81,12 @@ pub struct Publish {
     /// JSON output
     pub json: bool,
 
+    #[arg(long, hide = true)]
+    /// Print a summary
+    pub summary: bool,
+
     #[clap(long, short)]
     pub quiet: bool,
-
-    // Paths to coverage reports
-    pub paths: Vec<String>,
 
     #[arg(long, hide = true)]
     pub skip_missing_files: bool,
@@ -94,6 +95,9 @@ pub struct Publish {
     /// The total number of parts that qlty cloud should expect. Each call to qlty publish will upload one part.
     /// (The total parts count is per coverage tag e.g. if you have 2 tags each with 3 parts, you should set this to 3)
     pub total_parts_count: Option<u32>,
+
+    // Paths to coverage reports
+    pub paths: Vec<String>,
 }
 
 impl Publish {
@@ -410,61 +414,63 @@ impl Publish {
 
         eprintln_unless!(self.quiet, "");
 
-        // Get formatted numbers first
-        let covered_lines = report
-            .coverage_metrics
-            .covered_lines
-            .to_formatted_string(&Locale::en);
-        let uncovered_lines = report
-            .coverage_metrics
-            .uncovered_lines
-            .to_formatted_string(&Locale::en);
-        let total_lines = report
-            .coverage_metrics
-            .total_lines
-            .to_formatted_string(&Locale::en);
+        if self.summary {
+            // Get formatted numbers first
+            let covered_lines = report
+                .coverage_metrics
+                .covered_lines
+                .to_formatted_string(&Locale::en);
+            let uncovered_lines = report
+                .coverage_metrics
+                .uncovered_lines
+                .to_formatted_string(&Locale::en);
+            let total_lines = report
+                .coverage_metrics
+                .total_lines
+                .to_formatted_string(&Locale::en);
 
-        // Find the longest number for consistent spacing
-        let max_length = [&covered_lines, &uncovered_lines, &total_lines]
-            .iter()
-            .map(|s| s.len())
-            .max()
-            .unwrap_or(0);
+            // Find the longest number for consistent spacing
+            let max_length = [&covered_lines, &uncovered_lines, &total_lines]
+                .iter()
+                .map(|s| s.len())
+                .max()
+                .unwrap_or(0);
 
-        eprintln_unless!(
-            self.quiet,
-            "    Covered Lines:      {:>width$}",
-            covered_lines,
-            width = max_length
-        );
-        eprintln_unless!(
-            self.quiet,
-            "    Uncovered Lines:    {:>width$}",
-            uncovered_lines,
-            width = max_length
-        );
+            eprintln_unless!(
+                self.quiet,
+                "    Covered Lines:      {:>width$}",
+                covered_lines,
+                width = max_length
+            );
+            eprintln_unless!(
+                self.quiet,
+                "    Uncovered Lines:    {:>width$}",
+                uncovered_lines,
+                width = max_length
+            );
 
-        // Make the separator line match the width of the numbers
-        let separator = "-".repeat(max_length + 26);
-        eprintln_unless!(self.quiet, "    {}", separator);
+            // Make the separator line match the width of the numbers
+            let separator = "-".repeat(max_length + 26);
+            eprintln_unless!(self.quiet, "    {}", separator);
 
-        eprintln_unless!(
-            self.quiet,
-            "    Total Lines:        {:>width$}",
-            total_lines,
-            width = max_length
-        );
-        eprintln_unless!(self.quiet, "");
-        eprintln_unless!(
-            self.quiet,
-            "    {}",
-            style(format!(
-                "Coverage            {:.1}%",
-                report.coverage_metrics.coverage_percentage
-            ))
-            .bold()
-        );
-        eprintln_unless!(self.quiet, "");
+            eprintln_unless!(
+                self.quiet,
+                "    Total Lines:        {:>width$}",
+                total_lines,
+                width = max_length
+            );
+            eprintln_unless!(self.quiet, "");
+            eprintln_unless!(
+                self.quiet,
+                "    {}",
+                style(format!(
+                    "Coverage            {:.1}%",
+                    report.coverage_metrics.coverage_percentage
+                ))
+                .bold()
+            );
+            eprintln_unless!(self.quiet, "");
+        }
     }
 
     fn print_export_status(&self, export_path: &Option<PathBuf>) {
