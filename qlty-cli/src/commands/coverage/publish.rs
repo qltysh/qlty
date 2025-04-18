@@ -286,18 +286,55 @@ impl Publish {
         eprintln_unless!(self.quiet, "{}", written);
 
         let results = Reader::new(&plan).read()?;
+        let total_unique_file_coverages_paths_count = results
+            .file_coverages
+            .iter()
+            .map(|f| f.path.clone())
+            .collect::<std::collections::HashSet<_>>()
+            .len();
+
         let mut report = Processor::new(&plan, results).compute()?;
 
-        eprintln_unless!(
-            self.quiet,
-            "{}",
-            style(" CODE FILES: 85,432 ").bold().reverse(),
-        );
+        let processed_unique_file_coverages_paths_count = report
+            .file_coverages
+            .iter()
+            .map(|f| f.path.clone())
+            .collect::<std::collections::HashSet<_>>()
+            .len();
+
+        eprintln_unless!(self.quiet, "{}", style(" COVERAGE DATA ").bold().reverse(),);
         eprintln_unless!(self.quiet, "");
-        eprintln_unless!(self.quiet, "    Found:      941 files");
-        eprintln_unless!(self.quiet, "    Missing:      0 files");
-        eprintln_unless!(self.quiet, "");
-        eprintln_unless!(self.quiet, "{}", style(" LINE COVERAGE ").bold().reverse(),);
+
+        if self.skip_missing_files {
+            eprintln_unless!(
+                self.quiet,
+                "    {} unique code file paths",
+                total_unique_file_coverages_paths_count
+            );
+            let missing = total_unique_file_coverages_paths_count
+                - processed_unique_file_coverages_paths_count;
+
+            if missing > 0 {
+                eprintln_unless!(
+                    self.quiet,
+                    "    {}",
+                    style(format!("Skipping {} missing paths", missing)).bold()
+                );
+            } else {
+                eprintln_unless!(
+                    self.quiet,
+                    "    {}",
+                    style("All paths were found on disk, skipping none.").dim()
+                );
+            }
+        } else {
+            eprintln_unless!(
+                self.quiet,
+                "    {} unique code file paths",
+                processed_unique_file_coverages_paths_count
+            );
+        }
+
         eprintln_unless!(self.quiet, "");
         eprintln_unless!(self.quiet, "    Covered Lines:      1,302");
         eprintln_unless!(self.quiet, "    Uncoverd Lines:     2,402");
@@ -316,8 +353,12 @@ impl Publish {
         let export = report.export_to(self.output_dir.clone())?;
         eprintln_unless!(
             self.quiet,
-            "    Exported: {:?}",
-            export.to.as_ref().unwrap()
+            "    Exported: {}",
+            export
+                .to
+                .as_ref()
+                .unwrap_or(&PathBuf::from("ERROR"))
+                .to_string_lossy()
         );
 
         if self.dry_run {
