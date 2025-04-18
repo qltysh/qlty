@@ -13,7 +13,8 @@ pub use gitlab::GitLab;
 use qlty_types::tests::v1::CoverageMetadata;
 pub use semaphore::Semaphore;
 
-const QLTY_CI_ACTION_VERSION: &str = "QLTY_CI_ACTION_VERSION";
+const QLTY_CI_UPLOADER_TOOL: &str = "QLTY_CI_UPLOADER_TOOL";
+const QLTY_CI_UPLOADER_TOOL_VERSION: &str = "QLTY_CI_UPLOADER_TOOL_VERSION";
 
 pub trait CI {
     fn detect(&self) -> bool;
@@ -47,28 +48,14 @@ pub trait CI {
     fn build_url(&self) -> String;
 
     fn metadata(&self) -> CoverageMetadata {
-        let ci_action_version = std::env::var(QLTY_CI_ACTION_VERSION).ok();
-        let mut uploader_tool = None;
-        let mut uploader_tool_version = None;
-
-        if let Some(version) = ci_action_version {
-            let mut parts = version.split('@');
-            if let Some(tool) = parts.next() {
-                uploader_tool = Some(tool.to_string());
-            }
-            if let Some(version) = parts.next() {
-                uploader_tool_version = Some(version.to_string());
-            }
-        }
-
         CoverageMetadata {
             ci: self.ci_name(),
             build_id: self.build_id(),
             commit_sha: self.commit_sha(),
             branch: self.branch(),
             pull_request_number: self.pull_number(),
-            uploader_tool,
-            uploader_tool_version,
+            uploader_tool: std::env::var(QLTY_CI_UPLOADER_TOOL).ok(),
+            uploader_tool_version: std::env::var(QLTY_CI_UPLOADER_TOOL_VERSION).ok(),
             publish_command: std::env::args().collect::<Vec<String>>().join(" "),
             ..Default::default()
         }
