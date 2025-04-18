@@ -11,8 +11,9 @@ pub use all_source::AllSource;
 pub use args_source::ArgsSource;
 pub use diff_source::DiffSource;
 pub use matchers::{
-    AndMatcher, AnyMatcher, FileMatcher, GlobsMatcher, IgnoreGroupsMatcher, LanguageGlobsMatcher,
-    LanguagesShebangMatcher, OrMatcher, PrefixMatcher, WorkspaceEntryMatcher,
+    AndMatcher, AnyMatcher, ExcludeGroupsMatcher, FileMatcher, GlobsMatcher, LanguageGlobsMatcher,
+    LanguagesShebangMatcher, OrMatcher, PluginSpecificExcludeMatcher, PrefixMatcher,
+    WorkspaceEntryMatcher,
 };
 pub use target_mode::TargetMode;
 pub use workspace_entry::{WorkspaceEntry, WorkspaceEntryKind, WorkspaceEntrySource};

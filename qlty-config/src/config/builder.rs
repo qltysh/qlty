@@ -1,12 +1,11 @@
-use std::path::Path;
-
-use super::Ignore;
+use super::exclude::Exclude;
 use crate::sources::SourcesList;
 use crate::{workspace::Workspace, TomlMerge};
 use crate::{Library, QltyConfig};
 use anyhow::{anyhow, bail, Context as _, Result};
 use config::{Config, File, FileFormat};
 use console::style;
+use std::path::Path;
 use toml::Value;
 use tracing::trace;
 
@@ -160,8 +159,25 @@ impl Builder {
             all_exclude_patterns.extend(config.ignore_patterns.clone());
         }
 
+        if !config.ignore.is_empty() {
+            eprintln!(
+                "{} The `{}` field in qlty.toml is deprecated. Please use `{}` instead.",
+                style("WARNING:").bold().yellow(),
+                style("ignore").bold(),
+                style("exclude").bold()
+            );
+
+            for ignore in &config.ignore {
+                config.exclude.push(Exclude {
+                    file_patterns: ignore.file_patterns.clone(),
+                    plugins: ignore.plugins.clone(),
+                    ..Default::default()
+                });
+            }
+        }
+
         if !all_exclude_patterns.is_empty() {
-            config.ignore.push(Ignore {
+            config.exclude.push(Exclude {
                 file_patterns: all_exclude_patterns.clone(),
                 ..Default::default()
             });
