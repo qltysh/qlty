@@ -12,8 +12,10 @@ use qlty_coverage::eprintln_unless;
 use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
 use qlty_coverage::publish::{Plan, Planner, Processor, Reader, Report, Settings, Upload};
+use std::io::Write as _;
 use std::path::PathBuf;
 use std::time::Instant;
+use tabwriter::TabWriter;
 use tracing::debug;
 
 const COVERAGE_TOKEN_WORKSPACE_PREFIX: &str = "qltcw_";
@@ -106,72 +108,56 @@ impl Publish {
             eprintln_unless!(self.quiet, "    report-format: {}", report_format);
             printed_settings = true;
         }
-        if self.output_dir.is_some() {
+        if let Some(output_dir) = &self.output_dir {
             eprintln_unless!(
                 self.quiet,
                 "    output-dir: {}",
-                self.output_dir.as_ref().unwrap().to_string_lossy()
+                output_dir.to_string_lossy()
             );
             printed_settings = true;
         }
-        if self.tag.is_some() {
-            eprintln_unless!(self.quiet, "    tag: {}", self.tag.as_ref().unwrap());
+        if let Some(tag) = &self.tag {
+            eprintln_unless!(self.quiet, "    tag: {}", tag);
             printed_settings = true;
         }
-        if self.override_build_id.is_some() {
-            eprintln_unless!(
-                self.quiet,
-                "    override-build-id: {}",
-                self.override_build_id.as_ref().unwrap()
-            );
+        if let Some(override_build_id) = &self.override_build_id {
+            eprintln_unless!(self.quiet, "    override-build-id: {}", override_build_id);
             printed_settings = true;
         }
-        if self.override_branch.is_some() {
-            eprintln_unless!(
-                self.quiet,
-                "    override-branch: {}",
-                self.override_branch.as_ref().unwrap()
-            );
+        if let Some(override_branch) = &self.override_branch {
+            eprintln_unless!(self.quiet, "    override-branch: {}", override_branch);
             printed_settings = true;
         }
-        if self.override_commit_sha.is_some() {
+        if let Some(override_commit_sha) = &self.override_commit_sha {
             eprintln_unless!(
                 self.quiet,
                 "    override-commit-sha: {}",
-                self.override_commit_sha.as_ref().unwrap()
+                override_commit_sha
             );
             printed_settings = true;
         }
-        if self.override_pr_number.is_some() {
-            eprintln_unless!(
-                self.quiet,
-                "    override-pr-number: {}",
-                self.override_pr_number.as_ref().unwrap()
-            );
+        if let Some(override_pr_number) = &self.override_pr_number {
+            eprintln_unless!(self.quiet, "    override-pr-number: {}", override_pr_number);
             printed_settings = true;
         }
-        if self.transform_add_prefix.is_some() {
+        if let Some(transform_add_prefix) = &self.transform_add_prefix {
             eprintln_unless!(
                 self.quiet,
                 "    transform-add-prefix: {}",
-                self.transform_add_prefix.as_ref().unwrap()
+                transform_add_prefix
             );
             printed_settings = true;
         }
-        if self.transform_strip_prefix.is_some() {
+        if let Some(transform_strip_prefix) = &self.transform_strip_prefix {
             eprintln_unless!(
                 self.quiet,
                 "    transform-strip-prefix: {}",
-                self.transform_strip_prefix.as_ref().unwrap()
+                transform_strip_prefix
             );
             printed_settings = true;
         }
-        if self.project.is_some() {
-            eprintln_unless!(
-                self.quiet,
-                "    project: {}",
-                self.project.as_ref().unwrap()
-            );
+        if let Some(project) = &self.project {
+            eprintln_unless!(self.quiet, "    project: {}", project);
             printed_settings = true;
         }
 
@@ -184,12 +170,8 @@ impl Publish {
             printed_settings = true;
         }
 
-        if self.total_parts_count.is_some() {
-            eprintln_unless!(
-                self.quiet,
-                "    total-parts-count: {}",
-                self.total_parts_count.as_ref().unwrap()
-            );
+        if let Some(total_parts_count) = self.total_parts_count {
+            eprintln_unless!(self.quiet, "    total-parts-count: {}", total_parts_count);
             printed_settings = true;
         }
 
@@ -224,25 +206,87 @@ impl Publish {
 
         eprintln_unless!(self.quiet, "{}", style(" METADATA ").bold().reverse(),);
         eprintln_unless!(self.quiet, "");
-        eprintln_unless!(self.quiet, "    CI: GitHub");
-        eprintln_unless!(self.quiet, "    Commit: deadbeef");
-        eprintln_unless!(self.quiet, "    Pull Request: #1234");
-        eprintln_unless!(self.quiet, "    Branch: features/mine");
-        eprintln_unless!(self.quiet, "    Build: https://URL");
+        if !plan.metadata.ci.is_empty() {
+            eprintln_unless!(self.quiet, "    CI: {}", plan.metadata.ci);
+        }
+
+        eprintln_unless!(self.quiet, "    Commit: {}", plan.metadata.commit_sha);
+        if !plan.metadata.pull_request_number.is_empty() {
+            eprintln_unless!(
+                self.quiet,
+                "    Pull Request: #{}",
+                plan.metadata.pull_request_number
+            );
+        }
+
+        if !plan.metadata.branch.is_empty() {
+            eprintln_unless!(self.quiet, "    Branch: {}", plan.metadata.branch);
+        }
+
+        if !plan.metadata.build_id.is_empty() {
+            eprintln_unless!(self.quiet, "    Build ID: {}", plan.metadata.build_id);
+        }
+
         eprintln_unless!(self.quiet, "");
         eprintln_unless!(
             self.quiet,
             "{}{}{}",
             style(" COVERAGE FILES: ").bold().reverse(),
-            style(2.to_formatted_string(&Locale::en)).bold().reverse(),
+            style(plan.report_files.len().to_formatted_string(&Locale::en))
+                .bold()
+                .reverse(),
             style(" ").bold().reverse()
         );
         eprintln_unless!(self.quiet, "");
-        eprintln_unless!(self.quiet, "    File        Format      Size");
-        eprintln_unless!(self.quiet, "    -----------------------------");
-        eprintln_unless!(self.quiet, "    file1.lcov  LCOV        3 mb");
-        eprintln_unless!(self.quiet, "    file2.lcov  LCOV        1 mb");
-        eprintln_unless!(self.quiet, "");
+        // eprintln_unless!(self.quiet, "    File        Format      Size");
+        // eprintln_unless!(self.quiet, "    -----------------------------");
+        // eprintln_unless!(self.quiet, "    file1.lcov  LCOV        3 mb");
+        // eprintln_unless!(self.quiet, "    file2.lcov  LCOV        1 mb");
+
+        let mut tw = TabWriter::new(vec![]);
+
+        tw.write_all(
+            format!(
+                "    {}\t{}\t{}\n",
+                style("Coverage File").bold().underlined(),
+                style("Format").bold().underlined(),
+                style("Size").bold().underlined(),
+            )
+            .as_bytes(),
+        )
+        .unwrap();
+
+        for report_file in &plan.report_files {
+            if let Ok(size_bytes) = std::fs::metadata(&report_file.path).map(|m| m.len()) {
+                tw.write_all(
+                    format!(
+                        "    {}\t{}\t{}\n",
+                        report_file.path,
+                        report_file.format,
+                        HumanBytes(size_bytes),
+                    )
+                    .as_bytes(),
+                )
+                .unwrap();
+            } else {
+                tw.write_all(
+                    format!(
+                        "    {}\t{}\t{}\n",
+                        report_file.path, report_file.format, "Unknown",
+                    )
+                    .as_bytes(),
+                )
+                .unwrap();
+            }
+        }
+
+        tw.flush().unwrap();
+        let written = String::from_utf8(tw.into_inner().unwrap()).unwrap();
+
+        eprintln_unless!(self.quiet, "{}", written);
+
+        let results = Reader::new(&plan).read()?;
+        let mut report = Processor::new(&plan, results).compute()?;
 
         eprintln_unless!(
             self.quiet,
@@ -261,9 +305,6 @@ impl Publish {
         eprintln_unless!(self.quiet, "    Total Lines:        3,405");
         eprintln_unless!(self.quiet, "    Coverage            34.5%");
         eprintln_unless!(self.quiet, "");
-
-        let results = Reader::new(&plan).read()?;
-        let mut report = Processor::new(&plan, results).compute()?;
 
         if self.print {
             self.show_report(&report)?;
