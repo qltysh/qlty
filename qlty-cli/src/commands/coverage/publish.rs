@@ -97,8 +97,109 @@ impl Publish {
     // TODO: Use CommandSuccess and CommandError, which is not straight forward since those types aren't available here.
     pub fn execute(&self, _args: &crate::Arguments) -> Result<CommandSuccess, CommandError> {
         self.print_initial_messages();
-        eprintln_unless!(self.quiet, "{}", style(" SETTINGS ").bold().reverse(),);
+        self.print_settings();
+
+        self.validate_options()?;
+
+        let token = self.load_auth_token()?;
+
+        let plan = Planner::new(
+            &Self::load_config(),
+            &Settings {
+                override_build_id: self.override_build_id.clone(),
+                override_commit_sha: self.override_commit_sha.clone(),
+                override_branch: self.override_branch.clone(),
+                override_pull_request_number: self.override_pr_number.clone(),
+                add_prefix: self.transform_add_prefix.clone(),
+                strip_prefix: self.transform_strip_prefix.clone(),
+                tag: self.tag.clone(),
+                report_format: self.report_format,
+                paths: self.paths.clone(),
+                skip_missing_files: self.skip_missing_files,
+                total_parts_count: self.total_parts_count,
+            },
+        )
+        .compute()?;
+
+        self.validate_plan(&plan)?;
+
+        self.print_metadata(&plan);
+        self.print_coverage_files(&plan);
+
+        let results = Reader::new(&plan).read()?;
+        let total_unique_file_coverages_paths_count = results
+            .file_coverages
+            .iter()
+            .map(|f| f.path.clone())
+            .collect::<std::collections::HashSet<_>>()
+            .len();
+
+        let mut report = Processor::new(&plan, results).compute()?;
+
+        let processed_unique_file_coverages_paths_count = report
+            .file_coverages
+            .iter()
+            .map(|f| f.path.clone())
+            .collect::<std::collections::HashSet<_>>()
+            .len();
+
+        self.print_coverage_data(
+            &report,
+            total_unique_file_coverages_paths_count,
+            processed_unique_file_coverages_paths_count,
+        );
+
+        if self.print {
+            self.show_report(&report)?;
+        }
+
+        let export = report.export_to(self.output_dir.clone())?;
+        self.print_export_status(&export.to);
+
+        if self.dry_run {
+            return CommandSuccess::ok();
+        }
+
+        self.print_authentication_info(&token);
+
+        let upload = Upload::prepare(&token, &mut report)?;
+
+        self.print_upload_start();
+
+        let timer = Instant::now();
+        upload.upload(&export)?;
+
+        let bytes = export.total_size_bytes()?;
+        self.print_upload_complete(bytes, timer.elapsed().as_secs_f32());
+
+        CommandSuccess::ok()
+    }
+
+    fn validate_plan(&self, plan: &Plan) -> Result<()> {
+        if plan.metadata.commit_sha.is_empty() {
+            bail!("Unable to determine commit SHA from the environment.\nPlease provide it using --override-commit-sha")
+        }
+
+        if plan.report_files.is_empty() {
+            bail!("No coverage reports data files were provided.")
+        }
+
+        Ok(())
+    }
+
+    fn print_initial_messages(&self) {
+        eprintln_unless!(self.quiet, "qlty {}", LONG_VERSION.as_str());
+        eprintln_unless!(self.quiet, "{}", style("https://qlty.sh/d/coverage").dim());
         eprintln_unless!(self.quiet, "");
+    }
+
+    fn print_section_header(&self, title: &str) {
+        eprintln_unless!(self.quiet, "{}", style(title).bold().reverse());
+        eprintln_unless!(self.quiet, "");
+    }
+
+    fn print_settings(&self) {
+        self.print_section_header(" SETTINGS ");
         let mut printed_settings = false;
         if self.dry_run {
             eprintln_unless!(self.quiet, "    dry-run: {}", self.dry_run);
@@ -179,33 +280,10 @@ impl Publish {
             eprintln_unless!(self.quiet, "    No settings provided");
         }
         eprintln_unless!(self.quiet, "");
+    }
 
-        self.validate_options()?;
-
-        let token = self.load_auth_token()?;
-
-        let plan = Planner::new(
-            &Self::load_config(),
-            &Settings {
-                override_build_id: self.override_build_id.clone(),
-                override_commit_sha: self.override_commit_sha.clone(),
-                override_branch: self.override_branch.clone(),
-                override_pull_request_number: self.override_pr_number.clone(),
-                add_prefix: self.transform_add_prefix.clone(),
-                strip_prefix: self.transform_strip_prefix.clone(),
-                tag: self.tag.clone(),
-                report_format: self.report_format,
-                paths: self.paths.clone(),
-                skip_missing_files: self.skip_missing_files,
-                total_parts_count: self.total_parts_count,
-            },
-        )
-        .compute()?;
-
-        self.validate_plan(&plan)?;
-
-        eprintln_unless!(self.quiet, "{}", style(" METADATA ").bold().reverse(),);
-        eprintln_unless!(self.quiet, "");
+    fn print_metadata(&self, plan: &Plan) {
+        self.print_section_header(" METADATA ");
         if !plan.metadata.ci.is_empty() {
             eprintln_unless!(self.quiet, "    CI: {}", plan.metadata.ci);
         }
@@ -228,6 +306,9 @@ impl Publish {
         }
 
         eprintln_unless!(self.quiet, "");
+    }
+
+    fn print_coverage_files(&self, plan: &Plan) {
         eprintln_unless!(
             self.quiet,
             "{}{}{}",
@@ -238,10 +319,6 @@ impl Publish {
             style(" ").bold().reverse()
         );
         eprintln_unless!(self.quiet, "");
-        // eprintln_unless!(self.quiet, "    File        Format      Size");
-        // eprintln_unless!(self.quiet, "    -----------------------------");
-        // eprintln_unless!(self.quiet, "    file1.lcov  LCOV        3 mb");
-        // eprintln_unless!(self.quiet, "    file2.lcov  LCOV        1 mb");
 
         let mut tw = TabWriter::new(vec![]);
 
@@ -284,26 +361,15 @@ impl Publish {
         let written = String::from_utf8(tw.into_inner().unwrap()).unwrap();
 
         eprintln_unless!(self.quiet, "{}", written);
+    }
 
-        let results = Reader::new(&plan).read()?;
-        let total_unique_file_coverages_paths_count = results
-            .file_coverages
-            .iter()
-            .map(|f| f.path.clone())
-            .collect::<std::collections::HashSet<_>>()
-            .len();
-
-        let mut report = Processor::new(&plan, results).compute()?;
-
-        let processed_unique_file_coverages_paths_count = report
-            .file_coverages
-            .iter()
-            .map(|f| f.path.clone())
-            .collect::<std::collections::HashSet<_>>()
-            .len();
-
-        eprintln_unless!(self.quiet, "{}", style(" COVERAGE DATA ").bold().reverse(),);
-        eprintln_unless!(self.quiet, "");
+    fn print_coverage_data(
+        &self,
+        report: &Report,
+        total_unique_file_coverages_paths_count: usize,
+        processed_unique_file_coverages_paths_count: usize,
+    ) {
+        self.print_section_header(" COVERAGE DATA ");
 
         if self.skip_missing_files {
             eprintln_unless!(
@@ -396,87 +462,49 @@ impl Publish {
             .bold()
         );
         eprintln_unless!(self.quiet, "");
+    }
 
-        if self.print {
-            self.show_report(&report)?;
-        }
-
-        eprintln_unless!(self.quiet, "{}", style(" EXPORTING... ").bold().reverse(),);
-        eprintln_unless!(self.quiet, "");
-
-        let export = report.export_to(self.output_dir.clone())?;
+    fn print_export_status(&self, export_path: &Option<PathBuf>) {
+        self.print_section_header(" EXPORTING... ");
         eprintln_unless!(
             self.quiet,
             "    Exported: {}",
-            export
-                .to
+            export_path
                 .as_ref()
                 .unwrap_or(&PathBuf::from("ERROR"))
                 .to_string_lossy()
         );
-
-        if self.dry_run {
-            return CommandSuccess::ok();
-        }
-
         eprintln_unless!(self.quiet, "");
-        eprintln_unless!(
-            self.quiet,
-            "{}",
-            style(" AUTHENTICATING... ").bold().reverse(),
-        );
-        eprintln_unless!(self.quiet, "");
+    }
 
-        let upload = Upload::prepare(&token, &mut report)?;
-
+    fn print_authentication_info(&self, token: &str) {
+        self.print_section_header(" AUTHENTICATING... ");
         eprintln_unless!(self.quiet, "    Method: OIDC");
         eprintln_unless!(self.quiet, "    Token: {}", token);
-        // eprintln_unless!(self.quiet, "    Project: qltysh/qlty"); // ???
         eprintln_unless!(self.quiet, "");
+    }
 
-        eprintln_unless!(self.quiet, "{}", style(" UPLOADING... ").bold().reverse(),);
-        eprintln_unless!(self.quiet, "");
+    fn print_upload_start(&self) {
+        self.print_section_header(" UPLOADING... ");
         eprintln_unless!(self.quiet, "    Uploaded 771 B in 0.26s!");
         eprintln_unless!(
             self.quiet,
             "    https://qlty.sh/gh/WORKSPACE/projects/PROJECT/coverage/uploads/ID"
         );
         eprintln_unless!(self.quiet, "");
+    }
 
-        let timer = Instant::now();
-        upload.upload(&export)?;
-
-        let bytes = export.total_size_bytes()?;
+    fn print_upload_complete(&self, bytes: u64, elapsed_seconds: f32) {
         eprintln_unless!(
             self.quiet,
             "    Uploaded {} in {:.2}s!",
             HumanBytes(bytes),
-            timer.elapsed().as_secs_f32()
+            elapsed_seconds
         );
         eprintln_unless!(
             self.quiet,
             "    https://qlty.sh/gh/WORKSPACE/projects/PROJECT/coverage/uploads/ID"
         );
-        eprintln_unless!(self.quiet, "");
-
-        CommandSuccess::ok()
-    }
-
-    fn validate_plan(&self, plan: &Plan) -> Result<()> {
-        if plan.metadata.commit_sha.is_empty() {
-            bail!("Unable to determine commit SHA from the environment.\nPlease provide it using --override-commit-sha")
-        }
-
-        if plan.report_files.is_empty() {
-            bail!("No coverage reports data files were provided.")
-        }
-
-        Ok(())
-    }
-
-    fn print_initial_messages(&self) {
-        eprintln_unless!(self.quiet, "qlty {}", LONG_VERSION.as_str());
-        eprintln_unless!(self.quiet, "{}", style("https://qlty.sh/d/coverage").dim());
         eprintln_unless!(self.quiet, "");
     }
 
