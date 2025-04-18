@@ -9,7 +9,8 @@ args = [
   "lcov.info",
   "--print",
   "--json",
-  "--skip-missing-files"
+  "--skip-missing-files",
+  "--summary"
 ]
 bin.name = "qlty"
 

@@ -636,6 +636,7 @@ mod tests {
             paths: vec![],
             skip_missing_files: false,
             total_parts_count: None,
+            summary: false,
         }
     }
 
