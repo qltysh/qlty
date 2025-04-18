@@ -12,6 +12,7 @@ use qlty_coverage::eprintln_unless;
 use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
 use qlty_coverage::publish::{Plan, Planner, Processor, Reader, Report, Settings, Upload};
+use regex::Regex;
 use std::io::Write as _;
 use std::path::PathBuf;
 use std::time::Instant;
@@ -19,6 +20,8 @@ use tabwriter::TabWriter;
 use tracing::debug;
 
 const COVERAGE_TOKEN_WORKSPACE_PREFIX: &str = "qltcw_";
+const COVERAGE_TOKEN_PROJECT_PREFIX: &str = "qltcp_";
+const OIDC_REGEX: &str = r"^([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+)$";
 
 #[derive(Debug, Args)]
 pub struct Publish {
@@ -479,7 +482,20 @@ impl Publish {
 
     fn print_authentication_info(&self, token: &str) {
         self.print_section_header(" AUTHENTICATING... ");
-        eprintln_unless!(self.quiet, "    Method: OIDC");
+        let token_type = if token.starts_with(COVERAGE_TOKEN_WORKSPACE_PREFIX) {
+            "Workspace Token"
+        } else if token.starts_with(COVERAGE_TOKEN_PROJECT_PREFIX) {
+            "Project Token"
+        } else {
+            let oidc_regex = Regex::new(OIDC_REGEX).unwrap();
+
+            if oidc_regex.is_match(token) {
+                "OIDC"
+            } else {
+                "Unknown"
+            }
+        };
+        eprintln_unless!(self.quiet, "    Method: {}", token_type);
         eprintln_unless!(self.quiet, "    Token: {}", token);
         eprintln_unless!(self.quiet, "");
     }
