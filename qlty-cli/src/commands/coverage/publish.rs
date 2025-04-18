@@ -340,30 +340,50 @@ impl Publish {
         }
 
         eprintln_unless!(self.quiet, "");
+
+        // Get formatted numbers first
+        let covered_lines = report
+            .coverage_metrics
+            .covered_lines
+            .to_formatted_string(&Locale::en);
+        let uncovered_lines = report
+            .coverage_metrics
+            .uncovered_lines
+            .to_formatted_string(&Locale::en);
+        let total_lines = report
+            .coverage_metrics
+            .total_lines
+            .to_formatted_string(&Locale::en);
+
+        // Find the longest number for consistent spacing
+        let max_length = [&covered_lines, &uncovered_lines, &total_lines]
+            .iter()
+            .map(|s| s.len())
+            .max()
+            .unwrap_or(0);
+
         eprintln_unless!(
             self.quiet,
-            "    Covered Lines:      {}",
-            report
-                .coverage_metrics
-                .covered_lines
-                .to_formatted_string(&Locale::en)
+            "    Covered Lines:      {:>width$}",
+            covered_lines,
+            width = max_length
         );
         eprintln_unless!(
             self.quiet,
-            "    Uncovered Lines:    {}",
-            report
-                .coverage_metrics
-                .uncovered_lines
-                .to_formatted_string(&Locale::en)
+            "    Uncovered Lines:    {:>width$}",
+            uncovered_lines,
+            width = max_length
         );
-        eprintln_unless!(self.quiet, "    -------------------------");
+
+        // Make the separator line match the width of the numbers
+        let separator = "-".repeat(max_length + 26);
+        eprintln_unless!(self.quiet, "    {}", separator);
+
         eprintln_unless!(
             self.quiet,
-            "    Total Lines:        {}",
-            report
-                .coverage_metrics
-                .total_lines
-                .to_formatted_string(&Locale::en)
+            "    Total Lines:        {:>width$}",
+            total_lines,
+            width = max_length
         );
         eprintln_unless!(self.quiet, "");
         eprintln_unless!(
