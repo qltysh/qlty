@@ -308,8 +308,12 @@ impl Publish {
         if self.skip_missing_files {
             eprintln_unless!(
                 self.quiet,
-                "    {} unique code file paths",
-                total_unique_file_coverages_paths_count
+                "{}",
+                style(format!(
+                    "    {} unique code file paths",
+                    total_unique_file_coverages_paths_count
+                ))
+                .dim()
             );
             let missing = total_unique_file_coverages_paths_count
                 - processed_unique_file_coverages_paths_count;
@@ -336,11 +340,41 @@ impl Publish {
         }
 
         eprintln_unless!(self.quiet, "");
-        eprintln_unless!(self.quiet, "    Covered Lines:      1,302");
-        eprintln_unless!(self.quiet, "    Uncoverd Lines:     2,402");
+        eprintln_unless!(
+            self.quiet,
+            "    Covered Lines:      {}",
+            report
+                .coverage_metrics
+                .covered_lines
+                .to_formatted_string(&Locale::en)
+        );
+        eprintln_unless!(
+            self.quiet,
+            "    Uncovered Lines:    {}",
+            report
+                .coverage_metrics
+                .uncovered_lines
+                .to_formatted_string(&Locale::en)
+        );
         eprintln_unless!(self.quiet, "    -------------------------");
-        eprintln_unless!(self.quiet, "    Total Lines:        3,405");
-        eprintln_unless!(self.quiet, "    Coverage            34.5%");
+        eprintln_unless!(
+            self.quiet,
+            "    Total Lines:        {}",
+            report
+                .coverage_metrics
+                .total_lines
+                .to_formatted_string(&Locale::en)
+        );
+        eprintln_unless!(self.quiet, "");
+        eprintln_unless!(
+            self.quiet,
+            "    {}",
+            style(format!(
+                "Coverage            {:.1}%",
+                report.coverage_metrics.coverage_percentage
+            ))
+            .bold()
+        );
         eprintln_unless!(self.quiet, "");
 
         if self.print {

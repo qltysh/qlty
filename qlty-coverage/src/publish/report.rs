@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use crate::export::CoverageExport;
+use crate::publish::processor::CoverageMetrics;
 use anyhow::Result;
 use qlty_types::tests::v1::{CoverageMetadata, FileCoverage, ReportFile};
 use serde::Serialize;
@@ -10,6 +11,7 @@ pub struct Report {
     pub metadata: CoverageMetadata,
     pub report_files: Vec<ReportFile>,
     pub file_coverages: Vec<FileCoverage>,
+    pub coverage_metrics: CoverageMetrics,
 }
 
 impl Report {
