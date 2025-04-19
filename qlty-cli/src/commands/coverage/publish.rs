@@ -203,14 +203,20 @@ impl Publish {
 
     fn print_settings(&self) {
         self.print_section_header(" SETTINGS ");
-        let mut printed_settings = false;
+
+        eprintln_unless!(
+            self.quiet,
+            "    cwd: {}",
+            std::env::current_dir()
+                .unwrap_or(PathBuf::from("ERROR"))
+                .to_string_lossy()
+        );
+
         if self.dry_run {
             eprintln_unless!(self.quiet, "    dry-run: {}", self.dry_run);
-            printed_settings = true;
         }
         if let Some(report_format) = &self.report_format {
             eprintln_unless!(self.quiet, "    report-format: {}", report_format);
-            printed_settings = true;
         }
         if let Some(output_dir) = &self.output_dir {
             eprintln_unless!(
@@ -218,19 +224,15 @@ impl Publish {
                 "    output-dir: {}",
                 output_dir.to_string_lossy()
             );
-            printed_settings = true;
         }
         if let Some(tag) = &self.tag {
             eprintln_unless!(self.quiet, "    tag: {}", tag);
-            printed_settings = true;
         }
         if let Some(override_build_id) = &self.override_build_id {
             eprintln_unless!(self.quiet, "    override-build-id: {}", override_build_id);
-            printed_settings = true;
         }
         if let Some(override_branch) = &self.override_branch {
             eprintln_unless!(self.quiet, "    override-branch: {}", override_branch);
-            printed_settings = true;
         }
         if let Some(override_commit_sha) = &self.override_commit_sha {
             eprintln_unless!(
@@ -238,11 +240,9 @@ impl Publish {
                 "    override-commit-sha: {}",
                 override_commit_sha
             );
-            printed_settings = true;
         }
         if let Some(override_pr_number) = &self.override_pr_number {
             eprintln_unless!(self.quiet, "    override-pr-number: {}", override_pr_number);
-            printed_settings = true;
         }
         if let Some(transform_add_prefix) = &self.transform_add_prefix {
             eprintln_unless!(
@@ -250,7 +250,6 @@ impl Publish {
                 "    transform-add-prefix: {}",
                 transform_add_prefix
             );
-            printed_settings = true;
         }
         if let Some(transform_strip_prefix) = &self.transform_strip_prefix {
             eprintln_unless!(
@@ -258,11 +257,9 @@ impl Publish {
                 "    transform-strip-prefix: {}",
                 transform_strip_prefix
             );
-            printed_settings = true;
         }
         if let Some(project) = &self.project {
             eprintln_unless!(self.quiet, "    project: {}", project);
-            printed_settings = true;
         }
 
         if self.skip_missing_files {
@@ -271,17 +268,12 @@ impl Publish {
                 "    skip-missing-files: {}",
                 self.skip_missing_files
             );
-            printed_settings = true;
         }
 
         if let Some(total_parts_count) = self.total_parts_count {
             eprintln_unless!(self.quiet, "    total-parts-count: {}", total_parts_count);
-            printed_settings = true;
         }
 
-        if !printed_settings {
-            eprintln_unless!(self.quiet, "    No settings provided");
-        }
         eprintln_unless!(self.quiet, "");
     }
 
@@ -337,11 +329,22 @@ impl Publish {
         .ok();
 
         for report_file in &plan.report_files {
+            let mut display_path = report_file.path.clone();
+
+            if let Ok(cwd) = std::env::current_dir() {
+                if let Some(relative_path) = pathdiff::diff_paths(display_path.clone(), cwd.clone())
+                {
+                    if let Some(path) = relative_path.to_str() {
+                        display_path = path.to_string();
+                    }
+                }
+            }
+
             if let Ok(size_bytes) = std::fs::metadata(&report_file.path).map(|m| m.len()) {
                 tw.write_all(
                     format!(
                         "    {}\t{}\t{}\n",
-                        report_file.path,
+                        display_path,
                         report_file.format,
                         HumanBytes(size_bytes),
                     )
@@ -389,10 +392,17 @@ impl Publish {
                 - processed_unique_file_coverages_paths_count;
 
             if missing > 0 {
+                let missing_percent =
+                    (missing as f32 / total_unique_file_coverages_paths_count as f32) * 100.0;
+
                 eprintln_unless!(
                     self.quiet,
                     "    {}",
-                    style(format!("Skipping {} missing paths", missing)).bold()
+                    style(format!(
+                        "Skipping {} missing paths ({:.1}%)",
+                        missing, missing_percent
+                    ))
+                    .bold()
                 );
             } else {
                 eprintln_unless!(
@@ -445,23 +455,12 @@ impl Publish {
                 uncovered_lines,
                 width = max_length
             );
-
-            // Make the separator line match the width of the numbers
-            let separator = "-".repeat(max_length + 26);
-            eprintln_unless!(self.quiet, "    {}", separator);
-
-            eprintln_unless!(
-                self.quiet,
-                "    Total Lines:        {:>width$}",
-                total_lines,
-                width = max_length
-            );
             eprintln_unless!(self.quiet, "");
             eprintln_unless!(
                 self.quiet,
                 "    {}",
                 style(format!(
-                    "Coverage            {:.1}%",
+                    "Line Coverage        {:.2}%",
                     report.coverage_metrics.coverage_percentage
                 ))
                 .bold()
@@ -474,7 +473,7 @@ impl Publish {
         self.print_section_header(" EXPORTING... ");
         eprintln_unless!(
             self.quiet,
-            "    Exported: {}",
+            "    Exported: {}/coverage.zip",
             export_path
                 .as_ref()
                 .unwrap_or(&PathBuf::from("ERROR"))
