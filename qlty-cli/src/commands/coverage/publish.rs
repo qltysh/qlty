@@ -387,42 +387,42 @@ impl Publish {
             .dim()
         );
 
-        let mut missing_paths = report.missing_files.clone();
-        missing_paths.sort();
+        let mut missing_files = report.missing_files.clone();
+        missing_files.sort();
 
-        if !missing_paths.is_empty() {
+        if !missing_files.is_empty() {
             let missing_percent =
-                (missing_paths.len() as f32 / original_paths.len() as f32) * 100.0;
+                (missing_files.len() as f32 / original_paths.len() as f32) * 100.0;
 
             eprintln_unless!(
                 self.quiet,
                 "    {}",
                 style(format!(
-                    "Skipping {} missing paths ({:.1}%)",
-                    missing_paths.len(),
+                    "{} paths are missing on disk ({:.1}%)",
+                    missing_files.len(),
                     missing_percent
                 ))
                 .bold()
             );
 
             let (paths_to_show, show_all) = if self.verbose {
-                (missing_paths.len(), true)
+                (missing_files.len(), true)
             } else {
-                (std::cmp::min(20, missing_paths.len()), false)
+                (std::cmp::min(20, missing_files.len()), false)
             };
 
             eprintln_unless!(
                 self.quiet,
-                "    {}",
-                style("Missing Paths:").bold().yellow()
+                "\n    {}\n",
+                style("Missing code files:").bold().yellow()
             );
 
-            for (_i, path) in missing_paths.iter().take(paths_to_show).enumerate() {
+            for (_i, path) in missing_files.iter().take(paths_to_show).enumerate() {
                 eprintln_unless!(self.quiet, "      {}", style(format!("{}", path)).yellow());
             }
 
-            if !show_all && paths_to_show < missing_paths.len() {
-                let remaining = missing_paths.len() - paths_to_show;
+            if !show_all && paths_to_show < missing_files.len() {
+                let remaining = missing_files.len() - paths_to_show;
                 eprintln_unless!(
                     self.quiet,
                     "      {}",
@@ -431,11 +431,34 @@ impl Publish {
             }
 
             eprintln_unless!(self.quiet, "");
+
+            if missing_percent > 10.0 {
+                eprintln_unless!(
+                    self.quiet,
+                    "    {} {}",
+                    style("TIP:").bold().yellow(),
+                    style("Consider using add-prefix or strip-prefix to fix paths").bold()
+                );
+            } else {
+                eprintln_unless!(
+                    self.quiet,
+                    "    {} Consider excluding these paths with your code coverage tool.",
+                    style("TIP:").bold()
+                )
+            }
+
+            eprintln_unless!(
+                self.quiet,
+                "    {}",
+                style("https://qlty.sh/d/coverage-path-fixing").dim()
+            );
+
+            eprintln_unless!(self.quiet, "");
         } else {
             eprintln_unless!(
                 self.quiet,
                 "    {}",
-                style("All paths were found on disk.").dim()
+                style("All code files in the coverage data were found on disk.").dim()
             );
         }
 

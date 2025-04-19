@@ -23,9 +23,14 @@ https://qlty.sh/d/coverage
  COVERAGE DATA 
 
     1 unique code file paths
-    Skipping 1 missing paths (50.0%)
-    Missing Paths:
+    1 paths are missing on disk (50.0%)
+
+    Missing code files:
+
       src/doesnt_exist.js
+
+    TIP: Consider using add-prefix or strip-prefix to fix paths
+    https://qlty.sh/d/coverage-path-fixing
 
 
     Covered Lines:      24
