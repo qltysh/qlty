@@ -3,6 +3,7 @@ https://qlty.sh/d/coverage
 
  SETTINGS 
 
+    cwd: [CWD]
     dry-run: true
     override-build-id: 123
     override-commit-sha: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
@@ -21,15 +22,17 @@ https://qlty.sh/d/coverage
  COVERAGE DATA 
 
     1 unique code file paths
+    Skipping 1 missing paths (100.0%)
+    Missing Paths:
+      formatter.js
+
 
     Covered Lines:      24
     Uncovered Lines:     2
-    ----------------------------
-    Total Lines:        26
 
-    Coverage            92.3%
+    Line Coverage        92.31%
 
  EXPORTING... 
 
-    Exported: tmp/qlty-coverage
+    Exported: tmp/qlty-coverage/coverage.zip
 

@@ -657,6 +657,7 @@ mod tests {
             skip_missing_files: false,
             total_parts_count: None,
             summary: false,
+            verbose: false,
         }
     }
 
