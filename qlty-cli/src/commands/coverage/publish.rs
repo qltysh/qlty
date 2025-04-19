@@ -334,7 +334,7 @@ impl Publish {
             )
             .as_bytes(),
         )
-        .unwrap();
+        .ok();
 
         for report_file in &plan.report_files {
             if let Ok(size_bytes) = std::fs::metadata(&report_file.path).map(|m| m.len()) {
@@ -347,7 +347,7 @@ impl Publish {
                     )
                     .as_bytes(),
                 )
-                .unwrap();
+                .ok();
             } else {
                 tw.write_all(
                     format!(
@@ -356,12 +356,13 @@ impl Publish {
                     )
                     .as_bytes(),
                 )
-                .unwrap();
+                .ok();
             }
         }
 
-        tw.flush().unwrap();
-        let written = String::from_utf8(tw.into_inner().unwrap()).unwrap();
+        tw.flush().ok();
+        let written =
+            String::from_utf8(tw.into_inner().unwrap_or_default()).unwrap_or("ERROR".to_string());
 
         eprintln_unless!(self.quiet, "{}", written);
     }
@@ -489,12 +490,14 @@ impl Publish {
         } else if token.starts_with(COVERAGE_TOKEN_PROJECT_PREFIX) {
             "Project Token"
         } else {
-            let oidc_regex = Regex::new(OIDC_REGEX).unwrap();
-
-            if oidc_regex.is_match(token) {
-                "OIDC"
+            if let Ok(oidc_regex) = Regex::new(OIDC_REGEX) {
+                if oidc_regex.is_match(token) {
+                    "OIDC"
+                } else {
+                    "Unknown"
+                }
             } else {
-                "Unknown"
+                "ERROR"
             }
         };
         eprintln_unless!(self.quiet, "    Method: {}", token_type);
