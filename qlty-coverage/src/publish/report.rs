@@ -12,6 +12,7 @@ pub struct Report {
     pub report_files: Vec<ReportFile>,
     pub file_coverages: Vec<FileCoverage>,
     pub coverage_metrics: CoverageMetrics,
+    pub missing_files: Vec<String>,
 }
 
 impl Report {

@@ -13,6 +13,7 @@ use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
 use qlty_coverage::publish::{Plan, Planner, Processor, Reader, Report, Settings, Upload};
 use regex::Regex;
+use std::collections::HashSet;
 use std::io::Write as _;
 use std::path::PathBuf;
 use std::time::Instant;
@@ -77,6 +78,10 @@ pub struct Publish {
     /// Print coverage
     pub print: bool,
 
+    #[arg(long)]
+    /// Verbose
+    pub verbose: bool,
+
     #[arg(long, hide = true, requires = "print")]
     /// JSON output
     pub json: bool,
@@ -134,27 +139,21 @@ impl Publish {
         self.print_coverage_files(&plan);
 
         let results = Reader::new(&plan).read()?;
-        let total_unique_file_coverages_paths_count = results
+        let original_paths = results
             .file_coverages
             .iter()
             .map(|f| f.path.clone())
-            .collect::<std::collections::HashSet<_>>()
-            .len();
+            .collect::<std::collections::HashSet<_>>();
 
         let mut report = Processor::new(&plan, results).compute()?;
 
-        let processed_unique_file_coverages_paths_count = report
+        let processed_paths = report
             .file_coverages
             .iter()
             .map(|f| f.path.clone())
-            .collect::<std::collections::HashSet<_>>()
-            .len();
+            .collect::<std::collections::HashSet<_>>();
 
-        self.print_coverage_data(
-            &report,
-            total_unique_file_coverages_paths_count,
-            processed_unique_file_coverages_paths_count,
-        );
+        self.print_coverage_data(&report, original_paths, processed_paths);
 
         if self.print {
             self.show_report(&report)?;
@@ -373,49 +372,70 @@ impl Publish {
     fn print_coverage_data(
         &self,
         report: &Report,
-        total_unique_file_coverages_paths_count: usize,
-        processed_unique_file_coverages_paths_count: usize,
+        original_paths: HashSet<String>,
+        processed_paths: HashSet<String>,
     ) {
         self.print_section_header(" COVERAGE DATA ");
 
-        if self.skip_missing_files {
+        eprintln_unless!(
+            self.quiet,
+            "{}",
+            style(format!(
+                "    {} unique code file paths",
+                processed_paths.len()
+            ))
+            .dim()
+        );
+
+        let mut missing_paths = report.missing_files.clone();
+        missing_paths.sort();
+
+        if !missing_paths.is_empty() {
+            let missing_percent =
+                (missing_paths.len() as f32 / original_paths.len() as f32) * 100.0;
+
             eprintln_unless!(
                 self.quiet,
-                "{}",
+                "    {}",
                 style(format!(
-                    "    {} unique code file paths",
-                    total_unique_file_coverages_paths_count
+                    "Skipping {} missing paths ({:.1}%)",
+                    missing_paths.len(),
+                    missing_percent
                 ))
-                .dim()
+                .bold()
             );
-            let missing = total_unique_file_coverages_paths_count
-                - processed_unique_file_coverages_paths_count;
 
-            if missing > 0 {
-                let missing_percent =
-                    (missing as f32 / total_unique_file_coverages_paths_count as f32) * 100.0;
-
-                eprintln_unless!(
-                    self.quiet,
-                    "    {}",
-                    style(format!(
-                        "Skipping {} missing paths ({:.1}%)",
-                        missing, missing_percent
-                    ))
-                    .bold()
-                );
+            let (paths_to_show, show_all) = if self.verbose {
+                (missing_paths.len(), true)
             } else {
+                (std::cmp::min(20, missing_paths.len()), false)
+            };
+
+            eprintln_unless!(
+                self.quiet,
+                "    {}",
+                style("Missing Paths:").bold().yellow()
+            );
+
+            for (_i, path) in missing_paths.iter().take(paths_to_show).enumerate() {
+                eprintln_unless!(self.quiet, "      {}", style(format!("{}", path)).yellow());
+            }
+
+            if !show_all && paths_to_show < missing_paths.len() {
+                let remaining = missing_paths.len() - paths_to_show;
                 eprintln_unless!(
                     self.quiet,
-                    "    {}",
-                    style("All paths were found on disk, skipping none.").dim()
+                    "      {}",
+                    style(format!("... and {} more", remaining)).dim().yellow()
                 );
             }
+
+            eprintln_unless!(self.quiet, "");
         } else {
             eprintln_unless!(
                 self.quiet,
-                "    {} unique code file paths",
-                processed_unique_file_coverages_paths_count
+                "    {}",
+                style("All paths were found on disk.").dim()
             );
         }
 

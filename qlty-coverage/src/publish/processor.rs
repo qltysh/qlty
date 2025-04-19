@@ -2,7 +2,7 @@ use crate::publish::{Plan, Report, Results};
 use anyhow::Result;
 use qlty_types::tests::v1::FileCoverage;
 use serde::Serialize;
-use std::collections::HashMap;
+use std::{collections::HashMap, path::PathBuf};
 
 pub struct Processor {
     plan: Plan,
@@ -33,12 +33,33 @@ impl Processor {
             f.tag = self.plan.metadata.tag.clone();
         });
 
-        let transformed_file_coverages = self
+        let mut transformed_file_coverages = self
             .results
             .file_coverages
             .iter()
             .filter_map(|file_coverage| self.transform(file_coverage.to_owned()))
             .collect::<Vec<_>>();
+
+        let mut missing_files = vec![];
+
+        if self.plan.skip_missing_files {
+            transformed_file_coverages.retain(|file_coverage| {
+                match PathBuf::from(&file_coverage.path).try_exists() {
+                    Ok(true) => true,
+                    _ => {
+                        missing_files.push(file_coverage.path.clone());
+                        false
+                    }
+                }
+            });
+        } else {
+            for file_coverage in &self.results.file_coverages {
+                match PathBuf::from(&file_coverage.path).try_exists() {
+                    Ok(true) => {}
+                    _ => missing_files.push(file_coverage.path.clone()),
+                }
+            }
+        }
 
         let coverage_metrics = self.calculate_coverage_metrics(&transformed_file_coverages);
 
@@ -47,6 +68,7 @@ impl Processor {
             report_files,
             file_coverages: transformed_file_coverages,
             coverage_metrics,
+            missing_files,
         })
     }
 
