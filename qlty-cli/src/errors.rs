@@ -12,6 +12,9 @@ pub enum CommandError {
     #[error("{message}")]
     InvalidOptions { message: String },
 
+    #[error("{message}")]
+    CoverageValidation { message: String },
+
     #[error("Unknown error")]
     Unknown {
         #[from]
@@ -35,6 +38,7 @@ impl CommandError {
             CommandError::InvalidOptions { .. } => 1,
             CommandError::Config => 2,
             CommandError::Lint => 3,
+            CommandError::CoverageValidation { message: _ } => 4,
             CommandError::Unknown { .. } => 99,
         }
     }

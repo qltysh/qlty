@@ -1,0 +1,11 @@
+args = [
+  "coverage",
+  "validate",
+  "coverage.zip",
+  "--json"
+]
+bin.name = "qlty"
+status.code = 4
+
+[env]
+remove = ["GITHUB_ACTIONS"]

@@ -1,0 +1,13 @@
+qlty [..] [..]-[..] ([..] debug [..])
+https://qlty.sh/d/coverage
+
+  Retrieving CI metadata...
+  → unknown CI commit "2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67" on branch ""
+
+  Reading code coverage data...
+  → Found 1 files with code coverage data
+
+  Exporting code coverage data...
+  → Exported to "tmp/qlty-coverage"
+❌ Coverage validation failed
+Only 50% of the files are present on the filesystem. Threshold is set to 90%

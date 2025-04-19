@@ -1,0 +1,8 @@
+{
+  "files_present": 2,
+  "files_missing": 2,
+  "total_files": 4,
+  "coverage_percentage": 50.0,
+  "threshold": 40.0,
+  "status": "valid"
+}

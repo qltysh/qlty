@@ -156,6 +156,11 @@ fn handle_result(
                     error!("Config error");
                     eprintln!("❌ Config error");
                 }
+                CommandError::CoverageValidation { ref message } => {
+                    error!("Coverage validation failed");
+                    eprintln!("❌ Coverage validation failed");
+                    eprintln!("{}", message);
+                }
                 CommandError::Lint => {
                     error!("Lint error");
                     eprintln!("❌ Lint error");

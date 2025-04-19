@@ -4,6 +4,7 @@ use clap::Args;
 use console::style;
 use git2::Repository;
 use indicatif::HumanBytes;
+use qlty_analysis::utils::fs::path_to_string;
 use qlty_config::version::LONG_VERSION;
 use qlty_config::{QltyConfig, Workspace};
 use qlty_coverage::ci::{GitHub, CI};
@@ -11,6 +12,7 @@ use qlty_coverage::eprintln_unless;
 use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
 use qlty_coverage::publish::{Plan, Planner, Processor, Reader, Report, Settings, Upload};
+use qlty_coverage::validate::{ValidationResult, ValidationStatus};
 use std::path::PathBuf;
 use std::time::Instant;
 use tracing::debug;
@@ -88,6 +90,11 @@ pub struct Publish {
     /// The total number of parts that qlty cloud should expect. Each call to qlty publish will upload one part.
     /// (The total parts count is per coverage tag e.g. if you have 2 tags each with 3 parts, you should set this to 3)
     pub total_parts_count: Option<u32>,
+
+    #[arg(long)]
+    /// Validate the coverage report before uploading it.
+    /// This will check if the report is valid and minimum number of files a present.
+    pub validate: bool,
 }
 
 impl Publish {
@@ -148,14 +155,27 @@ impl Publish {
             self.show_report(&report)?;
         }
 
+        eprintln_unless!(self.quiet, "  Exporting code coverage data...");
+        let export = report.export_to(self.output_dir.clone())?;
+        eprintln_unless!(
+            self.quiet,
+            "{}",
+            style(format!("  → Exported to {:?}", export.to.as_ref().unwrap())).dim()
+        );
+
+        if self.validate {
+            let validation_result = ValidationResult::compute(
+                &path_to_string(export.to.clone().unwrap().join("coverage.zip")),
+                None,
+            )?;
+
+            match validation_result.status {
+                ValidationStatus::Valid => {}
+                _ => return Err(validation_result.into()),
+            }
+        }
+
         if self.dry_run {
-            eprintln_unless!(self.quiet, "  Exporting code coverage data...");
-            let export = report.export_to(self.output_dir.clone())?;
-            eprintln_unless!(
-                self.quiet,
-                "{}",
-                style(format!("  → Exported to {:?}", export.to.as_ref().unwrap())).dim()
-            );
             return CommandSuccess::ok();
         }
 
@@ -336,6 +356,7 @@ mod tests {
             paths: vec![],
             skip_missing_files: false,
             total_parts_count: None,
+            validate: false,
         }
     }
 
