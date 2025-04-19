@@ -12,7 +12,7 @@ use indicatif::ProgressBar;
 use itertools::Itertools;
 use package_file::PackageFileScanner;
 use qlty_config::{
-    config::{Builder, Ignore, IssueMode, PackageFileCandidate, PluginDef, SuggestionMode},
+    config::{Builder, Exclude, IssueMode, PackageFileCandidate, PluginDef, SuggestionMode},
     sources::{SourceFetch, SourceFile},
     QltyConfig,
 };
@@ -33,7 +33,7 @@ pub struct Scanner {
     pub plugins: Vec<InstalledPlugin>,
     pub sources_only_config: QltyConfig,
 
-    default_ignores: Vec<Ignore>,
+    default_excludes: Vec<Exclude>,
     plugin_initializers: Vec<PluginInitializer>,
     plugins_to_activate: HashMap<Name, PluginToActivate>,
 }
@@ -82,7 +82,7 @@ impl Scanner {
             source_list,
             default_config: Builder::default_config().unwrap(),
             plugins: vec![],
-            default_ignores: vec![],
+            default_excludes: vec![],
             plugin_initializers: vec![],
             plugins_to_activate: HashMap::new(),
             ..Default::default()
@@ -96,7 +96,7 @@ impl Scanner {
     }
 
     pub fn scan(&mut self, progress: &ProgressBar) -> Result<()> {
-        self.compute_default_ignores();
+        self.compute_default_excludes();
         self.compute_plugin_initializers()?;
         self.compute_plugins_to_enable(progress)?;
         self.compute_plugin_details()?;
@@ -111,9 +111,9 @@ impl Scanner {
             let path_osstr = path_osstr.to_str().unwrap();
 
             if self
-                .default_ignores
+                .default_excludes
                 .iter()
-                .any(|ignore| ignore.matches_path(path_osstr))
+                .any(|exclude| exclude.matches_path(path_osstr))
             {
                 continue;
             }
@@ -344,11 +344,13 @@ impl Scanner {
         }
     }
 
-    fn compute_default_ignores(&mut self) {
-        self.default_ignores = self.default_config.ignore.clone();
-        self.default_ignores
+    // Not sure why we have this?
+    // Maybe it should be removed.
+    fn compute_default_excludes(&mut self) {
+        self.default_excludes = self.default_config.exclude.clone();
+        self.default_excludes
             .iter()
-            .for_each(|ignore| ignore.initialize_globset());
+            .for_each(|exclude| exclude.initialize_globset());
     }
 
     fn sources_only_config(&self) -> Result<QltyConfig> {
