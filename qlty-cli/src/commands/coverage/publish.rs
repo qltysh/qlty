@@ -489,16 +489,14 @@ impl Publish {
             "Workspace Token"
         } else if token.starts_with(COVERAGE_TOKEN_PROJECT_PREFIX) {
             "Project Token"
-        } else {
-            if let Ok(oidc_regex) = Regex::new(OIDC_REGEX) {
-                if oidc_regex.is_match(token) {
-                    "OIDC"
-                } else {
-                    "Unknown"
-                }
+        } else if let Ok(oidc_regex) = Regex::new(OIDC_REGEX) {
+            if oidc_regex.is_match(token) {
+                "OIDC"
             } else {
-                "ERROR"
+                "Unknown"
             }
+        } else {
+            "ERROR"
         };
         eprintln_unless!(self.quiet, "    Method: {}", token_type);
         eprintln_unless!(self.quiet, "    Token: {}", token);
