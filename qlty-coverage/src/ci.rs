@@ -13,6 +13,9 @@ pub use gitlab::GitLab;
 use qlty_types::tests::v1::CoverageMetadata;
 pub use semaphore::Semaphore;
 
+const QLTY_CI_UPLOADER_TOOL: &str = "QLTY_CI_UPLOADER_TOOL";
+const QLTY_CI_UPLOADER_TOOL_VERSION: &str = "QLTY_CI_UPLOADER_TOOL_VERSION";
+
 pub trait CI {
     fn detect(&self) -> bool;
 
@@ -51,7 +54,9 @@ pub trait CI {
             commit_sha: self.commit_sha(),
             branch: self.branch(),
             pull_request_number: self.pull_number(),
-
+            uploader_tool: std::env::var(QLTY_CI_UPLOADER_TOOL).ok(),
+            uploader_tool_version: std::env::var(QLTY_CI_UPLOADER_TOOL_VERSION).ok(),
+            publish_command: std::env::args().collect::<Vec<String>>().join(" "),
             ..Default::default()
         }
     }

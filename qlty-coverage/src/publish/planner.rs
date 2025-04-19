@@ -51,6 +51,7 @@ impl Planner {
         } else {
             CoverageMetadata {
                 ci: "unknown".to_string(),
+                publish_command: std::env::args().collect::<Vec<String>>().join(" "),
                 ..CoverageMetadata::default()
             }
         };

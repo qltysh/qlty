@@ -122,8 +122,9 @@ impl Fixer {
             .map(|issue| {
                 let task = self.progress.task("Generating AI Fix:", "");
 
-                let trimmed_message = if issue.message.len() > 80 {
-                    format!("{}...", &issue.message[..80])
+                let trimmed_message = if issue.message.chars().count() > 80 {
+                    let trimmed: String = issue.message.chars().take(80).collect();
+                    format!("{}...", trimmed)
                 } else {
                     issue.message.clone()
                 };

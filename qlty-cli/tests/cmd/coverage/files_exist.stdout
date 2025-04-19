@@ -11,7 +11,8 @@
     "committerEmail": "test@codeclimate.com",
     "commitTime": "2024-01-01T00:00:00+00:00",
     "uploadedAt": "[..]",
-    "cliVersion": "[..]"
+    "cliVersion": "[..]",
+    "publishCommand": "[..]qlty[..] coverage publish --dry-run --override-commit-sha 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67 --override-build-id 123 lcov.info --print --json --skip-missing-files"
   },
   "report_files": [
     {
