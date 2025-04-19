@@ -425,8 +425,9 @@ impl Publish {
                 let remaining = missing_files.len() - paths_to_show;
                 eprintln_unless!(
                     self.quiet,
-                    "      {}",
-                    style(format!("... and {} more", remaining)).dim().yellow()
+                    "      {} {}",
+                    style(format!("... and {} more", remaining)).dim().yellow(),
+                    style("(Use --verbose to see all)").dim()
                 );
             }
 
