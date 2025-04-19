@@ -417,8 +417,8 @@ impl Publish {
                 style("Missing code files:").bold().yellow()
             );
 
-            for (_i, path) in missing_files.iter().take(paths_to_show).enumerate() {
-                eprintln_unless!(self.quiet, "      {}", style(format!("{}", path)).yellow());
+            for path in missing_files.iter().take(paths_to_show) {
+                eprintln_unless!(self.quiet, "      {}", style(path.to_string()).yellow());
             }
 
             if !show_all && paths_to_show < missing_files.len() {
