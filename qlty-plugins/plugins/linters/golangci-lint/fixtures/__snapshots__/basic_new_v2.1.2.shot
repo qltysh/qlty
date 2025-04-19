@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`linter=golangci-lint fixture=basic_new version=2.0.2 1`] = `
+exports[`linter=golangci-lint fixture=basic_new version=2.1.2 1`] = `
 {
   "issues": [
     {

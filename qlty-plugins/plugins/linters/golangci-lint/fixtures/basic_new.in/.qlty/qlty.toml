@@ -1,0 +1,8 @@
+config_version = "0"
+
+[runtimes.enabled]
+go = "1.24.2"
+
+[[plugin]]
+name = "golangci-lint"
+version = "2.1.2"
