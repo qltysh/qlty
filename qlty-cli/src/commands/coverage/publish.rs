@@ -1,5 +1,5 @@
 use crate::{CommandError, CommandSuccess};
-use anyhow::{Result, bail};
+use anyhow::{bail, Result};
 use clap::Args;
 use console::style;
 use git2::Repository;
@@ -7,7 +7,7 @@ use indicatif::HumanBytes;
 use num_format::{Locale, ToFormattedString as _};
 use qlty_config::version::LONG_VERSION;
 use qlty_config::{QltyConfig, Workspace};
-use qlty_coverage::ci::{CI, GitHub};
+use qlty_coverage::ci::{GitHub, CI};
 use qlty_coverage::eprintln_unless;
 use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};

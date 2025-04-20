@@ -1,4 +1,4 @@
-use crate::publish::{Plan, Report, Results, metrics::CoverageMetrics};
+use crate::publish::{metrics::CoverageMetrics, Plan, Report, Results};
 use anyhow::Result;
 use qlty_types::tests::v1::FileCoverage;
 use std::collections::HashSet;
