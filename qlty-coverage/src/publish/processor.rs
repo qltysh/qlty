@@ -49,7 +49,7 @@ impl Processor {
                 }
             });
         } else {
-            for file_coverage in &self.results.file_coverages {
+            for file_coverage in &transformed_file_coverages {
                 match PathBuf::from(&file_coverage.path).try_exists() {
                     Ok(true) => {
                         found_files.insert(file_coverage.path.clone());
