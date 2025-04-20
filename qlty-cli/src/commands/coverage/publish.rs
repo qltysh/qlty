@@ -379,12 +379,8 @@ impl Publish {
 
         eprintln_unless!(
             self.quiet,
-            "{}",
-            style(format!(
-                "    {} unique code file paths",
-                processed_paths.len()
-            ))
-            .dim()
+            "    {} unique code file paths",
+            processed_paths.len()
         );
 
         let mut missing_files = report.missing_files.clone();
@@ -475,13 +471,13 @@ impl Publish {
                 .coverage_metrics
                 .uncovered_lines
                 .to_formatted_string(&Locale::en);
-            let total_lines = report
+            let omitted_lines = report
                 .coverage_metrics
-                .total_lines
+                .omitted_lines
                 .to_formatted_string(&Locale::en);
 
             // Find the longest number for consistent spacing
-            let max_length = [&covered_lines, &uncovered_lines, &total_lines]
+            let max_length = [&covered_lines, &uncovered_lines, &omitted_lines]
                 .iter()
                 .map(|s| s.len())
                 .max()
@@ -497,6 +493,12 @@ impl Publish {
                 self.quiet,
                 "    Uncovered Lines:    {:>width$}",
                 uncovered_lines,
+                width = max_length
+            );
+            eprintln_unless!(
+                self.quiet,
+                "    Omitted Lines:      {:>width$}",
+                omitted_lines,
                 width = max_length
             );
             eprintln_unless!(self.quiet, "");

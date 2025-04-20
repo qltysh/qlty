@@ -11,9 +11,10 @@ pub struct Processor {
 
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct CoverageMetrics {
-    pub covered_lines: i64,
-    pub uncovered_lines: i64,
-    pub total_lines: i64,
+    pub covered_lines: u64,
+    pub uncovered_lines: u64,
+    pub omitted_lines: u64,
+    pub total_lines: u64,
     pub coverage_percentage: f64,
 }
 
@@ -125,6 +126,7 @@ impl Processor {
 
         let mut covered_lines = 0;
         let mut uncovered_lines = 0;
+        let mut omitted_lines = 0;
 
         for hits in combined_hits.values() {
             for &hit in hits {
@@ -132,15 +134,17 @@ impl Processor {
                     covered_lines += 1;
                 } else if hit == 0 {
                     uncovered_lines += 1;
+                } else {
+                    omitted_lines += 1;
                 }
-                // Negative values are skipped lines
             }
         }
 
-        let total_lines = covered_lines + uncovered_lines;
+        let total_lines = covered_lines + uncovered_lines + omitted_lines;
+        let coverable_lines = covered_lines + uncovered_lines;
 
-        let coverage_percentage = if total_lines > 0 {
-            (covered_lines as f64 / total_lines as f64) * 100.0
+        let coverage_percentage = if coverable_lines > 0 {
+            (covered_lines as f64 / coverable_lines as f64) * 100.0
         } else {
             0.0
         };
@@ -148,6 +152,7 @@ impl Processor {
         CoverageMetrics {
             covered_lines,
             uncovered_lines,
+            omitted_lines,
             total_lines,
             coverage_percentage,
         }
