@@ -83,3 +83,122 @@ impl CoverageMetrics {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_empty_coverage() {
+        let metrics = CoverageMetrics::calculate(&[]);
+
+        assert_eq!(metrics.covered_lines, 0);
+        assert_eq!(metrics.uncovered_lines, 0);
+        assert_eq!(metrics.omitted_lines, 0);
+        assert_eq!(metrics.total_lines, 0);
+        assert_eq!(metrics.coverage_percentage, 0.0);
+    }
+
+    #[test]
+    fn test_single_file_coverage() {
+        let file_coverage = FileCoverage {
+            path: "src/main.rs".to_string(),
+            hits: vec![1, 0, -1, 2],
+            ..Default::default()
+        };
+
+        let metrics = CoverageMetrics::calculate(&[file_coverage]);
+
+        assert_eq!(metrics.covered_lines, 2);
+        assert_eq!(metrics.uncovered_lines, 1);
+        assert_eq!(metrics.omitted_lines, 1);
+        assert_eq!(metrics.total_lines, 4);
+        assert_eq!(metrics.coverage_percentage, 2.0 / 3.0 * 100.0);
+    }
+
+    #[test]
+    fn test_multiple_coverages_different_files() {
+        let file_coverage1 = FileCoverage {
+            path: "src/main.rs".to_string(),
+            hits: vec![1, 0, 3],
+            ..Default::default()
+        };
+
+        let file_coverage2 = FileCoverage {
+            path: "src/lib.rs".to_string(),
+            hits: vec![0, 1, 0, -1],
+            ..Default::default()
+        };
+
+        let metrics = CoverageMetrics::calculate(&[file_coverage1, file_coverage2]);
+
+        assert_eq!(metrics.covered_lines, 3);
+        assert_eq!(metrics.uncovered_lines, 3);
+        assert_eq!(metrics.omitted_lines, 1);
+        assert_eq!(metrics.total_lines, 7);
+        assert_eq!(metrics.coverage_percentage, 3.0 / 6.0 * 100.0);
+    }
+
+    #[test]
+    fn test_combining_coverages_same_file() {
+        let file_coverage1 = FileCoverage {
+            path: "src/main.rs".to_string(),
+            hits: vec![1, 0, 0],
+            ..Default::default()
+        };
+
+        let file_coverage2 = FileCoverage {
+            path: "src/main.rs".to_string(),
+            hits: vec![0, 1, 2],
+            ..Default::default()
+        };
+
+        let metrics = CoverageMetrics::calculate(&[file_coverage1, file_coverage2]);
+
+        assert_eq!(metrics.covered_lines, 3);
+        assert_eq!(metrics.uncovered_lines, 0);
+        assert_eq!(metrics.omitted_lines, 0);
+        assert_eq!(metrics.total_lines, 3);
+        assert_eq!(metrics.coverage_percentage, 100.0);
+    }
+
+    #[test]
+    fn test_combining_coverages_different_lengths() {
+        let file_coverage1 = FileCoverage {
+            path: "src/main.rs".to_string(),
+            hits: vec![1, 0, 0],
+            ..Default::default()
+        };
+
+        let file_coverage2 = FileCoverage {
+            path: "src/main.rs".to_string(),
+            hits: vec![0, 1, 2, 3, 0],
+            ..Default::default()
+        };
+
+        let metrics = CoverageMetrics::calculate(&[file_coverage1, file_coverage2]);
+
+        assert_eq!(metrics.covered_lines, 4);
+        assert_eq!(metrics.uncovered_lines, 1);
+        assert_eq!(metrics.omitted_lines, 0);
+        assert_eq!(metrics.total_lines, 5);
+        assert_eq!(metrics.coverage_percentage, 4.0 / 5.0 * 100.0);
+    }
+
+    #[test]
+    fn test_only_uncoverable_lines() {
+        let file_coverage = FileCoverage {
+            path: "src/main.rs".to_string(),
+            hits: vec![-1, -1, -1],
+            ..Default::default()
+        };
+
+        let metrics = CoverageMetrics::calculate(&[file_coverage]);
+
+        assert_eq!(metrics.covered_lines, 0);
+        assert_eq!(metrics.uncovered_lines, 0);
+        assert_eq!(metrics.omitted_lines, 3);
+        assert_eq!(metrics.total_lines, 3);
+        assert_eq!(metrics.coverage_percentage, 0.0);
+    }
+}
