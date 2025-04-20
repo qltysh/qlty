@@ -85,10 +85,6 @@ pub struct Publish {
     /// JSON output
     pub json: bool,
 
-    #[arg(long, hide = true)]
-    /// Print a summary
-    pub summary: bool,
-
     #[clap(long, short)]
     pub quiet: bool,
 
@@ -461,52 +457,50 @@ impl Publish {
 
         eprintln_unless!(self.quiet, "");
 
-        if self.summary {
-            // Get formatted numbers first
-            let covered_lines = report.totals.covered_lines.to_formatted_string(&Locale::en);
-            let uncovered_lines = report
-                .totals
-                .uncovered_lines
-                .to_formatted_string(&Locale::en);
-            let omitted_lines = report.totals.omitted_lines.to_formatted_string(&Locale::en);
+        // Get formatted numbers first
+        let covered_lines = report.totals.covered_lines.to_formatted_string(&Locale::en);
+        let uncovered_lines = report
+            .totals
+            .uncovered_lines
+            .to_formatted_string(&Locale::en);
+        let omitted_lines = report.totals.omitted_lines.to_formatted_string(&Locale::en);
 
-            // Find the longest number for consistent spacing
-            let max_length = [&covered_lines, &uncovered_lines, &omitted_lines]
-                .iter()
-                .map(|s| s.len())
-                .max()
-                .unwrap_or(0);
+        // Find the longest number for consistent spacing
+        let max_length = [&covered_lines, &uncovered_lines, &omitted_lines]
+            .iter()
+            .map(|s| s.len())
+            .max()
+            .unwrap_or(0);
 
-            eprintln_unless!(
-                self.quiet,
-                "    Covered Lines:      {:>width$}",
-                covered_lines,
-                width = max_length
-            );
-            eprintln_unless!(
-                self.quiet,
-                "    Uncovered Lines:    {:>width$}",
-                uncovered_lines,
-                width = max_length
-            );
-            eprintln_unless!(
-                self.quiet,
-                "    Omitted Lines:      {:>width$}",
-                omitted_lines,
-                width = max_length
-            );
-            eprintln_unless!(self.quiet, "");
-            eprintln_unless!(
-                self.quiet,
-                "    {}",
-                style(format!(
-                    "Line Coverage:       {:.2}%",
-                    report.totals.coverage_percentage
-                ))
-                .bold()
-            );
-            eprintln_unless!(self.quiet, "");
-        }
+        eprintln_unless!(
+            self.quiet,
+            "    Covered Lines:      {:>width$}",
+            covered_lines,
+            width = max_length
+        );
+        eprintln_unless!(
+            self.quiet,
+            "    Uncovered Lines:    {:>width$}",
+            uncovered_lines,
+            width = max_length
+        );
+        eprintln_unless!(
+            self.quiet,
+            "    Omitted Lines:      {:>width$}",
+            omitted_lines,
+            width = max_length
+        );
+        eprintln_unless!(self.quiet, "");
+        eprintln_unless!(
+            self.quiet,
+            "    {}",
+            style(format!(
+                "Line Coverage:       {:.2}%",
+                report.totals.coverage_percentage
+            ))
+            .bold()
+        );
+        eprintln_unless!(self.quiet, "");
     }
 
     fn print_export_status(&self, export_path: &Option<PathBuf>) {
@@ -678,7 +672,6 @@ mod tests {
             paths: vec![],
             skip_missing_files: false,
             total_parts_count: None,
-            summary: false,
             verbose: false,
         }
     }

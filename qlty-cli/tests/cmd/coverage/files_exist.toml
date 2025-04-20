@@ -10,7 +10,6 @@ args = [
   "--print",
   "--json",
   "--skip-missing-files",
-  "--summary"
 ]
 bin.name = "qlty"
 
