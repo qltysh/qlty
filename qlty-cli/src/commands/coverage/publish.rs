@@ -363,8 +363,13 @@ impl Publish {
 
         eprintln_unless!(
             self.quiet,
-            "    {} unique code file paths",
-            total_files_count.to_formatted_string(&Locale::en)
+            "    {} unique code file {}",
+            total_files_count.to_formatted_string(&Locale::en),
+            if total_files_count == 1 {
+                "path"
+            } else {
+                "paths"
+            }
         );
 
         let mut missing_files = report.missing_files.iter().collect::<Vec<_>>();
@@ -377,8 +382,13 @@ impl Publish {
                 self.quiet,
                 "    {}",
                 style(format!(
-                    "{} paths are missing on disk ({:.1}%)",
+                    "{} {} missing on disk ({:.1}%)",
                     missing_files.len().to_formatted_string(&Locale::en),
+                    if missing_files.len() == 1 {
+                        "path is"
+                    } else {
+                        "paths are"
+                    },
                     missing_percent
                 ))
                 .bold()
@@ -488,7 +498,7 @@ impl Publish {
                 self.quiet,
                 "    {}",
                 style(format!(
-                    "Line Coverage        {:.2}%",
+                    "Line Coverage:       {:.2}%",
                     report.totals.coverage_percentage
                 ))
                 .bold()
