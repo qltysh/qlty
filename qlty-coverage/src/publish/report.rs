@@ -11,8 +11,8 @@ pub struct Report {
     pub metadata: CoverageMetadata,
     pub report_files: Vec<ReportFile>,
     pub file_coverages: Vec<FileCoverage>,
-    pub coverage_metrics: CoverageMetrics,
     pub missing_files: Vec<String>,
+    pub totals: CoverageMetrics,
 }
 
 impl Report {

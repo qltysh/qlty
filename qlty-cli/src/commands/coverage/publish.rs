@@ -463,18 +463,12 @@ impl Publish {
 
         if self.summary {
             // Get formatted numbers first
-            let covered_lines = report
-                .coverage_metrics
-                .covered_lines
-                .to_formatted_string(&Locale::en);
+            let covered_lines = report.totals.covered_lines.to_formatted_string(&Locale::en);
             let uncovered_lines = report
-                .coverage_metrics
+                .totals
                 .uncovered_lines
                 .to_formatted_string(&Locale::en);
-            let omitted_lines = report
-                .coverage_metrics
-                .omitted_lines
-                .to_formatted_string(&Locale::en);
+            let omitted_lines = report.totals.omitted_lines.to_formatted_string(&Locale::en);
 
             // Find the longest number for consistent spacing
             let max_length = [&covered_lines, &uncovered_lines, &omitted_lines]
@@ -507,7 +501,7 @@ impl Publish {
                 "    {}",
                 style(format!(
                     "Line Coverage        {:.2}%",
-                    report.coverage_metrics.coverage_percentage
+                    report.totals.coverage_percentage
                 ))
                 .bold()
             );

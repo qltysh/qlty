@@ -52,13 +52,13 @@ impl Processor {
             }
         }
 
-        let coverage_metrics = CoverageMetrics::calculate(&transformed_file_coverages);
+        let totals = CoverageMetrics::calculate(&transformed_file_coverages);
 
         Ok(Report {
             metadata: self.plan.metadata.clone(),
             report_files,
             file_coverages: transformed_file_coverages,
-            coverage_metrics,
+            totals,
             missing_files,
         })
     }

@@ -96,14 +96,14 @@
       "pullRequestNumber": "99"
     }
   ],
-  "coverage_metrics": {
+  "missing_files": [
+    "formatter.js"
+  ],
+  "totals": {
     "covered_lines": 24,
     "uncovered_lines": 2,
     "omitted_lines": 26,
     "total_lines": 52,
     "coverage_percentage": 92.3076923076923
-  },
-  "missing_files": [
-    "formatter.js"
-  ]
+  }
 }
