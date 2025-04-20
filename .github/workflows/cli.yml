@@ -55,8 +55,9 @@ jobs:
         run: cargo llvm-cov --lcov --output-path target/lcov.info -- --include-ignored
 
       - uses: qltysh/qlty-action/coverage@bh-summary
+        if: ${{ matrix.os != 'windows-latest' }}
         with:
           oidc: true
           files: target/lcov.info
           tag: ${{ matrix.os }}
-          skip-errors: true
+          skip-errors: false
