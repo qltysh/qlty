@@ -1,5 +1,5 @@
 use crate::{CommandError, CommandSuccess};
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use clap::Args;
 use console::style;
 use git2::Repository;
@@ -7,7 +7,7 @@ use indicatif::HumanBytes;
 use num_format::{Locale, ToFormattedString as _};
 use qlty_config::version::LONG_VERSION;
 use qlty_config::{QltyConfig, Workspace};
-use qlty_coverage::ci::{GitHub, CI};
+use qlty_coverage::ci::{CI, GitHub};
 use qlty_coverage::eprintln_unless;
 use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
@@ -166,7 +166,9 @@ impl Publish {
 
     fn validate_plan(&self, plan: &Plan) -> Result<()> {
         if plan.metadata.commit_sha.is_empty() {
-            bail!("Unable to determine commit SHA from the environment.\nPlease provide it using --override-commit-sha")
+            bail!(
+                "Unable to determine commit SHA from the environment.\nPlease provide it using --override-commit-sha"
+            )
         }
 
         if plan.report_files.is_empty() {
@@ -594,7 +596,9 @@ impl Publish {
                     Ok(repository) => repository,
                     Err(err) => {
                         debug!("Find repository name: {}", err);
-                        bail!("Could not infer project name from environment, please provide it using --project")
+                        bail!(
+                            "Could not infer project name from environment, please provide it using --project"
+                        )
                     }
                 }
             };
