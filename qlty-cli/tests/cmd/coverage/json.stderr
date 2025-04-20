@@ -28,7 +28,7 @@ https://qlty.sh/d/coverage
 
     Missing code files:
 
-      formatter.js
+      rails/formatter.js
 
     TIP: Consider using add-prefix or strip-prefix to fix paths
     https://qlty.sh/d/coverage-path-fixing
