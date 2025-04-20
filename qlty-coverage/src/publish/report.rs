@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{collections::HashSet, path::PathBuf};
 
 use crate::export::CoverageExport;
 use crate::publish::CoverageMetrics;
@@ -11,7 +11,13 @@ pub struct Report {
     pub metadata: CoverageMetadata,
     pub report_files: Vec<ReportFile>,
     pub file_coverages: Vec<FileCoverage>,
-    pub missing_files: Vec<String>,
+
+    #[serde(skip_serializing)]
+    pub found_files: HashSet<String>,
+
+    #[serde(skip_serializing)]
+    pub missing_files: HashSet<String>,
+
     pub totals: CoverageMetrics,
 }
 

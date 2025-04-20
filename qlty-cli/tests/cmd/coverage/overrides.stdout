@@ -96,9 +96,6 @@
       "pullRequestNumber": "99"
     }
   ],
-  "missing_files": [
-    "formatter.js"
-  ],
   "totals": {
     "covered_lines": 24,
     "uncovered_lines": 2,

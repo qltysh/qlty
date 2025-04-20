@@ -1,7 +1,7 @@
 use crate::publish::{metrics::CoverageMetrics, Plan, Report, Results};
 use anyhow::Result;
 use qlty_types::tests::v1::FileCoverage;
-use std::path::PathBuf;
+use std::{collections::HashSet, path::PathBuf};
 
 pub struct Processor {
     plan: Plan,
@@ -31,14 +31,18 @@ impl Processor {
             .filter_map(|file_coverage| self.transform(file_coverage.to_owned()))
             .collect::<Vec<_>>();
 
-        let mut missing_files = vec![];
+        let mut found_files = HashSet::new();
+        let mut missing_files = HashSet::new();
 
         if self.plan.skip_missing_files {
             transformed_file_coverages.retain(|file_coverage| {
                 match PathBuf::from(&file_coverage.path).try_exists() {
-                    Ok(true) => true,
+                    Ok(true) => {
+                        found_files.insert(file_coverage.path.clone());
+                        true
+                    }
                     _ => {
-                        missing_files.push(file_coverage.path.clone());
+                        missing_files.insert(file_coverage.path.clone());
                         false
                     }
                 }
@@ -46,8 +50,12 @@ impl Processor {
         } else {
             for file_coverage in &self.results.file_coverages {
                 match PathBuf::from(&file_coverage.path).try_exists() {
-                    Ok(true) => {}
-                    _ => missing_files.push(file_coverage.path.clone()),
+                    Ok(true) => {
+                        found_files.insert(file_coverage.path.clone());
+                    }
+                    _ => {
+                        missing_files.insert(file_coverage.path.clone());
+                    }
                 }
             }
         }
@@ -60,6 +68,7 @@ impl Processor {
             file_coverages: transformed_file_coverages,
             totals,
             missing_files,
+            found_files,
         })
     }
 

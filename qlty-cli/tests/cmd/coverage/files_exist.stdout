@@ -89,9 +89,6 @@
       "uploadedAt": "[..]"
     }
   ],
-  "missing_files": [
-    "src/doesnt_exist.js"
-  ],
   "totals": {
     "covered_lines": 24,
     "uncovered_lines": 2,

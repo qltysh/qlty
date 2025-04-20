@@ -13,7 +13,6 @@ use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
 use qlty_coverage::publish::{Plan, Planner, Processor, Reader, Report, Settings, Upload};
 use regex::Regex;
-use std::collections::HashSet;
 use std::io::Write as _;
 use std::path::PathBuf;
 use std::time::Instant;
@@ -139,21 +138,9 @@ impl Publish {
         self.print_coverage_files(&plan);
 
         let results = Reader::new(&plan).read()?;
-        let original_paths = results
-            .file_coverages
-            .iter()
-            .map(|f| f.path.clone())
-            .collect::<std::collections::HashSet<_>>();
-
         let mut report = Processor::new(&plan, results).compute()?;
 
-        let processed_paths = report
-            .file_coverages
-            .iter()
-            .map(|f| f.path.clone())
-            .collect::<std::collections::HashSet<_>>();
-
-        self.print_coverage_data(&report, original_paths, processed_paths);
+        self.print_coverage_data(&report);
 
         if self.print {
             self.show_report(&report)?;
@@ -369,33 +356,29 @@ impl Publish {
         eprintln_unless!(self.quiet, "{}", written);
     }
 
-    fn print_coverage_data(
-        &self,
-        report: &Report,
-        original_paths: HashSet<String>,
-        processed_paths: HashSet<String>,
-    ) {
+    fn print_coverage_data(&self, report: &Report) {
         self.print_section_header(" COVERAGE DATA ");
+
+        let total_files_count = report.found_files.len() + report.missing_files.len();
 
         eprintln_unless!(
             self.quiet,
             "    {} unique code file paths",
-            processed_paths.len()
+            total_files_count.to_formatted_string(&Locale::en)
         );
 
-        let mut missing_files = report.missing_files.clone();
+        let mut missing_files = report.missing_files.iter().collect::<Vec<_>>();
         missing_files.sort();
 
         if !missing_files.is_empty() {
-            let missing_percent =
-                (missing_files.len() as f32 / original_paths.len() as f32) * 100.0;
+            let missing_percent = (missing_files.len() as f32 / total_files_count as f32) * 100.0;
 
             eprintln_unless!(
                 self.quiet,
                 "    {}",
                 style(format!(
                     "{} paths are missing on disk ({:.1}%)",
-                    missing_files.len(),
+                    missing_files.len().to_formatted_string(&Locale::en),
                     missing_percent
                 ))
                 .bold()
@@ -422,7 +405,12 @@ impl Publish {
                 eprintln_unless!(
                     self.quiet,
                     "      {} {}",
-                    style(format!("... and {} more", remaining)).dim().yellow(),
+                    style(format!(
+                        "... and {} more",
+                        remaining.to_formatted_string(&Locale::en)
+                    ))
+                    .dim()
+                    .yellow(),
                     style("(Use --verbose to see all)").dim()
                 );
             }
