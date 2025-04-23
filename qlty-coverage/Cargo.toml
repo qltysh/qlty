@@ -32,6 +32,7 @@ serde-xml-rs.workspace = true
 serde.workspace = true
 time.workspace = true
 ureq.workspace = true
+xml-rs.workspace = true
 zip.workspace = true
 
 [dev-dependencies]

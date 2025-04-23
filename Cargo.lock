@@ -2630,6 +2630,7 @@ dependencies = [
  "tempfile",
  "time",
  "ureq",
+ "xml-rs",
  "zip",
 ]
 
