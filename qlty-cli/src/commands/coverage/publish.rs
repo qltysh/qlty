@@ -228,7 +228,7 @@ impl Publish {
         if let Some(val) = primary {
             Some(val.clone())
         } else {
-            fallback.as_ref().map(|val| val.clone())
+            fallback.clone()
         }
     }
 
