@@ -195,25 +195,25 @@ impl Publish {
     }
 
     fn print_deprecation_warnings(&self) {
-        if let Some(_) = &self.report_format {
+        if self.report_format.is_some() {
             eprintln_unless!(
                 self.quiet,
                 "WARNING: --report-format is deprecated, use --format instead\n"
             );
         }
-        if let Some(_) = &self.transform_add_prefix {
+        if self.transform_add_prefix.is_some() {
             eprintln_unless!(
                 self.quiet,
                 "WARNING: --transform-add-prefix is deprecated, use --add-prefix instead\n"
             );
         }
-        if let Some(_) = &self.transform_strip_prefix {
+        if self.transform_strip_prefix.is_some() {
             eprintln_unless!(
                 self.quiet,
                 "WARNING: --transform-strip-prefix is deprecated, use --strip-prefix instead\n"
             );
         }
-        if let Some(_) = &self.token {
+        if self.token.is_some() {
             eprintln_unless!(
                 self.quiet,
                 "WARNING: --token is deprecated, use --coverage-token instead\n"
@@ -227,10 +227,8 @@ impl Publish {
     ) -> Option<T> {
         if let Some(val) = primary {
             Some(val.clone())
-        } else if let Some(val) = fallback {
-            Some(val.clone())
         } else {
-            None
+            fallback.as_ref().map(|val| val.clone())
         }
     }
 
