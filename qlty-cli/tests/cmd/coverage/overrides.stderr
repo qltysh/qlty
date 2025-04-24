@@ -1,6 +1,8 @@
 qlty [..] [..]-[..] ([..] debug [..])
 https://qlty.sh/d/coverage
 
+WARNING: --transform-add-prefix is deprecated, use --add-prefix instead
+
  SETTINGS 
 
     cwd: [CWD]
@@ -9,7 +11,7 @@ https://qlty.sh/d/coverage
     override-branch: test-branch-1
     override-commit-sha: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
     override-pr-number: 99
-    transform-add-prefix: rails/
+    add-prefix: rails/
 
  METADATA 
 
