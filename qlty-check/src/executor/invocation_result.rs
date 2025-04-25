@@ -150,7 +150,7 @@ impl InvocationResult {
                 MessageLevel::Error,
                 "invocation.parser.error".to_string(),
                 format!(
-                    "Error parsing output from {}  [{}]",
+                    "Error parsing output from {} [{}]",
                     invocation.plan.plugin_name, invocation_id_slug
                 ),
                 invocation.invocation.parser_error.clone().unwrap(),
