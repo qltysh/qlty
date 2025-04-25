@@ -17,8 +17,9 @@ exclude_patterns = [
   "*_min.*",
   "*-min.*",
   "*.min.*",
-  "**/*.d.ts",
   "**/.yarn/**",
+  "**/*.d.ts",
+  "**/assets/**",
   "**/bower_components/**",
   "**/build/**",
   "**/cache/**",
@@ -36,9 +37,9 @@ exclude_patterns = [
   "**/protos/**",
   "**/seed/**",
   "**/target/**",
+  "**/templates/**",
   "**/testdata/**",
   "**/vendor/**",
-  "**/assets/**",
 ]
 
 test_patterns = [
