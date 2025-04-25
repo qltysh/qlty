@@ -252,7 +252,7 @@ impl Publish {
         if self.dry_run {
             eprintln_unless!(self.quiet, "    dry-run: {}", self.dry_run);
         }
-        if let Some(format) = settings.report_format {
+        if let Some(format) = &settings.report_format {
             eprintln_unless!(self.quiet, "    format: {}", format);
         }
         if let Some(output_dir) = &self.output_dir {
@@ -281,10 +281,10 @@ impl Publish {
         if let Some(override_pr_number) = &self.override_pr_number {
             eprintln_unless!(self.quiet, "    override-pr-number: {}", override_pr_number);
         }
-        if let Some(add_prefix) = settings.add_prefix {
+        if let Some(add_prefix) = &settings.add_prefix {
             eprintln_unless!(self.quiet, "    add-prefix: {}", add_prefix);
         }
-        if let Some(strip_prefix) = settings.strip_prefix {
+        if let Some(strip_prefix) = &settings.strip_prefix {
             eprintln_unless!(self.quiet, "    strip-prefix: {}", strip_prefix);
         }
         if let Some(project) = &self.project {
