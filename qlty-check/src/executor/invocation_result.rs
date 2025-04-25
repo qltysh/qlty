@@ -118,14 +118,16 @@ impl InvocationResult {
         invocation.process_results()?;
         invocation.write_out_file()?;
 
+        let invocation_id_slug = invocation.invocation.id[0..6].to_owned();
+
         match qlty_types::analysis::v1::ExitResult::try_from(invocation.invocation.exit_result) {
             Ok(qlty_types::analysis::v1::ExitResult::Success) | Ok(ExitResult::NoIssues) => {
                 invocation.push_message(
                     MessageLevel::Info,
                     "invocation.concluded.success".to_string(),
                     format!(
-                        "Successfully ran {} in {:.2}s",
-                        invocation.plan.plugin_name, duration
+                        "Successfully ran {} in {:.2}s [{}]",
+                        invocation.plan.plugin_name, duration, invocation_id_slug
                     ),
                     Default::default(),
                 );
@@ -135,8 +137,8 @@ impl InvocationResult {
                     MessageLevel::Error,
                     "invocation.concluded.error".to_string(),
                     format!(
-                        "Error occurred while running {} ({:.2}s)",
-                        invocation.plan.plugin_name, duration
+                        "Error occurred while running {} ({:.2}s) [{}]",
+                        invocation.plan.plugin_name, duration, invocation_id_slug
                     ),
                     Default::default(),
                 );
@@ -147,7 +149,10 @@ impl InvocationResult {
             invocation.push_message(
                 MessageLevel::Error,
                 "invocation.parser.error".to_string(),
-                format!("Error parsing output from {}", invocation.plan.plugin_name),
+                format!(
+                    "Error parsing output from {}  [{}]",
+                    invocation.plan.plugin_name, invocation_id_slug
+                ),
                 invocation.invocation.parser_error.clone().unwrap(),
             );
         }
