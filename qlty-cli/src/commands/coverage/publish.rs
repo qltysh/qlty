@@ -122,23 +122,7 @@ impl Publish {
         self.print_initial_messages();
         self.print_deprecation_warnings();
 
-        let format = Self::coalesce_args(&self.format, &self.report_format);
-        let add_prefix = Self::coalesce_args(&self.add_prefix, &self.transform_add_prefix);
-        let strip_prefix = Self::coalesce_args(&self.strip_prefix, &self.transform_strip_prefix);
-
-        let settings = Settings {
-            override_build_id: self.override_build_id.clone(),
-            override_commit_sha: self.override_commit_sha.clone(),
-            override_branch: self.override_branch.clone(),
-            override_pull_request_number: self.override_pr_number.clone(),
-            add_prefix,
-            strip_prefix,
-            tag: self.tag.clone(),
-            report_format: format,
-            paths: self.paths.clone(),
-            skip_missing_files: self.skip_missing_files,
-            total_parts_count: self.total_parts_count,
-        };
+        let settings = self.build_settings();
 
         self.print_settings(&settings);
         self.validate_options()?;
@@ -176,6 +160,26 @@ impl Publish {
         self.print_upload_complete(bytes, timer.elapsed().as_secs_f32(), &upload.url);
 
         CommandSuccess::ok()
+    }
+
+    fn build_settings(&self) -> Settings {
+        let format = Self::coalesce_args(&self.format, &self.report_format);
+        let add_prefix = Self::coalesce_args(&self.add_prefix, &self.transform_add_prefix);
+        let strip_prefix = Self::coalesce_args(&self.strip_prefix, &self.transform_strip_prefix);
+
+        Settings {
+            override_build_id: self.override_build_id.clone(),
+            override_commit_sha: self.override_commit_sha.clone(),
+            override_branch: self.override_branch.clone(),
+            override_pull_request_number: self.override_pr_number.clone(),
+            add_prefix,
+            strip_prefix,
+            tag: self.tag.clone(),
+            report_format: format,
+            paths: self.paths.clone(),
+            skip_missing_files: self.skip_missing_files,
+            total_parts_count: self.total_parts_count,
+        }
     }
 
     fn print_deprecation_warnings(&self) {
