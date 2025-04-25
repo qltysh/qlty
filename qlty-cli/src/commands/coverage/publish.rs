@@ -197,12 +197,6 @@ impl Publish {
                 "WARNING: --transform-strip-prefix is deprecated, use --strip-prefix instead\n"
             );
         }
-        if self.token.is_some() {
-            eprintln_unless!(
-                self.quiet,
-                "WARNING: --token is deprecated, use --coverage-token instead\n"
-            );
-        }
     }
 
     fn coalesce_args<T: Clone>(primary: &Option<T>, fallback: &Option<T>) -> Option<T> {
