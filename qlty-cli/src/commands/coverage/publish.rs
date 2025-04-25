@@ -80,14 +80,9 @@ pub struct Publish {
     pub strip_prefix: Option<String>,
 
     #[arg(long, short, hide = true)]
-    /// [DEPRECATED, use --coverage-token] The token to use for authentication when uploading the report.
-    /// By default, it retrieves the token from the QLTY_COVERAGE_TOKEN environment variable.
-    pub token: Option<String>,
-
-    #[arg(long)]
     /// The token to use for authentication when uploading the report.
     /// By default, it retrieves the token from the QLTY_COVERAGE_TOKEN environment variable.
-    pub coverage_token: Option<String>,
+    pub token: Option<String>,
 
     #[arg(long)]
     /// The name of the project to associate the coverage report with. Only needed when coverage token represents a
@@ -628,10 +623,7 @@ impl Publish {
     }
 
     fn load_auth_token(&self) -> Result<String> {
-        let coverage_token =
-            Self::prefer_active_over_deprecated_option(&self.coverage_token, &self.token);
-
-        self.expand_token(match &coverage_token {
+        self.expand_token(match &self.token {
             Some(token) => Ok(token.to_owned()),
             None => std::env::var("QLTY_COVERAGE_TOKEN").map_err(|_| {
                 anyhow::Error::msg("QLTY_COVERAGE_TOKEN environment variable is required.")
