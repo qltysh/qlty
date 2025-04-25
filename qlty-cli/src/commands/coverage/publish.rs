@@ -79,7 +79,7 @@ pub struct Publish {
     /// This is usually the directory in which the tests were run. Defaults to the root of the git repository.
     pub strip_prefix: Option<String>,
 
-    #[arg(long, short, hide = true)]
+    #[arg(long, short)]
     /// The token to use for authentication when uploading the report.
     /// By default, it retrieves the token from the QLTY_COVERAGE_TOKEN environment variable.
     pub token: Option<String>,
@@ -121,41 +121,30 @@ impl Publish {
     pub fn execute(&self, _args: &crate::Arguments) -> Result<CommandSuccess, CommandError> {
         self.print_initial_messages();
         self.print_deprecation_warnings();
-        self.print_settings();
 
+        let format = Self::coalesce_args(&self.format, &self.report_format);
+        let add_prefix = Self::coalesce_args(&self.add_prefix, &self.transform_add_prefix);
+        let strip_prefix = Self::coalesce_args(&self.strip_prefix, &self.transform_strip_prefix);
+
+        let settings = Settings {
+            override_build_id: self.override_build_id.clone(),
+            override_commit_sha: self.override_commit_sha.clone(),
+            override_branch: self.override_branch.clone(),
+            override_pull_request_number: self.override_pr_number.clone(),
+            add_prefix,
+            strip_prefix,
+            tag: self.tag.clone(),
+            report_format: format,
+            paths: self.paths.clone(),
+            skip_missing_files: self.skip_missing_files,
+            total_parts_count: self.total_parts_count,
+        };
+
+        self.print_settings(&settings);
         self.validate_options()?;
 
         let token = self.load_auth_token()?;
-
-        let format = Self::prefer_active_over_deprecated_option(&self.format, &self.report_format);
-
-        let add_prefix = Self::prefer_active_over_deprecated_option(
-            &self.add_prefix,
-            &self.transform_add_prefix,
-        );
-
-        let strip_prefix = Self::prefer_active_over_deprecated_option(
-            &self.strip_prefix,
-            &self.transform_strip_prefix,
-        );
-
-        let plan = Planner::new(
-            &Self::load_config(),
-            &Settings {
-                override_build_id: self.override_build_id.clone(),
-                override_commit_sha: self.override_commit_sha.clone(),
-                override_branch: self.override_branch.clone(),
-                override_pull_request_number: self.override_pr_number.clone(),
-                add_prefix,
-                strip_prefix,
-                tag: self.tag.clone(),
-                report_format: format,
-                paths: self.paths.clone(),
-                skip_missing_files: self.skip_missing_files,
-                total_parts_count: self.total_parts_count,
-            },
-        )
-        .compute()?;
+        let plan = Planner::new(&Self::load_config(), &settings).compute()?;
 
         self.validate_plan(&plan)?;
 
@@ -216,10 +205,7 @@ impl Publish {
         }
     }
 
-    fn prefer_active_over_deprecated_option<T: Clone>(
-        primary: &Option<T>,
-        fallback: &Option<T>,
-    ) -> Option<T> {
+    fn coalesce_args<T: Clone>(primary: &Option<T>, fallback: &Option<T>) -> Option<T> {
         if let Some(val) = primary {
             Some(val.clone())
         } else {
@@ -252,7 +238,7 @@ impl Publish {
         eprintln_unless!(self.quiet, "");
     }
 
-    fn print_settings(&self) {
+    fn print_settings(&self, settings: &Settings) {
         self.print_section_header(" SETTINGS ");
 
         eprintln_unless!(
@@ -266,9 +252,7 @@ impl Publish {
         if self.dry_run {
             eprintln_unless!(self.quiet, "    dry-run: {}", self.dry_run);
         }
-        if let Some(format) =
-            &Self::prefer_active_over_deprecated_option(&self.format, &self.report_format)
-        {
+        if let Some(format) = settings.report_format {
             eprintln_unless!(self.quiet, "    format: {}", format);
         }
         if let Some(output_dir) = &self.output_dir {
@@ -297,16 +281,10 @@ impl Publish {
         if let Some(override_pr_number) = &self.override_pr_number {
             eprintln_unless!(self.quiet, "    override-pr-number: {}", override_pr_number);
         }
-        if let Some(add_prefix) = &Self::prefer_active_over_deprecated_option(
-            &self.add_prefix,
-            &self.transform_add_prefix,
-        ) {
+        if let Some(add_prefix) = settings.add_prefix {
             eprintln_unless!(self.quiet, "    add-prefix: {}", add_prefix);
         }
-        if let Some(strip_prefix) = &Self::prefer_active_over_deprecated_option(
-            &self.strip_prefix,
-            &self.transform_strip_prefix,
-        ) {
+        if let Some(strip_prefix) = settings.strip_prefix {
             eprintln_unless!(self.quiet, "    strip-prefix: {}", strip_prefix);
         }
         if let Some(project) = &self.project {
