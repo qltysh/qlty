@@ -72,13 +72,9 @@ impl Clover {
                                 for attr in attributes {
                                     match attr.name.local_name.as_str() {
                                         "num" => {
-                                            num = match i64::from_str(&attr.value) {
-                                                Ok(value) => value,
-                                                Err(e) => {
-                                                    eprintln!("Failed to parse 'num' attribute: {}. Value: {}", e, &attr.value);
-                                                    continue;
-                                                }
-                                            };
+num = i64::from_str(&attr.value).map_err(|e| {
+    format!("Failed to parse 'num' attribute: {}. Value: {}", e, &attr.value)
+})?;
                                         }
                                         "count" => {
                                             count = i64::from_str(&attr.value).with_context(|| {
