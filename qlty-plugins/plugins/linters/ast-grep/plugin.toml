@@ -14,7 +14,7 @@ known_good_version = "0.37.0"
 config_files = ["sgconfig.yml"]
 description = "CLI tool for code structural search, lint and rewriting"
 
-[plugins.definitions.ast-grep.drivers.lint-fixme]
+[plugins.definitions.ast-grep.drivers.lint]
 script = "ast-grep scan --threads=1 --json ${target}"
 success_codes = [0]
 output = "stdout"
