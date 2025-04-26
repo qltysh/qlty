@@ -10,8 +10,8 @@
   "invocations": [],
   "issues": [
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "identical-code",
@@ -43,16 +43,16 @@
         }
       ],
       "properties": {
-        "node_kind": "statements",
-        "structural_hash": "af27c95c8091255756e7ff23ef046a50",
-        "mass": 67.0,
-        "identical": true
+        [..]
+        [..]
+        [..]
+        [..]
       },
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "identical-code",
@@ -84,16 +84,16 @@
         }
       ],
       "properties": {
-        "identical": true,
-        "mass": 152.0,
-        "node_kind": "source_file",
-        "structural_hash": "9fa82187b0ee83d65772c6f451f82dc5"
+        [..]
+        [..]
+        [..]
+        [..]
       },
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "identical-code",
@@ -125,16 +125,16 @@
         }
       ],
       "properties": {
-        "mass": 67.0,
-        "structural_hash": "af27c95c8091255756e7ff23ef046a50",
-        "identical": true,
-        "node_kind": "statements"
+        [..]
+        [..]
+        [..]
+        [..]
       },
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "identical-code",
@@ -166,16 +166,16 @@
         }
       ],
       "properties": {
-        "mass": 152.0,
-        "node_kind": "source_file",
-        "identical": true,
-        "structural_hash": "9fa82187b0ee83d65772c6f451f82dc5"
+        [..]
+        [..]
+        [..]
+        [..]
       },
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "similar-code",
@@ -207,16 +207,16 @@
         }
       ],
       "properties": {
-        "identical": false,
-        "structural_hash": "e05e39b13e26d84fbae042a323ccb3b6",
-        "node_kind": "function_declaration",
-        "mass": 69.0
+        [..]
+        [..]
+        [..]
+        [..]
       },
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "similar-code",
@@ -248,16 +248,16 @@
         }
       ],
       "properties": {
-        "identical": false,
-        "node_kind": "function_declaration",
-        "structural_hash": "e05e39b13e26d84fbae042a323ccb3b6",
-        "mass": 69.0
+        [..]
+        [..]
+        [..]
+        [..]
       },
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "file-complexity",
@@ -287,8 +287,8 @@
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "file-complexity",
@@ -318,8 +318,8 @@
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "file-complexity",
@@ -349,8 +349,8 @@
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "file-complexity",
@@ -380,8 +380,8 @@
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-complexity",
@@ -411,8 +411,8 @@
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-complexity",
@@ -442,8 +442,8 @@
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-complexity",
@@ -473,8 +473,8 @@
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-complexity",
@@ -504,8 +504,8 @@
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-complexity",
@@ -535,8 +535,8 @@
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -562,8 +562,8 @@
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -589,8 +589,8 @@
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -616,8 +616,8 @@
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -643,8 +643,8 @@
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -670,8 +670,8 @@
       "mode": "MODE_COMMENT"
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -699,8 +699,8 @@
   ],
   "stats": [
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "BooleanLogic.swift",
       "fullyQualifiedName": "BooleanLogic.swift",
       "path": "BooleanLogic.swift",
@@ -719,8 +719,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "FileComplexity.swift",
       "fullyQualifiedName": "FileComplexity.swift",
       "path": "FileComplexity.swift",
@@ -739,8 +739,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "FunctionComplexity.swift",
       "fullyQualifiedName": "FunctionComplexity.swift",
       "path": "FunctionComplexity.swift",
@@ -759,8 +759,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "Identical.swift",
       "fullyQualifiedName": "Identical.swift",
       "path": "Identical.swift",
@@ -779,8 +779,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "Lines.swift",
       "fullyQualifiedName": "Lines.swift",
       "path": "Lines.swift",
@@ -799,8 +799,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "NestedControl.swift",
       "fullyQualifiedName": "NestedControl.swift",
       "path": "NestedControl.swift",
@@ -819,8 +819,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "Returns.swift",
       "fullyQualifiedName": "Returns.swift",
       "path": "Returns.swift",
@@ -839,8 +839,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "SwiftClosures.swift",
       "fullyQualifiedName": "SwiftClosures.swift",
       "path": "SwiftClosures.swift",
@@ -859,8 +859,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "SwiftEnums.swift",
       "fullyQualifiedName": "SwiftEnums.swift",
       "path": "SwiftEnums.swift",
@@ -879,8 +879,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "SwiftExtensions.swift",
       "fullyQualifiedName": "SwiftExtensions.swift",
       "path": "SwiftExtensions.swift",
@@ -899,8 +899,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "SwiftProtocols.swift",
       "fullyQualifiedName": "SwiftProtocols.swift",
       "path": "SwiftProtocols.swift",
@@ -919,8 +919,8 @@
       "lcom4": 1
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "SwiftStructs.swift",
       "fullyQualifiedName": "SwiftStructs.swift",
       "path": "SwiftStructs.swift",
@@ -939,8 +939,8 @@
       "lcom4": 1
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "boolean_logic.swift",
       "fullyQualifiedName": "boolean_logic.swift",
       "path": "boolean_logic.swift",
@@ -959,8 +959,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "class_example.swift",
       "fullyQualifiedName": "class_example.swift",
       "path": "class_example.swift",
@@ -979,8 +979,8 @@
       "lcom4": 1
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "CountConditionalAssignment.swift",
       "fullyQualifiedName": "cognitive/CountConditionalAssignment.swift",
       "path": "cognitive/CountConditionalAssignment.swift",
@@ -999,8 +999,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "CountFunctionWithTernary.swift",
       "fullyQualifiedName": "cognitive/CountFunctionWithTernary.swift",
       "path": "cognitive/CountFunctionWithTernary.swift",
@@ -1019,8 +1019,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "CountNonSequentialLogicalOperators.swift",
       "fullyQualifiedName": "cognitive/CountNonSequentialLogicalOperators.swift",
       "path": "cognitive/CountNonSequentialLogicalOperators.swift",
@@ -1039,8 +1039,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "CountRecursion.swift",
       "fullyQualifiedName": "cognitive/CountRecursion.swift",
       "path": "cognitive/CountRecursion.swift",
@@ -1059,8 +1059,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "MultipleConditionals.swift",
       "fullyQualifiedName": "cognitive/MultipleConditionals.swift",
       "path": "cognitive/MultipleConditionals.swift",
@@ -1079,8 +1079,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "CycloBasic.swift",
       "fullyQualifiedName": "cyclomatic/CycloBasic.swift",
       "path": "cyclomatic/CycloBasic.swift",
@@ -1099,8 +1099,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "CycloIf.swift",
       "fullyQualifiedName": "cyclomatic/CycloIf.swift",
       "path": "cyclomatic/CycloIf.swift",
@@ -1119,8 +1119,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "CycloIfElse.swift",
       "fullyQualifiedName": "cyclomatic/CycloIfElse.swift",
       "path": "cyclomatic/CycloIfElse.swift",
@@ -1139,8 +1139,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "CycloIfElseIf.swift",
       "fullyQualifiedName": "cyclomatic/CycloIfElseIf.swift",
       "path": "cyclomatic/CycloIfElseIf.swift",
@@ -1159,8 +1159,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "CycloIfElseIfElse.swift",
       "fullyQualifiedName": "cyclomatic/CycloIfElseIfElse.swift",
       "path": "cyclomatic/CycloIfElseIfElse.swift",
@@ -1179,8 +1179,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "EmptyFunction.swift",
       "fullyQualifiedName": "cyclomatic/EmptyFunction.swift",
       "path": "cyclomatic/EmptyFunction.swift",
@@ -1199,8 +1199,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "EmptyIf.swift",
       "fullyQualifiedName": "cyclomatic/EmptyIf.swift",
       "path": "cyclomatic/EmptyIf.swift",
@@ -1219,8 +1219,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "IfWithBool.swift",
       "fullyQualifiedName": "cyclomatic/IfWithBool.swift",
       "path": "cyclomatic/IfWithBool.swift",
@@ -1239,8 +1239,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "IterativeForOf.swift",
       "fullyQualifiedName": "cyclomatic/IterativeForOf.swift",
       "path": "cyclomatic/IterativeForOf.swift",
@@ -1259,8 +1259,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "IterativeMap.swift",
       "fullyQualifiedName": "cyclomatic/IterativeMap.swift",
       "path": "cyclomatic/IterativeMap.swift",
@@ -1279,8 +1279,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "IterativeMethodsWithFilterAndInclude.swift",
       "fullyQualifiedName": "cyclomatic/IterativeMethodsWithFilterAndInclude.swift",
       "path": "cyclomatic/IterativeMethodsWithFilterAndInclude.swift",
@@ -1299,8 +1299,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "WhileLoop.swift",
       "fullyQualifiedName": "cyclomatic/WhileLoop.swift",
       "path": "cyclomatic/WhileLoop.swift",
@@ -1319,8 +1319,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "ClassDeclaration.swift",
       "fullyQualifiedName": "fields/ClassDeclaration.swift",
       "path": "fields/ClassDeclaration.swift",
@@ -1339,8 +1339,8 @@
       "lcom4": 1
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "GetterSetterDeclaration.swift",
       "fullyQualifiedName": "fields/GetterSetterDeclaration.swift",
       "path": "fields/GetterSetterDeclaration.swift",
@@ -1359,8 +1359,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "Multiple.swift",
       "fullyQualifiedName": "fields/Multiple.swift",
       "path": "fields/Multiple.swift",
@@ -1379,8 +1379,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "Other.swift",
       "fullyQualifiedName": "fields/Other.swift",
       "path": "fields/Other.swift",
@@ -1399,8 +1399,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "PrivateFieldDeclaration.swift",
       "fullyQualifiedName": "fields/PrivateFieldDeclaration.swift",
       "path": "fields/PrivateFieldDeclaration.swift",
@@ -1419,8 +1419,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "PublicFieldDeclaration.swift",
       "fullyQualifiedName": "fields/PublicFieldDeclaration.swift",
       "path": "fields/PublicFieldDeclaration.swift",
@@ -1439,8 +1439,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "Read.swift",
       "fullyQualifiedName": "fields/Read.swift",
       "path": "fields/Read.swift",
@@ -1459,8 +1459,8 @@
       "lcom4": 1
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "StaticFieldDeclaration.swift",
       "fullyQualifiedName": "fields/StaticFieldDeclaration.swift",
       "path": "fields/StaticFieldDeclaration.swift",
@@ -1479,8 +1479,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "Unique.swift",
       "fullyQualifiedName": "fields/Unique.swift",
       "path": "fields/Unique.swift",
@@ -1499,8 +1499,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "Write.swift",
       "fullyQualifiedName": "fields/Write.swift",
       "path": "fields/Write.swift",
@@ -1519,8 +1519,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "file_complexity.swift",
       "fullyQualifiedName": "file_complexity.swift",
       "path": "file_complexity.swift",
@@ -1539,8 +1539,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "function_complexity.swift",
       "fullyQualifiedName": "function_complexity.swift",
       "path": "function_complexity.swift",
@@ -1559,8 +1559,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "MethodsWithParams.swift",
       "fullyQualifiedName": "functions/MethodsWithParams.swift",
       "path": "functions/MethodsWithParams.swift",
@@ -1579,8 +1579,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "MethodsWithoutParams.swift",
       "fullyQualifiedName": "functions/MethodsWithoutParams.swift",
       "path": "functions/MethodsWithoutParams.swift",
@@ -1599,8 +1599,8 @@
       "lcom4": 1
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "SingletonMethodsWithParams.swift",
       "fullyQualifiedName": "functions/SingletonMethodsWithParams.swift",
       "path": "functions/SingletonMethodsWithParams.swift",
@@ -1619,8 +1619,8 @@
       "lcom4": 1
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "SingletonMethodsWithoutParams.swift",
       "fullyQualifiedName": "functions/SingletonMethodsWithoutParams.swift",
       "path": "functions/SingletonMethodsWithoutParams.swift",
@@ -1639,8 +1639,8 @@
       "lcom4": 2
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "lcom_0.swift",
       "fullyQualifiedName": "lcom/lcom_0.swift",
       "path": "lcom/lcom_0.swift",
@@ -1659,8 +1659,8 @@
       "lcom4": 1
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "lcom_1-1.swift",
       "fullyQualifiedName": "lcom/lcom_1-1.swift",
       "path": "lcom/lcom_1-1.swift",
@@ -1679,8 +1679,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "lcom_1.swift",
       "fullyQualifiedName": "lcom/lcom_1.swift",
       "path": "lcom/lcom_1.swift",
@@ -1699,8 +1699,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "lcom_2.swift",
       "fullyQualifiedName": "lcom/lcom_2.swift",
       "path": "lcom/lcom_2.swift",
@@ -1719,8 +1719,8 @@
       "lcom4": 2
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "nested_control.swift",
       "fullyQualifiedName": "nested_control.swift",
       "path": "nested_control.swift",
@@ -1739,8 +1739,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "parameters.swift",
       "fullyQualifiedName": "parameters.swift",
       "path": "parameters.swift",
@@ -1759,8 +1759,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "cognitive",
       "fullyQualifiedName": "cognitive",
       "path": "cognitive",
@@ -1778,8 +1778,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "cyclomatic",
       "fullyQualifiedName": "cyclomatic",
       "path": "cyclomatic",
@@ -1797,8 +1797,8 @@
       "lcom4": 0
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "fields",
       "fullyQualifiedName": "fields",
       "path": "fields",
@@ -1816,8 +1816,8 @@
       "lcom4": 2
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "functions",
       "fullyQualifiedName": "functions",
       "path": "functions",
@@ -1835,8 +1835,8 @@
       "lcom4": 4
     },
     {
-      "buildId": "23d3c3b2-b80a-490b-83dd-4bdf97d82a2a",
-      "analyzedAt": "2025-04-26T14:23:47.853079+00:00",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
       "name": "lcom",
       "fullyQualifiedName": "lcom",
       "path": "lcom",
