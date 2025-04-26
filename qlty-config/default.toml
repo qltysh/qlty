@@ -369,6 +369,9 @@ test_syntax_patterns = ["""
 smells.duplication.filter_patterns = ["(use_declaration _)"]
 smells.duplication.nodes_threshold = 50
 
+[language.swift]
+globs = ["*.swift"]
+
 [language.java]
 globs = ["*.java"]
 smells.duplication.filter_patterns = ["(import_declaration _)"]

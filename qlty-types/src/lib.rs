@@ -301,18 +301,19 @@ impl clap::ValueEnum for analysis::v1::Level {
 
 pub fn language_enum_from_name(name: &str) -> analysis::v1::Language {
     match name {
-        "php" => analysis::v1::Language::Php,
-        "kotlin" => analysis::v1::Language::Kotlin,
+        "csharp" => analysis::v1::Language::CSharp,
         "go" => analysis::v1::Language::Go,
         "java" => analysis::v1::Language::Java,
         "javascript" => analysis::v1::Language::Javascript,
         "jsx" => analysis::v1::Language::Jsx,
+        "kotlin" => analysis::v1::Language::Kotlin,
+        "php" => analysis::v1::Language::Php,
         "python" => analysis::v1::Language::Python,
         "ruby" => analysis::v1::Language::Ruby,
         "rust" => analysis::v1::Language::Rust,
+        "swift" => analysis::v1::Language::Swift,
         "tsx" => analysis::v1::Language::Tsx,
         "typescript" => analysis::v1::Language::Typescript,
-        "csharp" => analysis::v1::Language::CSharp,
         _ => panic!("Unrecognized language name: {}", name),
     }
 }
