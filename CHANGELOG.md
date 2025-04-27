@@ -156,7 +156,7 @@
 - Only prompt the user to auto-format in correct mode (#1510)
 - Fix Ruby installs in edge cases where version paths on disk do not match version string (#1497)
 - Fix panic in package.json handling (#1492)
-- Fix format loop when run with `--fix`  (#1514)
+- Fix format loop when run with `--fix` (#1514)
 - Retain settings during find-and-fix loops (#1511)
 - Fix Ruby install for MacOS identification of arch with non-standard version numbering (#1500)
 
@@ -230,7 +230,7 @@
 ### New
 
 - Add `cache prune` subcommand to prune cached results, logs, and debug files (#1408)
-- Add  support for C# maintainability analysis (smells and metrics) (#1388)
+- Add support for C# maintainability analysis (smells and metrics) (#1388)
 - Upload raw coverage data with processed data to improve debugging experience (#1415)
 
 ### Improved
