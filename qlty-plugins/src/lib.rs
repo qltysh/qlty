@@ -2,8 +2,8 @@ use rust_embed::Embed;
 
 #[derive(Embed)]
 #[folder = "plugins/"]
+#[include = "linters/**"]
 #[exclude = "**/fixtures/**"]
-#[exclude = "**/node_modules/**"]
 #[exclude = "**/README.md"]
 #[exclude = "**/*.test.ts"]
 
@@ -33,19 +33,25 @@ mod test {
 
     #[test]
     fn ignore_fixtures() {
-        let has_node_modules = Plugins::iter().any(|path| path.contains("fixtures"));
-        assert!(has_node_modules == false);
+        let has_fixtures = Plugins::iter().any(|path| path.contains("fixtures"));
+        assert!(has_fixtures == false);
     }
 
     #[test]
     fn ignore_readme() {
-        let has_node_modules = Plugins::iter().any(|path| path.contains("README.md"));
-        assert!(has_node_modules == false);
+        let has_readme = Plugins::iter().any(|path| path.contains("README.md"));
+        assert!(has_readme == false);
     }
 
     #[test]
     fn ignore_test_files() {
-        let has_node_modules = Plugins::iter().any(|path| path.contains(".test.ts"));
-        assert!(has_node_modules == false);
+        let has_test_files = Plugins::iter().any(|path| path.contains(".test.ts"));
+        assert!(has_test_files == false);
+    }
+
+    #[test]
+    fn ignore_unrelated_files() {
+        let has_package_json = Plugins::iter().any(|path| path.contains("package.json"));
+        assert!(has_package_json == false);
     }
 }
