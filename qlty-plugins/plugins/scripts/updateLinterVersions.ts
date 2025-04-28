@@ -51,11 +51,11 @@ const getLintersList = async (): Promise<string[]> => {
             return dirContent;
           }
         })();
-      })
+      }),
     );
     return folders.filter(
       (folder): folder is string =>
-        folder !== undefined && !LINTERS_TO_SKIP.includes(folder)
+        folder !== undefined && !LINTERS_TO_SKIP.includes(folder),
     );
   } catch (err) {
     throw new Error(`Failed to read linters directory: ${err}`);
@@ -74,7 +74,7 @@ const getKnownGoodVersion = (linterName: string): string => {
 const updateLinterTomlVersions = (
   linterName: string,
   latestLinterVersion: string,
-  updateKnownGoodVersion: boolean
+  updateKnownGoodVersion: boolean,
 ): void => {
   const tomlPath = getLinterTomlPath(linterName);
   let linterToml = fs.readFileSync(tomlPath, "utf8");
@@ -82,13 +82,13 @@ const updateLinterTomlVersions = (
   // Preserve the formatting and comments in the file
   linterToml = linterToml.replace(
     /(latest_version\s*=\s*)".*"/,
-    `$1"${latestLinterVersion}"`
+    `$1"${latestLinterVersion}"`,
   );
 
   if (updateKnownGoodVersion) {
     linterToml = linterToml.replace(
       /(known_good_version\s*=\s*)".*"/,
-      `$1"${latestLinterVersion}"`
+      `$1"${latestLinterVersion}"`,
     );
   }
 
@@ -116,7 +116,7 @@ async function main(): Promise<void> {
         latestLinterVersion = await fetchLatestVersion(linter);
       } catch (error) {
         console.error(
-          `Failed to get the latest version for ${linter}. Skipping...`
+          `Failed to get the latest version for ${linter}. Skipping...`,
         );
         console.error(error);
         failedLinter.set(linter, error as string);
@@ -128,7 +128,7 @@ async function main(): Promise<void> {
 
       if (currentKnownGoodVersion === latestLinterVersion) {
         console.log(
-          `The linter ${linter} is already at the latest version: ${latestLinterVersion}. Skipping...`
+          `The linter ${linter} is already at the latest version: ${latestLinterVersion}. Skipping...`,
         );
         latestLinters.push(linter);
         continue; // Move to the next linter
@@ -138,7 +138,7 @@ async function main(): Promise<void> {
         console.log(`Testing ${linterLabel}...`);
         execSync(
           `QLTY_PLUGINS_LINTER_VERSION=${latestLinterVersion} QLTY_PLUGINS_COMPARE_LATEST_SNAPSHOT=true npm test ${linter}.test.ts`,
-          { stdio: "inherit" }
+          { stdio: "inherit" },
         );
 
         console.log(`Yay! ${linterLabel} passed the tests!`);
@@ -162,7 +162,7 @@ async function main(): Promise<void> {
 
     fs.writeFileSync(
       path.resolve(REPO_ROOT, "github_issues.json"),
-      JSON.stringify(githubIssues, null, 2)
+      JSON.stringify(githubIssues, null, 2),
     );
 
     console.log("Successfully updated the following linters:");
