@@ -217,23 +217,23 @@ pub fn print_invocations(
         }
     }
 
-    for installation_error in &report.installation_errors {
-        errors_count += 1;
+    // for installation_error in &report.installation_errors {
+    //     errors_count += 1;
 
-        tw.write_all(
-            format!(
-                "{}\t{}\t{}\t{}\n",
-                installation_error.tool_name,
-                style("Installation error").red(),
-                installation_error.error_message.as_ref().unwrap(),
-                style(installation_error.directory.clone().unwrap_or_default())
-                    .dim()
-                    .underlined(),
-            )
-            .as_bytes(),
-        )
-        .unwrap();
-    }
+    //     tw.write_all(
+    //         format!(
+    //             "{}\t{}\t{}\t{}\n",
+    //             installation_error.tool_name,
+    //             style("Installation error").red(),
+    //             installation_error.error_message.as_ref().unwrap(),
+    //             style(installation_error.directory.clone().unwrap_or_default())
+    //                 .dim()
+    //                 .underlined(),
+    //         )
+    //         .as_bytes(),
+    //     )
+    //     .unwrap();
+    // }
 
     tw.flush().unwrap();
     let written = String::from_utf8(tw.into_inner().unwrap()).unwrap();

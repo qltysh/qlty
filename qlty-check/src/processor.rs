@@ -58,7 +58,6 @@ impl Processor {
             fixable: self.fixable.clone(),
             issues: self.issues.clone(),
             counts: self.counts,
-            installation_errors: self.results.installation_errors.clone(),
         })
     }
 
