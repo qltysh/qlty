@@ -49,7 +49,7 @@ http = "1.3.1"
 ignore = "0.4.22"
 indicatif = "0.17.11"
 indoc = "2.0.6"
-insta = { version = "1.42.2", features = ["yaml", "json", "redactions"] }
+insta = { version = "1.43.0", features = ["yaml", "json", "redactions"] }
 itertools = "0.14.0"
 keyring = { version = "3.6.2", features = [
     "apple-native",
