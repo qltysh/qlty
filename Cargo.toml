@@ -116,7 +116,7 @@ time = { version = "0.3.37", features = [
     "parsing",
 ] }
 tiny_http = "0.12.0"
-toml = "0.8.20"
+toml = "0.8.21"
 toml_edit = "0.22.24"
 tracing = "0.1.41"
 tracing-appender = "0.2.3"
