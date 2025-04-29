@@ -228,11 +228,9 @@ impl GitHubRelease {
 
     fn is_32bit(&self, filename: &str) -> bool {
         let lower_case_filename = filename.to_lowercase();
-        lower_case_filename.split(&['-', '.', '_']).any(|part| {
-            ["386", "i386", "32bit", "32-bit"]
-                .iter()
-                .any(|s| *s == part)
-        })
+        lower_case_filename
+            .split(&['-', '.', '_'])
+            .any(|part| ["386", "i386", "32bit", "32-bit"].contains(&part))
     }
 
     fn is_linux(&self, filename: &str) -> bool {
