@@ -144,14 +144,14 @@ whoami = "1.5.2"
 xml-rs = "0.8.26"
 zip = "2.6.1"
 
-# Config for 'dist'
+# Config for 'cargo dist'
 [workspace.metadata.dist]
-# The preferred dist version to use in CI (Cargo.toml SemVer syntax)
-cargo-dist-version = "0.28.0"
+# The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
+cargo-dist-version = "0.19.1"
 # CI backends to support
 ci = "github"
 # The installers to generate for each app
-installers = ["homebrew"]
+installers = ["shell", "powershell", "homebrew"]
 # Target platforms to build apps for (Rust target-triple syntax)
 targets = [
     "aarch64-apple-darwin",
@@ -162,9 +162,10 @@ targets = [
     "x86_64-unknown-linux-gnu",
     "x86_64-unknown-linux-musl",
 ]
+
 # Path that installers should place binaries in
 install-path = "CARGO_HOME"
-# Which actions to run on pull requests
+# Publish jobs to run in CI
 pr-run-mode = "plan"
 # Whether to install an updater program
 install-updater = true

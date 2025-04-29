@@ -38,6 +38,3 @@ zip.workspace = true
 [dev-dependencies]
 insta.workspace = true
 tempfile.workspace = true
-
-[package.metadata.cargo-machete]
-ignored = ["xml-rs"]

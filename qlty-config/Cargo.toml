@@ -45,6 +45,3 @@ tracing.workspace = true
 ureq.workspace = true
 url.workspace = true
 walkdir.workspace = true
-
-[package.metadata.dist]
-dist = false
