@@ -70,7 +70,6 @@ impl Executor {
 
     pub fn install(&self) -> Result<Vec<Message>> {
         let mut install_messages = vec![];
-        // let mut jobs = vec![];
         let installation_results =
             Self::install_tools(self.plan.tools(), self.plan.jobs, self.progress.clone());
 
@@ -89,14 +88,6 @@ impl Executor {
                         details: err.to_string(),
                         ..Default::default()
                     });
-
-                    // println!("Error installing tool {}: {}", name, err.to_string());
-
-                    // jobs.push(InstallationError {
-                    //     tool_name: name.clone(),
-                    //     error_message: Some(err.to_string()),
-                    //     directory: Some(directory),
-                    // });
                 }
             } else {
                 result?;
