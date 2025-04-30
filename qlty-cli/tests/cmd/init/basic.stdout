@@ -60,6 +60,7 @@ mode = "comment"
 name = "default"
 default = true
 
+
 [[plugin]]
 name = "ripgrep"
 mode = "comment"

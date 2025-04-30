@@ -21,16 +21,16 @@ pub struct Arguments {
 #[derive(Subcommand, Debug)]
 
 pub enum Commands {
-    /// Enable plugins
+    /// Enable plugins for the current project
     Enable(Enable),
 
-    /// Disable plugins
+    /// Disable plugins for the current project
     Disable(Disable),
 
     /// List all available plugins
     List(List),
 
-    /// Upgrades given plugin
+    /// Upgrade a plugin for the current project
     Upgrade(Upgrade),
 }
 

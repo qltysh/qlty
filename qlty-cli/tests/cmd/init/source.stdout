@@ -17,8 +17,9 @@ exclude_patterns = [
   "*_min.*",
   "*-min.*",
   "*.min.*",
-  "**/*.d.ts",
   "**/.yarn/**",
+  "**/*.d.ts",
+  "**/assets/**",
   "**/bower_components/**",
   "**/build/**",
   "**/cache/**",
@@ -36,9 +37,9 @@ exclude_patterns = [
   "**/protos/**",
   "**/seed/**",
   "**/target/**",
+  "**/templates/**",
   "**/testdata/**",
   "**/vendor/**",
-  "**/assets/**",
 ]
 
 test_patterns = [
@@ -58,14 +59,19 @@ mode = "comment"
 [[source]]
 name = "default"
 default = true
+[[source]]
+name = "local"
+directory = "../plugins"
+
 
 [[plugin]]
-name = "checkov"
+name = "multi_driver"
 
 [[plugin]]
-name = "golangci-lint"
-version = "1.61.0"
-mode = "comment"
+name = "partial_drivers_suggested"
+drivers = [
+  "suggested",
+]
 
 [[plugin]]
 name = "ripgrep"
@@ -78,13 +84,9 @@ name = "shellcheck"
 name = "shfmt"
 
 [[plugin]]
-name = "trivy"
-drivers = [
-  "config",
-  "fs-vuln",
-]
+name = "single_driver"
+mode = "comment"
 
 [[plugin]]
 name = "trufflehog"
-version = "3.82.12"
 

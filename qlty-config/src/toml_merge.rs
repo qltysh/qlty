@@ -62,12 +62,17 @@ impl TomlMerge {
             (Value::Boolean(_), Value::Boolean(inner)) => Ok(Value::Boolean(inner)),
             (Value::Datetime(_), Value::Datetime(inner)) => Ok(Value::Datetime(inner)),
             (Value::Array(mut existing), Value::Array(inner)) => {
-                let extender = Value::String("...".to_string());
-                if inner.contains(&extender) {
-                    existing.extend(inner.into_iter().filter(|v| v.as_str().unwrap() != "..."));
+                if existing.iter().all(|v| v.is_table()) && inner.iter().all(|v| v.is_table()) {
+                    existing.extend(inner);
                     Ok(Value::Array(existing))
                 } else {
-                    Ok(Value::Array(inner))
+                    let extender = Value::String("...".to_string());
+                    if inner.contains(&extender) {
+                        existing.extend(inner.into_iter().filter(|v| v.as_str().unwrap() != "..."));
+                        Ok(Value::Array(existing))
+                    } else {
+                        Ok(Value::Array(inner))
+                    }
                 }
             }
             (Value::Table(mut existing), Value::Table(inner)) => {
@@ -186,5 +191,26 @@ mod test {
             should_fail!("foo = \"true\"", "foo = 42.5"),
             Error::new("$.foo".to_owned(), "string", "float")
         );
+    }
+
+    #[test]
+    fn merging_array_of_tables() {
+        let first = r#"
+        [[plugin]]
+        name = "ripgrep"
+        "#;
+        let second = r#"
+        [[plugin]]
+        name = "gitleaks"
+        "#;
+        let result = r#"
+        [[plugin]]
+        name = "ripgrep"
+
+        [[plugin]]
+        name = "gitleaks"
+        "#;
+
+        should_match!(first, second, result);
     }
 }

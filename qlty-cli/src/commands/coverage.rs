@@ -14,11 +14,13 @@ pub struct Arguments {
     pub command: Commands,
 }
 
+// qlty-ignore: +clippy:large_enum_variant
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// Upload coverage reports to the Quality Cloud
+    /// Upload coverage reports to the Qlty Cloud
     Publish(Publish),
-    /// Transforms third party coverage reports to the Qlty format
+
+    /// Transform coverage data to the Qlty format
     Transform(Transform),
 }
 
