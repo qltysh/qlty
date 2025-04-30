@@ -37,7 +37,7 @@ pub enum Commands {
     /// Run linters
     Check(Check),
 
-    /// Generate shell completions
+    /// Generate or install Qlty CLI shell completions
     Completions(Completions),
 
     /// Print current version
@@ -46,32 +46,32 @@ pub enum Commands {
     /// View, transform, and publish code coverage
     Coverage(coverage::Arguments),
 
-    /// Open the Qlty Cloud dashboard
+    /// Open the Qlty Cloud dashboard in the browser
     Dashboard(Dashboard),
 
-    /// Remove Qlty from the repository
+    /// Remove Qlty from the current repository
     Deinit(Deinit),
 
-    /// Join our Discord server
+    /// Join our Discord server (opens in the browser)
     Discord(Discord),
 
-    /// Open the docs website
+    /// Open the docs website in the browser
     Docs(Docs),
 
-    /// Auto-format
+    /// Auto-format files by rewriting them
     Fmt(Fmt),
 
     /// Manage Git hooks
     #[command(hide = true)]
     Githooks(githooks::Arguments),
 
-    /// Set up Qlty in the repository
+    /// Set up Qlty in the current repository
     Init(Init),
 
-    /// Install linters and formatters
+    /// Install linters and their dependencies
     Install(Install),
 
-    /// Compute code metrics
+    /// Compute code quality metrics
     Metrics(Metrics),
 
     /// Intentionally panic to test crash handling
@@ -89,21 +89,21 @@ pub enum Commands {
     /// Manage plugins
     Plugins(plugins::Arguments),
 
-    /// Check code quality
+    /// Find code smells like duplication and complexity
     Smells(Smells),
 
     /// Send telemetry
     #[command(hide = true)]
     Telemetry(Telemetry),
 
-    /// Upgrade Qlty to the latest version
+    /// Upgrade the Qlty CLI
     Upgrade(Upgrade),
 
     #[command(hide = true)]
     /// Validate the project
     Validate(Validate),
 
-    /// Print current version
+    /// Print the current Qlty CLI version
     Version(Version),
 }
 

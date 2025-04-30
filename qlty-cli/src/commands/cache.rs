@@ -24,13 +24,13 @@ pub enum Commands {
     /// Prune the cache
     Prune(Prune),
 
-    /// Delete the entire cache
+    /// Delete the cache for the current project
     Clean(Clean),
 
-    /// Print the cache directory
+    /// Print the cache directory for the current project
     Dir(Dir),
 
-    /// Print the status of the cache directory
+    /// Print the status of the cache directory for the current project
     Status(Status),
 }
 
