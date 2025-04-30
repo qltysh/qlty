@@ -14,6 +14,7 @@ pub struct Arguments {
     pub command: Commands,
 }
 
+// qlty-ignore: +clippy:large_enum_variant
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     /// Upload coverage reports to the Qlty Cloud
