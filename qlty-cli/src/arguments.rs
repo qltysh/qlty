@@ -27,7 +27,7 @@ pub enum Commands {
     #[command(hide = true)]
     Auth(auth::Arguments),
 
-    /// Run analysis build
+    /// Run an analysis build
     #[command(hide = true)]
     Build(Build),
 
