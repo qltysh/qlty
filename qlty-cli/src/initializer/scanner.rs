@@ -194,7 +194,7 @@ impl Scanner {
 
             let mut plugin_configs_found = false;
 
-            // Check if the any config files already exist in the workspace
+            // Check if any config files already exist in the workspace
             for config_file in &config_files {
                 if self.settings.workspace.root.join(config_file).exists() {
                     plugin_configs_found = true;
