@@ -1,5 +1,0 @@
-config_version = "0"
-
-[[source]]
-name = "local"
-directory = "../plugins"
