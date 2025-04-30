@@ -4,7 +4,10 @@ use crate::{
 use anyhow::{Context, Result};
 use clap::Args;
 use console::style;
-use qlty_config::{config::IssueMode, Workspace};
+use qlty_config::{
+    config::{IssueMode, PluginDef},
+    Workspace,
+};
 use std::fs;
 use toml_edit::{array, table, value, DocumentMut};
 
@@ -33,7 +36,7 @@ impl ConfigDocument {
     pub fn enable_plugin(&mut self, name: &str, version: &str) -> Result<()> {
         let config = self.workspace.config()?;
 
-        config
+        let plugin_def = config
             .plugins
             .definitions
             .get(name)
@@ -78,11 +81,39 @@ impl ConfigDocument {
             .unwrap()
             .push(plugin_table.as_table().unwrap().clone());
 
+        self.copy_configs(name, plugin_def)?;
+
         Ok(())
     }
 
     pub fn write(&self) -> Result<()> {
         fs::write(self.workspace.config_path()?, self.document.to_string())?;
+        Ok(())
+    }
+
+    fn copy_configs(&self, plugin_name: &str, plugin_def: PluginDef) -> Result<()> {
+        let mut config_files = plugin_def.config_files.clone();
+
+        plugin_def.drivers.iter().for_each(|(_, driver)| {
+            config_files.extend(driver.config_files.clone());
+        });
+
+        for config_file in &config_files {
+            if self.workspace.root.join(config_file).exists() {
+                return Ok(()); // If any config file for the plugin already exists, skip copying
+            }
+        }
+
+        for config_file in &config_files {
+            for source in self.workspace.sources_list()?.sources.iter() {
+                if let Some(source_file) = source.get_config_file(plugin_name, config_file)? {
+                    let file_name = source_file.path.file_name().unwrap();
+                    let destination = self.workspace.library()?.configs_dir().join(file_name);
+                    source_file.write_to(&destination)?;
+                }
+            }
+        }
+
         Ok(())
     }
 }
@@ -143,6 +174,7 @@ impl Enable {
 mod tests {
     use qlty_analysis::utils::fs::path_to_native_string;
     use qlty_test_utilities::git::sample_repo;
+    use std::fs::create_dir_all;
 
     use super::*;
 
@@ -353,6 +385,54 @@ name = "marked_disabled"
 version = "0.9.0"
         "#;
 
+        assert_eq!(config.document.to_string().trim(), expected.trim());
+    }
+
+    #[test]
+    fn test_copying_configs() {
+        let (temp_dir, _) = sample_repo();
+        let temp_path = temp_dir.path().to_path_buf();
+
+        fs::create_dir_all(&temp_path.join(path_to_native_string(".qlty"))).ok();
+        fs::write(
+            &temp_path.join(path_to_native_string(".qlty/qlty.toml")),
+            r#"
+config_version = "0"
+
+[[source]]
+name = "default"
+default = true
+
+            "#,
+        )
+        .ok();
+
+        let workspace = Workspace {
+            root: temp_path.clone(),
+        };
+
+        create_dir_all(temp_dir.path().join(".qlty/configs")).ok();
+
+        let mut config = ConfigDocument::new(&workspace).unwrap();
+        config.enable_plugin("shellcheck", "latest").unwrap();
+
+        let expected = r#"
+config_version = "0"
+
+[[source]]
+name = "default"
+default = true
+
+[[plugin]]
+name = "shellcheck"
+        "#;
+
+        let expected_config_path = temp_dir
+            .path()
+            .join(path_to_native_string(".qlty/configs"))
+            .join(".shellcheckrc");
+
+        assert!(expected_config_path.exists(), "Config file was not copied");
         assert_eq!(config.document.to_string().trim(), expected.trim());
     }
 }
