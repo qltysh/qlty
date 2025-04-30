@@ -312,6 +312,18 @@ globs = ["openapi.yaml", "openapi.*.yaml"]
 [file_types.scala]
 globs = ["*.scala"]
 
+[file_types.objective-c-source]
+globs = ["*.m"]
+
+[file_types.strings]
+globs = ["*.strings", "*.stringsdict"]
+
+[file_types.xib]
+globs = ["*.xib"]
+
+[file_types.storyboard]
+globs = ["*.storyboard"]
+
 [language.kotlin]
 globs = ["*.kt"]
 
