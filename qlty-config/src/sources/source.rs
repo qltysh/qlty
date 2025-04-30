@@ -111,7 +111,7 @@ pub trait Source: SourceFetch {
         let mut toml: toml::Value = toml::Value::Table(toml::value::Table::new());
 
         for plugin_toml in self.plugin_tomls()?.iter() {
-            self.add_source_file_to_toml(&mut toml, &plugin_toml)?;
+            self.add_source_file_to_toml(&mut toml, plugin_toml)?;
         }
 
         if let Some(source_file) = self.get_file(Path::new("source.toml"))? {
