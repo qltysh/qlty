@@ -1,0 +1,30 @@
+config_version = "0"
+
+[[plugins.downloads.swiftformat.system]]
+cpu = "x86_64"
+os = "macos"
+url = "https://github.com/nicklockwood/SwiftFormat/releases/download/${version}/swiftformat.zip"
+
+[[plugins.downloads.swiftformat.system]]
+cpu = "aarch64"
+os = "macos"
+url = "https://github.com/nicklockwood/SwiftFormat/releases/download/${version}/swiftformat.zip"
+
+[plugins.definitions.swiftformat]
+downloads = ["swiftformat"]
+config_files = [".swiftformat"]
+file_types = ["swift"]
+latest_version = "0.55.5"
+known_good_version = "0.55.5"
+version_command = "swiftformat --version"
+description = "Formatter for Swift"
+supported_platforms = ["macos"]
+
+[plugins.definitions.swiftformat.drivers.format]
+script = "swiftformat ${target}"
+success_codes = [0]
+driver_type = "formatter"
+output = "rewrite"
+batch = true
+cache_results = true
+suggested = "config"
