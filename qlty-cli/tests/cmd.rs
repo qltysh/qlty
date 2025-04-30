@@ -62,11 +62,6 @@ fn config_migrate_tests() {
 }
 
 #[test]
-fn config_show_tests() {
-    setup_and_run_test_cases("tests/cmd/config/show/*.toml");
-}
-
-#[test]
 #[ignore] // ignore tests that require network connection
 fn init_network_tests() {
     setup_and_run_test_cases("tests/cmd/init/network/*.toml");

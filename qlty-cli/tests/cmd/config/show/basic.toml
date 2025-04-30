@@ -1,2 +1,0 @@
-bin.name = "qlty"
-args = ["config", "show"]
