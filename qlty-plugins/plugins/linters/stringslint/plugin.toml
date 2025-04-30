@@ -1,10 +1,5 @@
 config_version = "0"
 
-[plugins.downloads.stringslint]
-github = "dral3x/StringsLint"
-download_type = "zip"
-strip_components = 0
-
 [[plugins.downloads.stringslint.system]]
 cpu = "x86_64"
 os = "macos"
