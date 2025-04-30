@@ -8,7 +8,7 @@ use qlty_config::{
     config::{IssueMode, PluginDef},
     Workspace,
 };
-use std::fs;
+use std::fs::{self, create_dir_all};
 use toml_edit::{array, table, value, DocumentMut};
 
 #[derive(Args, Debug)]
@@ -108,7 +108,10 @@ impl ConfigDocument {
             for source in self.workspace.sources_list()?.sources.iter() {
                 if let Some(source_file) = source.get_config_file(plugin_name, config_file)? {
                     let file_name = source_file.path.file_name().unwrap();
-                    let destination = self.workspace.library()?.configs_dir().join(file_name);
+                    let library_configs_dir = self.workspace.library()?.configs_dir();
+
+                    create_dir_all(&library_configs_dir)?; // Ensure the directory exists
+                    let destination = library_configs_dir.join(file_name);
                     source_file.write_to(&destination)?;
                 }
             }
@@ -172,11 +175,9 @@ impl Enable {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use qlty_analysis::utils::fs::path_to_native_string;
     use qlty_test_utilities::git::sample_repo;
-    use std::fs::create_dir_all;
-
-    use super::*;
 
     #[test]
     fn test_enable_plugin() {
@@ -410,8 +411,6 @@ default = true
         let workspace = Workspace {
             root: temp_path.clone(),
         };
-
-        create_dir_all(temp_dir.path().join(".qlty/configs")).ok();
 
         let mut config = ConfigDocument::new(&workspace).unwrap();
         config.enable_plugin("shellcheck", "latest").unwrap();
