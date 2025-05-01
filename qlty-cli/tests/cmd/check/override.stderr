@@ -1,1 +1,2 @@
+WARNING: The `override` field in qlty.toml is deprecated. Please use `triage` instead.
 ✖ 1 issue
