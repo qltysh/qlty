@@ -9,6 +9,7 @@ use crate::{
 use anyhow::{bail, Result};
 use ar::Entry;
 use chrono::Utc;
+use duct::cmd;
 use qlty_analysis::{join_path_string, utils::fs::path_to_string};
 use qlty_types::analysis::v1::Installation;
 use std::{
@@ -30,6 +31,16 @@ const DEBIAN_DATA_TAR_XZ: &[u8; 11] = b"data.tar.xz";
 pub struct RubyLinux {}
 
 impl PlatformRuby for RubyLinux {
+    fn binary_install_enabled(&self) -> bool {
+        !cmd!("ldd", "--version")
+            .stderr_to_stdout()
+            .stdout_capture()
+            .unchecked()
+            .read()
+            .unwrap_or_default()
+            .contains("musl")
+    }
+
     fn post_install(&self, tool: &dyn Tool, task: &ProgressTask) -> Result<()> {
         task.set_message("Setting up Ruby on Linux");
         self.rewrite_binstubs(tool)?;

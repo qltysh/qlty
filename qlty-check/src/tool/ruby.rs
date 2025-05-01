@@ -27,6 +27,10 @@ pub struct Ruby {
 }
 
 pub trait PlatformRuby {
+    fn binary_install_enabled(&self) -> bool {
+        true
+    }
+
     fn post_install(&self, tool: &dyn Tool, task: &ProgressTask) -> Result<()>;
     fn extra_env_paths(&self, tool: &dyn Tool) -> Vec<String>;
     fn extra_env_vars(&self, tool: &dyn Tool, env: &mut HashMap<String, String>) -> Result<()>;
@@ -202,10 +206,11 @@ impl Tool for Ruby {
 
 impl Ruby {
     pub fn new_tool(version: &str) -> Box<dyn Tool> {
-        if Self::binary_install_enabled() {
+        let platform_tool = sys::platform::Ruby::default();
+        if Self::binary_install_enabled(&platform_tool) {
             Box::new(Self {
                 version: version.to_string(),
-                platform_tool: sys::platform::Ruby::default(),
+                platform_tool,
             })
         } else {
             Box::new(RubySource {
@@ -216,10 +221,11 @@ impl Ruby {
 
     // because Rust doesn't support trait upcasting in stable releases
     pub fn new_runtime(version: &str) -> Box<dyn RuntimeTool> {
-        if Self::binary_install_enabled() {
+        let platform_tool = sys::platform::Ruby::default();
+        if Self::binary_install_enabled(&platform_tool) {
             Box::new(Self {
                 version: version.to_string(),
-                platform_tool: sys::platform::Ruby::default(),
+                platform_tool,
             })
         } else {
             Box::new(RubySource {
@@ -228,7 +234,7 @@ impl Ruby {
         }
     }
 
-    fn binary_install_enabled() -> bool {
+    fn binary_install_enabled(platform_tool: &sys::platform::Ruby) -> bool {
         if cfg!(windows) {
             return true; // always use the binary install code path on Windows
         }
@@ -237,7 +243,7 @@ impl Ruby {
                 return false;
             }
         }
-        true
+        platform_tool.binary_install_enabled()
     }
 
     fn download(&self) -> Download {
