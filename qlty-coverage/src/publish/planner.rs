@@ -63,6 +63,7 @@ impl Planner {
         });
         metadata.tag = self.settings.tag.clone();
         metadata.total_parts_count = self.settings.total_parts_count;
+        metadata.incomplete = self.settings.incomplete;
 
         // Override metadata with command line arguments
         if let Some(build_id) = self.settings.override_build_id.clone() {

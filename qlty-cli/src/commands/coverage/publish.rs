@@ -112,6 +112,11 @@ pub struct Publish {
     /// (The total parts count is per coverage tag e.g. if you have 2 tags each with 3 parts, you should set this to 3)
     pub total_parts_count: Option<u32>,
 
+    #[arg(long)]
+    /// Mark this upload as incomplete. This is useful when issuing multiple qlty coverage publish commands for the same coverage tag.
+    /// The server will merge the uploads into a single report when qlty coverage complete is called.
+    pub incomplete: bool,
+
     // Paths to coverage reports
     pub paths: Vec<String>,
 }
@@ -169,6 +174,8 @@ impl Publish {
         let add_prefix = Self::coalesce_args(&self.add_prefix, &self.transform_add_prefix);
         let strip_prefix = Self::coalesce_args(&self.strip_prefix, &self.transform_strip_prefix);
 
+        let incomplete = self.incomplete || self.total_parts_count.is_some();
+
         Settings {
             override_build_id: self.override_build_id.clone(),
             override_commit_sha: self.override_commit_sha.clone(),
@@ -181,6 +188,7 @@ impl Publish {
             paths: self.paths.clone(),
             skip_missing_files: self.skip_missing_files,
             total_parts_count: self.total_parts_count,
+            incomplete,
         }
     }
 
@@ -302,6 +310,8 @@ impl Publish {
         if let Some(total_parts_count) = self.total_parts_count {
             eprintln_unless!(self.quiet, "    total-parts-count: {}", total_parts_count);
         }
+
+        eprintln_unless!(self.quiet, "    incomplete: {}", self.incomplete);
 
         eprintln_unless!(self.quiet, "");
     }
@@ -616,6 +626,12 @@ impl Publish {
                     message: String::from("Total parts count must be greater than 0"),
                 });
             }
+
+            if self.incomplete {
+                return Err(CommandError::InvalidOptions {
+                    message: String::from("The --incomplete flag is unnecessary when using --total-parts-count as it automatically marks the upload as incomplete. Please see https://qlty.sh/d/server-side-merging for more information on server-side merging."),
+                });
+            }
         }
         Ok(())
     }
@@ -763,5 +779,33 @@ mod tests {
             Publish::extract_repository_name("https://x:y@example.org/a/b"),
             Some("b".into())
         );
+    }
+
+    #[test]
+    fn test_validate_options_rejects_incomplete_with_total_parts_count() {
+        let mut publish = Publish::default();
+        publish.incomplete = true;
+        publish.total_parts_count = Some(2);
+
+        let result = publish.validate_options();
+
+        assert!(result.is_err());
+        if let Err(CommandError::InvalidOptions { message }) = result {
+            assert!(message.contains("--incomplete flag is unnecessary"));
+            assert!(message.contains("https://qlty.sh/d/server-side-merging"));
+        } else {
+            panic!("Expected CommandError::InvalidOptions");
+        }
+    }
+
+    #[test]
+    fn test_build_settings_sets_incomplete_when_total_parts_count_provided() {
+        let mut publish = Publish::default();
+        publish.incomplete = false;
+        publish.total_parts_count = Some(2);
+
+        let settings = publish.build_settings();
+
+        assert!(settings.incomplete);
     }
 }
