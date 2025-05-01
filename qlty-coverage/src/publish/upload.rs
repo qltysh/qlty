@@ -1,5 +1,6 @@
 use crate::export::CoverageExport;
 use crate::publish::Report;
+use anyhow::{anyhow, bail};
 use anyhow::{Context, Result};
 use qlty_cloud::Client as QltyClient;
 use qlty_types::tests::v1::CoverageMetadata;
@@ -83,17 +84,23 @@ impl Upload {
         let response = ureq::put(url)
             .set("Content-Type", content_type)
             .send_bytes(&data)
-            .context("Failed to send PUT request")?;
+            .map_err(|err| {
+                anyhow!(
+                    "HTTP Error: PUT {}: Error sending upload bytes: {:?}",
+                    url,
+                    err
+                )
+            })?;
 
         if response.status() < 200 || response.status() >= 300 {
-            let error_message = format!(
-                "PUT request for uploading file returned {} status with response: {:?}",
+            bail!(
+                "HTTP Error {}: PUT {}: Upload request returned an error: {:?}",
                 response.status(),
+                url,
                 response
                     .into_string()
-                    .unwrap_or_else(|_| "Unknown error".to_string())
+                    .map_err(|err| anyhow!("Error reading response body: {:?}", err))?,
             );
-            return Err(anyhow::anyhow!(error_message));
         }
 
         Ok(())
@@ -106,25 +113,43 @@ impl Upload {
         }));
 
         match response_result {
-            Ok(resp) => resp
-                .into_json::<Value>()
-                .map_err(|_| anyhow::anyhow!("Invalid JSON response")),
+            Ok(resp) => resp.into_json::<Value>().map_err(|err| {
+                anyhow!(
+                    "JSON Error: {}: Unable to parse JSON response from success: {:?}",
+                    client.base_url,
+                    err
+                )
+            }),
 
-            Err(Error::Status(code, resp)) => {
-                let error_message: Value = resp
-                    .into_json()
-                    .unwrap_or_else(|_| serde_json::json!({"error": "Unknown error"}));
-
-                let error_text = error_message
-                    .get("error")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("Unknown error");
-
-                Err(anyhow::anyhow!("HTTP Error {}: {}", code, error_text))
-            }
-            Err(Error::Transport(transport_error)) => {
-                Err(anyhow::anyhow!("Transport Error: {:?}", transport_error))
-            }
+            Err(Error::Status(code, resp)) => match resp.into_string() {
+                Ok(body) => match serde_json::from_str::<Value>(&body) {
+                    Ok(json) => match json.get("error") {
+                        Some(error) => {
+                            bail!("HTTP Error {}: {}: {}", code, client.base_url, error)
+                        }
+                        None => {
+                            bail!("HTTP Error {}: {}: {}", code, client.base_url, body);
+                        }
+                    },
+                    Err(_) => bail!(
+                        "HTTP Error {}: {}: Unable to parse JSON response: {}",
+                        code,
+                        client.base_url,
+                        body
+                    ),
+                },
+                Err(err) => bail!(
+                    "HTTP Error {}: {}: Error reading response body: {:?}",
+                    code,
+                    client.base_url,
+                    err
+                ),
+            },
+            Err(Error::Transport(transport_error)) => bail!(
+                "Transport Error: {}: {:?}",
+                client.base_url,
+                transport_error
+            ),
         }
     }
 }

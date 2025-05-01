@@ -154,6 +154,8 @@ impl Publish {
         self.print_authentication_info(&token);
 
         let upload = Upload::prepare(&token, &mut report)?;
+
+        self.print_section_header(" UPLOADING... ");
         let timer = Instant::now();
         upload.upload(&export)?;
         let bytes = export.total_size_bytes()?;
@@ -560,7 +562,7 @@ impl Publish {
     }
 
     fn print_authentication_info(&self, token: &str) {
-        self.print_section_header(" AUTHENTICATING... ");
+        self.print_section_header(" PREPARING TO UPLOAD... ");
         let token_type = if token.starts_with(COVERAGE_TOKEN_WORKSPACE_PREFIX) {
             "Workspace Token"
         } else if token.starts_with(COVERAGE_TOKEN_PROJECT_PREFIX) {
@@ -574,7 +576,7 @@ impl Publish {
         } else {
             "ERROR"
         };
-        eprintln_unless!(self.quiet, "    Method: {}", token_type);
+        eprintln_unless!(self.quiet, "    Auth Method: {}", token_type);
         eprintln_unless!(self.quiet, "    Token: {}", token);
         eprintln_unless!(self.quiet, "");
     }
