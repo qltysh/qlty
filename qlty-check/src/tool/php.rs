@@ -6,8 +6,7 @@ use super::Tool;
 use super::ToolType;
 use crate::tool::{finalize_installation_from_cmd_result, RuntimeTool};
 use crate::ui::{ProgressBar, ProgressTask};
-use anyhow::Context;
-use anyhow::Result;
+use anyhow::{bail, Context, Result};
 use composer::Composer;
 use duct::cmd;
 use itertools::Itertools;
@@ -75,6 +74,7 @@ impl Php {
     fn verify_installation(&self, env: HashMap<String, String>) -> Result<()> {
         let cmd = cmd!("php", "--version")
             .full_env(env)
+            .unchecked()
             .stderr_to_stdout()
             .stdout_capture();
 
@@ -85,7 +85,10 @@ impl Php {
         let result = cmd.run();
         finalize_installation_from_cmd_result(self, &result, &mut installation, script).ok();
 
-        result.with_context(|| "Ensure `php` is installed and in $PATH")?;
+        let output = result?;
+        if !output.status.success() {
+            bail!("Ensure `php` is installed and in $PATH");
+        }
 
         Ok(())
     }

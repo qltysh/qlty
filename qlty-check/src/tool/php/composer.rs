@@ -107,7 +107,8 @@ impl Composer {
         let _ =
             finalize_installation_from_cmd_result(php_package, &result, &mut installation, script);
 
-        if result?.status.code() != Some(0) {
+        let output = result?;
+        if output.status.code() != Some(0) {
             bail!("Failed to install composer package file");
         }
 
