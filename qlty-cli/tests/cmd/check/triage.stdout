@@ -1,0 +1,10 @@
+[
+  {
+    "tool": "exists",
+    "ruleKey": "fail",
+    "message": "exists failed",
+    "level": "LEVEL_LOW",
+    "category": "CATEGORY_STRUCTURE",
+    "mode": "MODE_COMMENT"
+  }
+]

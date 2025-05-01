@@ -13,6 +13,9 @@ batch = true
 name = "exists"
 version = "1.0.0"
 
-[[override]]
-plugin = "exists"
-mode = "monitor"
+[[triage]]
+match.plugin = "exists"
+match.rule = "fail"
+set.mode = "comment"
+set.level = "low"
+set.category = "structure"

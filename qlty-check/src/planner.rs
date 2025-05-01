@@ -11,13 +11,14 @@ use crate::planner::config_files::PluginConfigFile;
 use crate::Settings;
 use anyhow::{bail, Error, Result};
 use check_filters::CheckFilters;
+use console::style;
 use document_url_generator::DocumentUrlGenerator;
 use itertools::Itertools;
 use qlty_analysis::cache::{Cache, FilesystemCache, NullCache};
 use qlty_analysis::git::{compute_upstream, DiffLineFilter};
 use qlty_analysis::workspace_entries::TargetMode;
 use qlty_config::config::issue_transformer::IssueTransformer;
-use qlty_config::config::{DriverType, PluginDef};
+use qlty_config::config::{DriverType, Match, PluginDef, Set, Triage};
 use qlty_config::{QltyConfig, Workspace};
 use qlty_types::analysis::v1::ExecutionVerb;
 use rayon::prelude::*;
@@ -268,10 +269,43 @@ impl Planner {
         self.transformers
             .push(Box::new(IssueMuter::new(self.staging_area.clone())));
 
-        // keep overrides last
-        for issue_override in &self.config.overrides {
-            self.transformers.push(Box::new(issue_override.clone()));
+        // keep triage last
+        let triages = self.build_triages();
+        for issue_triage in &triages {
+            self.transformers.push(Box::new(issue_triage.clone()));
         }
+    }
+
+    fn build_triages(&self) -> Vec<Triage> {
+        let mut triages = self.config.triage.clone();
+
+        if !self.config.overrides.is_empty() {
+            eprintln!(
+                "{} The `{}` field in qlty.toml is deprecated. Please use `{}` instead.",
+                style("WARNING:").bold().yellow(),
+                style("override").bold(),
+                style("triage").bold()
+            );
+
+            for issue_override in &self.config.overrides {
+                triages.push(Triage {
+                    set: Set {
+                        level: issue_override.level.clone(),
+                        category: issue_override.category.clone(),
+                        mode: issue_override.mode.clone(),
+                        ..Default::default()
+                    },
+                    _match: Match {
+                        plugins: issue_override.plugins.clone(),
+                        rules: issue_override.rules.clone(),
+                        file_patterns: issue_override.file_patterns.clone(),
+                        ..Default::default()
+                    },
+                });
+            }
+        }
+
+        triages
     }
 
     fn build_plan(&mut self) -> Result<Plan> {
