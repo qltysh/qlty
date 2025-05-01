@@ -52,6 +52,7 @@ pub struct Set {
 #[derive(Debug, Serialize, Deserialize, Default, Clone, JsonSchema)]
 pub struct Triage {
     #[serde(default)]
+    #[serde(rename = "match")]
     pub _match: Match,
 
     #[serde(default)]
