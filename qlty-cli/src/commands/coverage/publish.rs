@@ -628,6 +628,12 @@ impl Publish {
                     message: String::from("Total parts count must be greater than 0"),
                 });
             }
+
+            if total_parts == 1 && self.incomplete {
+                return Err(CommandError::InvalidOptions {
+                    message: String::from("Cannot specify both --incomplete and --total-parts-count 1 as this is ambiguous. See https://qlty.sh/d/server-side-merging for more information."),
+                });
+            }
         }
         Ok(())
     }
@@ -786,5 +792,42 @@ mod tests {
         let settings = publish.build_settings();
 
         assert!(settings.incomplete);
+    }
+
+    #[test]
+    fn test_validate_options_rejects_incomplete_with_total_parts_count_1() {
+        let mut publish = Publish::default();
+        publish.incomplete = true;
+        publish.total_parts_count = Some(1);
+
+        let result = publish.validate_options();
+        assert!(result.is_err());
+
+        if let Err(CommandError::InvalidOptions { message }) = result {
+            assert!(message.contains("ambiguous"));
+        } else {
+            panic!("Expected CommandError::InvalidOptions");
+        }
+    }
+
+    #[test]
+    fn test_validate_options_accepts_valid_combinations() {
+        // Just incomplete flag is valid
+        let mut publish = Publish::default();
+        publish.incomplete = true;
+        publish.total_parts_count = None;
+        assert!(publish.validate_options().is_ok());
+
+        // Total parts > 1 with incomplete is valid
+        let mut publish = Publish::default();
+        publish.incomplete = true;
+        publish.total_parts_count = Some(2);
+        assert!(publish.validate_options().is_ok());
+
+        // Total parts = 1 without incomplete is valid
+        let mut publish = Publish::default();
+        publish.incomplete = false;
+        publish.total_parts_count = Some(1);
+        assert!(publish.validate_options().is_ok());
     }
 }
