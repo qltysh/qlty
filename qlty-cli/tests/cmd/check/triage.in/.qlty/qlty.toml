@@ -14,8 +14,8 @@ name = "exists"
 version = "1.0.0"
 
 [[triage]]
-match.plugin = "exists"
-match.rule = "fail"
+match.plugins = ["exists"]
+match.rules = ["fail"]
 set.mode = "comment"
 set.level = "low"
 set.category = "structure"
