@@ -292,7 +292,7 @@ impl Planner {
                     set: Set {
                         level: issue_override.level.clone(),
                         category: issue_override.category.clone(),
-                        mode: issue_override.mode.clone(),
+                        mode: issue_override.mode,
                         ..Default::default()
                     },
                     _match: Match {
