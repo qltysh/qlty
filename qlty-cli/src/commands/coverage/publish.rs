@@ -174,7 +174,8 @@ impl Publish {
         let add_prefix = Self::coalesce_args(&self.add_prefix, &self.transform_add_prefix);
         let strip_prefix = Self::coalesce_args(&self.strip_prefix, &self.transform_strip_prefix);
 
-        let incomplete = self.incomplete || self.total_parts_count.is_some();
+        let incomplete: bool = self.incomplete
+            || (self.total_parts_count.is_some() && self.total_parts_count > Some(1));
 
         Settings {
             override_build_id: self.override_build_id.clone(),
@@ -312,7 +313,7 @@ impl Publish {
         }
 
         if self.incomplete {
-            eprintln_unless!(self.quiet, "    incomplete");
+            eprintln_unless!(self.quiet, "    incomplete: {}", self.incomplete);
         }
 
         eprintln_unless!(self.quiet, "");
@@ -792,6 +793,17 @@ mod tests {
         let settings = publish.build_settings();
 
         assert!(settings.incomplete);
+    }
+
+    #[test]
+    fn test_build_settings_does_not_set_incomplete_when_total_parts_count_is_one() {
+        let mut publish = Publish::default();
+        publish.incomplete = false;
+        publish.total_parts_count = Some(1);
+
+        let settings = publish.build_settings();
+
+        assert!(!settings.incomplete);
     }
 
     #[test]
