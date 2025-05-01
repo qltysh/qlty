@@ -6,9 +6,11 @@ use crate::{
     ui::{ProgressBar, ProgressTask},
     Tool,
 };
-use anyhow::{bail, Result};
+use anyhow::{anyhow, bail, Context, Result};
 use ar::Entry;
 use chrono::Utc;
+use duct::cmd;
+use indoc::indoc;
 use qlty_analysis::{join_path_string, utils::fs::path_to_string};
 use qlty_types::analysis::v1::Installation;
 use std::{
@@ -30,6 +32,28 @@ const DEBIAN_DATA_TAR_XZ: &[u8; 11] = b"data.tar.xz";
 pub struct RubyLinux {}
 
 impl PlatformRuby for RubyLinux {
+    fn pre_install(&self, _tool: &dyn Tool, _task: &ProgressTask) -> anyhow::Result<()> {
+        cmd!("pkg-config", "--version").read().with_context(|| {
+            anyhow!(indoc! {"
+                pkg-config is needed to install Ruby. Please install it with your package manager.
+                Examples:
+                    > sudo apt install pkg-config   # Debian/Ubuntu
+                    > sudo apk add pkgconf          # Alpine Linux
+            "})
+        })?;
+
+        cmd!("pkg-config", "yaml-0.1").read().with_context(|| {
+            anyhow!(indoc! {"
+                libyaml is needed to install Ruby. Please install it with your package manager.
+                Examples:
+                    > sudo apt install libyaml-dev   # Debian/Ubuntu
+                    > sudo apk add yaml-dev          # Alpine Linux
+            "})
+        })?;
+
+        Ok(())
+    }
+
     fn post_install(&self, tool: &dyn Tool, task: &ProgressTask) -> Result<()> {
         task.set_message("Setting up Ruby on Linux");
         self.rewrite_binstubs(tool)?;

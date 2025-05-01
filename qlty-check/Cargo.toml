@@ -31,6 +31,7 @@ git2.workspace = true
 globset.workspace = true
 ignore.workspace = true
 indicatif.workspace = true
+indoc.workspace = true
 itertools.workspace = true
 lazy_static.workspace = true
 lzma-rs.workspace = true
@@ -61,7 +62,6 @@ zip.workspace = true
 
 [dev-dependencies]
 assert-json-diff.workspace = true
-indoc.workspace = true
 insta.workspace = true
 qlty-test-utilities.workspace = true
 tracing-test.workspace = true
