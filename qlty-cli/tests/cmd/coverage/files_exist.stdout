@@ -12,7 +12,8 @@
     "commitTime": "2024-01-01T00:00:00+00:00",
     "uploadedAt": "[..]",
     "cliVersion": "[..]",
-    "publishCommand": "[..]qlty[..] coverage publish --dry-run --override-commit-sha 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67 --override-build-id 123 lcov.info --print --json --skip-missing-files"
+    "publishCommand": "/Users/noah/code/qltysh/qlty/target/debug/qlty coverage publish --dry-run --override-commit-sha 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67 --override-build-id 123 lcov.info --print --json --skip-missing-files --incomplete",
+    "incomplete": true
   },
   "report_files": [
     {
@@ -86,7 +87,7 @@
         "2"
       ],
       "commitSha": "2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67",
-      "uploadedAt": "[..]"
+      "uploadedAt": "2025-05-01T21:01:30.103526+00:00"
     }
   ],
   "totals": {

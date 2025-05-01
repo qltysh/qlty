@@ -8,7 +8,6 @@ https://qlty.sh/d/coverage
     tag: rails
     override-commit-sha: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
     add-prefix: rails/
-    incomplete: false
 
  METADATA 
 

@@ -7,7 +7,6 @@ https://qlty.sh/d/coverage
     dry-run: true
     override-build-id: 123
     override-commit-sha: 822641a8a442eab5981096a0d734ac180aa40106
-    incomplete: false
 
  METADATA 
 

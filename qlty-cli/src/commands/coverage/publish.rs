@@ -311,7 +311,9 @@ impl Publish {
             eprintln_unless!(self.quiet, "    total-parts-count: {}", total_parts_count);
         }
 
-        eprintln_unless!(self.quiet, "    incomplete: {}", self.incomplete);
+        if self.incomplete {
+            eprintln_unless!(self.quiet, "    incomplete");
+        }
 
         eprintln_unless!(self.quiet, "");
     }
@@ -626,12 +628,6 @@ impl Publish {
                     message: String::from("Total parts count must be greater than 0"),
                 });
             }
-
-            if self.incomplete {
-                return Err(CommandError::InvalidOptions {
-                    message: String::from("The --incomplete flag is unnecessary when using --total-parts-count as it automatically marks the upload as incomplete. Please see https://qlty.sh/d/server-side-merging for more information on server-side merging."),
-                });
-            }
         }
         Ok(())
     }
@@ -779,23 +775,6 @@ mod tests {
             Publish::extract_repository_name("https://x:y@example.org/a/b"),
             Some("b".into())
         );
-    }
-
-    #[test]
-    fn test_validate_options_rejects_incomplete_with_total_parts_count() {
-        let mut publish = Publish::default();
-        publish.incomplete = true;
-        publish.total_parts_count = Some(2);
-
-        let result = publish.validate_options();
-
-        assert!(result.is_err());
-        if let Err(CommandError::InvalidOptions { message }) = result {
-            assert!(message.contains("--incomplete flag is unnecessary"));
-            assert!(message.contains("https://qlty.sh/d/server-side-merging"));
-        } else {
-            panic!("Expected CommandError::InvalidOptions");
-        }
     }
 
     #[test]
