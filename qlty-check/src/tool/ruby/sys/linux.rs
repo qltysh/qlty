@@ -46,6 +46,14 @@ impl PlatformRuby for RubyLinux {
             "libx/libxcrypt/libcrypt1_4.4.18-4",
             vec![DependencyFile::new("libcrypt.so.1.1.0", "libcrypt.so.1")],
         )?;
+        self.install_dependency_deb(
+            tool,
+            "liby/libyaml/libyaml-0-2_0.2.5-2",
+            vec![
+                DependencyFile::both("libyaml-0.so.2"),
+                DependencyFile::both("libyaml-0.so.2.0.9"),
+            ],
+        )?;
 
         Ok(())
     }
