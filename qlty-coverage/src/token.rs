@@ -69,7 +69,7 @@ fn find_repository_name_from_repository() -> Result<String> {
 fn extract_repository_name(value: &str) -> Option<String> {
     value
         .split('/')
-        .last()
+        .next_back()
         .map(|s| s.strip_suffix(".git").unwrap_or(s).to_string())
         .filter(|v| !v.is_empty())
 }

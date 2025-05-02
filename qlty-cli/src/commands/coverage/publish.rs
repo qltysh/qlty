@@ -243,7 +243,7 @@ impl Publish {
                 .reverse(),
             style(" ").bold().reverse()
         );
-        eprintln!("");
+        eprintln!();
 
         let mut tw = TabWriter::new(vec![]);
 
@@ -306,7 +306,7 @@ impl Publish {
         }
 
         eprintln!("{}", style(title).bold().reverse());
-        eprintln!("");
+        eprintln!();
     }
 
     fn print_coverage_data(&self, report: &Report) {
@@ -375,7 +375,7 @@ impl Publish {
                 );
             }
 
-            eprintln!("");
+            eprintln!();
 
             if missing_percent > 10.0 {
                 eprintln!(
@@ -395,7 +395,7 @@ impl Publish {
                 style("https://qlty.sh/d/coverage-path-fixing").dim()
             );
 
-            eprintln!("");
+            eprintln!();
         } else {
             eprintln!(
                 "    {}",
@@ -403,7 +403,7 @@ impl Publish {
             );
         }
 
-        eprintln!("");
+        eprintln!();
 
         // Get formatted numbers first
         let covered_lines = report.totals.covered_lines.to_formatted_string(&Locale::en);
@@ -435,7 +435,7 @@ impl Publish {
             omitted_lines,
             width = max_length
         );
-        eprintln!("");
+        eprintln!();
         eprintln!(
             "    {}",
             style(format!(
@@ -444,7 +444,7 @@ impl Publish {
             ))
             .bold()
         );
-        eprintln!("");
+        eprintln!();
     }
 
     fn print_export_status(&self, export_path: &Option<PathBuf>) {
@@ -460,7 +460,7 @@ impl Publish {
                 .unwrap_or(&PathBuf::from("ERROR"))
                 .to_string_lossy()
         );
-        eprintln!("");
+        eprintln!();
     }
 
     fn print_upload_complete(&self, bytes: u64, elapsed_seconds: f32, url: &str) {
@@ -478,7 +478,7 @@ impl Publish {
             eprintln!("    {}", style(format!("View report: {}", url)).bold());
         }
 
-        eprintln!("");
+        eprintln!();
     }
 
     fn validate_options(&self) -> Result<(), CommandError> {

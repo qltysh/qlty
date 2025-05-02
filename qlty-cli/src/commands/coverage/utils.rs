@@ -16,14 +16,14 @@ pub fn load_config() -> QltyConfig {
 
 pub fn print_section_header(title: &str) {
     eprintln!("{}", style(title).bold().reverse());
-    eprintln!("");
+    eprintln!();
 }
 
 pub fn print_initial_messages(quiet: bool) {
     if !quiet {
         eprintln!("qlty {}", LONG_VERSION.as_str());
         eprintln!("{}", style("https://qlty.sh/d/coverage").dim());
-        eprintln!("");
+        eprintln!();
     }
 }
 
@@ -87,7 +87,7 @@ pub fn print_settings(settings: &Settings) {
         eprintln!("    incomplete: {}", settings.incomplete);
     }
 
-    eprintln!("");
+    eprintln!();
 }
 
 pub fn print_metadata(plan: &Plan, quiet: bool) {
@@ -113,7 +113,7 @@ pub fn print_metadata(plan: &Plan, quiet: bool) {
         eprintln!("    Build ID: {}", plan.metadata.build_id);
     }
 
-    eprintln!("");
+    eprintln!();
 }
 
 pub fn print_authentication_info(token: &str, quiet: bool) {
@@ -137,5 +137,5 @@ pub fn print_authentication_info(token: &str, quiet: bool) {
     };
     eprintln!("    Auth Method: {}", token_type);
     eprintln!("    Token: {}", token);
-    eprintln!("");
+    eprintln!();
 }

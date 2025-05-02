@@ -104,7 +104,7 @@ impl Complete {
             "    Coverage marked as complete in {:.2}s!",
             elapsed_seconds
         );
-        eprintln!("");
+        eprintln!();
     }
 
     fn request_complete(
