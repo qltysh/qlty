@@ -10,8 +10,8 @@
 
 ### New
 
-- Add stringlint linter (https://github.com/dral3x/StringsLint) for Swift (#1987)
-- Add SwiftFormat auto-formatter (https://github.com/swiftlang/swift-format) (#1986)
+- Add stringlint linter (<https://github.com/dral3x/StringsLint>) for Swift (#1987)
+- Add SwiftFormat auto-formatter (<https://github.com/swiftlang/swift-format>) (#1986)
 - Add support for a `source.toml` file in custom sources (#2000)
 
 ### Improved
