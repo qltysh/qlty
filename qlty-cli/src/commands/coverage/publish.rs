@@ -173,7 +173,7 @@ impl Publish {
         }
 
         eprintln!("    Upload ID: {}", upload.id);
-        eprintln!("");
+        eprintln!();
     }
 
     fn build_settings(&self) -> Settings {
