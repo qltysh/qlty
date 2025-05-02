@@ -4,6 +4,7 @@ use super::utils::{
 use crate::{CommandError, CommandSuccess};
 use anyhow::{bail, Context, Result};
 use clap::Args;
+use console::style;
 use qlty_cloud::Client as QltyClient;
 use qlty_coverage::{
     publish::{Plan, Planner, Settings},
@@ -55,6 +56,7 @@ impl Complete {
 
         let settings = self.build_settings();
 
+        self.print_section_header(" SETTINGS ");
         print_settings(&settings);
 
         let token = load_auth_token(&self.token, self.project.as_deref())?;
@@ -62,7 +64,10 @@ impl Complete {
 
         self.validate_plan(&plan)?;
 
+        self.print_section_header(" METADATA ");
         print_metadata(&plan, self.quiet);
+
+        self.print_section_header(" AUTHENTICATION ");
         print_authentication_info(&token, self.quiet);
 
         let timer = Instant::now();
@@ -70,6 +75,15 @@ impl Complete {
         self.print_complete_success(timer.elapsed().as_secs_f32());
 
         CommandSuccess::ok()
+    }
+
+    fn print_section_header(&self, title: &str) {
+        if self.quiet {
+            return;
+        }
+
+        eprintln!("{}", style(title).bold().reverse());
+        eprintln!();
     }
 
     fn build_settings(&self) -> Settings {
@@ -100,10 +114,7 @@ impl Complete {
             return;
         }
 
-        eprintln!(
-            "    Coverage marked as complete in {:.2}s!",
-            elapsed_seconds
-        );
+        eprintln!("    Coverage marked as complete in {elapsed_seconds:.2}s!");
         eprintln!();
     }
 

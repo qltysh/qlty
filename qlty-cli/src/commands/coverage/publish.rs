@@ -1,7 +1,6 @@
 use super::utils::{
     load_config, print_authentication_info, print_initial_messages, print_metadata, print_settings,
 };
-use crate::commands::coverage::utils::print_section_header;
 use crate::{CommandError, CommandSuccess};
 use anyhow::{bail, Result};
 use clap::Args;
@@ -123,6 +122,7 @@ impl Publish {
 
         let settings = self.build_settings();
 
+        self.print_section_header(" SETTINGS ");
         print_settings(&settings);
         self.validate_options()?;
 
@@ -131,6 +131,7 @@ impl Publish {
 
         self.validate_plan(&plan)?;
 
+        self.print_section_header(" METADATA ");
         print_metadata(&plan, self.quiet);
         self.print_coverage_files(&plan);
 
@@ -150,11 +151,13 @@ impl Publish {
             return CommandSuccess::ok();
         }
 
+        self.print_section_header(" AUTHENTICATION ");
         print_authentication_info(&token, self.quiet);
 
+        self.print_section_header(" PREPARING TO UPLOAD... ");
         let upload = Upload::prepare(&token, &mut report)?;
 
-        print_section_header(" UPLOADING... ");
+        self.print_section_header(" UPLOADING... ");
         let timer = Instant::now();
         upload.upload(&export)?;
         let bytes = export.total_size_bytes()?;
@@ -297,7 +300,7 @@ impl Publish {
         let written =
             String::from_utf8(tw.into_inner().unwrap_or_default()).unwrap_or("ERROR".to_string());
 
-        eprintln!("{}", written);
+        eprintln!("{written}");
     }
 
     fn print_section_header(&self, title: &str) {
@@ -420,21 +423,9 @@ impl Publish {
             .max()
             .unwrap_or(0);
 
-        eprintln!(
-            "    Covered Lines:      {:>width$}",
-            covered_lines,
-            width = max_length
-        );
-        eprintln!(
-            "    Uncovered Lines:    {:>width$}",
-            uncovered_lines,
-            width = max_length
-        );
-        eprintln!(
-            "    Omitted Lines:      {:>width$}",
-            omitted_lines,
-            width = max_length
-        );
+        eprintln!("    Covered Lines:      {covered_lines:>max_length$}");
+        eprintln!("    Uncovered Lines:    {uncovered_lines:>max_length$}");
+        eprintln!("    Omitted Lines:      {omitted_lines:>max_length$}");
         eprintln!();
         eprintln!(
             "    {}",
@@ -475,7 +466,7 @@ impl Publish {
         );
 
         if !url.is_empty() {
-            eprintln!("    {}", style(format!("View report: {}", url)).bold());
+            eprintln!("    {}", style(format!("View report: {url}")).bold());
         }
 
         eprintln!();

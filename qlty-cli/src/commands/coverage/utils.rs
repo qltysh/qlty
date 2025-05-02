@@ -14,11 +14,6 @@ pub fn load_config() -> QltyConfig {
         .unwrap_or_default()
 }
 
-pub fn print_section_header(title: &str) {
-    eprintln!("{}", style(title).bold().reverse());
-    eprintln!();
-}
-
 pub fn print_initial_messages(quiet: bool) {
     if !quiet {
         eprintln!("qlty {}", LONG_VERSION.as_str());
@@ -32,8 +27,6 @@ pub fn print_settings(settings: &Settings) {
         return;
     }
 
-    print_section_header(" SETTINGS ");
-
     eprintln!(
         "    cwd: {}",
         std::env::current_dir()
@@ -45,34 +38,34 @@ pub fn print_settings(settings: &Settings) {
         eprintln!("    dry-run: {}", settings.dry_run);
     }
     if let Some(format) = &settings.report_format {
-        eprintln!("    format: {}", format);
+        eprintln!("    format: {format}");
     }
     if let Some(output_dir) = &settings.output_dir {
         eprintln!("    output-dir: {}", output_dir.to_string_lossy());
     }
     if let Some(tag) = &settings.tag {
-        eprintln!("    tag: {}", tag);
+        eprintln!("    tag: {tag}");
     }
     if let Some(override_build_id) = &settings.override_build_id {
-        eprintln!("    override-build-id: {}", override_build_id);
+        eprintln!("    override-build-id: {override_build_id}");
     }
     if let Some(override_branch) = &settings.override_branch {
-        eprintln!("    override-branch: {}", override_branch);
+        eprintln!("    override-branch: {override_branch}");
     }
     if let Some(override_commit_sha) = &settings.override_commit_sha {
-        eprintln!("    override-commit-sha: {}", override_commit_sha);
+        eprintln!("    override-commit-sha: {override_commit_sha}");
     }
     if let Some(override_pr_number) = &settings.override_pull_request_number {
-        eprintln!("    override-pr-number: {}", override_pr_number);
+        eprintln!("    override-pr-number: {override_pr_number}");
     }
     if let Some(add_prefix) = &settings.add_prefix {
-        eprintln!("    add-prefix: {}", add_prefix);
+        eprintln!("    add-prefix: {add_prefix}");
     }
     if let Some(strip_prefix) = &settings.strip_prefix {
-        eprintln!("    strip-prefix: {}", strip_prefix);
+        eprintln!("    strip-prefix: {strip_prefix}");
     }
     if let Some(project) = &settings.project {
-        eprintln!("    project: {}", project);
+        eprintln!("    project: {project}");
     }
 
     if settings.skip_missing_files {
@@ -80,7 +73,7 @@ pub fn print_settings(settings: &Settings) {
     }
 
     if let Some(total_parts_count) = settings.total_parts_count {
-        eprintln!("    total-parts-count: {}", total_parts_count);
+        eprintln!("    total-parts-count: {total_parts_count}");
     }
 
     if settings.incomplete {
@@ -95,7 +88,6 @@ pub fn print_metadata(plan: &Plan, quiet: bool) {
         return;
     }
 
-    print_section_header(" METADATA ");
     if !plan.metadata.ci.is_empty() {
         eprintln!("    CI: {}", plan.metadata.ci);
     }
@@ -121,7 +113,6 @@ pub fn print_authentication_info(token: &str, quiet: bool) {
         return;
     }
 
-    print_section_header(" PREPARING TO UPLOAD... ");
     let token_type = if token.starts_with(COVERAGE_TOKEN_WORKSPACE_PREFIX) {
         "Workspace Token"
     } else if token.starts_with(COVERAGE_TOKEN_PROJECT_PREFIX) {
@@ -135,7 +126,7 @@ pub fn print_authentication_info(token: &str, quiet: bool) {
     } else {
         "ERROR"
     };
-    eprintln!("    Auth Method: {}", token_type);
-    eprintln!("    Token: {}", token);
+    eprintln!("    Auth Method: {token_type}");
+    eprintln!("    Token: {token}");
     eprintln!();
 }
