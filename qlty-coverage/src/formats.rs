@@ -7,7 +7,7 @@ use std::convert::TryFrom;
 use std::path::Path;
 use std::str::FromStr;
 
-#[derive(clap::ValueEnum, Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(clap::ValueEnum, Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
 pub enum Formats {
     Simplecov,
     Clover,
