@@ -1,5 +1,7 @@
+mod complete;
 mod publish;
 mod transform;
+pub use complete::Complete;
 pub use publish::Publish;
 pub use transform::Transform;
 
@@ -22,6 +24,9 @@ pub enum Commands {
 
     /// Transform coverage data to the Qlty format
     Transform(Transform),
+
+    /// Mark coverage as complete on Qlty Cloud
+    Complete(Complete),
 }
 
 impl Arguments {
@@ -29,6 +34,7 @@ impl Arguments {
         match &self.command {
             Commands::Transform(command) => command.execute(args),
             Commands::Publish(command) => command.execute(args),
+            Commands::Complete(command) => command.execute(args),
         }
     }
 }
