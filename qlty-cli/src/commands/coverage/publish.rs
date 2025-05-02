@@ -174,8 +174,7 @@ impl Publish {
         let add_prefix = Self::coalesce_args(&self.add_prefix, &self.transform_add_prefix);
         let strip_prefix = Self::coalesce_args(&self.strip_prefix, &self.transform_strip_prefix);
 
-        let incomplete: bool = self.incomplete
-            || (self.total_parts_count.is_some() && self.total_parts_count > Some(1));
+        let incomplete: bool = self.incomplete || self.total_parts_count.unwrap_or(1) > 1;
 
         Settings {
             override_build_id: self.override_build_id.clone(),
