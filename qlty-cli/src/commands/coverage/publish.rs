@@ -7,6 +7,7 @@ use clap::Args;
 use console::style;
 use indicatif::HumanBytes;
 use num_format::{Locale, ToFormattedString as _};
+use qlty_coverage::eprintln_unless;
 use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
 use qlty_coverage::publish::{Plan, Planner, Processor, Reader, Report, Settings, Upload};
@@ -156,6 +157,7 @@ impl Publish {
 
         self.print_section_header(" PREPARING TO UPLOAD... ");
         let upload = Upload::prepare(&token, &mut report)?;
+        self.print_upload(&upload);
 
         self.print_section_header(" UPLOADING... ");
         let timer = Instant::now();
@@ -164,6 +166,15 @@ impl Publish {
         self.print_upload_complete(bytes, timer.elapsed().as_secs_f32(), &upload.url);
 
         CommandSuccess::ok()
+    }
+
+    fn print_upload(&self, upload: &Upload) {
+        if self.quiet {
+            return;
+        }
+
+        eprintln_unless!(self.quiet, "    Upload ID: {}", upload.id);
+        eprintln_unless!(self.quiet, "");
     }
 
     fn build_settings(&self) -> Settings {
