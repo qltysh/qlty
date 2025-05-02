@@ -7,7 +7,6 @@ use clap::Args;
 use console::style;
 use indicatif::HumanBytes;
 use num_format::{Locale, ToFormattedString as _};
-use qlty_coverage::eprintln_unless;
 use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
 use qlty_coverage::publish::{Plan, Planner, Processor, Reader, Report, Settings, Upload};
@@ -173,8 +172,8 @@ impl Publish {
             return;
         }
 
-        eprintln_unless!(self.quiet, "    Upload ID: {}", upload.id);
-        eprintln_unless!(self.quiet, "");
+        eprintln!("    Upload ID: {}", upload.id);
+        eprintln!("");
     }
 
     fn build_settings(&self) -> Settings {
