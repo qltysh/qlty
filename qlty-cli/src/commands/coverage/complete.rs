@@ -286,7 +286,7 @@ impl Complete {
                     }
                 }
             };
-            Ok(format!("{}/{}", token, project))
+            Ok(format!("{token}/{project}"))
         } else {
             Ok(token)
         }
