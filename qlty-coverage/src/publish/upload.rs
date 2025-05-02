@@ -6,7 +6,6 @@ use qlty_cloud::Client as QltyClient;
 use qlty_types::tests::v1::CoverageMetadata;
 use serde_json::Value;
 use std::path::PathBuf;
-use ureq::Error;
 
 const LEGACY_API_URL: &str = "https://qlty.sh/api";
 
@@ -108,48 +107,6 @@ impl Upload {
 
     fn request_api(metadata: &CoverageMetadata, token: &str) -> Result<Value> {
         let client = QltyClient::new(Some(LEGACY_API_URL), Some(token.into()));
-        let response_result = client.post("/coverage").send_json(ureq::json!({
-            "data": metadata,
-        }));
-
-        match response_result {
-            Ok(resp) => resp.into_json::<Value>().map_err(|err| {
-                anyhow!(
-                    "JSON Error: {}: Unable to parse JSON response from success: {:?}",
-                    client.base_url,
-                    err
-                )
-            }),
-
-            Err(Error::Status(code, resp)) => match resp.into_string() {
-                Ok(body) => match serde_json::from_str::<Value>(&body) {
-                    Ok(json) => match json.get("error") {
-                        Some(error) => {
-                            bail!("HTTP Error {}: {}: {}", code, client.base_url, error)
-                        }
-                        None => {
-                            bail!("HTTP Error {}: {}: {}", code, client.base_url, body);
-                        }
-                    },
-                    Err(_) => bail!(
-                        "HTTP Error {}: {}: Unable to parse JSON response: {}",
-                        code,
-                        client.base_url,
-                        body
-                    ),
-                },
-                Err(err) => bail!(
-                    "HTTP Error {}: {}: Error reading response body: {:?}",
-                    code,
-                    client.base_url,
-                    err
-                ),
-            },
-            Err(Error::Transport(transport_error)) => bail!(
-                "Transport Error: {}: {:?}",
-                client.base_url,
-                transport_error
-            ),
-        }
+        client.post_coverage_metadata("/coverage", metadata)
     }
 }

@@ -1,27 +1,21 @@
+use super::utils::{
+    load_config, print_authentication_info, print_initial_messages, print_metadata, print_settings,
+};
+use crate::commands::coverage::utils::print_section_header;
 use crate::{CommandError, CommandSuccess};
 use anyhow::{bail, Result};
 use clap::Args;
 use console::style;
-use git2::Repository;
 use indicatif::HumanBytes;
 use num_format::{Locale, ToFormattedString as _};
-use qlty_config::version::LONG_VERSION;
-use qlty_config::{QltyConfig, Workspace};
-use qlty_coverage::ci::{GitHub, CI};
-use qlty_coverage::eprintln_unless;
 use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
 use qlty_coverage::publish::{Plan, Planner, Processor, Reader, Report, Settings, Upload};
-use regex::Regex;
+use qlty_coverage::token::load_auth_token;
 use std::io::Write as _;
 use std::path::PathBuf;
 use std::time::Instant;
 use tabwriter::TabWriter;
-use tracing::debug;
-
-const COVERAGE_TOKEN_WORKSPACE_PREFIX: &str = "qltcw_";
-const COVERAGE_TOKEN_PROJECT_PREFIX: &str = "qltcp_";
-const OIDC_REGEX: &str = r"^([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+)$";
 
 #[derive(Debug, Args, Default)]
 pub struct Publish {
@@ -124,20 +118,20 @@ pub struct Publish {
 impl Publish {
     // TODO: Use CommandSuccess and CommandError, which is not straight forward since those types aren't available here.
     pub fn execute(&self, _args: &crate::Arguments) -> Result<CommandSuccess, CommandError> {
-        self.print_initial_messages();
+        print_initial_messages(self.quiet);
         self.print_deprecation_warnings();
 
         let settings = self.build_settings();
 
-        self.print_settings(&settings);
+        print_settings(&settings);
         self.validate_options()?;
 
-        let token = self.load_auth_token()?;
-        let plan = Planner::new(&Self::load_config(), &settings).compute()?;
+        let token = load_auth_token(&self.token, self.project.as_deref())?;
+        let plan = Planner::new(&load_config(), &settings).compute()?;
 
         self.validate_plan(&plan)?;
 
-        self.print_metadata(&plan);
+        print_metadata(&plan, self.quiet);
         self.print_coverage_files(&plan);
 
         let results = Reader::new(&plan).read()?;
@@ -156,11 +150,11 @@ impl Publish {
             return CommandSuccess::ok();
         }
 
-        self.print_authentication_info(&token);
+        print_authentication_info(&token, self.quiet);
 
         let upload = Upload::prepare(&token, &mut report)?;
 
-        self.print_section_header(" UPLOADING... ");
+        print_section_header(" UPLOADING... ");
         let timer = Instant::now();
         upload.upload(&export)?;
         let bytes = export.total_size_bytes()?;
@@ -189,25 +183,26 @@ impl Publish {
             skip_missing_files: self.skip_missing_files,
             total_parts_count: self.total_parts_count,
             incomplete,
+            quiet: self.quiet,
+            project: self.project.clone(),
+            dry_run: self.dry_run,
+            output_dir: self.output_dir.clone(),
         }
     }
 
     fn print_deprecation_warnings(&self) {
+        if self.quiet {
+            return;
+        }
+
         if self.report_format.is_some() {
-            eprintln_unless!(
-                self.quiet,
-                "WARNING: --report-format is deprecated, use --format instead\n"
-            );
+            eprintln!("WARNING: --report-format is deprecated, use --format instead\n");
         }
         if self.transform_add_prefix.is_some() {
-            eprintln_unless!(
-                self.quiet,
-                "WARNING: --transform-add-prefix is deprecated, use --add-prefix instead\n"
-            );
+            eprintln!("WARNING: --transform-add-prefix is deprecated, use --add-prefix instead\n");
         }
         if self.transform_strip_prefix.is_some() {
-            eprintln_unless!(
-                self.quiet,
+            eprintln!(
                 "WARNING: --transform-strip-prefix is deprecated, use --strip-prefix instead\n"
             );
         }
@@ -235,118 +230,12 @@ impl Publish {
         Ok(())
     }
 
-    fn print_initial_messages(&self) {
-        eprintln_unless!(self.quiet, "qlty {}", LONG_VERSION.as_str());
-        eprintln_unless!(self.quiet, "{}", style("https://qlty.sh/d/coverage").dim());
-        eprintln_unless!(self.quiet, "");
-    }
-
-    fn print_section_header(&self, title: &str) {
-        eprintln_unless!(self.quiet, "{}", style(title).bold().reverse());
-        eprintln_unless!(self.quiet, "");
-    }
-
-    fn print_settings(&self, settings: &Settings) {
-        self.print_section_header(" SETTINGS ");
-
-        eprintln_unless!(
-            self.quiet,
-            "    cwd: {}",
-            std::env::current_dir()
-                .unwrap_or(PathBuf::from("ERROR"))
-                .to_string_lossy()
-        );
-
-        if self.dry_run {
-            eprintln_unless!(self.quiet, "    dry-run: {}", self.dry_run);
-        }
-        if let Some(format) = &settings.report_format {
-            eprintln_unless!(self.quiet, "    format: {}", format);
-        }
-        if let Some(output_dir) = &self.output_dir {
-            eprintln_unless!(
-                self.quiet,
-                "    output-dir: {}",
-                output_dir.to_string_lossy()
-            );
-        }
-        if let Some(tag) = &self.tag {
-            eprintln_unless!(self.quiet, "    tag: {}", tag);
-        }
-        if let Some(override_build_id) = &self.override_build_id {
-            eprintln_unless!(self.quiet, "    override-build-id: {}", override_build_id);
-        }
-        if let Some(override_branch) = &self.override_branch {
-            eprintln_unless!(self.quiet, "    override-branch: {}", override_branch);
-        }
-        if let Some(override_commit_sha) = &self.override_commit_sha {
-            eprintln_unless!(
-                self.quiet,
-                "    override-commit-sha: {}",
-                override_commit_sha
-            );
-        }
-        if let Some(override_pr_number) = &self.override_pr_number {
-            eprintln_unless!(self.quiet, "    override-pr-number: {}", override_pr_number);
-        }
-        if let Some(add_prefix) = &settings.add_prefix {
-            eprintln_unless!(self.quiet, "    add-prefix: {}", add_prefix);
-        }
-        if let Some(strip_prefix) = &settings.strip_prefix {
-            eprintln_unless!(self.quiet, "    strip-prefix: {}", strip_prefix);
-        }
-        if let Some(project) = &self.project {
-            eprintln_unless!(self.quiet, "    project: {}", project);
-        }
-
-        if self.skip_missing_files {
-            eprintln_unless!(
-                self.quiet,
-                "    skip-missing-files: {}",
-                self.skip_missing_files
-            );
-        }
-
-        if let Some(total_parts_count) = self.total_parts_count {
-            eprintln_unless!(self.quiet, "    total-parts-count: {}", total_parts_count);
-        }
-
-        if self.incomplete {
-            eprintln_unless!(self.quiet, "    incomplete: {}", self.incomplete);
-        }
-
-        eprintln_unless!(self.quiet, "");
-    }
-
-    fn print_metadata(&self, plan: &Plan) {
-        self.print_section_header(" METADATA ");
-        if !plan.metadata.ci.is_empty() {
-            eprintln_unless!(self.quiet, "    CI: {}", plan.metadata.ci);
-        }
-
-        eprintln_unless!(self.quiet, "    Commit: {}", plan.metadata.commit_sha);
-        if !plan.metadata.pull_request_number.is_empty() {
-            eprintln_unless!(
-                self.quiet,
-                "    Pull Request: #{}",
-                plan.metadata.pull_request_number
-            );
-        }
-
-        if !plan.metadata.branch.is_empty() {
-            eprintln_unless!(self.quiet, "    Branch: {}", plan.metadata.branch);
-        }
-
-        if !plan.metadata.build_id.is_empty() {
-            eprintln_unless!(self.quiet, "    Build ID: {}", plan.metadata.build_id);
-        }
-
-        eprintln_unless!(self.quiet, "");
-    }
-
     fn print_coverage_files(&self, plan: &Plan) {
-        eprintln_unless!(
-            self.quiet,
+        if self.quiet {
+            return;
+        }
+
+        eprintln!(
             "{}{}{}",
             style(" COVERAGE FILES: ").bold().reverse(),
             style(plan.report_files.len().to_formatted_string(&Locale::en))
@@ -354,7 +243,7 @@ impl Publish {
                 .reverse(),
             style(" ").bold().reverse()
         );
-        eprintln_unless!(self.quiet, "");
+        eprintln!("");
 
         let mut tw = TabWriter::new(vec![]);
 
@@ -408,16 +297,28 @@ impl Publish {
         let written =
             String::from_utf8(tw.into_inner().unwrap_or_default()).unwrap_or("ERROR".to_string());
 
-        eprintln_unless!(self.quiet, "{}", written);
+        eprintln!("{}", written);
+    }
+
+    fn print_section_header(&self, title: &str) {
+        if self.quiet {
+            return;
+        }
+
+        eprintln!("{}", style(title).bold().reverse());
+        eprintln!("");
     }
 
     fn print_coverage_data(&self, report: &Report) {
+        if self.quiet {
+            return;
+        }
+
         self.print_section_header(" COVERAGE DATA ");
 
         let total_files_count = report.found_files.len() + report.missing_files.len();
 
-        eprintln_unless!(
-            self.quiet,
+        eprintln!(
             "    {} unique code file {}",
             total_files_count.to_formatted_string(&Locale::en),
             if total_files_count == 1 {
@@ -433,8 +334,7 @@ impl Publish {
         if !missing_files.is_empty() {
             let missing_percent = (missing_files.len() as f32 / total_files_count as f32) * 100.0;
 
-            eprintln_unless!(
-                self.quiet,
+            eprintln!(
                 "    {}",
                 style(format!(
                     "{} {} missing on disk ({:.1}%)",
@@ -455,20 +355,15 @@ impl Publish {
                 (std::cmp::min(20, missing_files.len()), false)
             };
 
-            eprintln_unless!(
-                self.quiet,
-                "\n    {}\n",
-                style("Missing code files:").bold().yellow()
-            );
+            eprintln!("\n    {}\n", style("Missing code files:").bold().yellow());
 
             for path in missing_files.iter().take(paths_to_show) {
-                eprintln_unless!(self.quiet, "      {}", style(path.to_string()).yellow());
+                eprintln!("      {}", style(path.to_string()).yellow());
             }
 
             if !show_all && paths_to_show < missing_files.len() {
                 let remaining = missing_files.len() - paths_to_show;
-                eprintln_unless!(
-                    self.quiet,
+                eprintln!(
                     "      {} {}",
                     style(format!(
                         "... and {} more",
@@ -480,39 +375,35 @@ impl Publish {
                 );
             }
 
-            eprintln_unless!(self.quiet, "");
+            eprintln!("");
 
             if missing_percent > 10.0 {
-                eprintln_unless!(
-                    self.quiet,
+                eprintln!(
                     "    {} {}",
                     style("TIP:").bold().yellow(),
                     style("Consider using add-prefix or strip-prefix to fix paths").bold()
                 );
             } else {
-                eprintln_unless!(
-                    self.quiet,
+                eprintln!(
                     "    {} Consider excluding these paths with your code coverage tool.",
                     style("TIP:").bold()
                 )
             }
 
-            eprintln_unless!(
-                self.quiet,
+            eprintln!(
                 "    {}",
                 style("https://qlty.sh/d/coverage-path-fixing").dim()
             );
 
-            eprintln_unless!(self.quiet, "");
+            eprintln!("");
         } else {
-            eprintln_unless!(
-                self.quiet,
+            eprintln!(
                 "    {}",
                 style("All code files in the coverage data were found on disk.").dim()
             );
         }
 
-        eprintln_unless!(self.quiet, "");
+        eprintln!("");
 
         // Get formatted numbers first
         let covered_lines = report.totals.covered_lines.to_formatted_string(&Locale::en);
@@ -529,27 +420,23 @@ impl Publish {
             .max()
             .unwrap_or(0);
 
-        eprintln_unless!(
-            self.quiet,
+        eprintln!(
             "    Covered Lines:      {:>width$}",
             covered_lines,
             width = max_length
         );
-        eprintln_unless!(
-            self.quiet,
+        eprintln!(
             "    Uncovered Lines:    {:>width$}",
             uncovered_lines,
             width = max_length
         );
-        eprintln_unless!(
-            self.quiet,
+        eprintln!(
             "    Omitted Lines:      {:>width$}",
             omitted_lines,
             width = max_length
         );
-        eprintln_unless!(self.quiet, "");
-        eprintln_unless!(
-            self.quiet,
+        eprintln!("");
+        eprintln!(
             "    {}",
             style(format!(
                 "Line Coverage:       {:.2}%",
@@ -557,68 +444,41 @@ impl Publish {
             ))
             .bold()
         );
-        eprintln_unless!(self.quiet, "");
+        eprintln!("");
     }
 
     fn print_export_status(&self, export_path: &Option<PathBuf>) {
+        if self.quiet {
+            return;
+        }
+
         self.print_section_header(" EXPORTING... ");
-        eprintln_unless!(
-            self.quiet,
+        eprintln!(
             "    Exported: {}/coverage.zip",
             export_path
                 .as_ref()
                 .unwrap_or(&PathBuf::from("ERROR"))
                 .to_string_lossy()
         );
-        eprintln_unless!(self.quiet, "");
-    }
-
-    fn print_authentication_info(&self, token: &str) {
-        self.print_section_header(" PREPARING TO UPLOAD... ");
-        let token_type = if token.starts_with(COVERAGE_TOKEN_WORKSPACE_PREFIX) {
-            "Workspace Token"
-        } else if token.starts_with(COVERAGE_TOKEN_PROJECT_PREFIX) {
-            "Project Token"
-        } else if let Ok(oidc_regex) = Regex::new(OIDC_REGEX) {
-            if oidc_regex.is_match(token) {
-                "OIDC"
-            } else {
-                "Unknown"
-            }
-        } else {
-            "ERROR"
-        };
-        eprintln_unless!(self.quiet, "    Auth Method: {}", token_type);
-        eprintln_unless!(self.quiet, "    Token: {}", token);
-        eprintln_unless!(self.quiet, "");
+        eprintln!("");
     }
 
     fn print_upload_complete(&self, bytes: u64, elapsed_seconds: f32, url: &str) {
-        eprintln_unless!(
-            self.quiet,
+        if self.quiet {
+            return;
+        }
+
+        eprintln!(
             "    Uploaded {} in {:.2}s!",
             HumanBytes(bytes),
             elapsed_seconds
         );
 
         if !url.is_empty() {
-            eprintln_unless!(
-                self.quiet,
-                "    {}",
-                style(format!("View report: {}", url)).bold()
-            );
+            eprintln!("    {}", style(format!("View report: {}", url)).bold());
         }
 
-        eprintln_unless!(self.quiet, "");
-    }
-
-    fn load_auth_token(&self) -> Result<String> {
-        self.expand_token(match &self.token {
-            Some(token) => Ok(token.to_owned()),
-            None => std::env::var("QLTY_COVERAGE_TOKEN").map_err(|_| {
-                anyhow::Error::msg("QLTY_COVERAGE_TOKEN environment variable is required.")
-            }),
-        }?)
+        eprintln!("");
     }
 
     fn validate_options(&self) -> Result<(), CommandError> {
@@ -638,207 +498,11 @@ impl Publish {
         Ok(())
     }
 
-    /// Appends repository name to token if it is a workspace token
-    fn expand_token(&self, token: String) -> Result<String> {
-        if token.starts_with(COVERAGE_TOKEN_WORKSPACE_PREFIX) {
-            if token.contains("/") {
-                return Ok(token);
-            }
-            let project = if let Some(project) = &self.project {
-                project.clone()
-            } else if let Some(repository) = self.find_repository_name_from_env() {
-                repository
-            } else {
-                match self.find_repository_name_from_repository() {
-                    Ok(repository) => repository,
-                    Err(err) => {
-                        debug!("Find repository name: {}", err);
-                        bail!(
-                            "Could not infer project name from environment, please provide it using --project"
-                        )
-                    }
-                }
-            };
-            Ok(format!("{}/{}", token, project))
-        } else {
-            Ok(token)
-        }
-    }
-
-    fn find_repository_name_from_env(&self) -> Option<String> {
-        let repository = GitHub::default().repository_name();
-        if repository.is_empty() {
-            None
-        } else {
-            Self::extract_repository_name(&repository)
-        }
-    }
-
-    fn find_repository_name_from_repository(&self) -> Result<String> {
-        let root = Workspace::assert_within_git_directory()?;
-        let repo = Repository::open(root)?;
-        let remote = repo.find_remote("origin")?;
-        if let Some(name) = Self::extract_repository_name(remote.url().unwrap_or_default()) {
-            Ok(name)
-        } else {
-            bail!(
-                "Could not find repository name from git remote: {:?}",
-                remote.url()
-            )
-        }
-    }
-
-    fn extract_repository_name(value: &str) -> Option<String> {
-        value
-            .split('/')
-            .last()
-            .map(|s| s.strip_suffix(".git").unwrap_or(s).to_string())
-            .take_if(|v| !v.is_empty())
-    }
-
     fn show_report(&self, report: &Report) -> Result<()> {
         if self.json {
             print_report_as_json(report)
         } else {
             print_report_as_text(report)
         }
-    }
-
-    fn load_config() -> QltyConfig {
-        Workspace::new()
-            .and_then(|workspace| workspace.config())
-            .unwrap_or_default()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn publish(project: Option<&str>) -> Publish {
-        Publish {
-            dry_run: true,
-            project: project.map(|s| s.to_string()),
-            quiet: true,
-            ..Default::default()
-        }
-    }
-
-    #[test]
-    fn test_expand_token_project() -> Result<()> {
-        let token = publish(None).expand_token("qltcp_123".to_string())?;
-        assert_eq!(token, "qltcp_123");
-        Ok(())
-    }
-
-    #[test]
-    fn test_expand_token_workspace_with_project() -> Result<()> {
-        let token = publish(Some("test")).expand_token("qltcw_123".to_string())?;
-        assert_eq!(token, "qltcw_123/test");
-        Ok(())
-    }
-
-    #[test]
-    fn test_expand_token_workspace_with_env() -> Result<()> {
-        let token = publish(None).expand_token("qltcw_123".to_string())?;
-        assert!(token.starts_with("qltcw_123/"));
-
-        std::env::set_var("GITHUB_REPOSITORY", "");
-        let token = publish(None).expand_token("qltcw_123".to_string())?;
-        assert!(token.starts_with("qltcw_123/"));
-
-        std::env::set_var("GITHUB_REPOSITORY", "a/b.git");
-        let token = publish(None).expand_token("qltcw_123".to_string())?;
-        assert_eq!(token, "qltcw_123/b");
-
-        std::env::set_var("GITHUB_REPOSITORY", "b/c");
-        let token = publish(None).expand_token("qltcw_123".to_string())?;
-        assert_eq!(token, "qltcw_123/c");
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_expand_token_already_expanded() -> Result<()> {
-        let token = publish(Some("test")).expand_token("qltcw_123/abc".to_string())?;
-        assert_eq!(token, "qltcw_123/abc");
-        Ok(())
-    }
-
-    #[test]
-    fn test_extract_repository_name() {
-        assert_eq!(Publish::extract_repository_name(""), None);
-        assert_eq!(Publish::extract_repository_name("a/"), None);
-        assert_eq!(
-            Publish::extract_repository_name("git@example.org:a/b"),
-            Some("b".into())
-        );
-        assert_eq!(
-            Publish::extract_repository_name("ssh://x@example.org:a/b"),
-            Some("b".into())
-        );
-        assert_eq!(
-            Publish::extract_repository_name("https://x:y@example.org/a/b"),
-            Some("b".into())
-        );
-    }
-
-    #[test]
-    fn test_build_settings_sets_incomplete_when_total_parts_count_provided() {
-        let mut publish = Publish::default();
-        publish.incomplete = false;
-        publish.total_parts_count = Some(2);
-
-        let settings = publish.build_settings();
-
-        assert!(settings.incomplete);
-    }
-
-    #[test]
-    fn test_build_settings_does_not_set_incomplete_when_total_parts_count_is_one() {
-        let mut publish = Publish::default();
-        publish.incomplete = false;
-        publish.total_parts_count = Some(1);
-
-        let settings = publish.build_settings();
-
-        assert!(!settings.incomplete);
-    }
-
-    #[test]
-    fn test_validate_options_rejects_incomplete_with_total_parts_count_1() {
-        let mut publish = Publish::default();
-        publish.incomplete = true;
-        publish.total_parts_count = Some(1);
-
-        let result = publish.validate_options();
-        assert!(result.is_err());
-
-        if let Err(CommandError::InvalidOptions { message }) = result {
-            assert!(message.contains("ambiguous"));
-        } else {
-            panic!("Expected CommandError::InvalidOptions");
-        }
-    }
-
-    #[test]
-    fn test_validate_options_accepts_valid_combinations() {
-        // Just incomplete flag is valid
-        let mut publish = Publish::default();
-        publish.incomplete = true;
-        publish.total_parts_count = None;
-        assert!(publish.validate_options().is_ok());
-
-        // Total parts > 1 with incomplete is valid
-        let mut publish = Publish::default();
-        publish.incomplete = true;
-        publish.total_parts_count = Some(2);
-        assert!(publish.validate_options().is_ok());
-
-        // Total parts = 1 without incomplete is valid
-        let mut publish = Publish::default();
-        publish.incomplete = false;
-        publish.total_parts_count = Some(1);
-        assert!(publish.validate_options().is_ok());
     }
 }

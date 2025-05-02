@@ -2548,8 +2548,10 @@ dependencies = [
 name = "qlty-cloud"
 version = "0.523.0"
 dependencies = [
+ "anyhow",
  "insta",
  "qlty-config",
+ "qlty-types",
  "tempfile",
  "ureq",
 ]
@@ -2608,6 +2610,7 @@ dependencies = [
  "serde_json",
  "tempfile",
  "time",
+ "tracing",
  "ureq",
  "xml-rs",
  "zip",

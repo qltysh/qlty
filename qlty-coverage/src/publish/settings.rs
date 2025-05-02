@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::formats::Formats;
 use serde::{Deserialize, Serialize};
 
@@ -20,4 +22,9 @@ pub struct Settings {
     pub skip_missing_files: bool,
     pub total_parts_count: Option<u32>,
     pub incomplete: bool,
+
+    pub project: Option<String>,
+    pub output_dir: Option<PathBuf>,
+    pub dry_run: bool,
+    pub quiet: bool,
 }
