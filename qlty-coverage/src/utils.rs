@@ -13,14 +13,14 @@ pub fn extract_path_and_format(
 ) -> Result<(PathBuf, Formats)> {
     if let Some((potential_format, rest)) = path.split_once(':') {
         match Formats::from_str(potential_format) {
-            Ok(fmt) => Ok((PathBuf::from(rest), fmt)),
+            Ok(format) => Ok((PathBuf::from(rest), format)),
             Err(_) => match base_format {
-                Some(fmt) => Ok((PathBuf::from(path), fmt)),
+                Some(format) => Ok((PathBuf::from(path), format)),
                 None => Ok((PathBuf::from(path), Formats::try_from(path.as_ref())?)),
             },
         }
-    } else if let Some(fmt) = base_format {
-        Ok((PathBuf::from(path), fmt))
+    } else if let Some(format) = base_format {
+        Ok((PathBuf::from(path), format))
     } else {
         Ok((PathBuf::from(path), Formats::try_from(path.as_ref())?))
     }
