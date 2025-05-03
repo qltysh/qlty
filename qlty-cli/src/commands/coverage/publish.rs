@@ -8,7 +8,6 @@ use console::style;
 use indicatif::HumanBytes;
 use num_format::{Locale, ToFormattedString as _};
 use qlty_analysis::utils::fs::path_to_string;
-use qlty_coverage::eprintln_unless;
 use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
 use qlty_coverage::publish::{Plan, Planner, Processor, Reader, Report, Settings, Upload};
