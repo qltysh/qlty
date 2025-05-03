@@ -67,4 +67,3 @@ impl From<git2::Error> for CommandError {
         }
     }
 }
-
