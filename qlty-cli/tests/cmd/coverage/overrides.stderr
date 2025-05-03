@@ -45,8 +45,6 @@ WARNING: --transform-add-prefix is deprecated, use --add-prefix instead
 
     Line Coverage:       92.31%
 
-  Exporting code coverage data...
-  → Exported to "tmp/qlty-coverage"
  EXPORTING... 
 
     Exported: tmp/qlty-coverage/coverage.zip

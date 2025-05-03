@@ -156,13 +156,7 @@ impl Publish {
             self.show_report(&report)?;
         }
 
-        eprintln_unless!(self.quiet, "  Exporting code coverage data...");
         let export = report.export_to(self.output_dir.clone())?;
-        eprintln_unless!(
-            self.quiet,
-            "{}",
-            style(format!("  → Exported to {:?}", export.to.as_ref().unwrap())).dim()
-        );
 
         if self.validate {
             let validation_result = ValidationResult::compute(
