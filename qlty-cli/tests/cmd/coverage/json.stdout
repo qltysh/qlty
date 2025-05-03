@@ -13,7 +13,10 @@
     "commitTime": "2024-01-01T00:00:00+00:00",
     "tag": "rails",
     "uploadedAt": "[..]",
-    "cliVersion": "[..]"
+    "cliVersion": "[..]",
+    "uploaderTool": "qltysh/qlty-action-coverage",
+    "publishCommand": "[..]qlty[..] coverage publish --dry-run --print --json --override-commit-sha 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67 --add-prefix rails/ --tag rails lcov.info",
+    "uploaderToolVersion": "v1.0.0"
   },
   "report_files": [
     {
@@ -92,5 +95,12 @@
       "uploadedAt": "[..]",
       "branch": "feature-branch-1"
     }
-  ]
+  ],
+  "totals": {
+    "covered_lines": 24,
+    "uncovered_lines": 2,
+    "omitted_lines": 26,
+    "total_lines": 52,
+    "coverage_percentage": 92.3076923076923
+  }
 }

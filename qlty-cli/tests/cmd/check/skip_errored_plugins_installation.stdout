@@ -1,5 +1,8 @@
  ERRORS: 1 
 
 Plugin        Result  Message                      Debug File
-always_error  Error   Exited with code 1 in [..].[..]s  .qlty/out/invoke-[..].yaml
+always_error  Error   Exited with code 1 in [..]s  .qlty/out/invoke-[..].yaml
+
+Installation errors found:
+Error installing tool gitleaks@8.24.2
 

@@ -34,9 +34,12 @@ use regex::Regex;
 use sha2::Digest;
 use std::env::join_paths;
 use std::env::split_paths;
+use std::io::Error;
 use std::io::Write;
 use std::path::Path;
 use std::process::Output;
+use std::sync::Arc;
+use std::sync::Mutex;
 use std::time::Instant;
 use std::{collections::HashMap, fmt::Debug, path::PathBuf};
 use tracing::warn;
@@ -85,6 +88,10 @@ pub fn global_tools_root() -> String {
     )
 }
 
+fn lock_error() -> Error {
+    Error::other("Failed to acquire lock for tool installation")
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Ord, PartialOrd, Hash)]
 pub enum ToolType {
     Runtime,
@@ -108,6 +115,10 @@ pub trait Tool: Debug + Sync + Send {
             self.version().unwrap_or("generic".to_string()),
             self.fingerprint()
         )
+    }
+
+    fn debug_files_directory(&self) -> String {
+        format!("{}-installation-debug-files", self.directory())
     }
 
     fn runtime(&self) -> Option<Box<dyn Tool>> {
@@ -349,12 +360,23 @@ pub trait Tool: Debug + Sync + Send {
         Self: Sized,
     {
         let mut installation = initialize_installation(self)?;
+        let command_producer: Arc<Mutex<Vec<String>>> = Default::default();
+        let command = command_producer.clone();
 
         let cmd = cmd
             .dir(self.directory())
             .full_env(self.env()?)
+            .unchecked()
             .stderr_capture()
-            .stdout_capture();
+            .stdout_capture()
+            .before_spawn(move |cmd| {
+                let mut val = command_producer.lock().map_err(|_| lock_error())?;
+                *val = vec![cmd.get_program().to_string_lossy().to_string()]
+                    .into_iter()
+                    .chain(cmd.get_args().map(|a| a.to_string_lossy().to_string()))
+                    .collect();
+                Ok(())
+            });
 
         let script = format!("{:?}", cmd);
         debug!(script);
@@ -362,7 +384,15 @@ pub trait Tool: Debug + Sync + Send {
         let result = cmd.run();
         finalize_installation_from_cmd_result(self, &result, &mut installation, script)?;
 
-        result?;
+        let output = result?;
+        if !output.status.success() {
+            bail!(
+                "Command {:?} exited with code {}",
+                command.lock().map_err(|_| lock_error())?,
+                output.status.code().unwrap_or_default()
+            );
+        }
+
         Ok(())
     }
 
@@ -476,8 +506,8 @@ pub trait Tool: Debug + Sync + Send {
             // ensure stdout appears before stderr in output string
             let output = format!(
                 "{} {}",
-                String::from_utf8(cmd_output.stdout)?,
-                String::from_utf8(cmd_output.stderr)?
+                String::from_utf8_lossy(&cmd_output.stdout),
+                String::from_utf8_lossy(&cmd_output.stderr)
             );
 
             let version_string = output.trim();

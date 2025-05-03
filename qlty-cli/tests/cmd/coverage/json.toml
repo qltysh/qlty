@@ -6,7 +6,7 @@ args = [
   "--json",
   "--override-commit-sha",
   "2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67",
-  "--transform-add-prefix",
+  "--add-prefix",
   "rails/",
   "--tag",
   "rails",
@@ -24,3 +24,5 @@ GITHUB_RUN_ATTEMPT = "2"
 GITHUB_RUN_ID = "42"
 GITHUB_SHA = "77948d72a8b5ea21bb335e8e674bad99413da7a2"
 QLTY_COVERAGE_TOKEN = "qltcp_12345678abcdefgh"
+QLTY_CI_UPLOADER_TOOL = "qltysh/qlty-action-coverage"
+QLTY_CI_UPLOADER_TOOL_VERSION = "v1.0.0"

@@ -68,7 +68,7 @@ impl Install {
 
         let results = Executor::install_tools(tools, jobs, progress);
         for (name, result) in results {
-            result.with_context(|| format!("Failed to install {}", name,))?;
+            result.with_context(|| format!("Failed to install {}", name))?;
         }
 
         Ok(())

@@ -7,7 +7,7 @@ use std::convert::TryFrom;
 use std::path::Path;
 use std::str::FromStr;
 
-#[derive(clap::ValueEnum, Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(clap::ValueEnum, Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
 pub enum Formats {
     Simplecov,
     Clover,
@@ -51,8 +51,9 @@ impl TryFrom<&Path> for Formats {
                     Ok(Formats::Cobertura)
                 }
             }
-            _ => bail!(
-                "Unsupported file format for coverage report: {}",
+            Some(other) => bail!("Unknown file extension for coverage report: {}\nSpecify the format with --report-format=FORMAT", other),
+            None => bail!(
+                "Could not determine a report format by file extension: {}\nSpecify the format with --report-format=FORMAT",
                 path.display()
             ),
         }

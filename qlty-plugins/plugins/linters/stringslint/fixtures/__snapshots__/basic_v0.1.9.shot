@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=stringslint fixture=basic version=0.1.9 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.swift",
+        "range": {
+          "startLine": 3,
+        },
+      },
+      "message": "Localized string "test" is missing (missing)",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "Missing Violation",
+      "snippet": "        baz.typeText("test")",
+      "snippetWithContext": "class Foo {
+    func Bar() {
+        baz.typeText("test")
+    }
+}
+
+NSLocalizedString("def", comment:"")",
+      "tool": "stringslint",
+    },
+  ],
+}
+`;

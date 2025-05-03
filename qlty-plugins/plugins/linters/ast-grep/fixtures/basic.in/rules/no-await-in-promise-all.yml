@@ -1,0 +1,7 @@
+id: no-await-in-promise-all
+language: TypeScript
+rule:
+  pattern: Promise.all($A)
+  has:
+    pattern: await $_
+    stopBy: end

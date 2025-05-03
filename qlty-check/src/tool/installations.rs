@@ -14,7 +14,7 @@ pub fn initialize_installation(tool: &dyn Tool) -> Result<Installation> {
         tool_name: tool.name(),
         version: tool.version().unwrap_or_default(),
         tool_type: format!("{:?}", tool.tool_type()),
-        directory: format!("{}-installation-debug-files", tool.directory()),
+        directory: tool.debug_files_directory(),
         runtime: tool.runtime().map_or("".to_string(), |r| r.name()),
         fingerprint: tool.fingerprint(),
         qlty_cli_version: QLTY_VERSION.to_string(),

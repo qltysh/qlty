@@ -21,16 +21,16 @@ pub struct Arguments {
 #[derive(Subcommand, Debug)]
 
 pub enum Commands {
-    /// Log in a user
+    /// Authenticate with Qlty Cloud
     Login(Login),
 
-    /// Log out the currently logged in user
+    /// Log out from Qlty Cloud
     Logout(Logout),
 
-    /// Create a Qlty account
+    /// Open the Qlty Cloud sign up flow in the browser
     Signup(Signup),
 
-    ///  Displays the email address of the currently authenticated user
+    ///  Print the email address of the authenticated Qlty Cloud user
     Whoami(Whoami),
 }
 

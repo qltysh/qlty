@@ -192,14 +192,23 @@ impl Scanner {
                 }
             });
 
-            for config_file in &config_files {
-                for source in self.source_list.sources().iter() {
-                    if self.settings.workspace.root.join(config_file).exists() {
-                        continue;
-                    }
+            let mut plugin_configs_found = false;
 
-                    if let Some(source_file) = source.get_config_file(plugin_name, config_file)? {
-                        configs_to_install.push(source_file);
+            // Check if any config files already exist in the workspace
+            for config_file in &config_files {
+                if self.settings.workspace.root.join(config_file).exists() {
+                    plugin_configs_found = true;
+                }
+            }
+
+            if !plugin_configs_found {
+                for config_file in &config_files {
+                    for source in self.source_list.sources().iter() {
+                        if let Some(source_file) =
+                            source.get_config_file(plugin_name, config_file)?
+                        {
+                            configs_to_install.push(source_file);
+                        }
                     }
                 }
             }
@@ -466,7 +475,7 @@ script = "ls -l ${target}"
 success_codes = [0]
 output = "pass_fail"
 suggested = "targets"
-config_files = ["config.toml"]
+config_files = ["config.toml", "second_config.toml"]
                 "#,
             )
             .unwrap();
@@ -800,6 +809,31 @@ config_files = ["config.toml"]
         scanner.prepare().unwrap();
         File::create(&config_file_path).unwrap();
         File::create(td.path().join("config.toml")).unwrap();
+
+        assert!(scanner.scan(&ProgressBar::hidden()).is_ok());
+        assert!(scanner
+            .plugins
+            .iter()
+            .find(|p| p.name == "exists")
+            .is_some());
+
+        let installed_plugin = scanner.plugins.iter().find(|p| p.name == "exists").unwrap();
+        assert_eq!(installed_plugin.version, "known_good");
+        assert_eq!(installed_plugin.files_count, 7);
+        assert_eq!(installed_plugin.config_files.len(), 0);
+        assert_eq!(installed_plugin.package_file, None);
+    }
+
+    #[test]
+    fn test_config_file_from_plugin_dir_when_any_config_exists_in_repo() {
+        let (mut scanner, td) = create_scanner();
+        let config_file_path = td.path().join(path_to_native_string(
+            ".qlty/sources/https---testing-com/test_branch/linters/exists/config.toml",
+        ));
+
+        scanner.prepare().unwrap();
+        File::create(&config_file_path).unwrap();
+        File::create(td.path().join("second_config.toml")).unwrap();
 
         assert!(scanner.scan(&ProgressBar::hidden()).is_ok());
         assert!(scanner

@@ -6,7 +6,7 @@ use crate::{
     ui::{ProgressBar, ProgressTask},
     Tool,
 };
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use itertools::Itertools;
 use qlty_analysis::utils::fs::path_to_native_string;
 use sha2::Digest;
@@ -65,6 +65,7 @@ impl RubyWindows {
         let cmd = Command::new(None, tool.version_command().unwrap_or_default())
             .cmd
             .full_env(tool.env()?)
+            .unchecked()
             .stderr_to_stdout()
             .stdout_capture();
 
@@ -75,7 +76,11 @@ impl RubyWindows {
         let result = cmd.run();
         let _ = finalize_installation_from_cmd_result(tool, &result, &mut installation, script);
 
-        let output = result.with_context(|| "Ensure `ruby` is installed and in $PATH")?;
+        let output = result?;
+        if !output.status.success() {
+            bail!("Ensure `ruby` is installed and in $PATH");
+        }
+
         debug!("Verified system ruby: {:?}", output);
 
         Ok(())

@@ -12,13 +12,14 @@ mod php;
 mod python;
 mod ruby;
 mod rust;
+mod swift;
 mod tsx;
 mod typescript;
 mod typescript_common;
 
 pub use {
     csharp::*, go::*, java::*, javascript::*, kotlin::*, php::*, python::*, ruby::*, rust::*,
-    tsx::*, typescript::*,
+    swift::*, tsx::*, typescript::*,
 };
 
 #[allow(clippy::borrowed_box)]
@@ -40,6 +41,7 @@ lazy_static! {
             Box::<python::Python>::default(),
             Box::<ruby::Ruby>::default(),
             Box::<rust::Rust>::default(),
+            Box::<swift::Swift>::default(),
             Box::<typescript::TypeScript>::default(),
             Box::<tsx::TSX>::default(),
         ]

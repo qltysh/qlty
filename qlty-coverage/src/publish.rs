@@ -1,3 +1,4 @@
+mod metrics;
 mod plan;
 mod planner;
 mod processor;
@@ -7,6 +8,7 @@ mod results;
 mod settings;
 mod upload;
 
+pub use metrics::CoverageMetrics;
 pub use plan::Plan;
 pub use planner::Planner;
 pub use processor::Processor;

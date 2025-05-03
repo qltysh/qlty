@@ -1,11 +1,11 @@
 use crate::export::CoverageExport;
 use crate::publish::Report;
+use anyhow::{anyhow, bail};
 use anyhow::{Context, Result};
 use qlty_cloud::Client as QltyClient;
 use qlty_types::tests::v1::CoverageMetadata;
 use serde_json::Value;
 use std::path::PathBuf;
-use ureq::Error;
 
 const LEGACY_API_URL: &str = "https://qlty.sh/api";
 
@@ -13,6 +13,7 @@ const LEGACY_API_URL: &str = "https://qlty.sh/api";
 pub struct Upload {
     pub id: String,
     pub project_id: String,
+    pub url: String,
     pub coverage_url: String,
 }
 
@@ -46,6 +47,12 @@ impl Upload {
             .with_context(|| format!("Unable to find project ID in response body: {:?}", response))
             .context("Failed to extract project ID from response")?;
 
+        let url = response
+            .get("data")
+            .and_then(|data| data.get("url"))
+            .and_then(|url| url.as_str())
+            .unwrap_or_default(); // Optional
+
         report.set_upload_id(id);
         report.set_project_id(project_id);
 
@@ -53,6 +60,7 @@ impl Upload {
             id: id.to_string(),
             project_id: project_id.to_string(),
             coverage_url: coverage_url.to_string(),
+            url: url.to_string(),
         })
     }
 
@@ -75,17 +83,23 @@ impl Upload {
         let response = ureq::put(url)
             .set("Content-Type", content_type)
             .send_bytes(&data)
-            .context("Failed to send PUT request")?;
+            .map_err(|err| {
+                anyhow!(
+                    "HTTP Error: PUT {}: Error sending upload bytes: {:?}",
+                    url,
+                    err
+                )
+            })?;
 
         if response.status() < 200 || response.status() >= 300 {
-            let error_message = format!(
-                "PUT request for uploading file returned {} status with response: {:?}",
+            bail!(
+                "HTTP Error {}: PUT {}: Upload request returned an error: {:?}",
                 response.status(),
+                url,
                 response
                     .into_string()
-                    .unwrap_or_else(|_| "Unknown error".to_string())
+                    .map_err(|err| anyhow!("Error reading response body: {:?}", err))?,
             );
-            return Err(anyhow::anyhow!(error_message));
         }
 
         Ok(())
@@ -93,30 +107,6 @@ impl Upload {
 
     fn request_api(metadata: &CoverageMetadata, token: &str) -> Result<Value> {
         let client = QltyClient::new(Some(LEGACY_API_URL), Some(token.into()));
-        let response_result = client.post("/coverage").send_json(ureq::json!({
-            "data": metadata,
-        }));
-
-        match response_result {
-            Ok(resp) => resp
-                .into_json::<Value>()
-                .map_err(|_| anyhow::anyhow!("Invalid JSON response")),
-
-            Err(Error::Status(code, resp)) => {
-                let error_message: Value = resp
-                    .into_json()
-                    .unwrap_or_else(|_| serde_json::json!({"error": "Unknown error"}));
-
-                let error_text = error_message
-                    .get("error")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("Unknown error");
-
-                Err(anyhow::anyhow!("HTTP Error {}: {}", code, error_text))
-            }
-            Err(Error::Transport(transport_error)) => {
-                Err(anyhow::anyhow!("Transport Error: {:?}", transport_error))
-            }
-        }
+        client.post_coverage_metadata("/coverage", metadata)
     }
 }

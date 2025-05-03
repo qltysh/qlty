@@ -1,6 +1,12 @@
+mod complete;
 mod publish;
 mod transform;
+<<<<<<< HEAD
 mod validate;
+=======
+mod utils;
+pub use complete::Complete;
+>>>>>>> main
 pub use publish::Publish;
 pub use transform::Transform;
 pub use validate::Validate;
@@ -16,14 +22,22 @@ pub struct Arguments {
     pub command: Commands,
 }
 
+// qlty-ignore: +clippy:large_enum_variant
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// Upload coverage reports to the Quality Cloud
+    /// Upload coverage reports to the Qlty Cloud
     Publish(Publish),
-    /// Transforms third party coverage reports to the Qlty format
+
+    /// Transform coverage data to the Qlty format
     Transform(Transform),
+<<<<<<< HEAD
     /// Validates coverage reports files exist on the filesystem
     Validate(Validate),
+=======
+
+    /// Mark coverage as complete on Qlty Cloud
+    Complete(Complete),
+>>>>>>> main
 }
 
 impl Arguments {
@@ -31,7 +45,11 @@ impl Arguments {
         match &self.command {
             Commands::Transform(command) => command.execute(args),
             Commands::Publish(command) => command.execute(args),
+<<<<<<< HEAD
             Commands::Validate(command) => command.execute(args),
+=======
+            Commands::Complete(command) => command.execute(args),
+>>>>>>> main
         }
     }
 }

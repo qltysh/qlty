@@ -497,6 +497,8 @@ pub enum OutputFormat {
     Sarif,
     #[serde(rename = "actionlint")]
     Actionlint,
+    #[serde(rename = "ast-grep")]
+    AstGrep,
     #[serde(rename = "bandit")]
     Bandit,
     #[serde(rename = "biome")]
@@ -555,6 +557,7 @@ impl std::fmt::Display for OutputFormat {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             OutputFormat::Actionlint => write!(f, "actionlint"),
+            OutputFormat::AstGrep => write!(f, "ast-grep"),
             OutputFormat::Bandit => write!(f, "bandit"),
             OutputFormat::Biome => write!(f, "biome"),
             OutputFormat::Clippy => write!(f, "clippy"),

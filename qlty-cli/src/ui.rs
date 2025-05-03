@@ -4,6 +4,7 @@ mod highlight;
 mod invocations;
 mod issues;
 mod level;
+mod messages;
 mod source;
 mod steps;
 mod text;

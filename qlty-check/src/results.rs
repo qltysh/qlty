@@ -1,4 +1,4 @@
-use crate::InvocationResult;
+use crate::executor::InvocationResult;
 use qlty_types::analysis::v1::{Issue, Location, Message};
 use std::path::PathBuf;
 
