@@ -7,6 +7,8 @@ use std::io::{BufReader, Read};
 use std::path::PathBuf;
 use zip::ZipArchive;
 
+use crate::publish::Report;
+
 const DEFAULT_THRESHOLD: f64 = 90.0;
 
 #[derive(Debug, Clone, Serialize, Default, PartialEq)]
@@ -35,6 +37,15 @@ impl ValidationResult {
         let threshold = threshold.unwrap_or(DEFAULT_THRESHOLD);
         let file_coverages = Self::read_zip(path)?;
 
+        Self::validate_file_coverages(&file_coverages, threshold)
+    }
+
+    pub fn validate_report(report: &Report, threshold: Option<f64>) -> Result<ValidationResult> {
+        let threshold = threshold.unwrap_or(DEFAULT_THRESHOLD);
+        Self::validate_file_coverages(&report.file_coverages, threshold)
+    }
+
+    fn validate_file_coverages(file_coverages: &[FileCoverage], threshold: f64) -> Result<ValidationResult> {
         let mut validation_result = ValidationResult {
             threshold,
             ..Default::default()

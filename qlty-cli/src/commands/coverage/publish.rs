@@ -7,7 +7,6 @@ use clap::Args;
 use console::style;
 use indicatif::HumanBytes;
 use num_format::{Locale, ToFormattedString as _};
-use qlty_analysis::utils::fs::path_to_string;
 use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
 use qlty_coverage::publish::{Plan, Planner, Processor, Reader, Report, Settings, Upload};
@@ -155,19 +154,15 @@ impl Publish {
             self.show_report(&report)?;
         }
 
-        let export = report.export_to(self.output_dir.clone())?;
-
         if self.validate {
-            let validation_result = ValidationResult::compute(
-                &path_to_string(export.to.clone().unwrap().join("coverage.zip")),
-                None,
-            )?;
+            let validation_result = ValidationResult::validate_report(&report, None)?;
 
             match validation_result.status {
                 ValidationStatus::Valid => {}
                 _ => return Err(validation_result.into()),
             }
         }
+        
         let export = report.export_to(self.output_dir.clone())?;
         self.print_export_status(&export.to);
 
