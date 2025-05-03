@@ -30,14 +30,12 @@ pub enum Commands {
 
     /// Transform coverage data to the Qlty format
     Transform(Transform),
-<<<<<<< HEAD
+
     /// Validates coverage reports files exist on the filesystem
     Validate(Validate),
-=======
 
     /// Mark coverage as complete on Qlty Cloud
     Complete(Complete),
->>>>>>> main
 }
 
 impl Arguments {
@@ -45,11 +43,8 @@ impl Arguments {
         match &self.command {
             Commands::Transform(command) => command.execute(args),
             Commands::Publish(command) => command.execute(args),
-<<<<<<< HEAD
             Commands::Validate(command) => command.execute(args),
-=======
             Commands::Complete(command) => command.execute(args),
->>>>>>> main
         }
     }
 }
