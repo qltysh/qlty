@@ -156,7 +156,6 @@ fn handle_result(
                     error!("Config error");
                     eprintln!("❌ Config error");
                 }
-                // CoverageValidation is now handled as an Unknown error
                 CommandError::Lint => {
                     error!("Lint error");
                     eprintln!("❌ Lint error");
