@@ -1,12 +1,9 @@
 mod complete;
 mod publish;
 mod transform;
-<<<<<<< HEAD
-mod validate;
-=======
 mod utils;
+mod validate;
 pub use complete::Complete;
->>>>>>> main
 pub use publish::Publish;
 pub use transform::Transform;
 pub use validate::Validate;

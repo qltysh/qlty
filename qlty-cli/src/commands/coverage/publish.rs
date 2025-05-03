@@ -6,24 +6,15 @@ use anyhow::{bail, Result};
 use clap::Args;
 use console::style;
 use indicatif::HumanBytes;
-<<<<<<< HEAD
+use num_format::{Locale, ToFormattedString as _};
 use qlty_analysis::utils::fs::path_to_string;
-use qlty_config::version::LONG_VERSION;
-use qlty_config::{QltyConfig, Workspace};
-use qlty_coverage::ci::{GitHub, CI};
 use qlty_coverage::eprintln_unless;
 use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
 use qlty_coverage::publish::{Plan, Planner, Processor, Reader, Report, Settings, Upload};
-use qlty_coverage::validate::{ValidationResult, ValidationStatus};
-=======
-use num_format::{Locale, ToFormattedString as _};
-use qlty_coverage::formats::Formats;
-use qlty_coverage::print::{print_report_as_json, print_report_as_text};
-use qlty_coverage::publish::{Plan, Planner, Processor, Reader, Report, Settings, Upload};
 use qlty_coverage::token::load_auth_token;
+use qlty_coverage::validate::{ValidationResult, ValidationStatus};
 use std::io::Write as _;
->>>>>>> main
 use std::path::PathBuf;
 use std::time::Instant;
 use tabwriter::TabWriter;
@@ -122,18 +113,16 @@ pub struct Publish {
     pub total_parts_count: Option<u32>,
 
     #[arg(long)]
-<<<<<<< HEAD
     /// Validate the coverage report before uploading it.
     /// This will check if the report is valid and minimum number of files a present.
     pub validate: bool,
-=======
+
     /// Mark this upload as incomplete. This is useful when issuing multiple qlty coverage publish commands for the same coverage tag.
     /// The server will merge the uploads into a single report when qlty coverage complete is called.
     pub incomplete: bool,
 
     // Paths to coverage reports
     pub paths: Vec<String>,
->>>>>>> main
 }
 
 impl Publish {
@@ -166,7 +155,6 @@ impl Publish {
             self.show_report(&report)?;
         }
 
-<<<<<<< HEAD
         eprintln_unless!(self.quiet, "  Exporting code coverage data...");
         let export = report.export_to(self.output_dir.clone())?;
         eprintln_unless!(
@@ -186,10 +174,8 @@ impl Publish {
                 _ => return Err(validation_result.into()),
             }
         }
-=======
         let export = report.export_to(self.output_dir.clone())?;
         self.print_export_status(&export.to);
->>>>>>> main
 
         if self.dry_run {
             return CommandSuccess::ok();
@@ -551,13 +537,6 @@ impl Publish {
             print_report_as_text(report)
         }
     }
-<<<<<<< HEAD
-
-    fn load_config() -> QltyConfig {
-        Workspace::new()
-            .and_then(|workspace| workspace.config())
-            .unwrap_or_default()
-    }
 }
 
 #[cfg(test)]
@@ -646,6 +625,4 @@ mod tests {
             Some("b".into())
         );
     }
-=======
->>>>>>> main
 }
