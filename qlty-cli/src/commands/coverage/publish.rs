@@ -112,7 +112,7 @@ pub struct Publish {
 
     #[arg(long)]
     /// Validate the coverage report before uploading it.
-    /// This will check if the report is valid and minimum number of files a present.
+    /// This will check if the report is valid and minimum number of files are present.
     pub validate: bool,
 
     #[arg(long)]
