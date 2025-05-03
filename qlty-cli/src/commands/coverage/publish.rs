@@ -11,7 +11,7 @@ use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
 use qlty_coverage::publish::{Plan, Planner, Processor, Reader, Report, Settings, Upload};
 use qlty_coverage::token::load_auth_token;
-use qlty_coverage::validate::{ValidationResult, ValidationStatus};
+use qlty_coverage::validate::{ValidationStatus, Validator};
 use std::io::Write as _;
 use std::path::PathBuf;
 use std::time::Instant;
@@ -155,7 +155,8 @@ impl Publish {
         }
 
         if self.validate {
-            let validation_result = ValidationResult::validate_report(&report, None)?;
+            let validator = Validator::new(None);
+            let validation_result = validator.validate(&report)?;
 
             match validation_result.status {
                 ValidationStatus::Valid => {}
