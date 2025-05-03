@@ -39,4 +39,4 @@ https://qlty.sh/d/coverage
     Line Coverage:       89.66%
 
 ❌ Coverage validation failed
-Only 50% of the files are present on the filesystem. Threshold is set to 90%
+Coverage validation failed: Only 50.00% of files are present (threshold: 90.00%)
