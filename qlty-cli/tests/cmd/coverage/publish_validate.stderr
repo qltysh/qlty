@@ -1,11 +1,42 @@
 qlty [..] [..]-[..] ([..] debug [..])
 https://qlty.sh/d/coverage
 
-  Retrieving CI metadata...
-  → unknown CI commit "2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67" on branch ""
+ SETTINGS 
 
-  Reading code coverage data...
-  → Found 1 files with code coverage data
+    cwd: [CWD]
+    dry-run: true
+    override-build-id: 123
+    override-commit-sha: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
+
+ METADATA 
+
+    CI: unknown
+    Commit: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
+    Build ID: 123
+
+ COVERAGE FILES: 1 
+
+    Coverage File  Format  Size
+    lcov.info      lcov    958 B
+
+ COVERAGE DATA 
+
+    2 unique code file paths
+    1 path is missing on disk (50.0%)
+
+    Missing code files:
+
+      doesnt_exist.js
+
+    TIP: Consider using add-prefix or strip-prefix to fix paths
+    https://qlty.sh/d/coverage-path-fixing
+
+
+    Covered Lines:      26
+    Uncovered Lines:     3
+    Omitted Lines:      28
+
+    Line Coverage:       89.66%
 
   Exporting code coverage data...
   → Exported to "tmp/qlty-coverage"

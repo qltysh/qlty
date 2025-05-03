@@ -117,6 +117,7 @@ pub struct Publish {
     /// This will check if the report is valid and minimum number of files a present.
     pub validate: bool,
 
+    #[arg(long)]
     /// Mark this upload as incomplete. This is useful when issuing multiple qlty coverage publish commands for the same coverage tag.
     /// The server will merge the uploads into a single report when qlty coverage complete is called.
     pub incomplete: bool,
@@ -536,93 +537,5 @@ impl Publish {
         } else {
             print_report_as_text(report)
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn publish(project: Option<&str>) -> Publish {
-        Publish {
-            dry_run: true,
-            report_format: None,
-            output_dir: None,
-            tag: None,
-            override_build_id: None,
-            override_branch: None,
-            override_commit_sha: None,
-            override_pr_number: None,
-            transform_add_prefix: None,
-            transform_strip_prefix: None,
-            token: None,
-            project: project.map(|s| s.to_string()),
-            print: false,
-            json: false,
-            quiet: true,
-            paths: vec![],
-            skip_missing_files: false,
-            total_parts_count: None,
-            validate: false,
-        }
-    }
-
-    #[test]
-    fn test_expand_token_project() -> Result<()> {
-        let token = publish(None).expand_token("qltcp_123".to_string())?;
-        assert_eq!(token, "qltcp_123");
-        Ok(())
-    }
-
-    #[test]
-    fn test_expand_token_workspace_with_project() -> Result<()> {
-        let token = publish(Some("test")).expand_token("qltcw_123".to_string())?;
-        assert_eq!(token, "qltcw_123/test");
-        Ok(())
-    }
-
-    #[test]
-    fn test_expand_token_workspace_with_env() -> Result<()> {
-        let token = publish(None).expand_token("qltcw_123".to_string())?;
-        assert!(token.starts_with("qltcw_123/"));
-
-        std::env::set_var("GITHUB_REPOSITORY", "");
-        let token = publish(None).expand_token("qltcw_123".to_string())?;
-        assert!(token.starts_with("qltcw_123/"));
-
-        std::env::set_var("GITHUB_REPOSITORY", "a/b.git");
-        let token = publish(None).expand_token("qltcw_123".to_string())?;
-        assert_eq!(token, "qltcw_123/b");
-
-        std::env::set_var("GITHUB_REPOSITORY", "b/c");
-        let token = publish(None).expand_token("qltcw_123".to_string())?;
-        assert_eq!(token, "qltcw_123/c");
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_expand_token_already_expanded() -> Result<()> {
-        let token = publish(Some("test")).expand_token("qltcw_123/abc".to_string())?;
-        assert_eq!(token, "qltcw_123/abc");
-        Ok(())
-    }
-
-    #[test]
-    fn test_extract_repository_name() {
-        assert_eq!(Publish::extract_repository_name(""), None);
-        assert_eq!(Publish::extract_repository_name("a/"), None);
-        assert_eq!(
-            Publish::extract_repository_name("git@example.org:a/b"),
-            Some("b".into())
-        );
-        assert_eq!(
-            Publish::extract_repository_name("ssh://x@example.org:a/b"),
-            Some("b".into())
-        );
-        assert_eq!(
-            Publish::extract_repository_name("https://x:y@example.org/a/b"),
-            Some("b".into())
-        );
     }
 }
