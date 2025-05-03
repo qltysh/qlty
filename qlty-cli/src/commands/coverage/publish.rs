@@ -83,6 +83,10 @@ pub struct Publish {
     pub project: Option<String>,
 
     #[arg(long)]
+    /// A name for the upload to help identify it for debugging purposes
+    pub name: Option<String>,
+
+    #[arg(long)]
     /// Print coverage
     pub print: bool,
 
@@ -184,22 +188,23 @@ impl Publish {
         let incomplete: bool = self.incomplete || self.total_parts_count.unwrap_or(1) > 1;
 
         Settings {
+            add_prefix,
+            dry_run: self.dry_run,
+            incomplete,
+            name: self.name.clone(),
+            output_dir: self.output_dir.clone(),
+            override_branch: self.override_branch.clone(),
             override_build_id: self.override_build_id.clone(),
             override_commit_sha: self.override_commit_sha.clone(),
-            override_branch: self.override_branch.clone(),
             override_pull_request_number: self.override_pr_number.clone(),
-            add_prefix,
+            paths: self.paths.clone(),
+            project: self.project.clone(),
+            quiet: self.quiet,
+            report_format: format,
+            skip_missing_files: self.skip_missing_files,
             strip_prefix,
             tag: self.tag.clone(),
-            report_format: format,
-            paths: self.paths.clone(),
-            skip_missing_files: self.skip_missing_files,
             total_parts_count: self.total_parts_count,
-            incomplete,
-            quiet: self.quiet,
-            project: self.project.clone(),
-            dry_run: self.dry_run,
-            output_dir: self.output_dir.clone(),
         }
     }
 

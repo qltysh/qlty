@@ -40,6 +40,9 @@ pub fn print_settings(settings: &Settings) {
     if let Some(format) = &settings.report_format {
         eprintln!("    format: {format}");
     }
+    if let Some(name) = &settings.name {
+        eprintln!("    name: {name}");
+    }
     if let Some(output_dir) = &settings.output_dir {
         eprintln!("    output-dir: {}", output_dir.to_string_lossy());
     }

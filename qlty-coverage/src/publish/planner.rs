@@ -62,6 +62,7 @@ impl Planner {
             nanos: now.nanosecond() as i32,
         });
         metadata.tag = self.settings.tag.clone();
+        metadata.name = self.settings.name.clone();
         metadata.total_parts_count = self.settings.total_parts_count;
         metadata.incomplete = self.settings.incomplete;
 
