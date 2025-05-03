@@ -165,7 +165,16 @@ impl Publish {
 
             match validation_result.status {
                 ValidationStatus::Valid => {}
-                _ => return Err(validation_result.into()),
+                ValidationStatus::Invalid => {
+                    return Err(anyhow::anyhow!(
+                        "Coverage validation failed: Only {:.2}% of files are present (threshold: {:.2}%)",
+                        validation_result.coverage_percentage,
+                        validation_result.threshold
+                    ).into())
+                }
+                ValidationStatus::NoCoverageData => {
+                    return Err(anyhow::anyhow!("Coverage validation failed: No coverage data found").into())
+                }
             }
         }
 
