@@ -112,6 +112,9 @@ impl serde::Serialize for CoverageMetadata {
         if self.uploader_tool_version.is_some() {
             len += 1;
         }
+        if self.name.is_some() {
+            len += 1;
+        }
         if self.incomplete {
             len += 1;
         }
@@ -221,6 +224,9 @@ impl serde::Serialize for CoverageMetadata {
         if let Some(v) = self.uploader_tool_version.as_ref() {
             struct_ser.serialize_field("uploaderToolVersion", v)?;
         }
+        if let Some(v) = self.name.as_ref() {
+            struct_ser.serialize_field("name", v)?;
+        }
         if self.incomplete {
             struct_ser.serialize_field("incomplete", &self.incomplete)?;
         }
@@ -297,6 +303,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             "publishCommand",
             "uploader_tool_version",
             "uploaderToolVersion",
+            "name",
             "incomplete",
         ];
 
@@ -337,6 +344,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             UploaderTool,
             PublishCommand,
             UploaderToolVersion,
+            Name,
             Incomplete,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -394,6 +402,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                             "uploaderTool" | "uploader_tool" => Ok(GeneratedField::UploaderTool),
                             "publishCommand" | "publish_command" => Ok(GeneratedField::PublishCommand),
                             "uploaderToolVersion" | "uploader_tool_version" => Ok(GeneratedField::UploaderToolVersion),
+                            "name" => Ok(GeneratedField::Name),
                             "incomplete" => Ok(GeneratedField::Incomplete),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -449,6 +458,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                 let mut uploader_tool__ = None;
                 let mut publish_command__ = None;
                 let mut uploader_tool_version__ = None;
+                let mut name__ = None;
                 let mut incomplete__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
@@ -664,6 +674,12 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                             }
                             uploader_tool_version__ = map_.next_value()?;
                         }
+                        GeneratedField::Name => {
+                            if name__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("name"));
+                            }
+                            name__ = map_.next_value()?;
+                        }
                         GeneratedField::Incomplete => {
                             if incomplete__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("incomplete"));
@@ -708,6 +724,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                     uploader_tool: uploader_tool__,
                     publish_command: publish_command__.unwrap_or_default(),
                     uploader_tool_version: uploader_tool_version__,
+                    name: name__,
                     incomplete: incomplete__.unwrap_or_default(),
                 })
             }

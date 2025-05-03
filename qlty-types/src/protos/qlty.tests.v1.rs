@@ -72,6 +72,8 @@ pub struct CoverageMetadata {
     pub publish_command: ::prost::alloc::string::String,
     #[prost(string, optional, tag="35")]
     pub uploader_tool_version: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(string, optional, tag="37")]
+    pub name: ::core::option::Option<::prost::alloc::string::String>,
     #[prost(bool, tag="36")]
     pub incomplete: bool,
 }
