@@ -1,4 +1,5 @@
 use crate::CommandSuccess;
+use qlty_coverage::validate::ValidationResult;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -69,5 +70,25 @@ impl From<git2::Error> for CommandError {
         CommandError::Unknown {
             source: error.into(),
         }
+    }
+}
+
+impl From<ValidationResult> for CommandError {
+    fn from(result: ValidationResult) -> Self {
+        let message = match result.status {
+            qlty_coverage::validate::ValidationStatus::Invalid => {
+                format!(
+                    "Coverage validation failed: Only {:.2}% of files are present (threshold: {:.2}%)",
+                    result.coverage_percentage,
+                    result.threshold
+                )
+            },
+            qlty_coverage::validate::ValidationStatus::NoCoverageData => {
+                "Coverage validation failed: No coverage data found".to_string()
+            },
+            _ => "Coverage validation failed".to_string(),
+        };
+
+        CommandError::CoverageValidation { message }
     }
 }
