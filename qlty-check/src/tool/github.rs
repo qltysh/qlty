@@ -198,7 +198,7 @@ impl GitHubRelease {
     ) -> Option<GitHubReleaseAsset> {
         candidates
             .iter()
-            .find(|a| !self.is_aarch64(&a.name) && self.is_windows(a))
+            .find(|a| !self.is_aarch64(&a.name) && !self.is_32bit(&a.name) && self.is_windows(a))
             .cloned()
     }
 
@@ -224,6 +224,13 @@ impl GitHubRelease {
         ["aarch64", "arm64", "armv8", "arm64e", "armv7", "armv6"]
             .iter()
             .any(|s| lower_case_filename.contains(s))
+    }
+
+    fn is_32bit(&self, filename: &str) -> bool {
+        let lower_case_filename = filename.to_lowercase();
+        lower_case_filename
+            .split(&['-', '.', '_'])
+            .any(|part| ["386", "i386", "32bit", "32-bit"].contains(&part))
     }
 
     fn is_linux(&self, filename: &str) -> bool {
@@ -453,6 +460,7 @@ mod test {
             ("tool-v0.7.0_windows_armv6.zip", "application/zip", false),
             ("tool-v0.7.0_windows_armv7.zip", "application/zip", false),
             ("tool-v0.7.0_windows_arm64.zip", "application/zip", false),
+            ("tool-v0.7.0_windows_386.zip", "application/zip", false),
             ("any_filename.ext", "application/x-msdownload", true),
             ("any_filename.ext", "application/x-ms-dos-executable", true),
             ("tool-v0.7.0.zip", "application/zip", true),

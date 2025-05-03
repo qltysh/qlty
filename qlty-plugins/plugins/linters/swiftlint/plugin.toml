@@ -33,6 +33,7 @@ latest_version = "0.55.1"
 known_good_version = "0.55.1"
 version_command = "swiftlint --version"
 description = "Enforces Swift style and conventions"
+supported_platforms = ["macos"]
 
 [plugins.definitions.swiftlint.drivers.lint]
 script = "swiftlint --quiet ${target}"

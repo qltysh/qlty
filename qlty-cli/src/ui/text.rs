@@ -1,5 +1,6 @@
 use super::invocations::print_invocations;
 use super::issues::print_issues;
+use super::messages::print_installation_error_messages;
 use super::unformatted::print_unformatted;
 use super::{fixes::print_fixes, ApplyMode};
 use anyhow::Result;
@@ -54,6 +55,8 @@ impl<'a> TextFormatter<'a> {
         }
 
         print_invocations(writer, &self.report, self.settings.verbose)?;
+        print_installation_error_messages(writer, &self.report)?;
+
         self.print_conclusion(writer)?;
 
         Ok(false)

@@ -3,7 +3,7 @@ use crate::tool::finalize_installation_from_cmd_result;
 use crate::tool::installations::initialize_installation;
 use crate::ui::ProgressBar;
 use crate::{tool::Tool, ui::ProgressTask};
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, Result};
 use itertools::Itertools;
 use qlty_analysis::{join_path_string, utils::fs::path_to_native_string};
 use std::{collections::HashMap, path::PathBuf};
@@ -37,15 +37,13 @@ impl RubyGemfile {
         let result = list_command.run();
         let _ = finalize_installation_from_cmd_result(self, &result, &mut installation, script);
 
-        let list_output: std::process::Output =
-            result.with_context(|| "Failed to run: ruby -S bundle list")?;
-
-        let stdout = String::from_utf8_lossy(&list_output.stdout).to_string();
-        let stderr = String::from_utf8_lossy(&list_output.stderr).to_string();
+        let output = result?;
+        let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
         info!("ruby -S bundle list list stdout: {}", stdout);
         info!("ruby -S bundle list list stderr: {}", stderr);
 
-        if !list_output.status.success() {
+        if !output.status.success() {
             bail!("Failed to run: ruby -S bundle list");
         }
 

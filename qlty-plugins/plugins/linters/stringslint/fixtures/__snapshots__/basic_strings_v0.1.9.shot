@@ -1,0 +1,40 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=stringslint fixture=basic_strings version=0.1.9 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic_strings.in.strings",
+        "range": {
+          "startLine": 1,
+        },
+      },
+      "message": "Comment for Localized string "abc" is missing (missing_comment)",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "MissingComment Violation",
+      "snippet": ""abc" = "A B C";",
+      "snippetWithContext": ""abc" = "A B C";",
+      "tool": "stringslint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic_strings.in.strings",
+        "range": {
+          "startLine": 1,
+        },
+      },
+      "message": "Localized string "abc" is unused (unused)",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "Unused Violation",
+      "snippet": ""abc" = "A B C";",
+      "snippetWithContext": ""abc" = "A B C";",
+      "tool": "stringslint",
+    },
+  ],
+}
+`;

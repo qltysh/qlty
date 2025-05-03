@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.511.0"
+version = "0.524.0"
 authors = ["Qlty Software Inc."]
 description = "Code quality toolkit"
 documentation = "https://docs.qlty.sh"
@@ -26,7 +26,7 @@ bytesize = "1.3.0"
 cap = "0.1.2"
 cc = "1.2.17"
 chrono = "0.4.40"
-clap = { version = "4.5.36", features = ["derive", "wrap_help"] }
+clap = { version = "4.5.37", features = ["derive", "wrap_help"] }
 clap_complete = "4.5.34"
 cli-table = "0.4.9"
 config = "0.15.11"
@@ -49,7 +49,7 @@ http = "1.3.1"
 ignore = "0.4.22"
 indicatif = "0.17.11"
 indoc = "2.0.6"
-insta = { version = "1.42.2", features = ["yaml", "json", "redactions"] }
+insta = { version = "1.43.0", features = ["yaml", "json", "redactions"] }
 itertools = "0.14.0"
 keyring = { version = "3.6.2", features = [
     "apple-native",
@@ -69,16 +69,16 @@ pathdiff = "0.2.3"
 pbjson = "0.7.0"
 pbjson-types = "0.7.0"
 prost = "0.13.5"
-qlty-analysis = { version = "0.511.0", path = "qlty-analysis" }
-qlty-check = { version = "0.511.0", path = "qlty-check" }
-qlty-cloud = { version = "0.511.0", path = "qlty-cloud" }
-qlty-config = { version = "0.511.0", path = "qlty-config" }
-qlty-coverage = { version = "0.511.0", path = "qlty-coverage" }
-qlty-formats = { version = "0.511.0", path = "qlty-formats" }
-qlty-plugins = { version = "0.511.0", path = "qlty-plugins" }
-qlty-smells = { version = "0.511.0", path = "qlty-smells" }
-qlty-test-utilities = { version = "0.511.0", path = "qlty-test-utilities" }
-qlty-types = { version = "0.511.0", path = "qlty-types" }
+qlty-analysis = { version = "0.524.0", path = "qlty-analysis" }
+qlty-check = { version = "0.524.0", path = "qlty-check" }
+qlty-cloud = { version = "0.524.0", path = "qlty-cloud" }
+qlty-config = { version = "0.524.0", path = "qlty-config" }
+qlty-coverage = { version = "0.524.0", path = "qlty-coverage" }
+qlty-formats = { version = "0.524.0", path = "qlty-formats" }
+qlty-plugins = { version = "0.524.0", path = "qlty-plugins" }
+qlty-smells = { version = "0.524.0", path = "qlty-smells" }
+qlty-test-utilities = { version = "0.524.0", path = "qlty-test-utilities" }
+qlty-types = { version = "0.524.0", path = "qlty-types" }
 rand = "0.8.5"
 rayon = "1.10.0"
 regex = "1.11.0"
@@ -116,7 +116,7 @@ time = { version = "0.3.37", features = [
     "parsing",
 ] }
 tiny_http = "0.12.0"
-toml = "0.8.20"
+toml = "0.8.21"
 toml_edit = "0.22.24"
 tracing = "0.1.41"
 tracing-appender = "0.2.3"
@@ -132,6 +132,7 @@ tree-sitter-php = "0.22.8"
 tree-sitter-python = "0.21.0"
 tree-sitter-ruby = "0.21.0"
 tree-sitter-rust = "0.21.2"
+tree-sitter-swift = "0.5.0"
 tree-sitter-typescript = "0.21.2"
 trycmd = "0.15.8"
 ureq = { version = "2.12.1", features = ["json"] }
@@ -140,6 +141,7 @@ uuid = { version = "1.14.0", features = ["v4"] }
 walkdir = "2.5.0"
 webbrowser = "1.0.4"
 whoami = "1.5.2"
+xml-rs = "0.8.26"
 zip = "2.6.1"
 
 # Config for 'cargo dist'
@@ -149,7 +151,7 @@ cargo-dist-version = "0.19.1"
 # CI backends to support
 ci = "github"
 # The installers to generate for each app
-installers = ["shell", "powershell", "homebrew"]
+installers = ["homebrew"]
 # Target platforms to build apps for (Rust target-triple syntax)
 targets = [
     "aarch64-apple-darwin",

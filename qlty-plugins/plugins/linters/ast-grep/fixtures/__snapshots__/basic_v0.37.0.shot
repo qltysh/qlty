@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=ast-grep fixture=basic version=0.37.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "sample.ts",
+        "range": {
+          "endColumn": 26,
+          "endLine": 2,
+          "startLine": 2,
+        },
+      },
+      "message": "AST pattern match found: no-await-in-promise-all",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "no-await-in-promise-all",
+      "snippetWithContext": "async function foo() {}
+
+Promise.all([await foo()]);
+
+export default {};",
+      "tool": "ast-grep",
+    },
+  ],
+}
+`;

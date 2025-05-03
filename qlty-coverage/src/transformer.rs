@@ -200,22 +200,6 @@ impl Transformer for StripDotSlashPrefix {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct FileExistanceCheck;
-
-impl Transformer for FileExistanceCheck {
-    fn transform(&self, file_coverage: FileCoverage) -> Option<FileCoverage> {
-        match PathBuf::from(&file_coverage.path).try_exists() {
-            Ok(true) => Some(file_coverage),
-            _ => None,
-        }
-    }
-
-    fn clone_box(&self) -> Box<dyn Transformer> {
-        Box::new(Self)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

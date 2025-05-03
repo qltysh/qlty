@@ -111,20 +111,34 @@ pub trait Source: SourceFetch {
         let mut toml: toml::Value = toml::Value::Table(toml::value::Table::new());
 
         for plugin_toml in self.plugin_tomls()?.iter() {
-            trace!("Loading plugin config from {}", plugin_toml.path.display());
+            self.add_source_file_to_toml(&mut toml, plugin_toml)?;
+        }
 
-            let contents_toml = plugin_toml
-                .contents
-                .parse::<toml::Value>()
-                .with_context(|| format!("Could not parse {}", plugin_toml.path.display()))?;
-
-            Builder::validate_toml(&plugin_toml.path, contents_toml.clone())
-                .with_context(|| SOURCE_PARSE_ERROR)?;
-
-            toml = TomlMerge::merge(toml, contents_toml).unwrap();
+        if let Some(source_file) = self.get_file(Path::new("source.toml"))? {
+            self.add_source_file_to_toml(&mut toml, &source_file)?;
         }
 
         Ok(toml)
+    }
+
+    fn add_source_file_to_toml(
+        &self,
+        toml: &mut toml::Value,
+        source_file: &SourceFile,
+    ) -> Result<()> {
+        trace!("Loading config toml from {}", source_file.path.display());
+
+        let contents_toml = source_file
+            .contents
+            .parse::<toml::Value>()
+            .with_context(|| format!("Could not parse {}", source_file.path.display()))?;
+
+        Builder::validate_toml(&source_file.path, contents_toml.clone())
+            .with_context(|| SOURCE_PARSE_ERROR)?;
+
+        *toml = TomlMerge::merge(toml.clone(), contents_toml).unwrap();
+
+        Ok(())
     }
 
     fn build_config(&self) -> Result<QltyConfig> {

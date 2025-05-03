@@ -6,7 +6,7 @@ import { fetchLatestVersion } from "./fetchLatestVersion/fetchLatestVersion";
 
 const REPO_ROOT: string = path.resolve(__dirname, "..");
 const LINTERS_PATH: string = path.resolve(REPO_ROOT, "linters");
-const LINTERS_TO_SKIP: string[] = ["tsc"];
+const LINTERS_TO_SKIP: string[] = ["tsc", "hadolint"];
 
 // Return type for getLinterDef
 interface LinterDefinition {

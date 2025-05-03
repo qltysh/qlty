@@ -6,6 +6,7 @@ pub mod git;
 pub mod parser;
 pub mod print;
 pub mod publish;
+pub mod token;
 pub mod transform;
 mod transformer;
 mod utils;

@@ -4,3 +4,4 @@
 !hooks
 !hooks/**
 !qlty.toml
+!.gitignore

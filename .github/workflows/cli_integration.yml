@@ -71,18 +71,18 @@ jobs:
           ]
         include:
           - container: ubuntu:24.04
-            package_install: apt-get update && apt-get install -y git curl libyaml-dev libgmp-dev build-essential
+            package_install: apt-get update && apt-get install -y git curl build-essential
           - container: debian:trixie-slim
-            package_install: apt-get update && apt-get install -y git curl libyaml-dev libgmp-dev build-essential
+            package_install: apt-get update && apt-get install -y git curl build-essential
           #- container: debian:bookworm-slim
-          #  package_install: apt-get update && apt-get install -y git curl libyaml-dev libgmp-dev build-essential
+          #  package_install: apt-get update && apt-get install -y git curl build-essential
           #- container: redhat/ubi9
-          #  package_install: yum install -y git gcc make libyaml-devel gmp-devel
+          #  package_install: yum install -y git gcc make gmp-devel
           # unsupported:
           # - container: ubuntu:20.04
-          #   package_install: apt-get update && apt-get install -y git curl libyaml-dev libgmp-dev build-essential
+          #   package_install: apt-get update && apt-get install -y git curl build-essential
           # - container: redhat/ubi8
-          #   package_install: yum install -y git gcc make libyaml-devel gmp-devel
+          #   package_install: yum install -y git gcc make gmp-devel
     container:
       image: ${{ matrix.container }}
       env:

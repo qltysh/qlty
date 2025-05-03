@@ -1,6 +1,7 @@
 use super::compute_invocation_script;
 use super::invocation_result::FileResult;
 use crate::parser::actionlint::Actionlint;
+use crate::parser::ast_grep::AstGrep;
 use crate::parser::bandit::Bandit;
 use crate::parser::biome::Biome;
 use crate::parser::clippy::Clippy;
@@ -414,6 +415,7 @@ impl Driver {
     fn parser(&self) -> Box<dyn Parser> {
         let parser: Box<dyn Parser> = match self.output_format {
             OutputFormat::Actionlint => Box::new(Actionlint {}),
+            OutputFormat::AstGrep => Box::new(AstGrep {}),
             OutputFormat::Bandit => Box::new(Bandit {}),
             OutputFormat::Biome => Box::new(Biome {}),
             OutputFormat::Clippy => Box::<Clippy>::default(),

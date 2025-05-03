@@ -54,3 +54,8 @@ fn go_tests() {
 fn csharp_tests() {
     setup_and_run_test_cases("tests/lang/csharp/**/*.toml");
 }
+
+#[test]
+fn swift_tests() {
+    setup_and_run_test_cases("tests/lang/swift/**/*.toml");
+}

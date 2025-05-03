@@ -106,10 +106,16 @@ impl serde::Serialize for CoverageMetadata {
         if self.uploader_tool.is_some() {
             len += 1;
         }
+        if !self.publish_command.is_empty() {
+            len += 1;
+        }
         if self.uploader_tool_version.is_some() {
             len += 1;
         }
-        if !self.publish_command.is_empty() {
+        if self.name.is_some() {
+            len += 1;
+        }
+        if self.incomplete {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("qlty.tests.v1.CoverageMetadata", len)?;
@@ -212,11 +218,17 @@ impl serde::Serialize for CoverageMetadata {
         if let Some(v) = self.uploader_tool.as_ref() {
             struct_ser.serialize_field("uploaderTool", v)?;
         }
+        if !self.publish_command.is_empty() {
+            struct_ser.serialize_field("publishCommand", &self.publish_command)?;
+        }
         if let Some(v) = self.uploader_tool_version.as_ref() {
             struct_ser.serialize_field("uploaderToolVersion", v)?;
         }
-        if !self.publish_command.is_empty() {
-            struct_ser.serialize_field("publishCommand", &self.publish_command)?;
+        if let Some(v) = self.name.as_ref() {
+            struct_ser.serialize_field("name", v)?;
+        }
+        if self.incomplete {
+            struct_ser.serialize_field("incomplete", &self.incomplete)?;
         }
         struct_ser.end()
     }
@@ -287,10 +299,12 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             "totalPartsCount",
             "uploader_tool",
             "uploaderTool",
-            "uploader_tool_version",
-            "uploaderToolVersion",
             "publish_command",
             "publishCommand",
+            "uploader_tool_version",
+            "uploaderToolVersion",
+            "name",
+            "incomplete",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -328,8 +342,10 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             CliVersion,
             TotalPartsCount,
             UploaderTool,
-            UploaderToolVersion,
             PublishCommand,
+            UploaderToolVersion,
+            Name,
+            Incomplete,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -384,8 +400,10 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                             "cliVersion" | "cli_version" => Ok(GeneratedField::CliVersion),
                             "totalPartsCount" | "total_parts_count" => Ok(GeneratedField::TotalPartsCount),
                             "uploaderTool" | "uploader_tool" => Ok(GeneratedField::UploaderTool),
-                            "uploaderToolVersion" | "uploader_tool_version" => Ok(GeneratedField::UploaderToolVersion),
                             "publishCommand" | "publish_command" => Ok(GeneratedField::PublishCommand),
+                            "uploaderToolVersion" | "uploader_tool_version" => Ok(GeneratedField::UploaderToolVersion),
+                            "name" => Ok(GeneratedField::Name),
+                            "incomplete" => Ok(GeneratedField::Incomplete),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -438,8 +456,10 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                 let mut cli_version__ = None;
                 let mut total_parts_count__ = None;
                 let mut uploader_tool__ = None;
-                let mut uploader_tool_version__ = None;
                 let mut publish_command__ = None;
+                let mut uploader_tool_version__ = None;
+                let mut name__ = None;
+                let mut incomplete__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::UploadId => {
@@ -642,17 +662,29 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                             }
                             uploader_tool__ = map_.next_value()?;
                         }
+                        GeneratedField::PublishCommand => {
+                            if publish_command__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("publishCommand"));
+                            }
+                            publish_command__ = Some(map_.next_value()?);
+                        }
                         GeneratedField::UploaderToolVersion => {
                             if uploader_tool_version__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("uploaderToolVersion"));
                             }
                             uploader_tool_version__ = map_.next_value()?;
                         }
-                        GeneratedField::PublishCommand => {
-                            if publish_command__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("publishCommand"));
+                        GeneratedField::Name => {
+                            if name__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("name"));
                             }
-                            publish_command__ = Some(map_.next_value()?);
+                            name__ = map_.next_value()?;
+                        }
+                        GeneratedField::Incomplete => {
+                            if incomplete__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("incomplete"));
+                            }
+                            incomplete__ = Some(map_.next_value()?);
                         }
                     }
                 }
@@ -690,8 +722,10 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                     cli_version: cli_version__.unwrap_or_default(),
                     total_parts_count: total_parts_count__,
                     uploader_tool: uploader_tool__,
-                    uploader_tool_version: uploader_tool_version__,
                     publish_command: publish_command__.unwrap_or_default(),
+                    uploader_tool_version: uploader_tool_version__,
+                    name: name__,
+                    incomplete: incomplete__.unwrap_or_default(),
                 })
             }
         }

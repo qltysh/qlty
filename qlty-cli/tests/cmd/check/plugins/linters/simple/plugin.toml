@@ -1,0 +1,13 @@
+config_version = "0"
+
+[plugins.definitions.simple]
+file_types = ["shell"]
+latest_version = "0.10.0"
+known_good_version = "0.10.0"
+suggested_mode = "comment"
+
+[plugins.definitions.simple.drivers.first]
+script = "exit 0"
+success_codes = [0]
+output = "pass_fail"
+suggested = "targets"

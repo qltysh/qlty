@@ -59,13 +59,11 @@ impl Executor {
     }
 
     pub fn install_and_invoke(&self) -> Result<Results> {
-        let install_result = self.install()?;
+        let install_messages = self.install()?;
         self.run_prepare_scripts()?;
         let mut result = self.invoke()?;
 
-        for message in install_result {
-            result.messages.push(message);
-        }
+        result.messages.extend(install_messages);
 
         Ok(result)
     }

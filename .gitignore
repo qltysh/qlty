@@ -6,3 +6,4 @@ flamegraph.svg
 /.markdownlint.json
 /.rustfmt.toml
 /.yamllint.yaml
+tmp/

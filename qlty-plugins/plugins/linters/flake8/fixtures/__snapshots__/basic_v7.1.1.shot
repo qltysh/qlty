@@ -14,27 +14,6 @@ exports[`linter=flake8 fixture=basic version=7.1.1 1`] = `
           "startLine": 4,
         },
       },
-      "message": "expected 2 blank lines after class or function definition, found 1",
-      "mode": "MODE_BLOCK",
-      "ruleKey": "E305",
-      "snippet": "import foo",
-      "snippetWithContext": "def main():
-    pass
-
-import foo",
-      "tool": "flake8",
-    },
-    {
-      "category": "CATEGORY_LINT",
-      "documentationUrl": "https://flake8.pycqa.org/en/latest/user/error-codes.html",
-      "level": "LEVEL_MEDIUM",
-      "location": {
-        "path": "basic.in.py",
-        "range": {
-          "startColumn": 1,
-          "startLine": 4,
-        },
-      },
       "message": "module level import not at top of file",
       "mode": "MODE_BLOCK",
       "ruleKey": "E402",

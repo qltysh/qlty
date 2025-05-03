@@ -2,6 +2,7 @@ use anyhow::Result;
 use qlty_types::analysis::v1::Issue;
 
 pub mod actionlint;
+pub mod ast_grep;
 pub mod bandit;
 pub mod biome;
 pub mod clippy;

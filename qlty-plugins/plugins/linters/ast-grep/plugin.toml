@@ -1,0 +1,24 @@
+config_version = "0"
+
+[plugins.releases.ast-grep]
+github = "ast-grep/ast-grep"
+download_type = "zip"
+strip_components = 0
+
+[plugins.definitions.ast-grep]
+releases = ["ast-grep"]
+file_types = ["ALL"]
+version_command = "ast-grep --version"
+latest_version = "0.37.0"
+known_good_version = "0.37.0"
+config_files = ["sgconfig.yml"]
+description = "CLI tool for code structural search, lint and rewriting"
+
+[plugins.definitions.ast-grep.drivers.lint]
+script = "ast-grep scan --threads=1 --json ${target}"
+success_codes = [0]
+output = "stdout"
+output_format = "ast-grep"
+batch = true
+cache_results = true
+suggested = "config"

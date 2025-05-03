@@ -6,7 +6,7 @@ use crate::{
     ui::{ProgressBar, ProgressTask},
     Tool,
 };
-use anyhow::Result;
+use anyhow::{bail, Result};
 use itertools::Itertools;
 use qlty_analysis::{join_path_string, utils::fs::path_to_string};
 use std::{collections::HashMap, fs::read_dir};
@@ -56,6 +56,9 @@ impl PlatformRuby for RubyMacos {
                 ],
             )
             .dir(tool.directory())
+            .unchecked()
+            .stderr_capture()
+            .stdout_capture()
             .full_env(tool.env()?);
 
         debug!("Running: {:?}", cmd);
@@ -67,7 +70,10 @@ impl PlatformRuby for RubyMacos {
         let result = cmd.run();
         finalize_installation_from_cmd_result(tool, &result, &mut installation, script).ok();
 
-        result?;
+        let output = result?;
+        if !output.status.success() {
+            bail!("Failed to run install_name_tool");
+        }
 
         Ok(())
     }

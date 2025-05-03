@@ -19,13 +19,13 @@ pub struct Arguments {
 #[derive(Subcommand, Debug, Clone)]
 
 pub enum Commands {
-    /// Print the full configuration
+    /// Print the full, merged configuration
     Show(Show),
 
-    /// Validate qlty.toml
+    /// Validate the current project's configuration
     Validate(Validate),
 
-    /// Migrate fetch directives from .codeclimate.yml to qlty.toml
+    /// Update qlty.toml with settings from .codeclimate.yml
     Migrate(Migrate),
 }
 

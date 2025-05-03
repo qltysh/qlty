@@ -1,8 +1,6 @@
 use crate::{CommandError, CommandSuccess};
 use anyhow::Result;
 use clap::Args;
-use console::style;
-use qlty_config::version::LONG_VERSION;
 use qlty_coverage::{
     eprintln_unless,
     formats::Formats,
@@ -12,6 +10,8 @@ use qlty_coverage::{
 use qlty_formats::{Formatter, JsonEachRowFormatter};
 use qlty_types::tests::v1::FileCoverage;
 use std::path::PathBuf;
+
+use super::utils::print_initial_messages;
 
 #[derive(Debug, Args)]
 pub struct Transform {
@@ -54,7 +54,7 @@ pub struct Transform {
 
 impl Transform {
     pub fn execute(&self, _args: &crate::Arguments) -> Result<CommandSuccess, CommandError> {
-        self.print_initial_messages();
+        print_initial_messages(self.quiet);
 
         if !self.quiet {
             eprintln!("Transforming coverage report {}", self.path);
@@ -87,12 +87,6 @@ impl Transform {
         }
 
         CommandSuccess::ok()
-    }
-
-    fn print_initial_messages(&self) {
-        eprintln_unless!(self.quiet, "qlty {}", LONG_VERSION.as_str());
-        eprintln_unless!(self.quiet, "{}", style("https://qlty.sh/d/coverage").dim());
-        eprintln_unless!(self.quiet, "");
     }
 
     fn output(&self) -> String {

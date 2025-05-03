@@ -1,0 +1,31 @@
+config_version = "0"
+
+[[plugins.downloads.stringslint.system]]
+cpu = "x86_64"
+os = "macos"
+url = "https://github.com/dral3x/StringsLint/releases/download/${version}/portable_stringslint.zip"
+
+[[plugins.downloads.stringslint.system]]
+cpu = "aarch64"
+os = "macos"
+url = "https://github.com/dral3x/StringsLint/releases/download/${version}/portable_stringslint.zip"
+
+[plugins.definitions.stringslint]
+downloads = ["stringslint"]
+config_files = [".stringslint", ".stringslint.yml", ".stringslint.yaml"]
+file_types = ["swift", "objective-c-source", "strings", "xib", "storyboard"]
+latest_version = "0.1.9"
+known_good_version = "0.1.9"
+version_command = "stringslint --version"
+description = "A tool to ensure localized strings are complete and never unused."
+supported_platforms = ["macos"]
+
+[plugins.definitions.stringslint.drivers.lint]
+script = "stringslint lint ${target}"
+success_codes = [0]
+output = "stdout"
+output_format = "regex"
+output_regex = "(?P<path>.*?):(?P<line>\\d+): (?P<severity>.*?): (?P<code>.*?): (?P<message>.*)"
+batch = true
+cache_results = true
+suggested = "config"

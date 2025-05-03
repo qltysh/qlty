@@ -16,6 +16,8 @@ doctest = false
 [dependencies]
 qlty-config.workspace = true
 ureq.workspace = true
+qlty-types.workspace = true
+anyhow.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true
