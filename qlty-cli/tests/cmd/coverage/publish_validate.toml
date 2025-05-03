@@ -10,7 +10,7 @@ args = [
   "lcov.info"
 ]
 bin.name = "qlty"
-status.code = 4
+status.code = 99
 
 [env]
 remove = ["GITHUB_ACTIONS"]
