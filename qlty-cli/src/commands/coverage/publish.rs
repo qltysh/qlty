@@ -116,6 +116,11 @@ pub struct Publish {
     pub validate: bool,
 
     #[arg(long)]
+    /// Custom threshold percentage for validation (0-100). Only applies when --validate is used.
+    /// Default is 90.
+    pub validate_file_threshold: Option<f64>,
+
+    #[arg(long)]
     /// Mark this upload as incomplete. This is useful when issuing multiple qlty coverage publish commands for the same coverage tag.
     /// The server will merge the uploads into a single report when qlty coverage complete is called.
     pub incomplete: bool,
@@ -155,7 +160,7 @@ impl Publish {
         }
 
         if self.validate {
-            let validator = Validator::new(None);
+            let validator = Validator::new(self.validate_file_threshold);
             let validation_result = validator.validate(&report)?;
 
             match validation_result.status {
@@ -163,7 +168,7 @@ impl Publish {
                 _ => return Err(validation_result.into()),
             }
         }
-        
+
         let export = report.export_to(self.output_dir.clone())?;
         self.print_export_status(&export.to);
 

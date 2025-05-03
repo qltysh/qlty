@@ -1,5 +1,4 @@
 use anyhow::Result;
-use qlty_types::tests::v1::FileCoverage;
 use serde::Serialize;
 use std::path::PathBuf;
 
@@ -90,7 +89,7 @@ pub struct ValidationResult {
 mod tests {
     use super::*;
     use qlty_analysis::utils::fs::path_to_string;
-    use qlty_types::tests::v1::{CoverageMetadata, ReportFile};
+    use qlty_types::tests::v1::{CoverageMetadata, FileCoverage, ReportFile};
     use std::collections::HashSet;
     use std::fs::{self, File};
     use tempfile::tempdir;

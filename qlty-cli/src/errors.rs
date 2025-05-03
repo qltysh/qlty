@@ -82,10 +82,10 @@ impl From<ValidationResult> for CommandError {
                     result.coverage_percentage,
                     result.threshold
                 )
-            },
+            }
             qlty_coverage::validate::ValidationStatus::NoCoverageData => {
                 "Coverage validation failed: No coverage data found".to_string()
-            },
+            }
             _ => "Coverage validation failed".to_string(),
         };
 
