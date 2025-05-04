@@ -141,7 +141,12 @@ impl Publish {
         print_settings(&settings);
         self.validate_options()?;
 
-        let token = load_auth_token(&self.token, self.project.as_deref())?;
+        let token = if self.dry_run {
+            load_auth_token(&self.token, self.project.as_deref()).unwrap_or_default()
+        } else {
+            load_auth_token(&self.token, self.project.as_deref())?
+        };
+
         let plan = Planner::new(&load_config(), &settings).compute()?;
 
         self.validate_plan(&plan)?;
