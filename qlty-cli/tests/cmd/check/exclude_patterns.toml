@@ -1,0 +1,2 @@
+bin.name = "qlty"
+args = ["check", "--all", "--no-cache", "--verbose"]

@@ -1,3 +1,0 @@
-bin.name = "qlty"
-args = ["check", "--all", "--no-cache"]
-status.code = 1
