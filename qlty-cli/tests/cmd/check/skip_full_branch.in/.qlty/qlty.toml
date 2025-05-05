@@ -1,0 +1,27 @@
+config_version = "0"
+
+[plugins.definitions.should_run]
+file_types = ["shell"]
+
+[plugins.definitions.should_run.drivers.lint]
+script = "true"
+success_codes = [0]
+output = "pass_fail"
+
+[plugins.definitions.should_not_run]
+file_types = ["shell"]
+
+[plugins.definitions.should_not_run.drivers.lint]
+script = "false"
+success_codes = [0]
+output = "pass_fail"
+
+
+[[plugin]]
+name = "should_run"
+version = "1.0.0"
+
+[[plugin]]
+name = "should_not_run"
+version = "1.0.0"
+skip_full_branch = true

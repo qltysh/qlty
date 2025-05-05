@@ -669,6 +669,9 @@ pub struct EnabledPlugin {
     pub skip_upstream: Option<bool>,
 
     #[serde(default)]
+    pub skip_full_branch: Option<bool>,
+
+    #[serde(default)]
     pub triggers: Vec<CheckTrigger>,
 
     #[serde(default)]

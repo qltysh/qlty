@@ -69,6 +69,16 @@ fn configure_plugins(planner: &Planner) -> Result<Vec<ActivePlugin>> {
             }
         }
 
+        if let Some(TargetMode::All) = &planner.target_mode {
+            if enabled_plugin.skip_full_branch.unwrap_or(false) {
+                debug!(
+                    "Enabled plugin {} skip_full_branch is true, skipping plugin in --all mode.",
+                    enabled_plugin.name
+                );
+                continue;
+            }
+        }
+
         if !enabled_plugin.triggers.is_empty()
             && !enabled_plugin.triggers.contains(&planner.settings.trigger)
         {
