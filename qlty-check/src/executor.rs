@@ -195,7 +195,7 @@ impl Executor {
         );
         let formatted = Self::build_formatted(&invocations);
 
-        let mut messages = invocations
+        let messages = invocations
             .iter()
             .flat_map(|invocation| invocation.messages.clone())
             .collect::<Vec<_>>();
@@ -209,18 +209,7 @@ impl Executor {
         if issues.len() >= MAX_ISSUES {
             issues.truncate(MAX_ISSUES);
             issues.shrink_to_fit();
-
-            messages.push(Message {
-                timestamp: Some(Utc::now().into()),
-                module: "qlty_check::executor".to_string(),
-                ty: "executor.limit.total_issue_count".to_string(),
-                level: MessageLevel::Error.into(),
-                message: format!(
-                    "Maximum issue count of {} reached, skipping any further issues.",
-                    MAX_ISSUES
-                ),
-                ..Default::default()
-            });
+            bail!("Maximum issue count of {} reached. Execution halted. Please adjust your configuration to reduce the number of issues generated.", MAX_ISSUES);
         }
 
         Ok(Results::new(messages, invocations, issues, formatted))
@@ -458,11 +447,6 @@ impl Executor {
                 .into_par_iter()
                 .filter_map(|plan| {
                     if self.total_issues.load(Ordering::SeqCst) > MAX_ISSUES {
-                        warn!(
-                            "Stopping invocations: Maximum total issue count of {} was reached",
-                            MAX_ISSUES
-                        );
-
                         return None;
                     }
 
@@ -622,7 +606,7 @@ impl Executor {
 
                     if issues.len() >= MAX_ISSUES {
                         warn!(
-                            "{}: Maximum issue count of {} reached in {}, skipping further issues.",
+                            "{}: Maximum issue count of {} reached in {}.",
                             invocation.invocation.id, MAX_ISSUES, invocation_label,
                         );
                         break 'invocation_loop;
