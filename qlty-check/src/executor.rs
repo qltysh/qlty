@@ -39,7 +39,7 @@ use std::{
 use tracing::{debug, error, info, warn};
 
 const MAX_ISSUES: usize = 10_000;
-const MAX_ISSUES_PER_FILE: usize = 100;
+const MAX_ISSUES_PER_FILE: usize = 500;
 
 #[derive(Debug, Clone)]
 pub struct Executor {
