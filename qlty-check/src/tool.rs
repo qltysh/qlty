@@ -306,8 +306,13 @@ pub trait Tool: Debug + Sync + Send {
         }
     }
 
+    fn install_max_retries(&self) -> u32 {
+        MAX_TOOL_INSTALL_ATTEMPTS
+    }
+
     fn install_with_retry(&self, task: &ProgressTask) -> Result<()> {
         let mut attempts = 0;
+        let max_attempts = self.install_max_retries() + 1;
 
         loop {
             match self.install(task) {
@@ -316,7 +321,7 @@ pub trait Tool: Debug + Sync + Send {
                     error!("{}: tool installation error: {:?}", self.name(), e);
 
                     attempts += 1;
-                    if attempts >= MAX_TOOL_INSTALL_ATTEMPTS {
+                    if attempts >= max_attempts {
                         error!(
                             "Max attempts reached for tool installation: {}",
                             self.name()

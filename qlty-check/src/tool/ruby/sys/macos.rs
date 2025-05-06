@@ -7,8 +7,11 @@ use crate::{
     Tool,
 };
 use anyhow::{bail, Result};
+use duct::cmd;
+use indoc::formatdoc;
 use itertools::Itertools;
 use qlty_analysis::{join_path_string, utils::fs::path_to_string};
+use rayon::prelude::*;
 use std::{collections::HashMap, fs::read_dir};
 use tracing::debug;
 
@@ -17,6 +20,9 @@ const ARCH: &str = "x64";
 #[cfg(target_arch = "aarch64")]
 const ARCH: &str = "arm64";
 
+#[cfg(target_arch = "x86_64")]
+const HOMEBREW_PATH: &str = "/usr/local/bin";
+#[cfg(target_arch = "aarch64")]
 const HOMEBREW_PATH: &str = "/opt/homebrew/bin";
 
 #[derive(Debug, Clone, Default)]
@@ -25,8 +31,34 @@ pub struct RubyMacos {
 }
 
 impl PlatformRuby for RubyMacos {
+    fn pre_install(&self, _tool: &dyn Tool, _task: &ProgressTask) -> anyhow::Result<()> {
+        let brew = format!("{HOMEBREW_PATH}/brew");
+
+        // TODO(loren): If we can get prompting in this code path we should just
+        // request permission to install these libs directly.
+        let libs = vec!["gmp", "openssl", "libyaml"];
+        let missing_libs = libs
+            .par_iter()
+            .filter(|lib| cmd!(brew.clone(), "list", lib).read().is_err())
+            .cloned()
+            .collect::<Vec<_>>();
+
+        let count = missing_libs.len(); // Updated to use len() directly
+        if count > 0 {
+            let install_libs = missing_libs.join(" ");
+            bail!(formatdoc! {"
+                The dependencies below are missing and are needed to install Ruby ({ARCH}).
+                Run the following command to install them and try again:
+
+                {brew} install {install_libs}
+            "});
+        }
+
+        Ok(())
+    }
+
     fn post_install(&self, tool: &dyn Tool, task: &ProgressTask) -> Result<()> {
-        task.set_message("Setting up Ruby on macOS");
+        task.set_message(&format!("Setting up Ruby on macOS ({ARCH})"));
         let major_version = self.major_version(tool).split('.').take(2).join(".");
 
         self.rewrite_binstubs(tool)?;

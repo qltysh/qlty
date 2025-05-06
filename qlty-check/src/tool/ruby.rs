@@ -31,6 +31,10 @@ pub trait PlatformRuby {
         true
     }
 
+    fn pre_install(&self, _tool: &dyn Tool, _task: &ProgressTask) -> Result<()> {
+        Ok(())
+    }
+
     fn post_install(&self, tool: &dyn Tool, task: &ProgressTask) -> Result<()>;
     fn extra_env_paths(&self, tool: &dyn Tool) -> Vec<String>;
     fn extra_env_vars(&self, tool: &dyn Tool, env: &mut HashMap<String, String>) -> Result<()>;
@@ -42,6 +46,7 @@ pub trait PlatformRuby {
 
     fn install(&self, tool: &dyn Tool, task: &ProgressTask, download: Download) -> Result<()> {
         task.set_message("Installing Ruby");
+        self.pre_install(tool, task)?;
         download.install(tool)?;
         self.install_load_path_script(tool)
     }
@@ -175,6 +180,10 @@ impl Tool for Ruby {
 
     fn version(&self) -> Option<String> {
         self.platform_tool.version(&self.version)
+    }
+
+    fn install_max_retries(&self) -> u32 {
+        0 // no retries for Ruby
     }
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
