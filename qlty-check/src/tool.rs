@@ -36,6 +36,7 @@ use std::env::join_paths;
 use std::env::split_paths;
 use std::io::Error;
 use std::io::Write;
+use std::os::unix::process::ExitStatusExt;
 use std::path::Path;
 use std::process::Output;
 use std::sync::Arc;
@@ -488,21 +489,6 @@ pub trait Tool: Debug + Sync + Send {
                 .unchecked()
                 .run()?;
 
-            if !cmd_output.status.success() {
-                error!(
-                    "Failed to get version for package {:?}: {:?} {:?}",
-                    self.name(),
-                    cmd_output,
-                    &env,
-                );
-                bail!(
-                    "Failed to get version for package {:?}: (command {} exited with code {})",
-                    self.name(),
-                    command.script,
-                    cmd_output.status.code().unwrap_or_default()
-                );
-            }
-
             // ensure stdout appears before stderr in output string
             let output = format!(
                 "{} {}",
@@ -511,6 +497,22 @@ pub trait Tool: Debug + Sync + Send {
             );
 
             let version_string = output.trim();
+
+            if !cmd_output.status.success() {
+                error!(
+                    "Failed to get version for package {:?}: {:?} {:?}",
+                    self.name(),
+                    cmd_output,
+                    &env,
+                );
+                bail!(
+                    "Failed to get version for package {:?}: (command {} exited with code {})\n\n{}",
+                    self.name(),
+                    command.script,
+                    cmd_output.status.code().unwrap_or_else(|| cmd_output.status.signal().unwrap_or_default()),
+                    &version_string
+                );
+            }
 
             let re = Regex::new(&self.version_regex())
                 .with_context(|| format!("Invalid regex {:?} for package", self.version_regex()))?;
