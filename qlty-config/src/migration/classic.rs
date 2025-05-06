@@ -1,15 +1,11 @@
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use std::{
-    fs::File,
-    io::BufReader,
-    path::{Path, PathBuf},
-};
+use std::{fs::File, io::BufReader, path::Path};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct FetchItem {
     pub url: String,
-    pub path: PathBuf,
+    pub path: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]

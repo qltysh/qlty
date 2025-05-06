@@ -78,12 +78,7 @@ impl InvocationDirectoryPlanner {
         let target_directory = self.target_directory(target)?;
 
         for plugin_config in &self.plugin.config_files {
-            let search_target = plugin_config
-                .file_name()
-                .unwrap()
-                .to_str()
-                .unwrap()
-                .to_string();
+            let search_target = plugin_config;
 
             let path = self.find_parent_folder_with(&target_directory, &search_target)?;
 

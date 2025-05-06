@@ -99,7 +99,7 @@ pub struct DriverDef {
     pub copy_configs_into_tool_install: bool,
 
     #[serde(default)]
-    pub config_files: Vec<PathBuf>,
+    pub config_files: Vec<String>,
 
     #[serde(default)]
     pub suggested: SuggestionMode,
@@ -333,7 +333,7 @@ pub struct PluginDef {
     pub file_types: Vec<String>,
 
     #[serde(default)]
-    pub config_files: Vec<PathBuf>,
+    pub config_files: Vec<String>,
 
     #[serde(default)]
     pub downloads: Vec<String>,
@@ -654,7 +654,7 @@ pub struct EnabledPlugin {
     pub extra_packages: Vec<ExtraPackage>,
 
     #[serde(default)]
-    pub config_files: Vec<PathBuf>,
+    pub config_files: Vec<String>,
 
     #[serde(default)]
     pub affects_cache: Vec<String>,

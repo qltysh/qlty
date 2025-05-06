@@ -88,7 +88,7 @@ pub trait Source: SourceFetch {
 
     fn paths(&self) -> Result<Vec<PathBuf>>;
 
-    fn get_config_file(&self, plugin_name: &str, config_file: &Path) -> Result<Option<SourceFile>> {
+    fn get_config_file(&self, plugin_name: &str, config_file: &str) -> Result<Option<SourceFile>> {
         let candidates = vec![
             PathBuf::from("plugins/linters")
                 .join(plugin_name)
