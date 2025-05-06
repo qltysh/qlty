@@ -8,8 +8,8 @@ strip_components = 0
 [plugins.definitions.dockerfmt]
 releases = ["dockerfmt"]
 file_types = ["docker"]
-latest_version = "0.2.6"
-known_good_version = "0.2.6"
+latest_version = "0.3.7"
+known_good_version = "0.3.7"
 version_command = "dockerfmt version"
 description = "Dockerfile format and parser. A modern dockfmt."
 
