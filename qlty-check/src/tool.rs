@@ -312,7 +312,7 @@ pub trait Tool: Debug + Sync + Send {
 
     fn install_with_retry(&self, task: &ProgressTask) -> Result<()> {
         let mut attempts = 0;
-        let max_attempts = self.install_max_retries() + 1;
+        let max_attempts = self.install_max_retries();
 
         loop {
             match self.install(task) {
