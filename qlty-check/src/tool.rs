@@ -50,7 +50,7 @@ fn exit_status_code(status: &std::process::ExitStatus) -> i32 {
     use std::os::unix::process::ExitStatusExt;
     status
         .code()
-        .unwrap_or_else(|| cmd_output.status.signal().unwrap_or_default())
+        .unwrap_or_else(|| status.signal().unwrap_or_default())
 }
 
 #[cfg(windows)]
