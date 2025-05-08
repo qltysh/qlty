@@ -4,8 +4,17 @@ use qlty_types::tests::v1::CoverageMetadata;
 use serde_json::Value;
 use ureq::{json, serde_json, Error, Request};
 
+const ENV_QLTY_API_URL: &str = "QLTY_API_URL";
 const QLTY_API_URL: &str = "https://api.qlty.sh";
-pub const LEGACY_API_URL: &str = "https://qlty.sh/api";
+const LEGACY_API_URL: &str = "https://qlty.sh/api";
+
+pub fn get_api_url() -> String {
+    std::env::var(ENV_QLTY_API_URL).unwrap_or_else(|_| QLTY_API_URL.to_string())
+}
+
+pub fn get_legacy_api_url() -> String {
+    std::env::var(ENV_QLTY_API_URL).unwrap_or_else(|_| LEGACY_API_URL.to_string())
+}
 const USER_AGENT_PREFIX: &str = "qlty";
 
 #[derive(Debug, Clone)]
@@ -26,10 +35,7 @@ impl Client {
             base_url: if let Some(url) = base_url {
                 url.to_string()
             } else {
-                match std::env::var("QLTY_API_URL") {
-                    Ok(url) => url,
-                    Err(_) => QLTY_API_URL.to_string(),
-                }
+                get_api_url()
             },
             token,
         }

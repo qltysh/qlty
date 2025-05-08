@@ -2,7 +2,7 @@ use crate::export::CoverageExport;
 use crate::publish::Report;
 use anyhow::{anyhow, bail};
 use anyhow::{Context, Result};
-use qlty_cloud::{Client as QltyClient, LEGACY_API_URL};
+use qlty_cloud::{get_legacy_api_url, Client as QltyClient};
 use qlty_types::tests::v1::CoverageMetadata;
 use serde_json::Value;
 use std::path::PathBuf;
@@ -104,7 +104,8 @@ impl Upload {
     }
 
     fn request_api(metadata: &CoverageMetadata, token: &str) -> Result<Value> {
-        let client = QltyClient::new(Some(LEGACY_API_URL), Some(token.into()));
+        let legacy_api_url = get_legacy_api_url();
+        let client = QltyClient::new(Some(&legacy_api_url), Some(token.into()));
         client.post_coverage_metadata("/coverage", metadata)
     }
 }

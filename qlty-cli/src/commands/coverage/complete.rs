@@ -5,7 +5,7 @@ use crate::{CommandError, CommandSuccess};
 use anyhow::{bail, Context, Result};
 use clap::Args;
 use console::style;
-use qlty_cloud::{Client as QltyClient, LEGACY_API_URL};
+use qlty_cloud::{get_legacy_api_url, Client as QltyClient};
 use qlty_coverage::{
     publish::{Plan, Planner, Settings},
     token::load_auth_token,
@@ -120,7 +120,8 @@ impl Complete {
         metadata: &qlty_types::tests::v1::CoverageMetadata,
         token: &str,
     ) -> Result<Value> {
-        let client = QltyClient::new(Some(LEGACY_API_URL), Some(token.into()));
+        let legacy_api_url = get_legacy_api_url();
+        let client = QltyClient::new(Some(&legacy_api_url), Some(token.into()));
         client.post_coverage_metadata("/coverage/complete", metadata)
     }
 }
