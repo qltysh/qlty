@@ -75,7 +75,8 @@ impl Complete {
         print_authentication_info(&token, self.quiet);
 
         let timer = Instant::now();
-        let result = Self::request_complete(&plan.metadata, &token).context("Failed to complete coverage")?;
+        let result = Self::request_complete(&plan.metadata, &token)
+            .context("Failed to complete coverage")?;
         self.print_complete_success(timer.elapsed().as_secs_f32(), &result.url);
 
         CommandSuccess::ok()
@@ -119,11 +120,11 @@ impl Complete {
         }
 
         eprintln!("    Coverage marked as complete in {elapsed_seconds:.2}s!");
-        
+
         if !url.is_empty() {
             eprintln!("    {}", style(format!("View report: {url}")).bold());
         }
-        
+
         eprintln!();
     }
 
@@ -133,13 +134,13 @@ impl Complete {
     ) -> Result<CompleteResult> {
         let client = QltyClient::new(Some(LEGACY_API_URL), Some(token.into()));
         let response = client.post_coverage_metadata("/coverage/complete", metadata)?;
-            
+
         let url = response
             .get("data")
             .and_then(|data| data.get("url"))
             .and_then(|url| url.as_str())
             .unwrap_or_default();
-            
+
         Ok(CompleteResult {
             url: url.to_string(),
         })
