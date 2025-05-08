@@ -78,7 +78,7 @@ impl Complete {
         let result = Self::request_complete(&plan.metadata, &token)
             .context("Failed to complete coverage")?;
 
-        self.print_section_header(" COMPLETION REQUEST");
+        self.print_section_header(" MARKING COMPLETE...");
         self.print_complete_success(timer.elapsed().as_secs_f32(), &result.url);
 
         CommandSuccess::ok()
