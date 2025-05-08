@@ -5,6 +5,7 @@ use serde_json::Value;
 use ureq::{json, serde_json, Error, Request};
 
 const QLTY_API_URL: &str = "https://api.qlty.sh";
+pub const LEGACY_API_URL: &str = "https://qlty.sh/api";
 const USER_AGENT_PREFIX: &str = "qlty";
 
 #[derive(Debug, Clone)]

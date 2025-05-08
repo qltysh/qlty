@@ -2,12 +2,10 @@ use crate::export::CoverageExport;
 use crate::publish::Report;
 use anyhow::{anyhow, bail};
 use anyhow::{Context, Result};
-use qlty_cloud::Client as QltyClient;
+use qlty_cloud::{Client as QltyClient, LEGACY_API_URL};
 use qlty_types::tests::v1::CoverageMetadata;
 use serde_json::Value;
 use std::path::PathBuf;
-
-const LEGACY_API_URL: &str = "https://qlty.sh/api";
 
 #[derive(Default, Clone, Debug)]
 pub struct Upload {

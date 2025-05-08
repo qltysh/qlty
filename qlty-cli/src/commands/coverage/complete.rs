@@ -5,15 +5,13 @@ use crate::{CommandError, CommandSuccess};
 use anyhow::{bail, Context, Result};
 use clap::Args;
 use console::style;
-use qlty_cloud::Client as QltyClient;
+use qlty_cloud::{Client as QltyClient, LEGACY_API_URL};
 use qlty_coverage::{
     publish::{Plan, Planner, Settings},
     token::load_auth_token,
 };
 use serde_json::Value;
 use std::time::Instant;
-
-const LEGACY_API_URL: &str = "https://qlty.sh/api";
 
 #[derive(Debug, Args, Default)]
 pub struct Complete {
