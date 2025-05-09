@@ -132,7 +132,8 @@ impl Complete {
         metadata: &qlty_types::tests::v1::CoverageMetadata,
         token: &str,
     ) -> Result<CompleteResult> {
-        let client = QltyClient::new(Some(&get_legacy_api_url()), Some(token.into()));
+        let legacy_api_url = get_legacy_api_url();
+        let client = QltyClient::new(Some(&legacy_api_url), Some(token.into()));
         let response = client.post_coverage_metadata("/coverage/complete", metadata)?;
 
         let url = response
