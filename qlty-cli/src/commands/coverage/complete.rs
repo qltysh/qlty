@@ -5,14 +5,12 @@ use crate::{CommandError, CommandSuccess};
 use anyhow::{bail, Context, Result};
 use clap::Args;
 use console::style;
-use qlty_cloud::Client as QltyClient;
+use qlty_cloud::{get_legacy_api_url, Client as QltyClient};
 use qlty_coverage::{
     publish::{Plan, Planner, Settings},
     token::load_auth_token,
 };
 use std::time::Instant;
-
-const LEGACY_API_URL: &str = "https://qlty.sh/api";
 
 #[derive(Debug, Default, Clone)]
 pub struct CompleteResult {
@@ -134,7 +132,7 @@ impl Complete {
         metadata: &qlty_types::tests::v1::CoverageMetadata,
         token: &str,
     ) -> Result<CompleteResult> {
-        let client = QltyClient::new(Some(LEGACY_API_URL), Some(token.into()));
+        let client = QltyClient::new(Some(&get_legacy_api_url()), Some(token.into()));
         let response = client.post_coverage_metadata("/coverage/complete", metadata)?;
 
         let url = response
