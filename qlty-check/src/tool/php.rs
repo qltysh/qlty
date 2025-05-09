@@ -73,7 +73,7 @@ impl Tool for Php {
 impl Php {
     fn verify_installation(&self, env: HashMap<String, String>) -> Result<()> {
         let cmd = cmd!("php", "--version")
-            .full_env(env)
+            .full_env(env.clone())
             .unchecked()
             .stderr_to_stdout()
             .stdout_capture();
@@ -83,14 +83,250 @@ impl Php {
 
         let mut installation = initialize_installation(self)?;
         let result = cmd.run();
-        finalize_installation_from_cmd_result(self, &result, &mut installation, script).ok();
+        finalize_installation_from_cmd_result(self, &result, &mut installation, script.clone()).ok();
+
+        if let Err(err) = &result {
+            debug!("PHP check failed: {:?}", err);
+            // Attempt to auto-install PHP
+            if let Ok(()) = self.try_install_php() {
+                // Try again after installation
+                let result = cmd.run();
+                finalize_installation_from_cmd_result(self, &result, &mut installation, script).ok();
+                
+                let output = result?;
+                if !output.status.success() {
+                    bail!("PHP was installed but verification failed. Please check your PHP installation manually.");
+                }
+                return Ok(());
+            }
+            
+            // Provide a helpful error message if auto-installation fails
+            let os_hint = self.get_os_install_instructions();
+            bail!("PHP is not installed or not in $PATH. {}", os_hint);
+        }
 
         let output = result?;
         if !output.status.success() {
-            bail!("Ensure `php` is installed and in $PATH");
+            bail!("PHP installation verification failed. Please ensure PHP is properly installed.");
         }
 
         Ok(())
+    }
+
+    fn try_install_php(&self) -> Result<()> {
+        let os_type = std::env::consts::OS;
+        debug!("Attempting to auto-install PHP on OS: {}", os_type);
+
+        match os_type {
+            "linux" => self.install_php_linux(),
+            "macos" => self.install_php_macos(),
+            _ => {
+                debug!("Auto-installation not supported on this OS: {}", os_type);
+                bail!("Auto-installation of PHP is not supported on this operating system")
+            }
+        }
+    }
+
+    fn install_php_linux(&self) -> Result<()> {
+        // Detect Linux distribution and package manager
+        if self.has_command("apt") {
+            debug!("Detected apt-based Linux distribution, installing PHP");
+            
+            // Check if we're in a Docker container
+            let in_docker = std::path::Path::new("/.dockerenv").exists();
+            
+            if in_docker {
+                debug!("Docker environment detected, installing additional dependencies");
+                // Install software-properties-common for add-apt-repository
+                let deps_cmd = cmd!("apt", "install", "-y", "software-properties-common", "ca-certificates", "apt-transport-https")
+                    .unchecked()
+                    .stderr_to_stdout()
+                    .stdout_capture();
+                
+                let deps_result = deps_cmd.run();
+                if deps_result.is_err() {
+                    debug!("Failed to install dependencies: {:?}", deps_result);
+                    // Continue anyway, as we might still be able to install PHP
+                }
+            }
+            
+            // Update package list first to ensure we get the latest package info
+            let update_cmd = cmd!("apt", "update")
+                .unchecked()
+                .stderr_to_stdout()
+                .stdout_capture();
+            
+            let update_result = update_cmd.run();
+            if update_result.is_err() {
+                debug!("Failed to update package list: {:?}", update_result);
+                // Continue anyway, as we might still be able to install PHP
+            }
+
+            // Try to add PPA for PHP (for Ubuntu-based systems)
+            if self.has_command("add-apt-repository") {
+                let ppa_cmd = cmd!("add-apt-repository", "-y", "ppa:ondrej/php")
+                    .unchecked()
+                    .stderr_to_stdout()
+                    .stdout_capture();
+                
+                let ppa_result = ppa_cmd.run();
+                if ppa_result.is_ok() {
+                    // Update again after adding repository
+                    let _ = cmd!("apt", "update")
+                        .unchecked()
+                        .stderr_to_stdout()
+                        .stdout_capture()
+                        .run();
+                } else {
+                    debug!("Failed to add PHP repository: {:?}", ppa_result);
+                    // Continue anyway with system packages
+                }
+            }
+
+            // Try to install the specified PHP version first
+            let version = self.version.clone();
+            let php_package = if !version.is_empty() && version != "latest" {
+                format!("php{}-cli php{}-xml php{}-curl php{}-mbstring php{}-zip", 
+                       version, version, version, version, version)
+            } else {
+                "php-cli php-xml php-curl php-mbstring php-zip".to_string()
+            };
+            
+            debug!("Installing PHP packages: {}", php_package);
+            
+            // Install PHP
+            let cmd_args = format!("apt install -y {}", php_package);
+            let cmd = cmd!("sh", "-c", cmd_args)
+                .unchecked()
+                .stderr_to_stdout()
+                .stdout_capture();
+            
+            let result = cmd.run();
+            if let Err(err) = result {
+                debug!("Failed to install specific PHP version: {:?}", err);
+                
+                // Fall back to generic PHP package
+                let fallback_cmd = cmd!("apt", "install", "-y", "php-cli", "php-xml", "php-curl", "php-mbstring", "php-zip")
+                    .unchecked()
+                    .stderr_to_stdout()
+                    .stdout_capture();
+                
+                let fallback_result = fallback_cmd.run();
+                if let Err(err) = fallback_result {
+                    debug!("Failed to install PHP with apt (fallback): {:?}", err);
+                    bail!("Failed to automatically install PHP. Please install PHP manually.");
+                }
+            }
+            return Ok(());
+        } else if self.has_command("yum") {
+            debug!("Detected yum-based Linux distribution, installing PHP");
+            
+            // Try to install the specified PHP version first
+            let version = self.version.clone();
+            let php_package = if !version.is_empty() && version != "latest" {
+                // RHEL/CentOS require EPEL and Remi repositories for newer PHP versions
+                // Try to install them if not present
+                let _ = cmd!("yum", "install", "-y", "epel-release")
+                    .unchecked()
+                    .stderr_to_stdout()
+                    .stdout_capture()
+                    .run();
+                
+                let _ = cmd!("yum", "install", "-y", "https://rpms.remirepo.net/enterprise/remi-release-8.rpm")
+                    .unchecked()
+                    .stderr_to_stdout()
+                    .stdout_capture()
+                    .run();
+                
+                // Enable the appropriate PHP repository
+                let _ = cmd!("yum", "module", "reset", "php")
+                    .unchecked()
+                    .stderr_to_stdout()
+                    .stdout_capture()
+                    .run();
+                
+                let _ = cmd!("yum", "module", "enable", format!("php:{}", version))
+                    .unchecked()
+                    .stderr_to_stdout()
+                    .stdout_capture()
+                    .run();
+                
+                "php php-xml php-json php-mbstring".to_string()
+            } else {
+                "php php-xml php-json php-mbstring".to_string()
+            };
+            
+            let cmd = cmd!("yum", "install", "-y", php_package)
+                .unchecked()
+                .stderr_to_stdout()
+                .stdout_capture();
+            
+            let result = cmd.run();
+            if let Err(err) = result {
+                debug!("Failed to install PHP with yum: {:?}", err);
+                bail!("Failed to automatically install PHP. Please install PHP manually.");
+            }
+            return Ok(());
+        }
+
+        bail!("Unsupported Linux distribution. Please install PHP manually.")
+    }
+
+    fn install_php_macos(&self) -> Result<()> {
+        if self.has_command("brew") {
+            debug!("Detected macOS with Homebrew, installing PHP");
+            let cmd = cmd!("brew", "install", "php")
+                .unchecked()
+                .stderr_to_stdout()
+                .stdout_capture();
+            
+            let result = cmd.run();
+            if let Err(err) = result {
+                debug!("Failed to install PHP with brew: {:?}", err);
+                bail!("Failed to automatically install PHP using Homebrew. Please install PHP manually.");
+            }
+            return Ok(());
+        }
+
+        bail!("Homebrew not found. Please install PHP manually or install Homebrew first.")
+    }
+
+    fn has_command(&self, command: &str) -> bool {
+        let cmd = cmd!("which", command)
+            .unchecked()
+            .stderr_to_stdout()
+            .stdout_capture();
+        
+        cmd.run().is_ok()
+    }
+
+    fn get_os_install_instructions(&self) -> String {
+        let os_type = std::env::consts::OS;
+        
+        match os_type {
+            "linux" => {
+                if self.has_command("apt") {
+                    "Run 'apt install -y php-cli php-xml php-curl php-mbstring php-zip' to install PHP.".to_string()
+                } else if self.has_command("yum") {
+                    "Run 'yum install -y php-cli php-xml php-json php-mbstring' to install PHP.".to_string()
+                } else {
+                    "Please install PHP using your distribution's package manager.".to_string()
+                }
+            },
+            "macos" => {
+                if self.has_command("brew") {
+                    "Run 'brew install php' to install PHP.".to_string()
+                } else {
+                    "Install Homebrew (https://brew.sh/) then run 'brew install php' to install PHP.".to_string()
+                }
+            },
+            "windows" => {
+                "Download and install PHP from https://windows.php.net/download/ and ensure it's in your PATH.".to_string()
+            },
+            _ => {
+                "Please install PHP for your operating system and ensure it's in your PATH.".to_string()
+            }
+        }
     }
 }
 
