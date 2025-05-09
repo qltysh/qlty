@@ -1,6 +1,7 @@
 use crate::utils::fs::path_to_string;
 use pbjson_types::Timestamp;
 use qlty_config::issue_transformer::IssueTransformer;
+use qlty_formats::SarifTrait;
 use qlty_types::analysis::v1::{
     AnalysisResult, ComponentType, Invocation, Issue, Message, Metadata, Stats,
 };
@@ -187,5 +188,15 @@ impl Report {
             seconds: now.unix_timestamp(),
             nanos: now.nanosecond() as i32,
         }
+    }
+}
+
+impl SarifTrait for Report {
+    fn issues(&self) -> Vec<Issue> {
+        self.issues.clone()
+    }
+
+    fn messages(&self) -> Vec<Message> {
+        self.messages.clone()
     }
 }

@@ -27,6 +27,7 @@ path-absolutize.workspace = true
 pbjson-types.workspace = true
 qlty-config.workspace = true
 qlty-types.workspace = true
+qlty-formats.workspace = true
 rand.workspace = true
 rayon.workspace = true
 regex.workspace = true

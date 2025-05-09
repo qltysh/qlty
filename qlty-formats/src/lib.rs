@@ -14,6 +14,7 @@ pub use json::JsonFormatter;
 pub use json_each::JsonEachRowFormatter;
 pub use json_each_truncated::InvocationJsonFormatter;
 pub use protos::{ProtoFormatter, ProtosFormatter};
+use qlty_types::analysis::v1::{Issue, Message};
 
 pub trait Formatter {
     fn write_to(&self, writer: &mut dyn std::io::Write) -> Result<()>;
@@ -35,4 +36,9 @@ pub trait Formatter {
         self.write_to(&mut buffer)?;
         Ok(buffer)
     }
+}
+
+pub trait SarifTrait {
+    fn issues(&self) -> Vec<Issue>;
+    fn messages(&self) -> Vec<Message>;
 }
