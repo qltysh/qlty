@@ -59,7 +59,7 @@ impl WorkspaceEntryFinderBuilder {
                 // Use absolute paths, so when running in a subdirectory, the paths are still correct
                 self.paths.iter().map(|p| self.root.join(p)).collect(),
             ))),
-            TargetMode::UpstreamDiff(_) => Ok(Arc::new(DiffSource::new(
+            TargetMode::HeadDiff | TargetMode::UpstreamDiff(_) => Ok(Arc::new(DiffSource::new(
                 self.git_diff()?.changed_files,
                 &self.root,
             ))),
