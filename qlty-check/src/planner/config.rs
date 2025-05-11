@@ -4,7 +4,7 @@ use anyhow::{anyhow, Result};
 use qlty_analysis::workspace_entries::TargetMode;
 use qlty_config::config::{DriverDef, EnabledPlugin, IssueMode, Platform, PluginDef};
 use semver::{Version, VersionReq};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use tracing::{debug, trace, warn};
 
 const ALL: &str = "ALL";
@@ -177,16 +177,31 @@ fn configure_plugin(
             plugin_def.config_files.extend(driver.config_files.clone());
         }
 
-        plugin_def
-            .config_files
-            .extend(enabled_plugin.config_files.clone());
+        enabled_plugin.config_files.iter().for_each(|config_file| {
+            if config_file.contains("/") {
+                let file_name = Path::new(config_file).file_name().unwrap_or_default();
+                warn!(
+                    "Plugin {} config file {} should not be a path, instead should be file pattern, using {} instead.",
+                    name,
+                    config_file,
+                    file_name.to_str().unwrap_or_default()
+                );
+                plugin_def
+                    .config_files
+                    .push(file_name.to_str().unwrap_or_default().to_string());
+            } else {
+                plugin_def
+                    .config_files
+                    .push(config_file.clone());
+            }
+        });
 
         plugin_def.config_files.extend(
             enabled_plugin
                 .fetch
                 .iter()
-                .map(|fetch| PathBuf::from(fetch.path.clone()))
-                .collect::<Vec<PathBuf>>(),
+                .map(|fetch| fetch.path.clone())
+                .collect::<Vec<String>>(),
         );
 
         plugin_def
@@ -465,7 +480,7 @@ mod test {
         plugin_defs.insert(
             "enabled".to_string(),
             PluginDef {
-                config_files: vec![PathBuf::from("path1")],
+                config_files: vec!["path1".to_string()],
                 ..Default::default()
             },
         );
@@ -473,7 +488,7 @@ mod test {
         let planner = build_planner(QltyConfig {
             plugin: vec![EnabledPlugin {
                 name: "enabled".to_string(),
-                config_files: vec![PathBuf::from("path2")],
+                config_files: vec!["path2".to_string()],
                 fetch: vec![
                     PluginFetch {
                         url: "someurl".to_string(),
@@ -499,10 +514,10 @@ mod test {
         let enabled_plugin = plugins.iter().find(|p| p.name == "enabled").unwrap();
         let config_files = enabled_plugin.plugin.config_files.clone();
         assert_eq!(config_files.len(), 4);
-        assert!(config_files.contains(&PathBuf::from("path1")));
-        assert!(config_files.contains(&PathBuf::from("path2")));
-        assert!(config_files.contains(&PathBuf::from("path3")));
-        assert!(config_files.contains(&PathBuf::from("path4")));
+        assert!(config_files.contains(&"path1".to_string()));
+        assert!(config_files.contains(&"path2".to_string()));
+        assert!(config_files.contains(&"path3".to_string()));
+        assert!(config_files.contains(&"path4".to_string()));
     }
 
     #[test]

@@ -122,7 +122,7 @@ impl MigrateConfig {
             for fetch_item in fetch_items {
                 let mut plugin_fetch = table();
                 plugin_fetch["url"] = value(fetch_item.url);
-                plugin_fetch["path"] = value(fetch_item.path.to_str().unwrap());
+                plugin_fetch["path"] = value(fetch_item.path);
 
                 plugin_table.push(plugin_fetch.as_table().unwrap().clone());
             }

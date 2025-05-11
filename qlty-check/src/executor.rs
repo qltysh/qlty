@@ -263,12 +263,10 @@ impl Executor {
             .invocations
             .iter()
             .flat_map(|invocation| invocation.plugin.config_files.clone())
-            .collect::<Vec<PathBuf>>();
+            .collect::<Vec<String>>();
 
         for invocation in self.plan.invocations.iter() {
-            for affects_cache in &invocation.plugin.affects_cache {
-                config_paths.push(PathBuf::from(affects_cache))
-            }
+            config_paths.extend(invocation.plugin.affects_cache.clone())
         }
 
         let config_globset = config_globset(&config_paths)?;

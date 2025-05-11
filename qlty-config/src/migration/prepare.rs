@@ -1,7 +1,7 @@
 use crate::migration::classic::{ClassicConfig, FetchItem};
 use crate::QltyConfig;
 use anyhow::Result;
-use std::{collections::HashMap, path::PathBuf};
+use std::collections::HashMap;
 use url::Url;
 
 pub fn get_plugins_fetch_items(
@@ -70,7 +70,7 @@ fn check_plugins_by_url_file_name(
     let mut found = false;
     for (plugin_name, plugin) in qlty_config.plugins.definitions.clone() {
         if let Some(url_file_name) = extract_file_name_from_url(&fetch_item.url) {
-            if plugin.config_files.contains(&PathBuf::from(url_file_name)) {
+            if plugin.config_files.contains(&url_file_name) {
                 fetch_items
                     .entry(plugin_name.clone())
                     .or_default()
@@ -89,7 +89,7 @@ fn check_plugins_by_path(
 ) -> Result<bool> {
     let mut found = false;
     for plugin_name in qlty_config.plugins.definitions.keys() {
-        if fetch_item.path.to_str().unwrap().contains(plugin_name) {
+        if fetch_item.path.contains(plugin_name) {
             fetch_items
                 .entry(plugin_name.clone())
                 .or_default()

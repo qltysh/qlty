@@ -46,17 +46,13 @@ struct PluginConfig {
     config_globset: GlobSet,
 }
 
-pub fn config_globset(config_files: &Vec<PathBuf>) -> Result<GlobSet> {
+pub fn config_globset(config_files: &Vec<String>) -> Result<GlobSet> {
     let mut globset = GlobSetBuilder::new();
 
     for config_file in config_files {
-        let glob = GlobBuilder::new(
-            config_file
-                .to_str()
-                .ok_or(anyhow::anyhow!("Invalid path: {:?}", config_file))?,
-        )
-        .literal_separator(true)
-        .build()?;
+        let glob = GlobBuilder::new(config_file)
+            .literal_separator(true)
+            .build()?;
 
         globset.add(glob);
     }
