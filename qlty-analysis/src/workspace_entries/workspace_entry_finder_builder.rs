@@ -1,13 +1,13 @@
 use super::{LanguagesShebangMatcher, OrMatcher, TargetMode};
 use crate::{
     git::GitDiff,
-    workspace_entries::{AndMatcher, IgnoreGroupsMatcher, LanguageGlobsMatcher},
+    workspace_entries::{matchers::ExcludeGroupsMatcher, AndMatcher, LanguageGlobsMatcher},
     AllSource, ArgsSource, DiffSource, FileMatcher, WorkspaceEntryFinder, WorkspaceEntryMatcher,
     WorkspaceEntrySource,
 };
 use anyhow::{bail, Result};
 use qlty_config::{
-    config::{ignore_group::IgnoreGroup, Ignore},
+    config::{exclude_group::ExcludeGroup, Exclude},
     issue_transformer::{IssueTransformer, NullIssueTransformer},
     QltyConfig,
 };
@@ -73,15 +73,15 @@ impl WorkspaceEntryFinderBuilder {
         // Files only
         matcher.push(Box::new(FileMatcher));
 
-        // Ignore explicit ignores and tests
-        let mut ignores = self.config.ignore.clone();
-        debug!("Ignoring globs: {:?}", ignores);
+        // Exclude explicit excludes and tests
+        let mut excludes = self.config.exclude.clone();
+        debug!("Ignoring globs: {:?}", excludes);
 
         if self.exclude_tests {
             if !self.config.test_patterns.is_empty() {
                 debug!("Ignoring test patterns: {:?}", self.config.test_patterns);
 
-                ignores.push(Ignore {
+                excludes.push(Exclude {
                     file_patterns: self.config.test_patterns.clone(),
                     ..Default::default()
                 });
@@ -90,9 +90,9 @@ impl WorkspaceEntryFinderBuilder {
             }
         }
 
-        let ignore_groups = IgnoreGroup::build_from_ignores(&ignores.iter().collect());
+        let exclude_groups = ExcludeGroup::build_from_excludes(&excludes.iter().collect());
 
-        matcher.push(Box::new(IgnoreGroupsMatcher::new(ignore_groups)));
+        matcher.push(Box::new(ExcludeGroupsMatcher::new(exclude_groups)));
 
         // Must match a language
         matcher.push(self.languages_matcher()?);

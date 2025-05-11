@@ -1,18 +1,18 @@
 use super::{GlobsMatcher, WorkspaceEntryMatcher};
 use crate::WorkspaceEntry;
-use qlty_config::config::ignore_group::IgnoreGroup;
+use qlty_config::config::exclude_group::ExcludeGroup;
 
 #[derive(Default, Debug)]
-pub struct IgnoreGroupsMatcher {
+pub struct ExcludeGroupsMatcher {
     matchers: Vec<GlobsMatcher>,
 }
 
-impl IgnoreGroupsMatcher {
-    pub fn new(ignore_groups: Vec<IgnoreGroup>) -> Self {
-        let matchers = ignore_groups
+impl ExcludeGroupsMatcher {
+    pub fn new(exclude_groups: Vec<ExcludeGroup>) -> Self {
+        let matchers = exclude_groups
             .into_iter()
-            .filter_map(|ignore_group| {
-                GlobsMatcher::new_for_globs(&ignore_group.ignores, ignore_group.negate).ok()
+            .filter_map(|exclude_group| {
+                GlobsMatcher::new_for_globs(&exclude_group.excludes, exclude_group.negate).ok()
             })
             .collect();
 
@@ -20,7 +20,7 @@ impl IgnoreGroupsMatcher {
     }
 }
 
-impl WorkspaceEntryMatcher for IgnoreGroupsMatcher {
+impl WorkspaceEntryMatcher for ExcludeGroupsMatcher {
     fn matches(&self, workspace_entry: WorkspaceEntry) -> Option<WorkspaceEntry> {
         // By default, include the file
         let path = workspace_entry.path_string();
@@ -30,7 +30,7 @@ impl WorkspaceEntryMatcher for IgnoreGroupsMatcher {
                 return if matcher.include {
                     Some(workspace_entry) // No need to clone; directly return ownership
                 } else {
-                    None // Immediately exclude the file if a normal ignore rule matches
+                    None // Immediately exclude the file if a normal exclude rule matches
                 };
             }
         }
@@ -43,7 +43,7 @@ impl WorkspaceEntryMatcher for IgnoreGroupsMatcher {
 mod test {
     use super::*;
     use crate::{WorkspaceEntry, WorkspaceEntryKind};
-    use qlty_config::config::ignore_group::IgnoreGroup;
+    use qlty_config::config::exclude_group::ExcludeGroup;
     use std::path::PathBuf;
     use std::time::SystemTime;
 
@@ -58,12 +58,12 @@ mod test {
     }
 
     #[test]
-    fn test_ignore_groups_matcher_excludes_ignored_paths() {
-        let ignore_groups = vec![IgnoreGroup {
-            ignores: vec!["logs/**".to_string(), "target/**".to_string()],
+    fn test_exclude_groups_matcher_excludes_excluded_paths() {
+        let exclude_groups = vec![ExcludeGroup {
+            excludes: vec!["logs/**".to_string(), "target/**".to_string()],
             negate: false,
         }];
-        let matcher = IgnoreGroupsMatcher::new(ignore_groups);
+        let matcher = ExcludeGroupsMatcher::new(exclude_groups);
 
         assert!(matcher
             .matches(create_workspace_entry("src/main.rs"))
@@ -77,18 +77,18 @@ mod test {
     }
 
     #[test]
-    fn test_ignore_groups_matcher_allows_negated_patterns() {
-        let ignore_groups = vec![
-            IgnoreGroup {
-                ignores: vec!["logs/**".to_string()],
+    fn test_exclude_groups_matcher_allows_negated_patterns() {
+        let exclude_groups = vec![
+            ExcludeGroup {
+                excludes: vec!["logs/**".to_string()],
                 negate: false,
             },
-            IgnoreGroup {
-                ignores: vec!["logs/important.log".to_string()],
+            ExcludeGroup {
+                excludes: vec!["logs/important.log".to_string()],
                 negate: true,
             },
         ];
-        let matcher = IgnoreGroupsMatcher::new(ignore_groups);
+        let matcher = ExcludeGroupsMatcher::new(exclude_groups);
 
         assert!(matcher
             .matches(create_workspace_entry("logs/error.log"))
@@ -99,8 +99,8 @@ mod test {
     }
 
     #[test]
-    fn test_ignore_groups_matcher_empty_list() {
-        let matcher = IgnoreGroupsMatcher::new(vec![]);
+    fn test_exclude_groups_matcher_empty_list() {
+        let matcher = ExcludeGroupsMatcher::new(vec![]);
         assert!(matcher
             .matches(create_workspace_entry("src/main.rs"))
             .is_some());

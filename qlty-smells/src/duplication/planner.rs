@@ -5,7 +5,7 @@ use qlty_analysis::code::File;
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_config::config::issue_transformer::IssueTransformer;
 use qlty_config::config::smells::{Duplication, IdenticalCode, SimilarCode};
-use qlty_config::config::Ignore;
+use qlty_config::config::Exclude;
 use qlty_config::{
     config::{IssueMode, Language},
     QltyConfig,
@@ -164,14 +164,14 @@ impl Planner {
         let mut source_files = self.files.clone();
 
         if !self.settings.include_tests && !self.config.test_patterns.is_empty() {
-            let ignore = Ignore {
+            let exclude = Exclude {
                 file_patterns: self.config.test_patterns.clone(),
                 ..Default::default()
             };
 
-            ignore.initialize_globset();
+            exclude.initialize_globset();
 
-            source_files.retain(|file| !ignore.matches_path(&path_to_string(file.path.clone())));
+            source_files.retain(|file| !exclude.matches_path(&path_to_string(file.path.clone())));
         }
 
         Ok(Plan {
