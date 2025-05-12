@@ -1,0 +1,197 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=radarlint-ruby fixture=foo version=2.0.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "foo.in.rb",
+        "range": {
+          "endColumn": 9,
+          "endLine": 14,
+          "startColumn": 3,
+          "startLine": 14,
+        },
+      },
+      "message": "Either remove or fill this block of code.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "ruby:S108",
+      "snippet": "  rescue",
+      "snippetWithContext": "def fetch_data(url)
+  uri = URI("http://example.com")
+
+  response = Net::HTTP.get(uri)
+  puts response
+
+  password = "supersecretpassword"
+
+  begin
+    puts 1 / 0
+  rescue
+  end
+
+  user_input = gets.chomp
+  query = "SELECT * FROM users WHERE name = '#{user_input}'"
+
+  file = File.open("/home/user/data.txt", "r")
+
+  def unused_method
+    puts "This method is never called"
+  end",
+      "tool": "radarlint-ruby",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "foo.in.rb",
+        "range": {
+          "endColumn": 7,
+          "endLine": 20,
+          "startColumn": 3,
+          "startLine": 20,
+        },
+      },
+      "message": "Remove this unused "file" local variable.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "ruby:S1481",
+      "snippet": "  file = File.open("/home/user/data.txt", "r")",
+      "snippetWithContext": "  password = "supersecretpassword"
+
+  begin
+    puts 1 / 0
+  rescue
+  end
+
+  user_input = gets.chomp
+  query = "SELECT * FROM users WHERE name = '#{user_input}'"
+
+  file = File.open("/home/user/data.txt", "r")
+
+  def unused_method
+    puts "This method is never called"
+  end
+
+  if user_input == "admin"
+    puts "Welcome, admin!"
+  elsif user_input == "admin"
+    puts "You are an admin!"
+  end",
+      "tool": "radarlint-ruby",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "foo.in.rb",
+        "range": {
+          "endColumn": 11,
+          "endLine": 10,
+          "startColumn": 3,
+          "startLine": 10,
+        },
+      },
+      "message": "Remove this unused "password" local variable.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "ruby:S1481",
+      "snippet": "  password = "supersecretpassword"",
+      "snippetWithContext": "require 'net/http'
+require 'json'
+
+def fetch_data(url)
+  uri = URI("http://example.com")
+
+  response = Net::HTTP.get(uri)
+  puts response
+
+  password = "supersecretpassword"
+
+  begin
+    puts 1 / 0
+  rescue
+  end
+
+  user_input = gets.chomp
+  query = "SELECT * FROM users WHERE name = '#{user_input}'"
+
+  file = File.open("/home/user/data.txt", "r")",
+      "tool": "radarlint-ruby",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "foo.in.rb",
+        "range": {
+          "endColumn": 8,
+          "endLine": 18,
+          "startColumn": 3,
+          "startLine": 18,
+        },
+      },
+      "message": "Remove this unused "query" local variable.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "ruby:S1481",
+      "snippet": "  query = "SELECT * FROM users WHERE name = '#{user_input}'"",
+      "snippetWithContext": "  puts response
+
+  password = "supersecretpassword"
+
+  begin
+    puts 1 / 0
+  rescue
+  end
+
+  user_input = gets.chomp
+  query = "SELECT * FROM users WHERE name = '#{user_input}'"
+
+  file = File.open("/home/user/data.txt", "r")
+
+  def unused_method
+    puts "This method is never called"
+  end
+
+  if user_input == "admin"
+    puts "Welcome, admin!"
+  elsif user_input == "admin"",
+      "tool": "radarlint-ruby",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "foo.in.rb",
+        "range": {
+          "endColumn": 30,
+          "endLine": 28,
+          "startColumn": 9,
+          "startLine": 28,
+        },
+      },
+      "message": "This condition duplicates the one on line 26.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "ruby:S1862",
+      "snippet": "  elsif user_input == "admin"",
+      "snippetWithContext": "  query = "SELECT * FROM users WHERE name = '#{user_input}'"
+
+  file = File.open("/home/user/data.txt", "r")
+
+  def unused_method
+    puts "This method is never called"
+  end
+
+  if user_input == "admin"
+    puts "Welcome, admin!"
+  elsif user_input == "admin"
+    puts "You are an admin!"
+  end
+end
+
+fetch_data("http://example.com")",
+      "tool": "radarlint-ruby",
+    },
+  ],
+}
+`;

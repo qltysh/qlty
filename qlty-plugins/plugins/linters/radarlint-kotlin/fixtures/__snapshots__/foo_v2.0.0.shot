@@ -1,0 +1,124 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=radarlint-kotlin fixture=foo version=2.0.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "foo.in.kt",
+        "range": {
+          "endColumn": 27,
+          "endLine": 1,
+          "startColumn": 8,
+          "startLine": 1,
+        },
+      },
+      "message": "Remove this unused import.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "kotlin:S1128",
+      "snippet": "import java.sql.Connection",
+      "snippetWithContext": "import java.sql.Connection
+import java.sql.DriverManager
+import java.sql.Statement
+
+fun main() {
+    // TODO: This is a test
+    val issues = SecurityIssues()
+    issues.insecureDatabaseConnection()
+    issues.inefficientLoop()
+    issues.emptyCatchBlock()
+}",
+      "tool": "radarlint-kotlin",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "foo.in.kt",
+        "range": {
+          "endColumn": 30,
+          "endLine": 2,
+          "startColumn": 8,
+          "startLine": 2,
+        },
+      },
+      "message": "Remove this unused import.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "kotlin:S1128",
+      "snippet": "import java.sql.DriverManager",
+      "snippetWithContext": "import java.sql.Connection
+import java.sql.DriverManager
+import java.sql.Statement
+
+fun main() {
+    // TODO: This is a test
+    val issues = SecurityIssues()
+    issues.insecureDatabaseConnection()
+    issues.inefficientLoop()
+    issues.emptyCatchBlock()
+}",
+      "tool": "radarlint-kotlin",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "foo.in.kt",
+        "range": {
+          "endColumn": 26,
+          "endLine": 3,
+          "startColumn": 8,
+          "startLine": 3,
+        },
+      },
+      "message": "Remove this unused import.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "kotlin:S1128",
+      "snippet": "import java.sql.Statement",
+      "snippetWithContext": "import java.sql.Connection
+import java.sql.DriverManager
+import java.sql.Statement
+
+fun main() {
+    // TODO: This is a test
+    val issues = SecurityIssues()
+    issues.insecureDatabaseConnection()
+    issues.inefficientLoop()
+    issues.emptyCatchBlock()
+}",
+      "tool": "radarlint-kotlin",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "foo.in.kt",
+        "range": {
+          "endColumn": 12,
+          "endLine": 6,
+          "startColumn": 8,
+          "startLine": 6,
+        },
+      },
+      "message": "Complete the task associated to this TODO comment.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "kotlin:S1135",
+      "snippet": "    // TODO: This is a test",
+      "snippetWithContext": "import java.sql.Connection
+import java.sql.DriverManager
+import java.sql.Statement
+
+fun main() {
+    // TODO: This is a test
+    val issues = SecurityIssues()
+    issues.insecureDatabaseConnection()
+    issues.inefficientLoop()
+    issues.emptyCatchBlock()
+}",
+      "tool": "radarlint-kotlin",
+    },
+  ],
+}
+`;

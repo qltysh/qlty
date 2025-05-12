@@ -5,13 +5,14 @@ runnable_archive_url = "https://radarlint-releases.s3.amazonaws.com/radarlint/v$
 download_type = "targz"
 strip_components = 0
 runtime = "java"
-latest_version = "1.1.3"
-known_good_version = "1.1.3"
+latest_version = "2.0.0"
+known_good_version = "2.0.0"
 description = "Javascript linter"
 file_types = ["javascript", "typescript"]
 config_files = ["radarlint.properties"]
 
-[plugins.definitions.radarlint-js.drivers.lint]
+[[plugins.definitions.radarlint-js.drivers.lint.version]]
+version_matcher = "<2.0.0"
 script = "java -jar ${linter}/radarlint.jar javascript ${target}"
 success_codes = [0]
 output = "stdout"
@@ -20,6 +21,17 @@ output_missing = "parse"
 batch = true
 cache_results = true
 suggested = "never"
+
+[[plugins.definitions.radarlint-js.drivers.lint.version]]
+version_matcher = ">=2.0.0"
+script = "java -jar ${linter}/radarlint.jar javascript ${target}"
+success_codes = [0, 1]
+output = "stdout"
+output_format = "sarif"
+output_missing = "parse"
+batch = true
+cache_results = true
+suggested = "targets"
 
 [[plugins.definitions.radarlint-js.environment]]
 name = "PATH"

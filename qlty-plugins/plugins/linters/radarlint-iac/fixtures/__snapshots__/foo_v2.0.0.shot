@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=radarlint-iac fixture=foo version=2.0.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "foo.in.tf",
+        "range": {
+          "endColumn": 32,
+          "endLine": 24,
+          "startColumn": 19,
+          "startLine": 24,
+        },
+      },
+      "message": "Restrict IP addresses authorized to access administration services.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "terraform:S6321",
+      "snippet": "    cidr_blocks = ["0.0.0.0/0"]",
+      "snippetWithContext": "}
+
+resource "aws_security_group" "bad_sg" {
+  name        = "allow-all-sg"
+  description = "Security group that allows all traffic"
+
+  ingress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}",
+      "tool": "radarlint-iac",
+    },
+  ],
+}
+`;
