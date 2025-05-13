@@ -2,8 +2,12 @@ config_version = "0"
 
 [plugins.definitions.config-exporter]
 file_types = ["shell"]
-config_files = ["config.yml", "config.alternate.yml"]
-exported_config_files = ["config.yml", "subdir/config.alternate.yml"]
+config_files = ["config.yml", "config.alternate.yml", "results.txt"]
+exported_config_files = [
+  "config.yml",
+  "results.txt",
+  "subdir/config.alternate.yml",
+]
 
 [plugins.definitions.config-exporter.drivers.lint]
 prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd"
@@ -16,3 +20,10 @@ prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir 
 script = "ls -l config.alternate.yml"
 success_codes = [0]
 output = "pass_fail"
+
+[plugins.definitions.config-exporter.drivers.lint3]
+prepare_script = "mkdir ${linter} && echo type %2 > ${linter}/cat.cmd || echo type %2 > ${linter}/cat.cmd"
+script = "cat results.txt"
+output_format = "regex"
+output_regex = "((?P<path>.*):(?P<line>-?\\d+):(?P<col>-?\\d+): (?P<code>\\S+) (?P<message>.+))\n"
+success_codes = [0]
