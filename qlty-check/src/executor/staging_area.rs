@@ -372,4 +372,90 @@ mod test {
         let clone = stage.clone();
         assert_eq!(clone.read("test".into()).unwrap(), "expected");
     }
+
+    #[test]
+    fn test_load_config_file_from_repository() {
+        let (_, paths) = new_staging_area(Mode::ReadWrite);
+
+        let config_file = paths.source.path().join("abc").join("conf.yml");
+        create_dir_all(config_file.parent().unwrap()).unwrap();
+        create_dir_all(paths.dest.path().join("abc")).unwrap();
+        std::fs::write(&config_file, "repository_config_content").unwrap();
+
+        let workspace = Workspace::for_root(paths.source.path()).unwrap();
+        let result = load_config_file_from_repository(&config_file, &workspace, paths.dest.path());
+        assert!(result.is_ok());
+
+        let dest_file = paths.dest.path().join("abc").join("conf.yml");
+        assert!(dest_file.exists());
+
+        let content = std::fs::read_to_string(&dest_file).unwrap();
+        assert_eq!(content, "repository_config_content");
+    }
+
+    #[test]
+    fn test_load_config_file_from_source() {
+        let (_, paths) = new_staging_area(Mode::ReadWrite);
+
+        let config_file = paths.source.path().join("nested").join("conf.yml");
+        create_dir_all(config_file.parent().unwrap()).unwrap();
+        std::fs::write(&config_file, "source_config_content").unwrap();
+
+        let result = load_config_file_from_source(&config_file, paths.dest.path());
+        assert!(result.is_ok());
+
+        let dest_file = paths.dest.path().join("conf.yml");
+        assert!(dest_file.exists());
+
+        let content = std::fs::read_to_string(&dest_file).unwrap();
+        assert_eq!(content, "source_config_content");
+    }
+
+    #[test]
+    fn test_load_config_file_from_qlty_dir() {
+        let (_, paths) = new_staging_area(Mode::ReadWrite);
+        let mock_workspace_path = tempdir().unwrap();
+        let configs_dir = mock_workspace_path.path().join(".qlty").join("configs");
+        create_dir_all(&configs_dir).unwrap();
+
+        let config_file = configs_dir.join("conf.yml");
+        std::fs::write(&config_file, "qlty_dir_config_content").unwrap();
+
+        let workspace = Workspace::for_root(mock_workspace_path.path()).unwrap();
+        let result = load_config_file_from_qlty_dir("conf.yml", &workspace, paths.dest.path());
+        assert!(result.is_ok());
+
+        let dest_file = paths.dest.path().join("conf.yml");
+        assert!(dest_file.exists());
+
+        let content = std::fs::read_to_string(&dest_file).unwrap();
+        assert_eq!(content, "qlty_dir_config_content");
+    }
+
+    #[test]
+    fn test_load_config_file_nonexistent() {
+        let (_, paths) = new_staging_area(Mode::ReadWrite);
+        let nonexistent_file = paths.source.path().join("conf.yml");
+        let result = load_config_file_from(&nonexistent_file, paths.dest.path().join("conf.yml"));
+
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), "");
+    }
+
+    #[test]
+    fn test_load_config_file_already_exists() {
+        let (_, paths) = new_staging_area(Mode::ReadWrite);
+        let source_file = paths.source.path().join("conf.yml");
+        let dest_file = paths.dest.path().join("conf.yml");
+
+        std::fs::write(&source_file, "source_content").unwrap();
+        std::fs::write(&dest_file, "destination_content").unwrap();
+
+        let result = load_config_file_from(&source_file, &dest_file);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), dest_file.display().to_string());
+
+        let content = std::fs::read_to_string(&dest_file).unwrap();
+        assert_eq!(content, "destination_content");
+    }
 }
