@@ -327,7 +327,7 @@ impl Executor {
             if self.plan.workspace.root != self.plan.staging_area.destination_directory {
                 // for formatters
                 let loaded_config_file = load_config_file_from_qlty_dir(
-                    &PathBuf::from(config_file),
+                    config_file,
                     &self.plan.workspace,
                     &self.plan.staging_area.destination_directory,
                 )?;
@@ -339,7 +339,7 @@ impl Executor {
 
             // for linters
             let loaded_config_file = load_config_file_from_qlty_dir(
-                &PathBuf::from(config_file),
+                config_file,
                 &self.plan.workspace,
                 &self.plan.workspace.root,
             )?;
@@ -353,7 +353,7 @@ impl Executor {
             if self.plan.workspace.root != self.plan.staging_area.destination_directory {
                 // for formatters
                 let loaded_config_file = load_config_file_from_source(
-                    &PathBuf::from(config_file),
+                    config_file,
                     &self.plan.staging_area.destination_directory,
                 )?;
 
@@ -363,10 +363,8 @@ impl Executor {
             }
 
             // for linters
-            let loaded_config_file = load_config_file_from_source(
-                &PathBuf::from(config_file),
-                &self.plan.workspace.root,
-            )?;
+            let loaded_config_file =
+                load_config_file_from_source(&config_file, &self.plan.workspace.root)?;
 
             if !loaded_config_file.is_empty() {
                 loaded_config_files.push(loaded_config_file);

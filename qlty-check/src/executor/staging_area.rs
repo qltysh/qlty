@@ -218,125 +218,74 @@ impl StagingArea {
 }
 
 pub fn load_config_file_from_repository(
-    config_file: &Path,
+    config_file: impl AsRef<Path>,
     workspace: &Workspace,
-    destination: &Path,
-) -> Result<()> {
-    let to = destination.join(config_file.strip_prefix(&workspace.root).unwrap());
+    destination: impl AsRef<Path>,
+) -> Result<String> {
+    let to = destination
+        .as_ref()
+        .join(config_file.as_ref().strip_prefix(&workspace.root).unwrap());
 
-    if to.exists() {
+    load_config_file_from(config_file, to)
+}
+
+pub fn load_config_file_from_source(
+    config_file: impl AsRef<Path>,
+    destination: impl AsRef<Path>,
+) -> Result<String> {
+    load_config_file_from(
+        &config_file,
+        destination
+            .as_ref()
+            .join(config_file.as_ref().file_name().unwrap()),
+    )
+}
+
+pub fn load_config_file_from_qlty_dir(
+    config_file: impl AsRef<Path>,
+    workspace: &Workspace,
+    destination: impl AsRef<Path>,
+) -> Result<String> {
+    let config_file_name = config_file.as_ref().file_name().unwrap();
+    let from = workspace.library()?.configs_dir().join(config_file_name);
+    let to = destination.as_ref().join(config_file_name);
+    load_config_file_from(from, to)
+}
+
+fn load_config_file_from(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<String> {
+    let from = from.as_ref();
+    let to = to.as_ref();
+    if !from.exists() {
+        return Ok("".to_string());
+    } else if to.exists() {
         debug!("Config file already exists in workspace: {:?}", to);
-        return Ok(());
-    }
-
-    let to_dir = to.parent();
-
-    if !to_dir.unwrap().exists() {
-        debug!("Creating destination dir: {:?}", destination);
-        create_dir_all(to_dir.unwrap()).with_context(|| {
-            format!(
-                "Failed to create workspace entries destination dir: {}",
-                destination.display()
-            )
-        })?;
+        return Ok(to.display().to_string());
     }
 
     debug!(
-        "Copying config file from repository: {:?} -> {:?}",
-        config_file, to
+        "Symlinking config file from qlty dir: {:?} -> {:?}",
+        from, to
     );
-    copy(config_file, to.clone()).with_context(|| {
+
+    symlink(from, to).with_context(|| {
         format!(
-            "Failed to copy config file {} to {}",
-            config_file.display(),
+            "Failed to symlink config file {} to {}",
+            from.display(),
             to.display()
         )
     })?;
 
-    Ok(())
+    Ok(to.display().to_string())
 }
 
-pub fn load_config_file_from_source(config_file: &Path, destination: &Path) -> Result<String> {
-    let from = config_file;
-
-    if from.exists() {
-        let to = destination.join(from.file_name().unwrap());
-        if to.exists() {
-            debug!("Config file already exists in workspace: {:?}", to);
-            return Ok(to.display().to_string());
-        }
-
-        debug!(
-            "Symlinking config file from qlty dir: {:?} -> {:?}",
-            from, to
-        );
-
-        let result: std::io::Result<_>;
-        #[cfg(windows)]
-        {
-            result = std::os::windows::fs::symlink_file(from, to.clone());
-        }
-        #[cfg(unix)]
-        {
-            result = std::os::unix::fs::symlink(from, to.clone());
-        }
-
-        result.with_context(|| {
-            format!(
-                "Failed to symlink config file {} to {}",
-                from.display(),
-                to.display()
-            )
-        })?;
-
-        return Ok(to.display().to_string());
-    }
-
-    Ok("".to_string())
+#[cfg(windows)]
+fn symlink(from: &Path, to: &Path) -> std::io::Result<()> {
+    std::os::windows::fs::symlink_file(from, to)
 }
 
-pub fn load_config_file_from_qlty_dir(
-    config_file: &Path,
-    workspace: &Workspace,
-    destination: &Path,
-) -> Result<String> {
-    let config_file_name = config_file.file_name().unwrap();
-    let from = workspace.library()?.configs_dir().join(config_file_name);
-
-    if from.exists() {
-        let to = destination.join(config_file_name);
-        if to.exists() {
-            debug!("Config file already exists in workspace: {:?}", to);
-            return Ok(to.display().to_string());
-        }
-
-        debug!(
-            "Symlinking config file from qlty dir: {:?} -> {:?}",
-            from, to
-        );
-
-        let result: std::io::Result<_>;
-        #[cfg(windows)]
-        {
-            result = std::os::windows::fs::symlink_file(from.clone(), to.clone());
-        }
-        #[cfg(unix)]
-        {
-            result = std::os::unix::fs::symlink(from.clone(), to.clone());
-        }
-
-        result.with_context(|| {
-            format!(
-                "Failed to symlink config file {} to {}",
-                from.display(),
-                to.display()
-            )
-        })?;
-
-        return Ok(to.display().to_string());
-    }
-
-    Ok("".to_string())
+#[cfg(unix)]
+fn symlink(from: &Path, to: &Path) -> std::io::Result<()> {
+    std::os::unix::fs::symlink(from, to)
 }
 
 #[cfg(test)]
