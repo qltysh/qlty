@@ -22,7 +22,7 @@ success_codes = [0]
 output = "pass_fail"
 
 [plugins.definitions.config-exporter.drivers.lint3]
-prepare_script = "mkdir ${linter} && echo type %2 > ${linter}/cat.cmd || echo type %2 > ${linter}/cat.cmd"
+prepare_script = "mkdir ${linter} && echo type %1 > ${linter}/cat.cmd || echo type %1 > ${linter}/cat.cmd"
 script = "cat results.txt"
 output_format = "regex"
 output_regex = "((?P<path>.*):(?P<line>-?\\d+):(?P<col>-?\\d+): (?P<code>\\S+) (?P<message>.+))\n"
