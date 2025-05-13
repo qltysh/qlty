@@ -73,10 +73,9 @@ impl Complete {
         print_authentication_info(&token, self.quiet);
 
         let timer = Instant::now();
+        self.print_section_header(" COMPLETING... ");
         let result = Self::request_complete(&plan.metadata, &token)
             .context("Failed to complete coverage")?;
-
-        self.print_section_header(" COMPLETING... ");
         self.print_complete_success(timer.elapsed().as_secs_f32(), &result.url);
 
         CommandSuccess::ok()
