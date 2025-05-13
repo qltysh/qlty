@@ -14,7 +14,7 @@ use std::time::Instant;
 
 #[derive(Debug, Default, Clone)]
 pub struct CompleteResult {
-    pub url: String,
+    pub url: Option<String>,
 }
 
 #[derive(Debug, Args, Default)]
@@ -114,14 +114,14 @@ impl Complete {
         Ok(())
     }
 
-    fn print_complete_success(&self, elapsed_seconds: f32, url: &str) {
+    fn print_complete_success(&self, elapsed_seconds: f32, url: &Option<String>) {
         if self.quiet {
             return;
         }
 
         eprintln!("    Coverage marked as complete in {elapsed_seconds:.2}s!");
 
-        if !url.is_empty() {
+        if let Some(url) = url {
             eprintln!("    {}", style(format!("View report: {url}")).bold());
         }
 
@@ -140,10 +140,8 @@ impl Complete {
             .get("data")
             .and_then(|data| data.get("url"))
             .and_then(|url| url.as_str())
-            .unwrap_or_default();
+            .map(String::from);
 
-        Ok(CompleteResult {
-            url: url.to_string(),
-        })
+        Ok(CompleteResult { url })
     }
 }
