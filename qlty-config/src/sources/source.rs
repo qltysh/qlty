@@ -6,6 +6,7 @@ use config::File;
 use globset::{Glob, GlobSetBuilder};
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
+use toml::Value;
 use tracing::trace;
 
 const SOURCE_PARSE_ERROR: &str = r#"There was an error reading configuration from one of your declared Sources.
@@ -128,10 +129,11 @@ pub trait Source: SourceFetch {
     ) -> Result<()> {
         trace!("Loading config toml from {}", source_file.path.display());
 
-        let contents_toml = source_file
+        let mut contents_toml = source_file
             .contents
             .parse::<toml::Value>()
             .with_context(|| format!("Could not parse {}", source_file.path.display()))?;
+        self.add_context_to_exported_config_files(&mut contents_toml, source_file);
 
         Builder::validate_toml(&source_file.path, contents_toml.clone())
             .with_context(|| SOURCE_PARSE_ERROR)?;
@@ -139,6 +141,38 @@ pub trait Source: SourceFetch {
         *toml = TomlMerge::merge(toml.clone(), contents_toml).unwrap();
 
         Ok(())
+    }
+
+    fn add_context_to_exported_config_files(
+        &self,
+        toml: &mut toml::Value,
+        source_file: &SourceFile,
+    ) -> Option<()> {
+        for (_, plugin) in toml
+            .as_table_mut()?
+            .get_mut("plugins")?
+            .as_table_mut()?
+            .get_mut("definitions")?
+            .as_table_mut()?
+            .iter_mut()
+        {
+            plugin
+                .get_mut("exported_config_files")?
+                .as_array_mut()
+                .map(|values| {
+                    for value in values.iter_mut() {
+                        if let Some(value_str) = value.as_str() {
+                            if let Some(parent) = source_file.path.parent() {
+                                *value = Value::String(
+                                    parent.join(value_str).to_string_lossy().to_string(),
+                                );
+                            }
+                        }
+                    }
+                });
+        }
+
+        Some(())
     }
 
     fn build_config(&self) -> Result<QltyConfig> {

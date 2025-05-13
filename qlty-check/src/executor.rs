@@ -29,6 +29,7 @@ use qlty_types::analysis::v1::{Issue, Message, MessageLevel};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rayon::prelude::*;
+use staging_area::load_config_file_from_source;
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -291,6 +292,14 @@ impl Executor {
             }
         }
 
+        let exported_config_files = self
+            .plan
+            .invocations
+            .iter()
+            .flat_map(|invocation| invocation.plugin.exported_config_files.clone())
+            .unique()
+            .collect_vec();
+
         debug!(
             "Walker found {} config and affects cache files in {:.2}s",
             repository_config_files.len(),
@@ -332,6 +341,30 @@ impl Executor {
             let loaded_config_file = load_config_file_from_qlty_dir(
                 &PathBuf::from(config_file),
                 &self.plan.workspace,
+                &self.plan.workspace.root,
+            )?;
+
+            if !loaded_config_file.is_empty() {
+                loaded_config_files.push(loaded_config_file);
+            }
+        }
+
+        for config_file in &exported_config_files {
+            if self.plan.workspace.root != self.plan.staging_area.destination_directory {
+                // for formatters
+                let loaded_config_file = load_config_file_from_source(
+                    &PathBuf::from(config_file),
+                    &self.plan.staging_area.destination_directory,
+                )?;
+
+                if !loaded_config_file.is_empty() {
+                    loaded_config_files.push(loaded_config_file);
+                }
+            }
+
+            // for linters
+            let loaded_config_file = load_config_file_from_source(
+                &PathBuf::from(config_file),
                 &self.plan.workspace.root,
             )?;
 

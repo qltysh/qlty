@@ -256,6 +256,45 @@ pub fn load_config_file_from_repository(
     Ok(())
 }
 
+pub fn load_config_file_from_source(config_file: &Path, destination: &Path) -> Result<String> {
+    let from = config_file;
+
+    if from.exists() {
+        let to = destination.join(from.file_name().unwrap());
+        if to.exists() {
+            debug!("Config file already exists in workspace: {:?}", to);
+            return Ok(to.display().to_string());
+        }
+
+        debug!(
+            "Symlinking config file from qlty dir: {:?} -> {:?}",
+            from, to
+        );
+
+        let result: std::io::Result<_>;
+        #[cfg(windows)]
+        {
+            result = std::os::windows::fs::symlink_file(from, to.clone());
+        }
+        #[cfg(unix)]
+        {
+            result = std::os::unix::fs::symlink(from, to.clone());
+        }
+
+        result.with_context(|| {
+            format!(
+                "Failed to symlink config file {} to {}",
+                from.display(),
+                to.display()
+            )
+        })?;
+
+        return Ok(to.display().to_string());
+    }
+
+    Ok("".to_string())
+}
+
 pub fn load_config_file_from_qlty_dir(
     config_file: &Path,
     workspace: &Workspace,
