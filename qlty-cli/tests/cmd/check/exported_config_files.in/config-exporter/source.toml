@@ -1,0 +1,18 @@
+config_version = "0"
+
+[plugins.definitions.config-exporter]
+file_types = ["shell"]
+config_files = ["config.yml", "config.alternate.yml"]
+exported_config_files = ["config.yml", "subdir/config.alternate.yml"]
+
+[plugins.definitions.config-exporter.drivers.lint]
+prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd"
+script = "ls -l config.yml"
+success_codes = [0]
+output = "pass_fail"
+
+[plugins.definitions.config-exporter.drivers.lint2]
+prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd"
+script = "ls -l config.alternate.yml"
+success_codes = [0]
+output = "pass_fail"
