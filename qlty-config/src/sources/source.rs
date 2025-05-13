@@ -193,3 +193,51 @@ impl Clone for Box<dyn Source> {
         Source::clone_box(self.as_ref())
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::{Source, SourceFile};
+    use crate::{sources::DefaultSource, QltyConfig};
+    use anyhow::Result;
+    use config::File;
+    use std::env::temp_dir;
+    use toml::{Table, Value};
+
+    #[test]
+    fn test_add_source_file_to_toml() -> Result<()> {
+        let tempdir = temp_dir();
+        let source_file = SourceFile {
+            path: tempdir.join("plugin.toml"),
+            contents: r#"
+                [plugins.definitions.myplugin]
+                exported_config_files = ["config.yml"]
+                [plugins.definitions.my_other_plugin]
+                exported_config_files = ["config.yml", "subdir/config.yml"]
+            "#
+            .into(),
+        };
+        let mut toml_value = Value::Table(Table::new());
+        let source = DefaultSource {};
+        source.add_source_file_to_toml(&mut toml_value, &source_file)?;
+
+        let toml_string = toml::to_string(&toml_value).unwrap();
+        let file = File::from_str(&toml_string, config::FileFormat::Toml);
+        let builder = config::Config::builder().add_source(file);
+        let config: QltyConfig = builder.build()?.try_deserialize()?;
+
+        assert_eq!(
+            config.plugins.definitions["myplugin"].exported_config_files,
+            vec![tempdir.join("config.yml")]
+        );
+
+        assert_eq!(
+            config.plugins.definitions["my_other_plugin"].exported_config_files,
+            vec![
+                tempdir.join("config.yml"),
+                tempdir.join("subdir").join("config.yml")
+            ]
+        );
+
+        Ok(())
+    }
+}
