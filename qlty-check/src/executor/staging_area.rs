@@ -262,10 +262,7 @@ fn load_config_file_from(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result
         return Ok(to.display().to_string());
     }
 
-    debug!(
-        "Symlinking config file from qlty dir: {:?} -> {:?}",
-        from, to
-    );
+    debug!("Symlinking config file: {:?} -> {:?}", from, to);
 
     symlink(from, to).with_context(|| {
         format!(
