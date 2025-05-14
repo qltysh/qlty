@@ -3,7 +3,7 @@ config_version = "0"
 [plugins.definitions.config-exporter]
 file_types = ["shell"]
 config_files = ["config.yml", "config.alternate.yml", "results.txt"]
-exported_config_files = [
+exported_config_paths = [
   "config.yml",
   "results.txt",
   "subdir/config.alternate.yml",

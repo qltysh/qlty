@@ -292,11 +292,11 @@ impl Executor {
             }
         }
 
-        let exported_config_files = self
+        let exported_config_paths = self
             .plan
             .invocations
             .iter()
-            .flat_map(|invocation| invocation.plugin.exported_config_files.clone())
+            .flat_map(|invocation| invocation.plugin.exported_config_paths.clone())
             .unique()
             .collect_vec();
 
@@ -349,7 +349,7 @@ impl Executor {
             }
         }
 
-        for config_file in &exported_config_files {
+        for config_file in &exported_config_paths {
             if self.plan.workspace.root != self.plan.staging_area.destination_directory {
                 // for formatters
                 let loaded_config_file = load_config_file_from_source(

@@ -133,7 +133,7 @@ pub trait Source: SourceFetch {
             .contents
             .parse::<toml::Value>()
             .with_context(|| format!("Could not parse {}", source_file.path.display()))?;
-        self.add_context_to_exported_config_files(&mut contents_toml, source_file);
+        self.add_context_to_exported_config_paths(&mut contents_toml, source_file);
 
         Builder::validate_toml(&source_file.path, contents_toml.clone())
             .with_context(|| SOURCE_PARSE_ERROR)?;
@@ -143,7 +143,7 @@ pub trait Source: SourceFetch {
         Ok(())
     }
 
-    fn add_context_to_exported_config_files(
+    fn add_context_to_exported_config_paths(
         &self,
         toml: &mut toml::Value,
         source_file: &SourceFile,
@@ -157,7 +157,7 @@ pub trait Source: SourceFetch {
             .iter_mut()
         {
             plugin
-                .get_mut("exported_config_files")?
+                .get_mut("exported_config_paths")?
                 .as_array_mut()
                 .map(|values| {
                     for value in values.iter_mut() {
@@ -210,9 +210,9 @@ mod test {
             path: tempdir.join("plugin.toml"),
             contents: r#"
                 [plugins.definitions.myplugin]
-                exported_config_files = ["config.yml"]
+                exported_config_paths = ["config.yml"]
                 [plugins.definitions.my_other_plugin]
-                exported_config_files = ["config.yml", "subdir/config.yml"]
+                exported_config_paths = ["config.yml", "subdir/config.yml"]
             "#
             .into(),
         };
@@ -226,12 +226,12 @@ mod test {
         let config: QltyConfig = builder.build()?.try_deserialize()?;
 
         assert_eq!(
-            config.plugins.definitions["myplugin"].exported_config_files,
+            config.plugins.definitions["myplugin"].exported_config_paths,
             vec![tempdir.join("config.yml")]
         );
 
         assert_eq!(
-            config.plugins.definitions["my_other_plugin"].exported_config_files,
+            config.plugins.definitions["my_other_plugin"].exported_config_paths,
             vec![
                 tempdir.join("config.yml"),
                 tempdir.join("subdir").join("config.yml")
