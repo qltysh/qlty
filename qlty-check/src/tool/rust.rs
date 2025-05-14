@@ -9,6 +9,7 @@ use qlty_config::config::OperatingSystem;
 use qlty_config::config::PluginDef;
 use qlty_config::config::{Cpu, DownloadDef, System};
 use std::fmt::Debug;
+use tracing::info;
 
 #[derive(Debug, Clone)]
 pub struct Rust {
@@ -34,11 +35,10 @@ impl Tool for Rust {
     }
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
-        let version = self.version().unwrap();
-        let version = if version.chars().next().unwrap().is_numeric() {
-            format!("v{}", version)
+        let version = if self.version_is_numeric() {
+            format!("v{}", self.version)
         } else {
-            version // e.g. "nightly"
+            self.version.clone() // e.g. "nightly"
         };
         task.set_message(&format!("Installing Rust {}", version));
         self.download().install(self)?;
@@ -46,7 +46,15 @@ impl Tool for Rust {
     }
 
     fn version_command(&self) -> Option<String> {
-        Some("rustc --version".to_string())
+        if self.version_is_numeric() {
+            Some("rustc --version".to_string())
+        } else {
+            info!(
+                "Using a {} version of Rust, skipping version check",
+                self.version
+            );
+            None
+        }
     }
 
     fn clone_box(&self) -> Box<dyn Tool> {
@@ -101,6 +109,10 @@ impl Rust {
             &self.name(),
             &self.version,
         )
+    }
+
+    fn version_is_numeric(&self) -> bool {
+        self.version.chars().next().unwrap_or_default().is_numeric()
     }
 }
 
@@ -167,5 +179,26 @@ impl Tool for RustPackage {
 
     fn plugin(&self) -> Option<PluginDef> {
         Some(self.plugin.clone())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_skip_version_command_on_nightly() {
+        use super::*;
+        let rust = Rust {
+            version: "nightly".to_string(),
+        };
+        assert_eq!(rust.version_command(), None);
+    }
+
+    #[test]
+    fn test_use_version_command_on_numeric() {
+        use super::*;
+        let rust = Rust {
+            version: "1.60.0".to_string(),
+        };
+        assert_eq!(rust.version_command(), Some("rustc --version".to_string()));
     }
 }
