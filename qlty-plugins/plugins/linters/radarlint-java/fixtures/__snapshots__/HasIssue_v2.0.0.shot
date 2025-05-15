@@ -1,0 +1,169 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=radarlint-java fixture=HasIssue version=2.0.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "HasIssue.in.java",
+        "range": {
+          "endColumn": 27,
+          "endLine": 7,
+          "startColumn": 17,
+          "startLine": 7,
+        },
+      },
+      "message": "Replace this use of System.out by a logger.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S106",
+      "snippet": "                System.out.println("Hello");",
+      "snippetWithContext": "package pkg1;
+
+class HasIssue {
+    public void method() {
+        for (int i = 0; i < 10; i++) {
+            for (int k = 0; k < 20; i++) {
+                System.out.println("Hello");
+            }
+        }
+    }
+
+    public void doSomething(File file, Lock lock) {
+        String b = "txt";
+        String a = b;
+        String c = a;
+        b = c;
+",
+      "tool": "radarlint-java",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "HasIssue.in.java",
+        "range": {
+          "endColumn": 13,
+          "endLine": 1,
+          "startColumn": 9,
+          "startLine": 1,
+        },
+      },
+      "message": "Rename this package name to match the regular expression '^[a-z_]+(\\.[a-z_][a-z0-9_]*)*$'.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S120",
+      "snippet": "package pkg1;",
+      "snippetWithContext": "package pkg1;
+
+class HasIssue {
+    public void method() {
+        for (int i = 0; i < 10; i++) {
+            for (int k = 0; k < 20; i++) {
+                System.out.println("Hello");
+            }
+        }
+    }
+",
+      "tool": "radarlint-java",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "HasIssue.in.java",
+        "range": {
+          "endColumn": 38,
+          "endLine": 6,
+          "startColumn": 37,
+          "startLine": 6,
+        },
+      },
+      "message": "Refactor the code in order to not assign to this loop counter from within the loop body.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S127",
+      "snippet": "            for (int k = 0; k < 20; i++) {",
+      "snippetWithContext": "package pkg1;
+
+class HasIssue {
+    public void method() {
+        for (int i = 0; i < 10; i++) {
+            for (int k = 0; k < 20; i++) {
+                System.out.println("Hello");
+            }
+        }
+    }
+
+    public void doSomething(File file, Lock lock) {
+        String b = "txt";
+        String a = b;
+        String c = a;
+        b = c;",
+      "tool": "radarlint-java",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "HasIssue.in.java",
+        "range": {
+          "endColumn": 13,
+          "endLine": 1,
+          "startColumn": 9,
+          "startLine": 1,
+        },
+      },
+      "message": "This file "HasIssue.in.java" should be located in "pkg1" directory, not in "".",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S1598",
+      "snippet": "package pkg1;",
+      "snippetWithContext": "package pkg1;
+
+class HasIssue {
+    public void method() {
+        for (int i = 0; i < 10; i++) {
+            for (int k = 0; k < 20; i++) {
+                System.out.println("Hello");
+            }
+        }
+    }
+",
+      "tool": "radarlint-java",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "HasIssue.in.java",
+        "range": {
+          "endColumn": 14,
+          "endLine": 16,
+          "startColumn": 11,
+          "startLine": 16,
+        },
+      },
+      "message": "Remove this useless assignment to local variable "b".",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S1854",
+      "snippet": "        b = c;",
+      "snippetWithContext": "            for (int k = 0; k < 20; i++) {
+                System.out.println("Hello");
+            }
+        }
+    }
+
+    public void doSomething(File file, Lock lock) {
+        String b = "txt";
+        String a = b;
+        String c = a;
+        b = c;
+
+        file.delete();  // Noncompliant
+        lock.tryLock(); // Noncompliant
+    }
+}",
+      "tool": "radarlint-java",
+    },
+  ],
+}
+`;

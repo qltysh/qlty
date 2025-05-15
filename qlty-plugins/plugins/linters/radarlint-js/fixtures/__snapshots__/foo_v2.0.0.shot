@@ -1,0 +1,54 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=radarlint-js fixture=foo version=2.0.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "foo.in.js",
+        "range": {
+          "endColumn": 11,
+          "endLine": 3,
+          "startColumn": 6,
+          "startLine": 3,
+        },
+      },
+      "message": "Take the required action to fix the issue indicated by this comment.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "javascript:S1134",
+      "snippet": "  // FIXME: This is a bug",
+      "snippetWithContext": "// TODO: Refactor this function
+function main() {
+  // FIXME: This is a bug
+  console.log('foo');
+}",
+      "tool": "radarlint-js",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "foo.in.js",
+        "range": {
+          "endColumn": 8,
+          "endLine": 1,
+          "startColumn": 4,
+          "startLine": 1,
+        },
+      },
+      "message": "Complete the task associated to this "TODO" comment.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "javascript:S1135",
+      "snippet": "// TODO: Refactor this function",
+      "snippetWithContext": "// TODO: Refactor this function
+function main() {
+  // FIXME: This is a bug
+  console.log('foo');
+}",
+      "tool": "radarlint-js",
+    },
+  ],
+}
+`;

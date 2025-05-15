@@ -1,0 +1,85 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=radarlint-php fixture=foo version=2.0.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "foo.in.php",
+      },
+      "message": "Replace all tab characters in this file by sequences of white-spaces.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "php:S105",
+      "tool": "radarlint-php",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "foo.in.php",
+        "range": {
+          "endColumn": 49,
+          "endLine": 5,
+          "startColumn": 44,
+          "startLine": 5,
+        },
+      },
+      "message": "Remove the unused function parameter "$date".",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "php:S1172",
+      "snippet": "	public function sayHello(DateTimeImutable $date): void",
+      "snippetWithContext": "<?php declare(strict_types = 1);
+
+class HelloWorld
+{
+	public function sayHello(DateTimeImutable $date): void
+	{
+		$var = true;
+
+		if($var == $var) {
+			echo 'true';
+		} else {
+			echo 'false';
+		}
+	}
+}",
+      "tool": "radarlint-php",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "foo.in.php",
+        "range": {
+          "endColumn": 18,
+          "endLine": 9,
+          "startColumn": 14,
+          "startLine": 9,
+        },
+      },
+      "message": "Identical sub-expressions on both sides of operator "=="",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "php:S1764",
+      "snippet": "		if($var == $var) {",
+      "snippetWithContext": "<?php declare(strict_types = 1);
+
+class HelloWorld
+{
+	public function sayHello(DateTimeImutable $date): void
+	{
+		$var = true;
+
+		if($var == $var) {
+			echo 'true';
+		} else {
+			echo 'false';
+		}
+	}
+}",
+      "tool": "radarlint-php",
+    },
+  ],
+}
+`;

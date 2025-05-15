@@ -1,0 +1,169 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=radarlint-java fixture=Foo version=2.0.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "Foo.in.java",
+        "range": {
+          "endColumn": 24,
+          "endLine": 4,
+          "startColumn": 15,
+          "startLine": 4,
+        },
+      },
+      "message": "Rename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S100",
+      "snippet": "  public void call_echo() {",
+      "snippetWithContext": "package foo;
+
+public class Foo {
+  public void call_echo() {
+    echo(3);
+  }
+  
+  public void echo(int i) {
+    should_be_static();
+  }
+  
+  // invalid
+  private void should_be_static() {
+    System.out.println("Foo");",
+      "tool": "radarlint-java",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "Foo.in.java",
+        "range": {
+          "endColumn": 32,
+          "endLine": 13,
+          "startColumn": 16,
+          "startLine": 13,
+        },
+      },
+      "message": "Rename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S100",
+      "snippet": "  private void should_be_static() {",
+      "snippetWithContext": "public class Foo {
+  public void call_echo() {
+    echo(3);
+  }
+  
+  public void echo(int i) {
+    should_be_static();
+  }
+  
+  // invalid
+  private void should_be_static() {
+    System.out.println("Foo");
+  }
+  
+}",
+      "tool": "radarlint-java",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "Foo.in.java",
+        "range": {
+          "endColumn": 15,
+          "endLine": 14,
+          "startColumn": 5,
+          "startLine": 14,
+        },
+      },
+      "message": "Replace this use of System.out by a logger.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S106",
+      "snippet": "    System.out.println("Foo");",
+      "snippetWithContext": "  public void call_echo() {
+    echo(3);
+  }
+  
+  public void echo(int i) {
+    should_be_static();
+  }
+  
+  // invalid
+  private void should_be_static() {
+    System.out.println("Foo");
+  }
+  
+}",
+      "tool": "radarlint-java",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "Foo.in.java",
+        "range": {
+          "endColumn": 25,
+          "endLine": 8,
+          "startColumn": 24,
+          "startLine": 8,
+        },
+      },
+      "message": "Remove this unused method parameter "i".",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S1172",
+      "snippet": "  public void echo(int i) {",
+      "snippetWithContext": "package foo;
+
+public class Foo {
+  public void call_echo() {
+    echo(3);
+  }
+  
+  public void echo(int i) {
+    should_be_static();
+  }
+  
+  // invalid
+  private void should_be_static() {
+    System.out.println("Foo");
+  }
+  
+}",
+      "tool": "radarlint-java",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "Foo.in.java",
+        "range": {
+          "endColumn": 12,
+          "endLine": 1,
+          "startColumn": 9,
+          "startLine": 1,
+        },
+      },
+      "message": "This file "Foo.in.java" should be located in "foo" directory, not in "".",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S1598",
+      "snippet": "package foo;",
+      "snippetWithContext": "package foo;
+
+public class Foo {
+  public void call_echo() {
+    echo(3);
+  }
+  
+  public void echo(int i) {
+    should_be_static();
+  }
+  ",
+      "tool": "radarlint-java",
+    },
+  ],
+}
+`;

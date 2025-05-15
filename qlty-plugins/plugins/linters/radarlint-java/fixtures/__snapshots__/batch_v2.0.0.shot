@@ -1,0 +1,330 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=radarlint-java fixture=batch version=2.0.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "Foo.java",
+        "range": {
+          "endColumn": 24,
+          "endLine": 4,
+          "startColumn": 15,
+          "startLine": 4,
+        },
+      },
+      "message": "Rename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S100",
+      "snippet": "  public void call_echo() {",
+      "snippetWithContext": "package foo;
+
+public class Foo {
+  public void call_echo() {
+    echo(3);
+  }
+  
+  public void echo(int i) {
+    should_be_static();
+  }
+  
+  // invalid
+  private void should_be_static() {
+    System.out.println("Foo");",
+      "tool": "radarlint-java",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "Foo.java",
+        "range": {
+          "endColumn": 32,
+          "endLine": 13,
+          "startColumn": 16,
+          "startLine": 13,
+        },
+      },
+      "message": "Rename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S100",
+      "snippet": "  private void should_be_static() {",
+      "snippetWithContext": "public class Foo {
+  public void call_echo() {
+    echo(3);
+  }
+  
+  public void echo(int i) {
+    should_be_static();
+  }
+  
+  // invalid
+  private void should_be_static() {
+    System.out.println("Foo");
+  }
+  
+}",
+      "tool": "radarlint-java",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "Foo.java",
+        "range": {
+          "endColumn": 15,
+          "endLine": 14,
+          "startColumn": 5,
+          "startLine": 14,
+        },
+      },
+      "message": "Replace this use of System.out by a logger.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S106",
+      "snippet": "    System.out.println("Foo");",
+      "snippetWithContext": "  public void call_echo() {
+    echo(3);
+  }
+  
+  public void echo(int i) {
+    should_be_static();
+  }
+  
+  // invalid
+  private void should_be_static() {
+    System.out.println("Foo");
+  }
+  
+}",
+      "tool": "radarlint-java",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "HasIssue.java",
+        "range": {
+          "endColumn": 27,
+          "endLine": 7,
+          "startColumn": 17,
+          "startLine": 7,
+        },
+      },
+      "message": "Replace this use of System.out by a logger.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S106",
+      "snippet": "                System.out.println("Hello");",
+      "snippetWithContext": "package pkg1;
+
+class HasIssue {
+    public void method() {
+        for (int i = 0; i < 10; i++) {
+            for (int k = 0; k < 20; i++) {
+                System.out.println("Hello");
+            }
+        }
+    }
+
+    public void doSomething(File file, Lock lock) {
+        String b = "txt";
+        String a = b;
+        String c = a;
+        b = c;
+",
+      "tool": "radarlint-java",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "Foo.java",
+        "range": {
+          "endColumn": 25,
+          "endLine": 8,
+          "startColumn": 24,
+          "startLine": 8,
+        },
+      },
+      "message": "Remove this unused method parameter "i".",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S1172",
+      "snippet": "  public void echo(int i) {",
+      "snippetWithContext": "package foo;
+
+public class Foo {
+  public void call_echo() {
+    echo(3);
+  }
+  
+  public void echo(int i) {
+    should_be_static();
+  }
+  
+  // invalid
+  private void should_be_static() {
+    System.out.println("Foo");
+  }
+  
+}",
+      "tool": "radarlint-java",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "HasIssue.java",
+        "range": {
+          "endColumn": 13,
+          "endLine": 1,
+          "startColumn": 9,
+          "startLine": 1,
+        },
+      },
+      "message": "Rename this package name to match the regular expression '^[a-z_]+(\\.[a-z_][a-z0-9_]*)*$'.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S120",
+      "snippet": "package pkg1;",
+      "snippetWithContext": "package pkg1;
+
+class HasIssue {
+    public void method() {
+        for (int i = 0; i < 10; i++) {
+            for (int k = 0; k < 20; i++) {
+                System.out.println("Hello");
+            }
+        }
+    }
+",
+      "tool": "radarlint-java",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "HasIssue.java",
+        "range": {
+          "endColumn": 38,
+          "endLine": 6,
+          "startColumn": 37,
+          "startLine": 6,
+        },
+      },
+      "message": "Refactor the code in order to not assign to this loop counter from within the loop body.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S127",
+      "snippet": "            for (int k = 0; k < 20; i++) {",
+      "snippetWithContext": "package pkg1;
+
+class HasIssue {
+    public void method() {
+        for (int i = 0; i < 10; i++) {
+            for (int k = 0; k < 20; i++) {
+                System.out.println("Hello");
+            }
+        }
+    }
+
+    public void doSomething(File file, Lock lock) {
+        String b = "txt";
+        String a = b;
+        String c = a;
+        b = c;",
+      "tool": "radarlint-java",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "Foo.java",
+        "range": {
+          "endColumn": 12,
+          "endLine": 1,
+          "startColumn": 9,
+          "startLine": 1,
+        },
+      },
+      "message": "This file "Foo.java" should be located in "foo" directory, not in "".",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S1598",
+      "snippet": "package foo;",
+      "snippetWithContext": "package foo;
+
+public class Foo {
+  public void call_echo() {
+    echo(3);
+  }
+  
+  public void echo(int i) {
+    should_be_static();
+  }
+  ",
+      "tool": "radarlint-java",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "HasIssue.java",
+        "range": {
+          "endColumn": 13,
+          "endLine": 1,
+          "startColumn": 9,
+          "startLine": 1,
+        },
+      },
+      "message": "This file "HasIssue.java" should be located in "pkg1" directory, not in "".",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S1598",
+      "snippet": "package pkg1;",
+      "snippetWithContext": "package pkg1;
+
+class HasIssue {
+    public void method() {
+        for (int i = 0; i < 10; i++) {
+            for (int k = 0; k < 20; i++) {
+                System.out.println("Hello");
+            }
+        }
+    }
+",
+      "tool": "radarlint-java",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "HasIssue.java",
+        "range": {
+          "endColumn": 14,
+          "endLine": 16,
+          "startColumn": 11,
+          "startLine": 16,
+        },
+      },
+      "message": "Remove this useless assignment to local variable "b".",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S1854",
+      "snippet": "        b = c;",
+      "snippetWithContext": "            for (int k = 0; k < 20; i++) {
+                System.out.println("Hello");
+            }
+        }
+    }
+
+    public void doSomething(File file, Lock lock) {
+        String b = "txt";
+        String a = b;
+        String c = a;
+        b = c;
+
+        file.delete();  // Noncompliant
+        lock.tryLock(); // Noncompliant
+    }
+}",
+      "tool": "radarlint-java",
+    },
+  ],
+}
+`;

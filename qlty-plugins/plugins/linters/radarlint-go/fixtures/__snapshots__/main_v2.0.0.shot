@@ -1,0 +1,73 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=radarlint-go fixture=main version=2.0.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "main.in.go",
+        "range": {
+          "endColumn": 10,
+          "endLine": 20,
+          "startColumn": 5,
+          "startLine": 20,
+        },
+      },
+      "message": "Take the required action to fix the issue indicated by this "FIXME" comment.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "go:S1134",
+      "snippet": "	// FIXME: Handle edge cases properly  // 🚨 Triggers go:S1134",
+      "snippetWithContext": "	for _, num := range numbers {
+		sum += num
+	}
+	return sum
+}
+
+func main() {
+	nums := []int{1, 2, 3, 4, 5}
+	fmt.Println("Sum:", computeSum(nums))
+
+	// FIXME: Handle edge cases properly  // 🚨 Triggers go:S1134
+}",
+      "tool": "radarlint-go",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "main.in.go",
+        "range": {
+          "endColumn": 8,
+          "endLine": 7,
+          "startColumn": 4,
+          "startLine": 7,
+        },
+      },
+      "message": "Complete the task associated to this TODO comment.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "go:S1135",
+      "snippet": "// TODO: Refactor this function to improve efficiency  // 🚨 Triggers go:S1134",
+      "snippetWithContext": "package main
+
+import (
+	"fmt"
+)
+
+// TODO: Refactor this function to improve efficiency  // 🚨 Triggers go:S1134
+func computeSum(numbers []int) int {
+	sum := 0
+	for _, num := range numbers {
+		sum += num
+	}
+	return sum
+}
+
+func main() {
+	nums := []int{1, 2, 3, 4, 5}",
+      "tool": "radarlint-go",
+    },
+  ],
+}
+`;

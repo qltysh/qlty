@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=radarlint-java fixture=no_issue version=2.0.0 1`] = `
+{
+  "issues": [],
+}
+`;

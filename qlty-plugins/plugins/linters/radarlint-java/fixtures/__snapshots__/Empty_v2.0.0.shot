@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=radarlint-java fixture=Empty version=2.0.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "Empty.in.java",
+      },
+      "message": "Move this file to a named package.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "java:S1220",
+      "tool": "radarlint-java",
+    },
+  ],
+}
+`;
