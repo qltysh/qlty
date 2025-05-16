@@ -10,7 +10,7 @@ known_good_version = "2.0.0"
 description = "Python linter"
 file_types = ["python"]
 config_files = ["radarlint.properties"]
-suggeste_mode = "comment"
+suggested_mode = "comment"
 
 [[plugins.definitions.radarlint-python.drivers.lint.version]]
 version_matcher = "<2.0.0"
