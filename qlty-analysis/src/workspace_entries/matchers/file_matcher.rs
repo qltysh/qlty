@@ -6,7 +6,7 @@ use crate::{WorkspaceEntry, WorkspaceEntryKind};
 pub struct FileMatcher;
 
 impl WorkspaceEntryMatcher for FileMatcher {
-    fn matches(&self, workspace_entry: WorkspaceEntry) -> Option<WorkspaceEntry> {
+    fn matches(&self, workspace_entry: WorkspaceEntry, _tool_name: &str) -> Option<WorkspaceEntry> {
         if workspace_entry.kind == WorkspaceEntryKind::File {
             Some(workspace_entry)
         } else {
@@ -35,7 +35,7 @@ mod test {
 
         let matcher = FileMatcher;
         assert!(
-            matcher.matches(workspace_entry).is_some(),
+            matcher.matches(workspace_entry, "test").is_some(),
             "Expected workspace_entry to match as it is of type File"
         );
     }
@@ -52,7 +52,7 @@ mod test {
 
         let matcher = FileMatcher;
         assert!(
-            matcher.matches(workspace_entry).is_none(),
+            matcher.matches(workspace_entry, "test").is_none(),
             "Expected workspace_entry not to match as it is of type Directory"
         );
     }

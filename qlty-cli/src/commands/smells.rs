@@ -80,7 +80,7 @@ impl Smells {
             exclude_tests: !self.include_tests,
             ..Default::default()
         };
-        let files = workspace_entry_finder_builder.build()?.files()?;
+        let files = workspace_entry_finder_builder.build()?.files_for_qlty()?;
 
         steps.start(
             EYES,
@@ -194,7 +194,10 @@ impl Smells {
         let planner = qlty_smells::duplication::Planner::new(
             config,
             &settings,
-            workspace_entry_finder_builder.build()?.files()?.to_vec(),
+            workspace_entry_finder_builder
+                .build()?
+                .files_for_qlty()?
+                .to_vec(),
         )?;
         let plan = planner.compute()?;
 

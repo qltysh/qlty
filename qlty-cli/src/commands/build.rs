@@ -74,7 +74,7 @@ impl Build {
         };
 
         let mut workspace_entry_finder = workspace_entry_finder_builder.build()?;
-        let workspace_entry_files = workspace_entry_finder.files()?;
+        let workspace_entry_files = workspace_entry_finder.files_for_qlty()?;
 
         report.metadata.files_analyzed = Some(workspace_entry_files.len().try_into().unwrap());
 
@@ -210,7 +210,10 @@ impl Build {
         let planner = qlty_smells::duplication::Planner::new(
             config,
             &settings,
-            workspace_entry_finder_builder.build()?.files()?.to_vec(),
+            workspace_entry_finder_builder
+                .build()?
+                .files_for_qlty()?
+                .to_vec(),
         )?;
         let plan = planner.compute()?;
         let mut executor = qlty_smells::duplication::Executor::new(&plan);

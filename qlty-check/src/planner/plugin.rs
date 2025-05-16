@@ -129,8 +129,10 @@ impl PluginPlanner {
             .build(&self.plugin.file_types, self.plugin.prefix.clone())?;
 
         self.workspace_entries = match self.target_mode {
-            TargetMode::Sample(sample) => Arc::new(workspace_entry_finder.sample(sample)?),
-            _ => Arc::new(workspace_entry_finder.workspace_entries()?),
+            TargetMode::Sample(sample) => {
+                Arc::new(workspace_entry_finder.sample(sample, &self.plugin_name)?)
+            }
+            _ => Arc::new(workspace_entry_finder.workspace_entries(&self.plugin_name)?),
         };
 
         if self.workspace_entries.is_empty() {

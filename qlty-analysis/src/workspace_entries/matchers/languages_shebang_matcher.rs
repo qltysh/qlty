@@ -16,7 +16,7 @@ impl LanguagesShebangMatcher {
 }
 
 impl WorkspaceEntryMatcher for LanguagesShebangMatcher {
-    fn matches(&self, workspace_entry: WorkspaceEntry) -> Option<WorkspaceEntry> {
+    fn matches(&self, workspace_entry: WorkspaceEntry, _tool_name: &str) -> Option<WorkspaceEntry> {
         let file = std::fs::File::open(&workspace_entry.path);
 
         if let Ok(file) = file {
