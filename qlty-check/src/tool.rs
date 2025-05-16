@@ -594,7 +594,11 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn extra_env_vars(&self) -> Result<HashMap<String, String>> {
-        Ok(HashMap::new())
+        if let Some(runtime) = self.runtime() {
+            runtime.extra_env_vars()
+        } else {
+            Ok(HashMap::new())
+        }
     }
 
     fn install_log_file(&self) -> Result<std::fs::File> {
@@ -847,6 +851,37 @@ mod test {
 
         fn install(&self, _task: &ProgressTask) -> Result<()> {
             Ok(())
+        }
+    }
+
+    #[derive(Debug, Clone)]
+    struct DefaultPackageTestTool {
+        runtime: Option<Box<dyn Tool>>,
+    }
+
+    impl Tool for DefaultPackageTestTool {
+        fn name(&self) -> String {
+            "default_package_test_tool".into()
+        }
+
+        fn version(&self) -> Option<String> {
+            Some("1.0.0".into())
+        }
+
+        fn tool_type(&self) -> ToolType {
+            ToolType::RuntimePackage
+        }
+
+        fn runtime(&self) -> Option<Box<dyn Tool>> {
+            self.runtime.clone()
+        }
+
+        fn version_command(&self) -> Option<String> {
+            None
+        }
+
+        fn clone_box(&self) -> Box<dyn Tool> {
+            Box::new(self.clone())
         }
     }
 
@@ -1107,6 +1142,18 @@ mod test {
         assert_eq!(env.get("TEST"), Some(&"value".to_string()));
         assert_eq!(env.get("TEST2"), None);
         assert_eq!(env.get("TEST3"), None);
+    }
+
+    #[test]
+    fn test_extra_env_vars() {
+        let tool = DefaultPackageTestTool {
+            runtime: Some(Box::new(TestTool {
+                extra_env_vars: [("TEST".into(), "value".into())].iter().cloned().collect(),
+                ..Default::default()
+            })),
+        };
+        let env = tool.extra_env_vars().unwrap();
+        assert_eq!(env.get("TEST"), Some(&"value".to_string()));
     }
 
     #[test]
