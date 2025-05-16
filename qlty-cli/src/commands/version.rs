@@ -18,12 +18,14 @@ impl Version {
     }
 
     fn print_version(&self) {
-        let current_exe = std::env::current_exe().expect("Unable to identify current executable");
-        let binary_name = current_exe
+        let current_exe = std::env::args()
+            .nth(0)
+            .expect("Unable to identify current executable");
+        let binary_name = std::path::Path::new(&current_exe)
             .file_name()
             .expect("Unable to identify current executable")
             .to_str()
-            .unwrap();
+            .unwrap_or("unknown");
 
         println!("{binary_name} {}", LONG_VERSION.as_str());
     }

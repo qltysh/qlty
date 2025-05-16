@@ -46,7 +46,9 @@ impl QltyRelease {
         );
         println!();
 
-        let exe = std::env::current_exe().context("Unable to get current executable path")?;
+        let exe = std::env::args()
+            .nth(0)
+            .context("Unable to get current executable path")?;
         cmd!(exe, "upgrade", "--version", version, "--force").run()?;
 
         Ok(())

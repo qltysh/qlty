@@ -167,7 +167,7 @@ impl Telemetry {
                     .and_then(|_| {
                         fork::close_fd()?;
                         if let Ok(fork::Fork::Child) = fork::fork() {
-                            let _ = exec::Command::new(std::env::current_exe().unwrap())
+                            let _ = exec::Command::new(std::env::args().nth(0).unwrap())
                                 .arg(COMMAND)
                                 .arg(COMMAND_ARG)
                                 .arg(tempfile_path)
@@ -218,11 +218,13 @@ impl Telemetry {
                     .and_then(|_| {
                         fork::close_fd()?;
                         if let Ok(fork::Fork::Child) = fork::fork() {
-                            let _ = exec::Command::new(std::env::current_exe().unwrap())
-                                .arg(COMMAND)
-                                .arg(COMMAND_ARG)
-                                .arg(tempfile_path)
-                                .exec();
+                            let _ = exec::Command::new(
+                                std::env::args().nth(0).unwrap_or("unknown".into()),
+                            )
+                            .arg(COMMAND)
+                            .arg(COMMAND_ARG)
+                            .arg(tempfile_path)
+                            .exec();
                         }
                         Ok(())
                     })
