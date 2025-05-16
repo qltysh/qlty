@@ -1,9 +1,9 @@
+use crate::get_exe_name;
 use anyhow::{bail, Context, Result};
 use dialoguer::{theme::ColorfulTheme, Confirm};
 use duct::cmd;
 use qlty_config::version::{qlty_semver, QLTY_VERSION};
 use serde::Deserialize;
-
 use std::time::SystemTime;
 
 const USER_AGENT_PREFIX: &str = "qlty";
@@ -46,10 +46,7 @@ impl QltyRelease {
         );
         println!();
 
-        let exe = std::env::args()
-            .nth(0)
-            .context("Unable to get current executable path")?;
-        cmd!(exe, "upgrade", "--version", version, "--force").run()?;
+        cmd!(get_exe_name(), "upgrade", "--version", version, "--force").run()?;
 
         Ok(())
     }
