@@ -1,5 +1,6 @@
 use self::sanitize::sanitize_command;
 use crate::arguments::is_subcommand;
+use crate::get_exe_name;
 use crate::telemetry::analytics::{event_context, event_user, Track};
 use crate::telemetry::git::repository_identifier;
 use crate::{errors::CommandError, success::CommandSuccess};
@@ -152,9 +153,7 @@ impl Telemetry {
         std::fs::write(&tempfile_path, payload)?;
         debug!(
             "Tracking event: {} {} {} {}",
-            std::env::current_exe()
-                .expect("Could not determine current executable path")
-                .display(),
+            get_exe_name(),
             COMMAND,
             COMMAND_ARG,
             tempfile_path.display()
@@ -167,7 +166,7 @@ impl Telemetry {
                     .and_then(|_| {
                         fork::close_fd()?;
                         if let Ok(fork::Fork::Child) = fork::fork() {
-                            let _ = exec::Command::new(std::env::current_exe().unwrap())
+                            let _ = exec::Command::new(get_exe_name())
                                 .arg(COMMAND)
                                 .arg(COMMAND_ARG)
                                 .arg(tempfile_path)
@@ -181,7 +180,7 @@ impl Telemetry {
 
         #[cfg(windows)]
         {
-            std::process::Command::new(std::env::current_exe().unwrap())
+            std::process::Command::new(get_exe_name())
                 .arg(COMMAND)
                 .arg(COMMAND_ARG)
                 .arg(tempfile_path)
@@ -203,9 +202,7 @@ impl Telemetry {
         std::fs::write(&tempfile_path, payload)?;
         debug!(
             "Tracking panic: {} {} {} {}",
-            std::env::current_exe()
-                .expect("Could not determine current executable path")
-                .display(),
+            get_exe_name(),
             COMMAND,
             COMMAND_ARG,
             tempfile_path.display()
@@ -218,7 +215,7 @@ impl Telemetry {
                     .and_then(|_| {
                         fork::close_fd()?;
                         if let Ok(fork::Fork::Child) = fork::fork() {
-                            let _ = exec::Command::new(std::env::current_exe().unwrap())
+                            let _ = exec::Command::new(get_exe_name())
                                 .arg(COMMAND)
                                 .arg(COMMAND_ARG)
                                 .arg(tempfile_path)
@@ -232,7 +229,7 @@ impl Telemetry {
 
         #[cfg(windows)]
         {
-            std::process::Command::new(std::env::current_exe().unwrap())
+            std::process::Command::new(get_exe_name())
                 .arg(COMMAND)
                 .arg(COMMAND_ARG)
                 .arg(tempfile_path)
