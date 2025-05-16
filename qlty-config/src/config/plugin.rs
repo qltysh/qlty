@@ -336,6 +336,9 @@ pub struct PluginDef {
     pub config_files: Vec<PathBuf>,
 
     #[serde(default)]
+    pub exported_config_paths: Vec<PathBuf>,
+
+    #[serde(default)]
     pub downloads: Vec<String>,
 
     #[serde(default)]

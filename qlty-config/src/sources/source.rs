@@ -6,6 +6,7 @@ use config::File;
 use globset::{Glob, GlobSetBuilder};
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
+use toml::Value;
 use tracing::trace;
 
 const SOURCE_PARSE_ERROR: &str = r#"There was an error reading configuration from one of your declared Sources.
@@ -128,10 +129,11 @@ pub trait Source: SourceFetch {
     ) -> Result<()> {
         trace!("Loading config toml from {}", source_file.path.display());
 
-        let contents_toml = source_file
+        let mut contents_toml = source_file
             .contents
             .parse::<toml::Value>()
             .with_context(|| format!("Could not parse {}", source_file.path.display()))?;
+        self.add_context_to_exported_config_paths(&mut contents_toml, source_file);
 
         Builder::validate_toml(&source_file.path, contents_toml.clone())
             .with_context(|| SOURCE_PARSE_ERROR)?;
@@ -139,6 +141,38 @@ pub trait Source: SourceFetch {
         *toml = TomlMerge::merge(toml.clone(), contents_toml).unwrap();
 
         Ok(())
+    }
+
+    fn add_context_to_exported_config_paths(
+        &self,
+        toml: &mut toml::Value,
+        source_file: &SourceFile,
+    ) -> Option<()> {
+        for (_, plugin) in toml
+            .as_table_mut()?
+            .get_mut("plugins")?
+            .as_table_mut()?
+            .get_mut("definitions")?
+            .as_table_mut()?
+            .iter_mut()
+        {
+            plugin
+                .get_mut("exported_config_paths")?
+                .as_array_mut()
+                .map(|values| {
+                    for value in values.iter_mut() {
+                        if let Some(value_str) = value.as_str() {
+                            if let Some(parent) = source_file.path.parent() {
+                                *value = Value::String(
+                                    parent.join(value_str).to_string_lossy().to_string(),
+                                );
+                            }
+                        }
+                    }
+                });
+        }
+
+        Some(())
     }
 
     fn build_config(&self) -> Result<QltyConfig> {
@@ -157,5 +191,53 @@ pub trait Source: SourceFetch {
 impl Clone for Box<dyn Source> {
     fn clone(&self) -> Box<dyn Source> {
         Source::clone_box(self.as_ref())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::{Source, SourceFile};
+    use crate::{sources::DefaultSource, QltyConfig};
+    use anyhow::Result;
+    use config::File;
+    use std::env::temp_dir;
+    use toml::{Table, Value};
+
+    #[test]
+    fn test_add_source_file_to_toml() -> Result<()> {
+        let tempdir = temp_dir();
+        let source_file = SourceFile {
+            path: tempdir.join("plugin.toml"),
+            contents: r#"
+                [plugins.definitions.myplugin]
+                exported_config_paths = ["config.yml"]
+                [plugins.definitions.my_other_plugin]
+                exported_config_paths = ["config.yml", "subdir/config.yml"]
+            "#
+            .into(),
+        };
+        let mut toml_value = Value::Table(Table::new());
+        let source = DefaultSource {};
+        source.add_source_file_to_toml(&mut toml_value, &source_file)?;
+
+        let toml_string = toml::to_string(&toml_value).unwrap();
+        let file = File::from_str(&toml_string, config::FileFormat::Toml);
+        let builder = config::Config::builder().add_source(file);
+        let config: QltyConfig = builder.build()?.try_deserialize()?;
+
+        assert_eq!(
+            config.plugins.definitions["myplugin"].exported_config_paths,
+            vec![tempdir.join("config.yml")]
+        );
+
+        assert_eq!(
+            config.plugins.definitions["my_other_plugin"].exported_config_paths,
+            vec![
+                tempdir.join("config.yml"),
+                tempdir.join("subdir").join("config.yml")
+            ]
+        );
+
+        Ok(())
     }
 }
