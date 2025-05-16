@@ -99,7 +99,7 @@ impl Metrics {
             config: config.clone(),
             ..Default::default()
         };
-        let files = workspace_entry_finder_builder.build()?.files()?;
+        let files = workspace_entry_finder_builder.build()?.files_for_qlty()?;
 
         let settings = Settings {
             functions: self.functions,

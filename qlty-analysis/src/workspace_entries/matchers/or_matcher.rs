@@ -18,9 +18,11 @@ impl OrMatcher {
 }
 
 impl WorkspaceEntryMatcher for OrMatcher {
-    fn matches(&self, workspace_entry: WorkspaceEntry) -> Option<WorkspaceEntry> {
+    fn matches(&self, workspace_entry: WorkspaceEntry, tool_name: &str) -> Option<WorkspaceEntry> {
         for matcher in &self.matchers {
-            if let Some(matched_workspace_entry) = matcher.matches(workspace_entry.clone()) {
+            if let Some(matched_workspace_entry) =
+                matcher.matches(workspace_entry.clone(), tool_name)
+            {
                 return Some(matched_workspace_entry);
             }
         }

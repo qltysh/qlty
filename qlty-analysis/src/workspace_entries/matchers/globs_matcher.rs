@@ -32,7 +32,7 @@ impl GlobsMatcher {
 }
 
 impl WorkspaceEntryMatcher for GlobsMatcher {
-    fn matches(&self, workspace_entry: WorkspaceEntry) -> Option<WorkspaceEntry> {
+    fn matches(&self, workspace_entry: WorkspaceEntry, _tool_name: &str) -> Option<WorkspaceEntry> {
         let matches = self.glob_set.is_match(workspace_entry.path_string());
 
         if matches == self.include {
@@ -88,7 +88,7 @@ mod test {
         let matcher = GlobsMatcher::new_for_file_types(&file_types).unwrap();
 
         assert!(
-            matcher.matches(workspace_entry).is_some(),
+            matcher.matches(workspace_entry, "test").is_some(),
             "Expected workspace_entry to match as it is of type rust"
         );
     }
@@ -118,7 +118,7 @@ mod test {
         let matcher = GlobsMatcher::new_for_file_types(&file_types).unwrap();
 
         assert!(
-            matcher.matches(workspace_entry).is_none(),
+            matcher.matches(workspace_entry, "test").is_none(),
             "Expected workspace_entry not to match as it is of type ruby"
         );
     }

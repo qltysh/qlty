@@ -21,5 +21,5 @@ pub use prefix_matcher::PrefixMatcher;
 use super::workspace_entry::WorkspaceEntry;
 
 pub trait WorkspaceEntryMatcher: core::fmt::Debug {
-    fn matches(&self, workspace_entry: WorkspaceEntry) -> Option<WorkspaceEntry>;
+    fn matches(&self, workspace_entry: WorkspaceEntry, tool_name: &str) -> Option<WorkspaceEntry>;
 }

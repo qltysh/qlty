@@ -5,7 +5,7 @@ use crate::WorkspaceEntry;
 pub struct AnyMatcher;
 
 impl WorkspaceEntryMatcher for AnyMatcher {
-    fn matches(&self, workspace_entry: WorkspaceEntry) -> Option<WorkspaceEntry> {
+    fn matches(&self, workspace_entry: WorkspaceEntry, _tool_name: &str) -> Option<WorkspaceEntry> {
         Some(workspace_entry)
     }
 }

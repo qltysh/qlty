@@ -21,7 +21,7 @@ impl IgnoreGroupsMatcher {
 }
 
 impl WorkspaceEntryMatcher for IgnoreGroupsMatcher {
-    fn matches(&self, workspace_entry: WorkspaceEntry) -> Option<WorkspaceEntry> {
+    fn matches(&self, workspace_entry: WorkspaceEntry, _tool_name: &str) -> Option<WorkspaceEntry> {
         // By default, include the file
         let path = workspace_entry.path_string();
 
@@ -66,13 +66,13 @@ mod test {
         let matcher = IgnoreGroupsMatcher::new(ignore_groups);
 
         assert!(matcher
-            .matches(create_workspace_entry("src/main.rs"))
+            .matches(create_workspace_entry("src/main.rs"), "test")
             .is_some());
         assert!(matcher
-            .matches(create_workspace_entry("logs/output.log"))
+            .matches(create_workspace_entry("logs/output.log"), "test")
             .is_none());
         assert!(matcher
-            .matches(create_workspace_entry("target/debug/app"))
+            .matches(create_workspace_entry("target/debug/app"), "test")
             .is_none());
     }
 
@@ -91,10 +91,10 @@ mod test {
         let matcher = IgnoreGroupsMatcher::new(ignore_groups);
 
         assert!(matcher
-            .matches(create_workspace_entry("logs/error.log"))
+            .matches(create_workspace_entry("logs/error.log"), "test")
             .is_none());
         assert!(matcher
-            .matches(create_workspace_entry("logs/important.log"))
+            .matches(create_workspace_entry("logs/important.log"), "test")
             .is_some());
     }
 
@@ -102,7 +102,7 @@ mod test {
     fn test_ignore_groups_matcher_empty_list() {
         let matcher = IgnoreGroupsMatcher::new(vec![]);
         assert!(matcher
-            .matches(create_workspace_entry("src/main.rs"))
+            .matches(create_workspace_entry("src/main.rs"), "test")
             .is_some());
     }
 }

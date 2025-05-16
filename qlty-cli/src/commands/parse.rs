@@ -34,7 +34,7 @@ impl Parse {
         };
 
         let mut workspace_entry_finder = workspace_entry_finder_builder.build()?;
-        let workspace_entries = workspace_entry_finder.workspace_entries()?;
+        let workspace_entries = workspace_entry_finder.workspace_entries("qlty")?;
         let source_file = File::from_workspace_entry(workspace_entries.first().unwrap())?;
 
         let stdout = std::io::stdout();

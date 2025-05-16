@@ -16,7 +16,7 @@ impl PrefixMatcher {
 }
 
 impl WorkspaceEntryMatcher for PrefixMatcher {
-    fn matches(&self, workspace_entry: WorkspaceEntry) -> Option<WorkspaceEntry> {
+    fn matches(&self, workspace_entry: WorkspaceEntry, _tool_name: &str) -> Option<WorkspaceEntry> {
         match workspace_entry.full_path(&self.root) {
             Ok(full_path) => {
                 if full_path.starts_with(path_to_string(&self.path_prefix)) {

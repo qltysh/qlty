@@ -18,11 +18,11 @@ impl AndMatcher {
 }
 
 impl WorkspaceEntryMatcher for AndMatcher {
-    fn matches(&self, workspace_entry: WorkspaceEntry) -> Option<WorkspaceEntry> {
+    fn matches(&self, workspace_entry: WorkspaceEntry, tool_name: &str) -> Option<WorkspaceEntry> {
         let mut matched_workspace_entry = workspace_entry.clone();
 
         for matcher in &self.matchers {
-            if let Some(matched) = matcher.matches(matched_workspace_entry) {
+            if let Some(matched) = matcher.matches(matched_workspace_entry, tool_name) {
                 matched_workspace_entry = matched;
             } else {
                 return None;

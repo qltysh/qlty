@@ -24,8 +24,8 @@ impl LanguageGlobsMatcher {
 }
 
 impl WorkspaceEntryMatcher for LanguageGlobsMatcher {
-    fn matches(&self, workspace_entry: WorkspaceEntry) -> Option<WorkspaceEntry> {
-        match self.matcher.matches(workspace_entry) {
+    fn matches(&self, workspace_entry: WorkspaceEntry, tool_name: &str) -> Option<WorkspaceEntry> {
+        match self.matcher.matches(workspace_entry, tool_name) {
             Some(mut workspace_entry) => {
                 workspace_entry.language_name = Some(self.language_name.clone());
                 Some(workspace_entry)

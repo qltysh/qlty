@@ -37,8 +37,8 @@ impl WorkspaceEntryFinder {
         }
     }
 
-    pub fn files(&mut self) -> Result<Vec<Arc<File>>> {
-        let workspace_entries = self.workspace_entries()?;
+    pub fn files_for_qlty(&mut self) -> Result<Vec<Arc<File>>> {
+        let workspace_entries = self.workspace_entries("qlty")?;
         let mut files = Vec::new();
 
         for workspace_entry in workspace_entries {
@@ -54,20 +54,20 @@ impl WorkspaceEntryFinder {
         Ok(files)
     }
 
-    pub fn workspace_entries(&mut self) -> Result<Vec<WorkspaceEntry>> {
-        self.compute_workspace_entries()?;
+    pub fn workspace_entries(&mut self, tool_name: &str) -> Result<Vec<WorkspaceEntry>> {
+        self.compute_workspace_entries(tool_name)?;
         Ok(self.results.as_ref().unwrap().to_owned())
     }
 
-    pub fn sample(&mut self, sample: usize) -> Result<Vec<WorkspaceEntry>> {
-        self.compute_workspace_entries()?;
+    pub fn sample(&mut self, sample: usize, tool_name: &str) -> Result<Vec<WorkspaceEntry>> {
+        self.compute_workspace_entries(tool_name)?;
         let mut workspace_entries = self.results.as_ref().unwrap().to_owned();
         workspace_entries.shuffle(&mut thread_rng());
         workspace_entries.truncate(sample);
         Ok(workspace_entries)
     }
 
-    fn compute_workspace_entries(&mut self) -> Result<()> {
+    fn compute_workspace_entries(&mut self, tool_name: &str) -> Result<()> {
         if self.results.is_some() {
             return Ok(());
         }
@@ -76,7 +76,8 @@ impl WorkspaceEntryFinder {
 
         let entries = self.source.entries()?;
         for workspace_entry in entries.iter() {
-            if let Some(workspace_entry) = self.matcher.matches(workspace_entry.clone()) {
+            if let Some(workspace_entry) = self.matcher.matches(workspace_entry.clone(), tool_name)
+            {
                 trace!("Adding workspace entry: {:?}", &workspace_entry);
                 workspace_entries.push(workspace_entry);
             } else {
@@ -110,7 +111,7 @@ mod test {
         let source = AllSource::new(root.path().to_path_buf());
         let mut workspace_entry_finder =
             WorkspaceEntryFinder::new(Arc::new(source), Box::new(AnyMatcher));
-        let workspace_entries = workspace_entry_finder.workspace_entries().unwrap();
+        let workspace_entries = workspace_entry_finder.workspace_entries("test").unwrap();
         let mut paths = vec![];
         for workspace_entry in workspace_entries {
             paths.push((workspace_entry.path, workspace_entry.kind));
@@ -155,7 +156,7 @@ mod test {
             Box::new(AndMatcher::new(vec![file_matcher, file_type_matcher])),
         );
 
-        let workspace_entries = workspace_entry_finder.workspace_entries().unwrap();
+        let workspace_entries = workspace_entry_finder.workspace_entries("test").unwrap();
         let mut paths = vec![];
         for workspace_entry in workspace_entries {
             paths.push((workspace_entry.path, workspace_entry.kind));
@@ -205,7 +206,7 @@ mod test {
         let source = AllSource::new(root.path().to_path_buf());
         let mut workspace_entry_finder =
             WorkspaceEntryFinder::new(Arc::new(source), Box::new(AnyMatcher));
-        let workspace_entries = workspace_entry_finder.sample(3).unwrap();
+        let workspace_entries = workspace_entry_finder.sample(3, "test").unwrap();
         let mut paths = vec![];
         for workspace_entry in workspace_entries {
             paths.push(workspace_entry.path);
