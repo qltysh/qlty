@@ -1,15 +1,18 @@
 use anyhow::Result;
 use qlty_analysis::utils::fs::path_to_string;
-use qlty_analysis::workspace_entries::{IgnoreGroupsMatcher, TargetMode};
+use qlty_analysis::workspace_entries::{
+    ExcludeGroupsMatcher, PluginSpecificExcludeMatcher, TargetMode,
+};
 use qlty_analysis::{
     git::GitDiff, workspace_entries::AndMatcher, FileMatcher, GlobsMatcher, PrefixMatcher,
     WorkspaceEntryFinder, WorkspaceEntryMatcher, WorkspaceEntrySource,
 };
 use qlty_analysis::{AllSource, ArgsSource, DiffSource};
-use qlty_config::config::ignore_group::IgnoreGroup;
+use qlty_config::config::exclude_group::ExcludeGroup;
 use qlty_config::config::issue_transformer::{IssueTransformer, NullIssueTransformer};
-use qlty_config::config::Ignore;
+use qlty_config::config::Exclude;
 use qlty_config::{FileType, Workspace};
+use std::collections::HashSet;
 use std::sync::Arc;
 use std::{collections::HashMap, path::PathBuf};
 
@@ -19,7 +22,7 @@ pub struct PluginWorkspaceEntryFinderBuilder {
     pub root: PathBuf,
     pub paths: Vec<PathBuf>,
     pub file_types: HashMap<String, FileType>,
-    pub ignores: Vec<Ignore>,
+    pub excludes: Vec<Exclude>,
     pub git_diff: Option<GitDiff>,
     pub source: Option<Arc<dyn WorkspaceEntrySource>>,
 }
@@ -91,15 +94,33 @@ impl PluginWorkspaceEntryFinderBuilder {
             )));
         }
 
-        let ignores_without_metadata = self
-            .ignores
+        let exclude_groups = ExcludeGroup::build_from_excludes(&self.excludes.iter().collect());
+
+        matchers.push(Box::new(ExcludeGroupsMatcher::new(exclude_groups)));
+
+        let all_excluded_plugins: HashSet<String> = self
+            .excludes
             .iter()
-            .filter(|i| i.plugins.is_empty() && i.rules.is_empty() && i.levels.is_empty())
+            .flat_map(|i| i.plugins.clone())
             .collect();
 
-        let ignore_groups = IgnoreGroup::build_from_ignores(&ignores_without_metadata);
+        for plugin_name in all_excluded_plugins {
+            let plugin_specific_excludes = self
+                .excludes
+                .iter()
+                .filter(|i| i.plugins.contains(&plugin_name))
+                .cloned()
+                .collect::<Vec<_>>();
 
-        matchers.push(Box::new(IgnoreGroupsMatcher::new(ignore_groups)));
+            if !plugin_specific_excludes.is_empty() {
+                matchers.push(Box::new(PluginSpecificExcludeMatcher::new(
+                    plugin_name.clone(),
+                    plugin_specific_excludes,
+                    self.root.clone(),
+                )));
+            }
+        }
+
         Ok(Box::new(AndMatcher::new(matchers)))
     }
 

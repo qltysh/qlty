@@ -12,5 +12,5 @@ output = "pass_fail"
 name = "exists"
 version = "1.0.0"
 
-[[ignore]]
+[[exclude]]
 file_patterns = ["**/ignore.sh"]
