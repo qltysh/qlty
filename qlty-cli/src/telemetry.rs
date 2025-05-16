@@ -167,11 +167,15 @@ impl Telemetry {
                     .and_then(|_| {
                         fork::close_fd()?;
                         if let Ok(fork::Fork::Child) = fork::fork() {
-                            let _ = exec::Command::new(std::env::args().nth(0).unwrap())
-                                .arg(COMMAND)
-                                .arg(COMMAND_ARG)
-                                .arg(tempfile_path)
-                                .exec();
+                            let _ = exec::Command::new(
+                                std::env::args()
+                                    .nth(0)
+                                    .expect("Could not determine current executable path"),
+                            )
+                            .arg(COMMAND)
+                            .arg(COMMAND_ARG)
+                            .arg(tempfile_path)
+                            .exec();
                         }
                         Ok(())
                     })
@@ -219,7 +223,9 @@ impl Telemetry {
                         fork::close_fd()?;
                         if let Ok(fork::Fork::Child) = fork::fork() {
                             let _ = exec::Command::new(
-                                std::env::args().nth(0).unwrap_or("unknown".into()),
+                                std::env::args()
+                                    .nth(0)
+                                    .expect("Could not determine current executable path"),
                             )
                             .arg(COMMAND)
                             .arg(COMMAND_ARG)
