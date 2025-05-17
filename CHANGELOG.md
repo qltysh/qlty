@@ -1,5 +1,44 @@
 # Changelog
 
+## v0.528.0 (2025-05-16)
+
+### Fixed
+
+- Fixed providing runtime env vars to tool execution (#2051)
+
+## v0.528.0 (2025-05-16)
+
+### New
+
+- Add new `exported_config_paths` directive to allow sources to provide linter configs (#2044)
+
+### Improved
+
+- Only enable radarlint-ruby when a RadarLint config is present (#2047)
+
+### Fixed
+
+- Fix `suggested_mode` configuration for RadarLint (#2047)
+
+## v0.527.0 (2025-05-15)
+
+### New
+
+- Add Ruby preflight dependency checks to Ruby binary install (#2028)
+
+### Improved
+
+- Treat hitting maximum total issues of 50k as a fatal error (#2027)
+- Skip version check for Rust when using a named channel (#2046)
+- Print coverage report URL at the end of `coverage complete` (#2036)
+- Display version command on failure for user debuggability (#2031)
+
+## v0.526.0 (2025-05-05)
+
+### Improved
+
+- Increase maximum total issues count from 10k to 50k (#2024)
+
 ## v0.525.0 (2025-05-05)
 
 ### New
