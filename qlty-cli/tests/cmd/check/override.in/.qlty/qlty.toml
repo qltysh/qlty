@@ -12,4 +12,7 @@ batch = true
 [[plugin]]
 name = "exists"
 version = "1.0.0"
+
+[[override]]
+plugin = "exists"
 mode = "monitor"

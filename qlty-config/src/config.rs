@@ -11,6 +11,7 @@ mod plugin;
 mod release;
 pub mod smells;
 mod source;
+pub mod triage;
 
 pub use self::ignore::{Ignore, ALL_WILDCARD};
 pub use self::overrides::Override;
@@ -29,6 +30,7 @@ pub use plugin::{
 };
 pub use release::ReleaseDef;
 pub use source::SourceDef;
+pub use triage::{Match, Set, Triage};
 
 use crate::config::plugin::EnabledRuntimes;
 pub use crate::config::plugin::PluginsConfig;
@@ -55,6 +57,10 @@ pub struct QltyConfig {
     #[serde(default)]
     #[serde(rename = "override")] // Since `override` is a reserved keyword
     pub overrides: Vec<Override>,
+
+    #[serde(default)]
+    #[serde(rename = "triage")]
+    pub triage: Vec<Triage>,
 
     #[serde(default)]
     pub file_types: HashMap<String, FileType>,

@@ -1,0 +1,33 @@
+config_version = "0"
+
+[plugins.definitions.triaged]
+file_types = ["shell"]
+
+[plugins.definitions.triaged.drivers.lint]
+script = "false"
+success_codes = [0]
+output = "pass_fail"
+batch = true
+
+[[plugin]]
+name = "triaged"
+version = "1.0.0"
+
+[plugins.definitions.untriaged]
+file_types = ["shell"]
+
+[plugins.definitions.untriaged.drivers.lint]
+script = "false"
+success_codes = [0]
+output = "pass_fail"
+batch = true
+
+[[plugin]]
+name = "untriaged"
+version = "1.0.0"
+
+[[triage]]
+match.plugins = ["triaged"]
+set.mode = "comment"
+set.level = "low"
+set.category = "structure"
