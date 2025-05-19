@@ -10,7 +10,7 @@ pub const ALL_WILDCARD: &'static str = "ALL";
 
 #[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
 pub struct Ignore {
-    #[serde(default = "default_ignore_file_patterns")]
+    #[serde(default)]
     pub file_patterns: Vec<String>,
 
     #[serde(default)]
@@ -36,10 +36,6 @@ impl Clone for Ignore {
             glob_set: RwLock::new(None),
         }
     }
-}
-
-fn default_ignore_file_patterns() -> Vec<String> {
-    vec!["*".to_string()]
 }
 
 impl IssueTransformer for Ignore {
