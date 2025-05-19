@@ -96,9 +96,9 @@ impl PluginWorkspaceEntryFinderBuilder {
 
         matchers.push(Box::new(ExcludeGroupsMatcher::new(exclude_groups)));
 
-        for exlcude in self.excludes.iter() {
+        for exclude in self.excludes.iter() {
             matchers.push(Box::new(ExcludeMatcher::new(
-                exlcude.clone(),
+                exclude.clone(),
                 self.root.clone(),
             )));
         }
