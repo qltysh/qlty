@@ -70,7 +70,7 @@ fn exclude_globset(exclude_patterns: &Vec<String>) -> Result<GlobSet> {
         let glob = GlobBuilder::new(pattern)
             .literal_separator(true)
             .build()
-            .with_context(|| format!("Failed to build glob for pattern: {}", pattern))?;
+            .with_context(|| format!("Failed to build glob for pattern: {pattern}"))?;
 
         globset.add(glob);
     }

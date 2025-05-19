@@ -92,7 +92,7 @@ impl PluginWorkspaceEntryFinderBuilder {
             )));
         }
 
-        let exclude_groups = ExcludeGroup::build_from_exclude_patterns(&&self.exclude_patterns);
+        let exclude_groups = ExcludeGroup::build_from_exclude_patterns(&self.exclude_patterns);
 
         matchers.push(Box::new(ExcludeGroupsMatcher::new(exclude_groups)));
 
