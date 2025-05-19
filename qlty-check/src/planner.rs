@@ -144,6 +144,7 @@ impl Planner {
             paths: self.settings.paths.clone(),
             file_types: self.config.file_types.clone(),
             excludes: self.config.exclude.clone(),
+            exclude_patterns: self.config.exclude_patterns.clone(),
             ..Default::default()
         };
 

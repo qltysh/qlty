@@ -168,19 +168,20 @@ impl Builder {
             );
 
             for ignore in &config.ignore {
-                config.exclude.push(Exclude {
-                    file_patterns: ignore.file_patterns.clone(),
-                    plugins: ignore.plugins.clone(),
-                    ..Default::default()
-                });
+                if ignore.plugins.is_empty() {
+                    all_exclude_patterns.extend(ignore.file_patterns.clone());
+                } else {
+                    config.exclude.push(Exclude {
+                        file_patterns: ignore.file_patterns.clone(),
+                        plugins: ignore.plugins.clone(),
+                        ..Default::default()
+                    });
+                }
             }
         }
 
         if !all_exclude_patterns.is_empty() {
-            config.exclude.push(Exclude {
-                file_patterns: all_exclude_patterns.clone(),
-                ..Default::default()
-            });
+            config.exclude_patterns = all_exclude_patterns.clone();
 
             match config.coverage.ignores {
                 Some(_) => {
@@ -189,10 +190,10 @@ impl Builder {
                         .ignores
                         .as_mut()
                         .unwrap()
-                        .extend(all_exclude_patterns.clone());
+                        .extend(all_exclude_patterns);
                 }
                 None => {
-                    config.coverage.ignores = Some(all_exclude_patterns.clone());
+                    config.coverage.ignores = Some(all_exclude_patterns);
                 }
             }
         }

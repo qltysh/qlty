@@ -7,7 +7,7 @@ use crate::{
 };
 use anyhow::{bail, Result};
 use qlty_config::{
-    config::{exclude_group::ExcludeGroup, Exclude},
+    config::exclude_group::ExcludeGroup,
     issue_transformer::{IssueTransformer, NullIssueTransformer},
     QltyConfig,
 };
@@ -74,23 +74,20 @@ impl WorkspaceEntryFinderBuilder {
         matcher.push(Box::new(FileMatcher));
 
         // Exclude explicit excludes and tests
-        let mut excludes = self.config.exclude.clone();
-        debug!("Ignoring globs: {:?}", excludes);
+        let mut exclude_patterns = self.config.exclude_patterns.clone();
+        debug!("Ignoring globs: {:?}", exclude_patterns);
 
         if self.exclude_tests {
             if !self.config.test_patterns.is_empty() {
                 debug!("Ignoring test patterns: {:?}", self.config.test_patterns);
 
-                excludes.push(Exclude {
-                    file_patterns: self.config.test_patterns.clone(),
-                    ..Default::default()
-                });
+                exclude_patterns.extend(self.config.test_patterns.clone());
             } else {
                 debug!("Ignoring test patterns: none");
             }
         }
 
-        let exclude_groups = ExcludeGroup::build_from_excludes(&excludes.iter().collect());
+        let exclude_groups = ExcludeGroup::build_from_exclude_patterns(&exclude_patterns);
 
         matcher.push(Box::new(ExcludeGroupsMatcher::new(exclude_groups)));
 

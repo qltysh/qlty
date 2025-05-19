@@ -1,5 +1,3 @@
-use super::Exclude;
-
 #[derive(Debug)]
 pub struct ExcludeGroup {
     pub excludes: Vec<String>,
@@ -7,12 +5,11 @@ pub struct ExcludeGroup {
 }
 
 impl ExcludeGroup {
-    pub fn build_from_excludes(excludes: &Vec<&Exclude>) -> Vec<Self> {
+    pub fn build_from_exclude_patterns(exclude_patterns: &Vec<String>) -> Vec<Self> {
         let mut exclude_groups = vec![];
 
-        let start_with_negated = excludes
+        let start_with_negated = exclude_patterns
             .first()
-            .and_then(|exclude| exclude.file_patterns.first())
             .is_some_and(|pattern| pattern.starts_with('!'));
 
         let mut current_exclude_group = ExcludeGroup {
@@ -20,36 +17,32 @@ impl ExcludeGroup {
             negate: start_with_negated,
         };
 
-        for exclude in excludes {
-            if exclude.file_patterns.is_empty() {
-                continue;
-            } else if !exclude.plugins.is_empty() {
-                // Skip this exclude if it has plugins
-                // We have PluginSpecificExcludeMatcher for that
+        for exclude_pattern in exclude_patterns {
+            if exclude_pattern.is_empty() {
                 continue;
             }
 
-            for pattern in &exclude.file_patterns {
-                if let Some(pattern) = pattern.strip_prefix('!') {
-                    if current_exclude_group.negate {
-                        current_exclude_group.excludes.push(pattern.to_string());
-                    } else {
-                        // Push previous group before switching negation
-                        exclude_groups.push(current_exclude_group);
-                        current_exclude_group = ExcludeGroup {
-                            excludes: vec![pattern.to_string()],
-                            negate: true,
-                        };
-                    }
-                } else if current_exclude_group.negate {
+            if let Some(pattern) = exclude_pattern.strip_prefix('!') {
+                if current_exclude_group.negate {
+                    current_exclude_group.excludes.push(pattern.to_string());
+                } else {
+                    // Push previous group before switching negation
                     exclude_groups.push(current_exclude_group);
                     current_exclude_group = ExcludeGroup {
                         excludes: vec![pattern.to_string()],
-                        negate: false,
+                        negate: true,
                     };
-                } else {
-                    current_exclude_group.excludes.push(pattern.to_string());
                 }
+            } else if current_exclude_group.negate {
+                exclude_groups.push(current_exclude_group);
+                current_exclude_group = ExcludeGroup {
+                    excludes: vec![exclude_pattern.to_string()],
+                    negate: false,
+                };
+            } else {
+                current_exclude_group
+                    .excludes
+                    .push(exclude_pattern.to_string());
             }
         }
 
@@ -66,18 +59,10 @@ impl ExcludeGroup {
 mod tests {
     use super::*;
 
-    // Helper function to create Exclude instances with default values
-    fn build_exclude(file_patterns: Vec<&str>) -> Exclude {
-        Exclude {
-            file_patterns: file_patterns.iter().map(|s| s.to_string()).collect(),
-            ..Default::default()
-        }
-    }
-
     #[test]
     fn test_empty_excludes() {
-        let excludes: Vec<&Exclude> = vec![];
-        let result = ExcludeGroup::build_from_excludes(&excludes);
+        let exclude_patterns: Vec<String> = vec![];
+        let result = ExcludeGroup::build_from_exclude_patterns(&exclude_patterns);
         assert!(
             result.is_empty(),
             "Expected empty result for empty excludes input"
@@ -86,10 +71,9 @@ mod tests {
 
     #[test]
     fn test_single_non_negated_exclude() {
-        let exclude1 = build_exclude(vec!["src/", "target/"]);
+        let exclude_patterns = vec!["src/".to_string(), "target/".to_string()];
 
-        let excludes: Vec<&Exclude> = vec![&exclude1];
-        let result = ExcludeGroup::build_from_excludes(&excludes);
+        let result = ExcludeGroup::build_from_exclude_patterns(&exclude_patterns);
 
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].excludes, vec!["src/", "target/"]);
@@ -98,10 +82,9 @@ mod tests {
 
     #[test]
     fn test_single_negated_exclude() {
-        let exclude1 = build_exclude(vec!["!src/", "!target/"]);
+        let exclude_patterns = vec!["!src/".to_string(), "!target/".to_string()];
 
-        let excludes: Vec<&Exclude> = vec![&exclude1];
-        let result = ExcludeGroup::build_from_excludes(&excludes);
+        let result = ExcludeGroup::build_from_exclude_patterns(&exclude_patterns);
 
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].excludes, vec!["src/", "target/"]);
@@ -110,11 +93,14 @@ mod tests {
 
     #[test]
     fn test_mixed_negated_and_non_negated_patterns() {
-        let exclude1 = build_exclude(vec!["src/", "!target/"]);
-        let exclude2 = build_exclude(vec!["bin/", "!out/"]);
+        let exclude_patterns = vec![
+            "src/".to_string(),
+            "!target/".to_string(),
+            "bin/".to_string(),
+            "!out/".to_string(),
+        ];
 
-        let excludes: Vec<&Exclude> = vec![&exclude1, &exclude2];
-        let result = ExcludeGroup::build_from_excludes(&excludes);
+        let result = ExcludeGroup::build_from_exclude_patterns(&exclude_patterns);
 
         assert_eq!(result.len(), 4);
         assert_eq!(result[0].excludes, vec!["src/"]);
@@ -132,12 +118,14 @@ mod tests {
 
     #[test]
     fn test_multiple_negated_blocks() {
-        let exclude1 = build_exclude(vec!["!foo/", "!bar/"]);
-        let exclude2 = build_exclude(vec!["baz/"]);
-        let exclude3 = build_exclude(vec!["!qux/"]);
+        let exclude_patterns = vec![
+            "!foo/".to_string(),
+            "!bar/".to_string(),
+            "baz/".to_string(),
+            "!qux/".to_string(),
+        ];
 
-        let excludes: Vec<&Exclude> = vec![&exclude1, &exclude2, &exclude3];
-        let result = ExcludeGroup::build_from_excludes(&excludes);
+        let result = ExcludeGroup::build_from_exclude_patterns(&exclude_patterns);
 
         assert_eq!(result.len(), 3);
 
