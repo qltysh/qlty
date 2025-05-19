@@ -12,10 +12,6 @@ output = "pass_fail"
 name = "exists"
 version = "1.0.0"
 
-[[ignore]]
-file_patterns = [
-  "**/ignores/**.sh",
-  "!**/dont_ignore/**.sh",
-  "**/back_to_ignore/**.sh",
-  "!**/back_to_dont_ignore/**.sh"
-]
+[[exclude]]
+file_patterns = ["**/ignore.sh"]
+plugins = ["exists"]

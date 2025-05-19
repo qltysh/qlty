@@ -161,10 +161,11 @@ impl Builder {
 
         if !config.ignore.is_empty() {
             eprintln!(
-                "{} The `{}` field in qlty.toml is deprecated. Please use `{}` instead.",
+                "{} The `{}` field in qlty.toml is deprecated. Please use `{}` or `{}` instead.",
                 style("WARNING:").bold().yellow(),
                 style("ignore").bold(),
-                style("exclude").bold()
+                style("exclude").bold(),
+                style("exclude_patterns").bold()
             );
 
             for ignore in &config.ignore {

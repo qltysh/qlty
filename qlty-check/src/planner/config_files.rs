@@ -1,7 +1,6 @@
 use super::{config::enabled_plugins, Planner};
 use anyhow::{Context, Result};
 use globset::{GlobBuilder, GlobSet, GlobSetBuilder};
-use qlty_config::config::Exclude;
 use serde::Serialize;
 use std::{
     collections::HashMap,
@@ -64,18 +63,16 @@ pub fn config_globset(config_files: &Vec<PathBuf>) -> Result<GlobSet> {
     Ok(globset.build()?)
 }
 
-fn exclude_globset(exclude: &Vec<Exclude>) -> Result<GlobSet> {
+fn exclude_globset(exclude_patterns: &Vec<String>) -> Result<GlobSet> {
     let mut globset = GlobSetBuilder::new();
 
-    for exclude in exclude {
-        for pattern in &exclude.file_patterns {
-            let glob = GlobBuilder::new(pattern)
-                .literal_separator(true)
-                .build()
-                .with_context(|| format!("Failed to build glob for pattern: {}", pattern))?;
+    for pattern in exclude_patterns {
+        let glob = GlobBuilder::new(pattern)
+            .literal_separator(true)
+            .build()
+            .with_context(|| format!("Failed to build glob for pattern: {}", pattern))?;
 
-            globset.add(glob);
-        }
+        globset.add(glob);
     }
 
     Ok(globset.build()?)
@@ -93,7 +90,7 @@ pub fn plugin_configs(planner: &Planner) -> Result<HashMap<String, Vec<PluginCon
     }
 
     let mut configs: HashMap<String, Vec<PluginConfigFile>> = HashMap::new();
-    let exclude_globset = exclude_globset(&planner.config.exclude)?;
+    let exclude_globset = exclude_globset(&planner.config.exclude_patterns)?;
 
     for entry in planner.workspace.walker() {
         let entry = entry?;

@@ -2,15 +2,28 @@ use crate::config::issue_transformer::IssueTransformer;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use qlty_types::analysis::v1::Issue;
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::sync::RwLock;
+
+fn ensure_non_empty_vec<'de, D, T>(deserializer: D) -> Result<Vec<T>, D::Error>
+where
+    D: Deserializer<'de>,
+    T: Deserialize<'de>,
+{
+    let vec = Vec::<T>::deserialize(deserializer)?;
+    if vec.is_empty() {
+        Err(serde::de::Error::custom("Vector cannot be empty"))
+    } else {
+        Ok(vec)
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
 pub struct Exclude {
-    #[serde(default = "default_exclude_file_patterns")]
+    #[serde(deserialize_with = "ensure_non_empty_vec")]
     pub file_patterns: Vec<String>,
 
-    #[serde(default)]
+    #[serde(deserialize_with = "ensure_non_empty_vec")]
     pub plugins: Vec<String>,
 
     #[serde(skip)]
@@ -25,10 +38,6 @@ impl Clone for Exclude {
             glob_set: RwLock::new(None),
         }
     }
-}
-
-fn default_exclude_file_patterns() -> Vec<String> {
-    vec!["*".to_string()]
 }
 
 impl IssueTransformer for Exclude {
