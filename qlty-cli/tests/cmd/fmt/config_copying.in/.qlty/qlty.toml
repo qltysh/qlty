@@ -5,7 +5,7 @@ file_types = ["shell"]
 
 [plugins.definitions.sample.drivers.format]
 prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd"
-script = "ls -l deep/nested/config.json"
+script = "ls -l ${config_file}"
 config_files = ["config.json"]
 success_codes = [0]
 output = "rewrite"
