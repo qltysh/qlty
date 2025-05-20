@@ -822,6 +822,10 @@ fn default_plugin_drivers() -> Vec<String> {
 pub enum CheckTrigger {
     #[serde(rename = "manual")]
     Manual,
+    #[serde(rename = "ide")]
+    Ide,
+    #[serde(rename = "agent")]
+    Agent,
     #[serde(rename = "pre-commit")]
     PreCommit,
     #[serde(rename = "pre-push")]
