@@ -135,7 +135,7 @@ tree-sitter-rust = "0.21.2"
 tree-sitter-swift = "0.5.0"
 tree-sitter-typescript = "0.21.2"
 trycmd = "0.15.8"
-ureq = { version = "2.12.1", features = ["json"] }
+ureq = { version = "2.12.1", features = ["json", "proxy-from-env"] }
 url = "2.5.4"
 uuid = { version = "1.14.0", features = ["v4"] }
 walkdir = "2.5.0"
