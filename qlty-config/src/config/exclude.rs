@@ -5,25 +5,43 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::sync::RwLock;
 
-fn ensure_non_empty_vec<'de, D, T>(deserializer: D) -> Result<Vec<T>, D::Error>
+fn validate_plugins<'de, D, T>(deserializer: D) -> Result<Vec<T>, D::Error>
 where
     D: Deserializer<'de>,
     T: Deserialize<'de>,
 {
     let vec = Vec::<T>::deserialize(deserializer)?;
     if vec.is_empty() {
-        Err(serde::de::Error::custom("Vector cannot be empty"))
+        Err(serde::de::Error::custom("Exclude plugins cannot be empty"))
     } else {
         Ok(vec)
     }
 }
 
+fn validate_file_patterns<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let vec = Vec::<String>::deserialize(deserializer)?;
+    if vec.is_empty() {
+        return Err(serde::de::Error::custom(
+            "Exclude file_patterns cannot be empty",
+        ));
+    }
+    if vec.iter().any(|s| s.starts_with('!')) {
+        return Err(serde::de::Error::custom(
+            "Exclude file_patterns cannot contain patterns starting with '!'",
+        ));
+    }
+    Ok(vec)
+}
+
 #[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
 pub struct Exclude {
-    #[serde(deserialize_with = "ensure_non_empty_vec")]
+    #[serde(deserialize_with = "validate_file_patterns")]
     pub file_patterns: Vec<String>,
 
-    #[serde(deserialize_with = "ensure_non_empty_vec")]
+    #[serde(deserialize_with = "validate_plugins")]
     pub plugins: Vec<String>,
 
     #[serde(skip)]
@@ -102,5 +120,49 @@ impl Exclude {
             // TODO: Issues without a path are not filterable
             false
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use toml;
+
+    #[test]
+    fn test_file_patterns_non_empty() {
+        let toml = r#"file_patterns = ["*.rs"]
+plugins = ["foo"]"#;
+        let result: Result<Exclude, _> = toml::from_str(toml);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_file_patterns_empty() {
+        let toml = r#"file_patterns = []
+plugins = ["foo"]"#;
+        let result: Result<Exclude, _> = toml::from_str(toml);
+        assert!(result.is_err());
+        let err = format!("{}", result.unwrap_err());
+        assert!(err.contains("Exclude file_patterns cannot be empty"));
+    }
+
+    #[test]
+    fn test_file_patterns_bang_prefix() {
+        let toml = r#"file_patterns = ["!foo.rs"]
+plugins = ["foo"]"#;
+        let result: Result<Exclude, _> = toml::from_str(toml);
+        assert!(result.is_err());
+        let err = format!("{}", result.unwrap_err());
+        assert!(err.contains("Exclude file_patterns cannot contain patterns starting with '!'"));
+    }
+
+    #[test]
+    fn test_plugins_empty() {
+        let toml = r#"file_patterns = ["*.rs"]
+plugins = []"#;
+        let result: Result<Exclude, _> = toml::from_str(toml);
+        assert!(result.is_err());
+        let err = format!("{}", result.unwrap_err());
+        assert!(err.contains("Exclude plugins cannot be empty"));
     }
 }

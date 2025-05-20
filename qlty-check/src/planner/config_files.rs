@@ -97,8 +97,6 @@ pub fn plugin_configs(planner: &Planner) -> Result<HashMap<String, Vec<PluginCon
         if let Some(os_str) = entry.path().file_name() {
             let file_name = os_str.to_os_string();
             for plugin_config in &plugins_configs {
-                // Why do we have exclude_globset.is_match(entry.path()) here?!
-                // If you want to exclude the file, you should not add it to the configs.
                 if plugin_config.config_globset.is_match(&file_name)
                     && !exclude_globset.is_match(entry.path())
                 {
