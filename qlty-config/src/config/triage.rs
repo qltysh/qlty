@@ -5,7 +5,7 @@ use globset::{Glob, GlobSet, GlobSetBuilder};
 use qlty_types::analysis::v1::{Category, Issue, Level};
 use qlty_types::{category_from_str, level_from_str};
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::sync::RwLock;
 
 #[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
@@ -58,19 +58,19 @@ impl<'de> Deserialize<'de> for Set {
         struct SetHelper {
             #[serde(default)]
             level: Option<String>,
-            
+
             #[serde(default)]
             category: Option<String>,
-            
+
             #[serde(default)]
             mode: Option<PluginMode>,
-            
+
             #[serde(default)]
             ignored: bool,
         }
 
         let helper = SetHelper::deserialize(deserializer)?;
-        
+
         Ok(Set {
             level: helper.level.as_deref().map(level_from_str),
             category: helper.category.as_deref().map(category_from_str),

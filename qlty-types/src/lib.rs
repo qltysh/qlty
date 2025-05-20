@@ -3,7 +3,6 @@ use schemars::{
     schema::{InstanceType, Schema, SchemaObject, SingleOrVec},
     JsonSchema,
 };
-use serde_json;
 use std::cmp::Ordering;
 use std::{
     collections::HashMap,
@@ -395,8 +394,10 @@ impl JsonSchema for analysis::v1::Level {
     }
 
     fn json_schema(_gen: &mut schemars::gen::SchemaGenerator) -> Schema {
-        let mut schema = SchemaObject::default();
-        schema.instance_type = Some(SingleOrVec::Single(Box::new(InstanceType::String)));
+        let mut schema = SchemaObject {
+            instance_type: Some(SingleOrVec::Single(Box::new(InstanceType::String))),
+            ..Default::default()
+        };
 
         let enum_values = vec![
             serde_json::Value::String("unspecified".to_owned()),
@@ -419,8 +420,10 @@ impl JsonSchema for analysis::v1::Category {
     }
 
     fn json_schema(_gen: &mut schemars::gen::SchemaGenerator) -> Schema {
-        let mut schema = SchemaObject::default();
-        schema.instance_type = Some(SingleOrVec::Single(Box::new(InstanceType::String)));
+        let mut schema = SchemaObject {
+            instance_type: Some(SingleOrVec::Single(Box::new(InstanceType::String))),
+            ..Default::default()
+        };
 
         let enum_values = vec![
             serde_json::Value::String("unspecified".to_owned()),
