@@ -213,7 +213,7 @@ impl Download {
         let tar = GzDecoder::new(reader);
         let mut archive = Archive::new(tar);
         self.extract_archive(&mut archive, directory)
-            .with_context(|| format!("Error extracting tar.gz archive from {}", url))?;
+            .with_context(|| format!("Error extracting tar.gz archive from {url}"))?;
         Ok(())
     }
 
@@ -222,20 +222,20 @@ impl Download {
         let url = self.url()?;
         let response = ureq::get(&url)
             .call()
-            .with_context(|| format!("Error downloading file from {}", url))?;
+            .with_context(|| format!("Error downloading file from {url}"))?;
 
         let response_reader = response.into_reader();
         let mut reader = BufReader::new(response_reader);
         let mut tar: Vec<u8> = Vec::new();
 
         lzma_rs::xz_decompress(&mut reader, &mut tar)
-            .with_context(|| format!("Failed to decompress xz file"))?;
+            .with_context(|| "Failed to decompress xz file".to_string())?;
 
         let cursor = Cursor::new(tar);
         let mut archive = Archive::new(cursor);
 
         self.extract_archive(&mut archive, directory)
-            .with_context(|| format!("Failed to extract tar archive"))
+            .with_context(|| "Failed to extract tar archive".to_string())
     }
 
     fn extract_archive<R: std::io::Read>(
