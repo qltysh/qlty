@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## v0.531.0 (2025-05-20)
+
+### New
+
+- Add extra trigger options: agent, ide (#2063)
 
 ### Improved
 
@@ -14,6 +18,10 @@
 - Fix loading deep config files into staging (#2058)
 
 Thank you @raybrownco for your contribution!
+
+## v0.530.0 (2025-05-20)
+
+This release failed and this version does not exist.
 
 ## v0.529.0 (2025-05-16)
 
