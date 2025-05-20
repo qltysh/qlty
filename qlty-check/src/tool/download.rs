@@ -3,7 +3,8 @@ use super::installations::write_to_file;
 use super::Tool;
 use super::ToolType;
 use crate::ui::{ProgressBar, ProgressTask};
-use anyhow::{anyhow, bail, Result};
+use anyhow::Context as _;
+use anyhow::{anyhow, Result};
 use chrono::Utc;
 use flate2::read::GzDecoder;
 use itertools::Itertools;
@@ -124,23 +125,37 @@ impl Download {
             self.url()?,
             binary_path.display()
         );
-        match ureq::get(&self.url()?).call() {
-            Ok(response) => {
-                let mut reader = response.into_reader();
-                let mut file = File::create(binary_path)?;
-                std::io::copy(&mut reader, &mut file)?;
 
-                #[cfg(unix)]
-                {
-                    let mut perms = file.metadata()?.permissions();
-                    perms.set_mode(0o755);
-                    file.set_permissions(perms)?;
-                }
+        let url = self.url().with_context(|| "Failed to get download URL")?;
 
-                Ok(())
-            }
-            Err(_) => bail!("Error downloading file"),
+        let response = ureq::get(&url)
+            .call()
+            .with_context(|| format!("Error downloading file from {}", url))?;
+
+        let mut reader = response.into_reader();
+        let mut file = File::create(&binary_path)
+            .with_context(|| format!("Error creating file at {}", binary_path.display()))?;
+
+        std::io::copy(&mut reader, &mut file).with_context(|| {
+            format!("Error copying downloaded data to {}", binary_path.display())
+        })?;
+
+        #[cfg(unix)]
+        {
+            let mut perms = file
+                .metadata()
+                .with_context(|| {
+                    format!("Error retrieving metadata for {}", binary_path.display())
+                })?
+                .permissions();
+
+            perms.set_mode(0o755);
+
+            file.set_permissions(perms).with_context(|| {
+                format!("Error setting permissions for {}", binary_path.display())
+            })?;
         }
+        Ok(())
     }
 
     fn install_gz(&self, directory: &Path, tool_name: &str) -> Result<()> {
@@ -152,57 +167,75 @@ impl Download {
             self.url()?,
             binary_path.display()
         );
-        match ureq::get(&self.url()?).call() {
-            Ok(response) => {
-                let reader = response.into_reader();
-                let mut decoder = GzDecoder::new(reader);
 
-                let mut file = File::create(binary_path)?;
-                std::io::copy(&mut decoder, &mut file)?;
+        let url = self.url().with_context(|| "Failed to get download URL")?;
 
-                #[cfg(unix)]
-                {
-                    let mut perms = file.metadata()?.permissions();
-                    perms.set_mode(0o755);
-                    file.set_permissions(perms)?;
-                }
+        let response = ureq::get(&url)
+            .call()
+            .with_context(|| format!("Error downloading file from {}", url))?;
 
-                Ok(())
-            }
-            Err(_) => bail!("Error downloading file"),
+        let reader = response.into_reader();
+        let mut decoder = GzDecoder::new(reader);
+
+        let mut file = File::create(&binary_path)
+            .with_context(|| format!("Error creating file at {}", binary_path.display()))?;
+
+        std::io::copy(&mut decoder, &mut file).with_context(|| {
+            format!("Error copying downloaded data to {}", binary_path.display())
+        })?;
+
+        #[cfg(unix)]
+        {
+            let mut perms = file
+                .metadata()
+                .with_context(|| {
+                    format!("Error retrieving metadata for {}", binary_path.display())
+                })?
+                .permissions();
+
+            perms.set_mode(0o755);
+
+            file.set_permissions(perms).with_context(|| {
+                format!("Error setting permissions for {}", binary_path.display())
+            })?;
         }
+
+        Ok(())
     }
 
     fn install_targz(&self, directory: &Path) -> Result<()> {
         info!("Downloading (tar.gz) {}", self.url()?);
-        match ureq::get(&self.url()?).call() {
-            Ok(response) => {
-                let reader = response.into_reader();
-                let tar = GzDecoder::new(reader);
-                let mut archive = Archive::new(tar);
-                self.extract_archive(&mut archive, directory)?;
-                Ok(())
-            }
-            Err(_) => bail!("Error downloading file"),
-        }
+        let url = self.url()?;
+        let response = ureq::get(&url)
+            .call()
+            .with_context(|| format!("Error downloading file from {}", url))?;
+        let reader = response.into_reader();
+        let tar = GzDecoder::new(reader);
+        let mut archive = Archive::new(tar);
+        self.extract_archive(&mut archive, directory)
+            .with_context(|| format!("Error extracting tar.gz archive from {}", url))?;
+        Ok(())
     }
 
     fn install_tarxz(&self, directory: &Path) -> Result<()> {
         info!("Downloading (tar.xz) {}", self.url()?);
-        match ureq::get(&self.url()?).call() {
-            Ok(response) => {
-                let response_reader = response.into_reader();
-                let mut reader = BufReader::new(response_reader);
-                let mut tar: Vec<u8> = Vec::new();
-                lzma_rs::xz_decompress(&mut reader, &mut tar)
-                    .map_err(|e| anyhow!("Failed to decompress xz file: {:?}", e))?;
-                let cursor = Cursor::new(tar);
-                let mut archive = Archive::new(cursor);
-                self.extract_archive(&mut archive, directory)?;
-                Ok(())
-            }
-            Err(_) => bail!("Error downloading file"),
-        }
+        let url = self.url()?;
+        let response = ureq::get(&url)
+            .call()
+            .with_context(|| format!("Error downloading file from {}", url))?;
+
+        let response_reader = response.into_reader();
+        let mut reader = BufReader::new(response_reader);
+        let mut tar: Vec<u8> = Vec::new();
+
+        lzma_rs::xz_decompress(&mut reader, &mut tar)
+            .with_context(|| format!("Failed to decompress xz file"))?;
+
+        let cursor = Cursor::new(tar);
+        let mut archive = Archive::new(cursor);
+
+        self.extract_archive(&mut archive, directory)
+            .with_context(|| format!("Failed to extract tar archive"))
     }
 
     fn extract_archive<R: std::io::Read>(
@@ -244,16 +277,19 @@ impl Download {
     }
 
     fn install_zip(&self, directory: &Path) -> Result<()> {
-        match ureq::get(&self.url()?).call() {
-            Ok(response) => {
-                let mut reader = response.into_reader();
-                let mut file = tempfile()?;
-                std::io::copy(&mut reader, &mut file)?;
-                self.extract_zip(file, directory)?;
-                Ok(())
-            }
-            Err(_) => bail!("Error downloading file: {}", self.url()?),
-        }
+        let response = ureq::get(&self.url()?)
+            .call()
+            .with_context(|| format!("Error downloading file from {}", self.url().unwrap()))?;
+
+        let mut reader = response.into_reader();
+        let mut file = tempfile().with_context(|| "Failed to create a temporary file")?;
+
+        std::io::copy(&mut reader, &mut file)
+            .with_context(|| "Failed to copy response into a temporary file")?;
+
+        self.extract_zip(file, directory)
+            .with_context(|| "Failed to extract zip archive")?;
+        Ok(())
     }
 
     fn extract_zip(&self, file: File, directory: &Path) -> Result<()> {
