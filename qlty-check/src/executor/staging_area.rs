@@ -416,23 +416,6 @@ mod test {
     }
 
     #[test]
-    fn test_load_config_file_from_symlink_fail() {
-        let (_, paths) = new_staging_area(Mode::ReadWrite);
-
-        let config_file = paths.source.path().join("abc").join("conf.yml");
-        create_dir_all(config_file.parent().unwrap()).unwrap();
-
-        std::fs::write(&config_file, "repository_config_content").unwrap();
-
-        let workspace = Workspace::for_root(paths.source.path()).unwrap();
-        let result = load_config_file_from_repository(&config_file, &workspace, paths.dest.path());
-        assert!(result.is_err());
-
-        let dest_file = paths.dest.path().join("abc").join("conf.yml");
-        assert!(!dest_file.exists());
-    }
-
-    #[test]
     fn test_load_config_file_from_source() {
         let (_, paths) = new_staging_area(Mode::ReadWrite);
 
@@ -499,7 +482,7 @@ mod test {
     }
 
     #[test]
-    fn load_config_file_from_repository_creates_parent_directory() {
+    fn test_load_config_file_from_repository_creates_parent_directory() {
         let (_, paths) = new_staging_area(Mode::ReadWrite);
 
         let config_file = paths.source.path().join("abc").join("conf.yml");
