@@ -54,6 +54,11 @@ impl Tool for NodeJS {
         Some("node --version".to_string())
     }
 
+    fn install_max_retries(&self) -> u32 {
+        // We have observed that NodeJS downloads can sometimes fail intermittently
+        3
+    }
+
     fn clone_box(&self) -> Box<dyn Tool> {
         Box::new(self.clone())
     }

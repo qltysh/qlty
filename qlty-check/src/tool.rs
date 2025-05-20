@@ -58,8 +58,6 @@ fn exit_status_code(status: &std::process::ExitStatus) -> i32 {
     status.code().unwrap_or(1)
 }
 
-const MAX_TOOL_INSTALL_ATTEMPTS: u32 = 3;
-
 #[cfg(unix)]
 const BASE_SHELL_PATH: &[&str] = &["/usr/local/bin", "/usr/bin", "/bin", "/usr/sbin", "/sbin"];
 #[cfg(windows)]
@@ -320,7 +318,7 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn install_max_retries(&self) -> u32 {
-        MAX_TOOL_INSTALL_ATTEMPTS
+        0
     }
 
     fn install_with_retry(&self, task: &ProgressTask) -> Result<()> {
