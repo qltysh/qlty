@@ -252,6 +252,26 @@ pub fn load_config_file_from_qlty_dir(
     load_config_file_from(from, to)
 }
 
+fn ensure_parent_exists(to: impl AsRef<Path>) -> Result<()> {
+    let to = to.as_ref();
+    if let Some(to_dir) = to.parent() {
+        if !to_dir.exists() {
+            debug!("Creating destination dir: {:?}", to_dir);
+            create_dir_all(to_dir).with_context(|| {
+                format!("Failed to create workspace entries destination dir: {to_dir:?}")
+            })?;
+        }
+    } else {
+        // This should not happen, but if it does, we log an error
+        error!(
+            "No parent directory for destination file: {:?}, this could cause issues",
+            to
+        );
+    }
+
+    Ok(())
+}
+
 fn load_config_file_from(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<String> {
     let from = from.as_ref();
     let to = to.as_ref();
@@ -261,6 +281,8 @@ fn load_config_file_from(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result
         debug!("Config file already exists in workspace: {:?}", to);
         return Ok(to.display().to_string());
     }
+
+    ensure_parent_exists(to).ok();
 
     debug!("Symlinking config file: {:?} -> {:?}", from, to);
 
@@ -474,5 +496,26 @@ mod test {
 
         let content = std::fs::read_to_string(&dest_file).unwrap();
         assert_eq!(content, "destination_content");
+    }
+
+    #[test]
+    fn load_config_file_from_repository_creates_parent_directory() {
+        let (_, paths) = new_staging_area(Mode::ReadWrite);
+
+        let config_file = paths.source.path().join("abc").join("conf.yml");
+        create_dir_all(config_file.parent().unwrap()).unwrap();
+        std::fs::write(&config_file, "repository_config_content").unwrap();
+
+        let dest_file = paths.dest.path().join("abc").join("conf.yml");
+        let dest_parent = dest_file.parent().unwrap();
+
+        let workspace = Workspace::for_root(paths.source.path()).unwrap();
+        let result = load_config_file_from_repository(&config_file, &workspace, paths.dest.path());
+        assert!(result.is_ok());
+
+        assert!(dest_parent.exists());
+        assert!(dest_file.exists());
+        let content = std::fs::read_to_string(&dest_file).unwrap();
+        assert_eq!(content, "repository_config_content");
     }
 }
