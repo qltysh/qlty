@@ -951,6 +951,10 @@ mod test {
         fn install(&self, _task: &ProgressTask) -> Result<()> {
             bail!("Error during install");
         }
+
+        fn install_max_retries(&self) -> u32 {
+            3
+        }
     }
 
     #[test]
