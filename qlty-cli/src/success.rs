@@ -4,6 +4,8 @@ use qlty_config::config::CheckTrigger;
 #[derive(clap::ValueEnum, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Trigger {
     Manual,
+    Ide,
+    Agent,
     PreCommit,
     PrePush,
     Build,
@@ -13,6 +15,8 @@ impl From<Trigger> for CheckTrigger {
     fn from(trigger: Trigger) -> Self {
         match trigger {
             Trigger::Manual => CheckTrigger::Manual,
+            Trigger::Ide => CheckTrigger::Ide,
+            Trigger::Agent => CheckTrigger::Agent,
             Trigger::PreCommit => CheckTrigger::PreCommit,
             Trigger::PrePush => CheckTrigger::PrePush,
             Trigger::Build => CheckTrigger::Build,
