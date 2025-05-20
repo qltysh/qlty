@@ -182,10 +182,6 @@ impl Tool for Ruby {
         self.platform_tool.version(&self.version)
     }
 
-    fn install_max_retries(&self) -> u32 {
-        0 // no retries for Ruby
-    }
-
     fn install(&self, task: &ProgressTask) -> Result<()> {
         self.platform_tool.install(self, task, self.download())
     }
