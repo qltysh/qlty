@@ -208,7 +208,7 @@ impl Download {
         let url = self.url()?;
         let response = ureq::get(&url)
             .call()
-            .with_context(|| format!("Error downloading file from {}", url))?;
+            .with_context(|| format!("Error downloading file from {url}"))?;
         let reader = response.into_reader();
         let tar = GzDecoder::new(reader);
         let mut archive = Archive::new(tar);
