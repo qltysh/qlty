@@ -1,6 +1,21 @@
 # Changelog
 
-## v0.528.0 (2025-05-16)
+## Unreleased
+
+### Improved
+
+- Detect `biome.jsonc` as a config file for Biome plugin (#2059)
+- Tighten tool install retry policy (#2060)
+- Better error messages for errored downloads (#2055)
+- Support HTTP proxies from env vars for tool downloads (#2056)
+
+### Fixed
+
+- Fix loading deep config files into staging (#2058)
+
+Thank you @raybrownco for your contribution!
+
+## v0.529.0 (2025-05-16)
 
 ### Fixed
 
