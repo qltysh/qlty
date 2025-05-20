@@ -282,7 +282,7 @@ fn load_config_file_from(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result
         return Ok(to.display().to_string());
     }
 
-    ensure_parent_exists(to).ok();
+    ensure_parent_exists(to)?;
 
     debug!("Symlinking config file: {:?} -> {:?}", from, to);
 
