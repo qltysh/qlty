@@ -1,0 +1,4 @@
+bin.name = "qlty"
+args = ["fmt", "--all", "--verbose"]
+status.code = 0
+stderr = ""
