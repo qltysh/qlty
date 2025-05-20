@@ -130,7 +130,7 @@ impl Download {
 
         let response = ureq::get(&url)
             .call()
-            .with_context(|| format!("Error downloading file from {}", url))?;
+            .with_context(|| format!("Error downloading file from {url}"))?;
 
         let mut reader = response.into_reader();
         let mut file = File::create(&binary_path)
