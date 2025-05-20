@@ -1,0 +1,16 @@
+config_version = "0"
+
+[plugins.definitions.sample]
+file_types = ["shell"]
+
+[plugins.definitions.sample.drivers.format]
+prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd"
+script = "ls -l ${config_file}"
+config_files = ["config.json"]
+success_codes = [0]
+output = "rewrite"
+driver_type = "formatter"
+
+[[plugin]]
+name = "sample"
+version = "1.0.0"

@@ -29,6 +29,11 @@ fn check_tests() {
 }
 
 #[test]
+fn fmt_tests() {
+    setup_and_run_test_cases("tests/cmd/fmt/*.toml");
+}
+
+#[test]
 #[ignore] // ignore tests that may require network connection
 fn network_tests() {
     // only run .toml files in check/network/*/ directory
