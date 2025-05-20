@@ -1,0 +1,21 @@
+config_version = "0"
+
+[[plugins.downloads.terraform-fmt.system]]
+url = "https://releases.hashicorp.com/terraform/${version}/terraform_${version}_darwin_amd64.zip"
+download_type = "zip"
+cpu = "aarch64"
+os = "macos"
+# strip_components = 0
+
+[plugins.definitions.terraform-fmt]
+downloads = ["terraform-fmt"]
+file_types = ["terraform"]
+version_command = "terraform -version"
+
+[plugins.definitions.terraform-fmt.drivers.format]
+driver_type = "formatter"
+script = "terraform fmt ${target}"
+success_codes = [0]
+output = "rewrite"
+batch = true
+
