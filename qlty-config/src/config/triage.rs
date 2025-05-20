@@ -1,5 +1,5 @@
 use super::ignore::is_rule_issue_match;
-use super::IssueMode;
+use super::plugin::PluginMode;
 use crate::config::issue_transformer::IssueTransformer;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use qlty_types::category_from_str;
@@ -43,7 +43,7 @@ pub struct Set {
     pub category: Option<String>,
 
     #[serde(default)]
-    pub mode: Option<IssueMode>,
+    pub mode: Option<PluginMode>,
 
     #[serde(default)]
     pub ignored: bool,
