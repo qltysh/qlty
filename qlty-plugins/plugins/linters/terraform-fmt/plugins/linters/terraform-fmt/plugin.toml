@@ -1,9 +1,11 @@
 config_version = "0"
 
 [[plugins.downloads.terraform-fmt.system]]
-url = "https://releases.hashicorp.com/terraform/${version}/terraform_${version}_darwin_amd64.zip"
-download_type = "zip"
-cpu = "aarch64"
+
++url = "https://releases.hashicorp.com/terraform/${version}/terraform_${version}_darwin_arm64.zip"
++download_type = "zip"
++cpu = "aarch64"
+
 os = "macos"
 # strip_components = 0
 
