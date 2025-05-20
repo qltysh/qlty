@@ -1,4 +1,9 @@
 use pbjson_types::{value::Kind, Struct, Value};
+use schemars::{
+    schema::{InstanceType, Schema, SchemaObject, SingleOrVec},
+    JsonSchema,
+};
+use serde_json;
 use std::cmp::Ordering;
 use std::{
     collections::HashMap,
@@ -381,5 +386,63 @@ impl Add for tests::v1::CoverageSummary {
 impl AddAssign for tests::v1::CoverageSummary {
     fn add_assign(&mut self, other: Self) {
         *self = *self + other;
+    }
+}
+
+impl JsonSchema for analysis::v1::Level {
+    fn schema_name() -> String {
+        "Level".to_owned()
+    }
+
+    fn json_schema(_gen: &mut schemars::gen::SchemaGenerator) -> Schema {
+        let mut schema = SchemaObject::default();
+        schema.instance_type = Some(SingleOrVec::Single(Box::new(InstanceType::String)));
+
+        let enum_values = vec![
+            serde_json::Value::String("unspecified".to_owned()),
+            serde_json::Value::String("note".to_owned()),
+            serde_json::Value::String("fmt".to_owned()),
+            serde_json::Value::String("low".to_owned()),
+            serde_json::Value::String("medium".to_owned()),
+            serde_json::Value::String("high".to_owned()),
+        ];
+
+        schema.enum_values = Some(enum_values);
+
+        Schema::Object(schema)
+    }
+}
+
+impl JsonSchema for analysis::v1::Category {
+    fn schema_name() -> String {
+        "Category".to_owned()
+    }
+
+    fn json_schema(_gen: &mut schemars::gen::SchemaGenerator) -> Schema {
+        let mut schema = SchemaObject::default();
+        schema.instance_type = Some(SingleOrVec::Single(Box::new(InstanceType::String)));
+
+        let enum_values = vec![
+            serde_json::Value::String("unspecified".to_owned()),
+            serde_json::Value::String("bug".to_owned()),
+            serde_json::Value::String("vulnerability".to_owned()),
+            serde_json::Value::String("structure".to_owned()),
+            serde_json::Value::String("duplication".to_owned()),
+            serde_json::Value::String("security_hotspot".to_owned()),
+            serde_json::Value::String("performance".to_owned()),
+            serde_json::Value::String("documentation".to_owned()),
+            serde_json::Value::String("type_check".to_owned()),
+            serde_json::Value::String("style".to_owned()),
+            serde_json::Value::String("anti_pattern".to_owned()),
+            serde_json::Value::String("accessibility".to_owned()),
+            serde_json::Value::String("dead_code".to_owned()),
+            serde_json::Value::String("lint".to_owned()),
+            serde_json::Value::String("secret".to_owned()),
+            serde_json::Value::String("dependency_alert".to_owned()),
+        ];
+
+        schema.enum_values = Some(enum_values);
+
+        Schema::Object(schema)
     }
 }

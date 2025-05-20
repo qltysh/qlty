@@ -2,10 +2,10 @@ use super::ignore::is_rule_issue_match;
 use super::plugin::PluginMode;
 use crate::config::issue_transformer::IssueTransformer;
 use globset::{Glob, GlobSet, GlobSetBuilder};
-use qlty_types::category_from_str;
-use qlty_types::{analysis::v1::Issue, level_from_str};
+use qlty_types::analysis::v1::{Category, Issue, Level};
+use qlty_types::{category_from_str, level_from_str};
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Deserializer};
 use std::sync::RwLock;
 
 #[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
@@ -34,19 +34,50 @@ impl Clone for Match {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Default, Clone, JsonSchema)]
+#[derive(Debug, Serialize, Default, Clone, JsonSchema)]
 pub struct Set {
     #[serde(default)]
-    pub level: Option<String>,
+    pub level: Option<Level>,
 
     #[serde(default)]
-    pub category: Option<String>,
+    pub category: Option<Category>,
 
     #[serde(default)]
     pub mode: Option<PluginMode>,
 
     #[serde(default)]
     pub ignored: bool,
+}
+
+impl<'de> Deserialize<'de> for Set {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct SetHelper {
+            #[serde(default)]
+            level: Option<String>,
+            
+            #[serde(default)]
+            category: Option<String>,
+            
+            #[serde(default)]
+            mode: Option<PluginMode>,
+            
+            #[serde(default)]
+            ignored: bool,
+        }
+
+        let helper = SetHelper::deserialize(deserializer)?;
+        
+        Ok(Set {
+            level: helper.level.as_deref().map(level_from_str),
+            category: helper.category.as_deref().map(category_from_str),
+            mode: helper.mode,
+            ignored: helper.ignored,
+        })
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone, JsonSchema)]
@@ -111,11 +142,11 @@ impl IssueTransformer for Triage {
             let mut new_issue = issue.clone();
 
             if let Some(level) = &self.set.level {
-                new_issue.level = level_from_str(level).into();
+                new_issue.level = *level as i32;
             }
 
             if let Some(category) = &self.set.category {
-                new_issue.category = category_from_str(category).into();
+                new_issue.category = *category as i32;
             }
 
             if let Some(mode) = &self.set.mode {

@@ -21,7 +21,8 @@ use qlty_config::config::issue_transformer::IssueTransformer;
 use qlty_config::config::{DriverType, Match, PluginDef, Set, Triage};
 use qlty_config::config::{IssueMode, PluginMode};
 use qlty_config::{QltyConfig, Workspace};
-use qlty_types::analysis::v1::ExecutionVerb;
+use qlty_types::analysis::v1::ExecutionVerb; 
+use qlty_types::{level_from_str, category_from_str};
 use rayon::prelude::*;
 use std::collections::HashMap;
 use std::time::Instant;
@@ -291,8 +292,8 @@ impl Planner {
             for issue_override in &self.config.overrides {
                 triages.push(Triage {
                     set: Set {
-                        level: issue_override.level.clone(),
-                        category: issue_override.category.clone(),
+                        level: issue_override.level.as_ref().map(|l| level_from_str(l)),
+                        category: issue_override.category.as_ref().map(|c| category_from_str(c)),
                         mode: issue_override.mode.map(|m| match m {
                             IssueMode::Block => PluginMode::Block,
                             IssueMode::Comment => PluginMode::Comment,

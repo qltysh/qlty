@@ -19,5 +19,7 @@ clap.workspace = true
 pbjson-types.workspace = true
 pbjson.workspace = true
 prost.workspace = true
+schemars.workspace = true
 serde.workspace = true
+serde_json.workspace = true
 tree-sitter.workspace = true
