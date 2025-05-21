@@ -84,7 +84,7 @@ impl<'de> Deserialize<'de> for Set {
 pub struct Triage {
     #[serde(default)]
     #[serde(rename = "match")]
-    pub _match: Match,
+    pub r#match: Match,
 
     #[serde(default)]
     pub set: Set,
@@ -130,11 +130,11 @@ impl Match {
 
 impl IssueTransformer for Triage {
     fn initialize(&self) {
-        self._match.initialize();
+        self.r#match.initialize();
     }
 
     fn transform(&self, issue: Issue) -> Option<Issue> {
-        if self._match.applies_to_issue(&issue) {
+        if self.r#match.applies_to_issue(&issue) {
             if self.set.ignored {
                 return None;
             }

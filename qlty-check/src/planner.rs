@@ -299,7 +299,7 @@ impl Planner {
                         mode: issue_override.mode,
                         ..Default::default()
                     },
-                    _match: Match {
+                    r#match: Match {
                         plugins: issue_override.plugins.clone(),
                         rules: issue_override.rules.clone(),
                         file_patterns: issue_override.file_patterns.clone(),
