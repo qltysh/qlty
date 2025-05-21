@@ -19,7 +19,6 @@ use qlty_analysis::git::{compute_upstream, DiffLineFilter};
 use qlty_analysis::workspace_entries::TargetMode;
 use qlty_config::config::issue_transformer::IssueTransformer;
 use qlty_config::config::{DriverType, Match, PluginDef, Set, Triage};
-use qlty_config::config::{IssueMode, PluginMode};
 use qlty_config::{QltyConfig, Workspace};
 use qlty_types::analysis::v1::ExecutionVerb;
 use qlty_types::{category_from_str, level_from_str};
@@ -297,12 +296,7 @@ impl Planner {
                             .category
                             .as_ref()
                             .map(|c| category_from_str(c)),
-                        mode: issue_override.mode.map(|m| match m {
-                            IssueMode::Block => PluginMode::Block,
-                            IssueMode::Comment => PluginMode::Comment,
-                            IssueMode::Monitor => PluginMode::Monitor,
-                            IssueMode::Disabled => PluginMode::Monitor, // Mapping Disabled to Monitor as closest equivalent
-                        }),
+                        mode: issue_override.mode,
                         ..Default::default()
                     },
                     _match: Match {

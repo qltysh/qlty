@@ -26,7 +26,7 @@ pub use plugin::{
     CheckTrigger, DriverBatchBy, DriverDef, DriverType, EnabledPlugin, ExtraPackage,
     InvocationDirectoryDef, InvocationDirectoryType, IssueMode, OutputDestination, OutputFormat,
     OutputMissing, PackageFileCandidate, Platform, PluginDef, PluginEnvironment, PluginFetch,
-    PluginMode, Runtime, SuggestionMode, TargetDef, TargetType,
+    Runtime, SuggestionMode, TargetDef, TargetType,
 };
 pub use release::ReleaseDef;
 pub use source::SourceDef;

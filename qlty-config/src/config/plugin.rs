@@ -737,27 +737,6 @@ impl PluginFetch {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, Default, PartialEq, JsonSchema)]
-pub enum PluginMode {
-    #[default]
-    #[serde(rename = "block")]
-    Block = 1,
-    #[serde(rename = "comment")]
-    Comment = 2,
-    #[serde(rename = "monitor")]
-    Monitor = 3,
-}
-
-impl PluginMode {
-    pub fn to_str(&self) -> &'static str {
-        match self {
-            PluginMode::Block => "block",
-            PluginMode::Comment => "comment",
-            PluginMode::Monitor => "monitor",
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default, PartialEq, JsonSchema)]
 pub enum IssueMode {
     #[default]
     #[serde(rename = "block")]

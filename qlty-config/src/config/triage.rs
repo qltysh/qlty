@@ -1,5 +1,5 @@
 use super::ignore::is_rule_issue_match;
-use super::plugin::PluginMode;
+use super::IssueMode;
 use crate::config::issue_transformer::IssueTransformer;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use qlty_types::analysis::v1::{Category, Issue, Level};
@@ -43,7 +43,7 @@ pub struct Set {
     pub category: Option<Category>,
 
     #[serde(default)]
-    pub mode: Option<PluginMode>,
+    pub mode: Option<IssueMode>,
 
     #[serde(default)]
     pub ignored: bool,
@@ -63,7 +63,7 @@ impl<'de> Deserialize<'de> for Set {
             category: Option<String>,
 
             #[serde(default)]
-            mode: Option<PluginMode>,
+            mode: Option<IssueMode>,
 
             #[serde(default)]
             ignored: bool,
