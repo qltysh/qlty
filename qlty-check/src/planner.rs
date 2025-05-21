@@ -133,7 +133,7 @@ impl Planner {
         Ok(())
     }
 
-    pub fn compute_workspace_entries_strategy(&mut self) -> Result<()> {
+    fn compute_workspace_entries_strategy(&mut self) -> Result<()> {
         self.target_mode = Some(self.compute_target_mode());
 
         let mut builder = PluginWorkspaceEntryFinderBuilder {
@@ -152,10 +152,9 @@ impl Planner {
         Ok(())
     }
 
-    pub fn compute_enabled_plugins(&mut self) -> Result<()> {
+    fn compute_enabled_plugins(&mut self) -> Result<()> {
         self.active_plugins = enabled_plugins(self)?;
         self.plugin_configs = plugin_configs(self)?;
-
         Ok(())
     }
 
