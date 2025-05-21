@@ -1,4 +1,3 @@
-use self::config::enabled_plugins; //, enabled_runtime_template};
 use self::level_filter::LevelFilter;
 use self::plugin::PluginPlanner;
 use self::plugin_mode_transformer::PluginModeTransformer;
@@ -41,7 +40,7 @@ pub mod source_extractor;
 pub mod target;
 mod target_batcher;
 
-pub use config::plugin_supported_on_platform;
+pub use config::{enabled_plugins, plugin_supported_on_platform};
 pub use invocation_plan::InvocationPlan;
 pub use plan::Plan;
 pub use plugin_workspace_entry_finder_builder::PluginWorkspaceEntryFinderBuilder;
@@ -90,6 +89,10 @@ impl Planner {
             invocations: vec![],
             transformers: vec![],
         })
+    }
+
+    pub fn set_target_mode(&mut self, target_mode: TargetMode) {
+        self.target_mode = Some(target_mode);
     }
 
     pub fn compute(&mut self) -> Result<Plan, Error> {

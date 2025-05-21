@@ -283,6 +283,7 @@ impl serde::Serialize for ExecutionVerb {
             Self::Check => "EXECUTION_VERB_CHECK",
             Self::Fmt => "EXECUTION_VERB_FMT",
             Self::Validate => "EXECUTION_VERB_VALIDATE",
+            Self::Install => "EXECUTION_VERB_INSTALL",
         };
         serializer.serialize_str(variant)
     }
@@ -298,6 +299,7 @@ impl<'de> serde::Deserialize<'de> for ExecutionVerb {
             "EXECUTION_VERB_CHECK",
             "EXECUTION_VERB_FMT",
             "EXECUTION_VERB_VALIDATE",
+            "EXECUTION_VERB_INSTALL",
         ];
 
         struct GeneratedVisitor;
@@ -342,6 +344,7 @@ impl<'de> serde::Deserialize<'de> for ExecutionVerb {
                     "EXECUTION_VERB_CHECK" => Ok(ExecutionVerb::Check),
                     "EXECUTION_VERB_FMT" => Ok(ExecutionVerb::Fmt),
                     "EXECUTION_VERB_VALIDATE" => Ok(ExecutionVerb::Validate),
+                    "EXECUTION_VERB_INSTALL" => Ok(ExecutionVerb::Install),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }
