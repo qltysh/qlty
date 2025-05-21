@@ -1,6 +1,7 @@
 use crate::{Arguments, CommandError, CommandSuccess};
 use anyhow::{Context, Result};
 use clap::Args;
+use qlty_analysis::workspace_entries::TargetMode;
 use qlty_check::planner::Plan;
 use qlty_check::tool::tool_builder::ToolBuilder;
 use qlty_check::{CheckFilter, Executor, Planner, Progress, Settings, Tool};
@@ -43,7 +44,7 @@ impl Install {
             }];
         }
 
-        let mut planner = Planner::new(ExecutionVerb::Unspecified, &settings)?;
+        let mut planner = Planner::new(ExecutionVerb::Install, &settings)?;
 
         planner.compute_workspace_entries_strategy()?;
         planner.compute_enabled_plugins()?;
