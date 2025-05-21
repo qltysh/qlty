@@ -2,7 +2,7 @@ use crate::{Arguments, CommandError, CommandSuccess};
 use anyhow::{Context, Result};
 use clap::Args;
 use qlty_analysis::workspace_entries::TargetMode;
-use qlty_check::planner::Plan;
+use qlty_check::planner::{enabled_plugins, Plan};
 use qlty_check::tool::tool_builder::ToolBuilder;
 use qlty_check::{CheckFilter, Executor, Planner, Progress, Settings, Tool};
 use qlty_config::Workspace;
@@ -46,10 +46,8 @@ impl Install {
 
         let mut planner = Planner::new(ExecutionVerb::Install, &settings)?;
 
-        planner.compute_workspace_entries_strategy()?;
-        planner.compute_enabled_plugins()?;
-
-        let active_plugins = planner.active_plugins.clone();
+        planner.set_target_mode(TargetMode::All);
+        let active_plugins = enabled_plugins(&planner)?;
 
         let mut tools = vec![];
         for active_plugin in active_plugins {
