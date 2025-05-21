@@ -33,8 +33,10 @@ impl Install {
         workspace.fetch_sources()?;
         let config = workspace.config()?;
 
-        let mut settings = Settings::default();
-        settings.root = workspace.root.clone();
+        let mut settings = Settings {
+            root: workspace.root.clone(),
+            ..Default::default()
+        };
 
         if let Some(filter) = &self.filter {
             warn!("Filtering plugins: {}", filter);
