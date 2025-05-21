@@ -63,7 +63,7 @@ pub struct Planner {
     target_mode: Option<TargetMode>,
     workspace_entry_finder_builder: Option<PluginWorkspaceEntryFinderBuilder>,
     cache_hits: Vec<IssuesCacheHit>,
-    active_plugins: Vec<ActivePlugin>,
+    pub active_plugins: Vec<ActivePlugin>,
     plugin_configs: HashMap<String, Vec<PluginConfigFile>>,
     invocations: Vec<InvocationPlan>,
     transformers: Vec<Box<dyn IssueTransformer>>,
@@ -130,7 +130,7 @@ impl Planner {
         Ok(())
     }
 
-    fn compute_workspace_entries_strategy(&mut self) -> Result<()> {
+    pub fn compute_workspace_entries_strategy(&mut self) -> Result<()> {
         self.target_mode = Some(self.compute_target_mode());
 
         let mut builder = PluginWorkspaceEntryFinderBuilder {
@@ -149,9 +149,10 @@ impl Planner {
         Ok(())
     }
 
-    fn compute_enabled_plugins(&mut self) -> Result<()> {
+    pub fn compute_enabled_plugins(&mut self) -> Result<()> {
         self.active_plugins = enabled_plugins(self)?;
         self.plugin_configs = plugin_configs(self)?;
+
         Ok(())
     }
 

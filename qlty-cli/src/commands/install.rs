@@ -1,11 +1,12 @@
 use crate::{Arguments, CommandError, CommandSuccess};
 use anyhow::{Context, Result};
 use clap::Args;
-use qlty_check::planner::{plugin_supported_on_platform, Plan};
+use qlty_check::planner::Plan;
 use qlty_check::tool::tool_builder::ToolBuilder;
-use qlty_check::{Executor, Planner, Progress, Tool};
-use qlty_config::config::IssueMode;
+use qlty_check::{CheckFilter, Executor, Planner, Progress, Settings, Tool};
 use qlty_config::Workspace;
+use qlty_types::analysis::v1::ExecutionVerb;
+use tracing::{debug, warn};
 
 #[derive(Args, Clone, Debug)]
 pub struct Install {
@@ -31,29 +32,31 @@ impl Install {
         workspace.fetch_sources()?;
         let config = workspace.config()?;
 
+        let mut settings = Settings::default();
+        settings.root = workspace.root.clone();
+
+        if let Some(filter) = &self.filter {
+            warn!("Filtering plugins: {}", filter);
+            settings.filters = vec![CheckFilter {
+                plugin: filter.clone(),
+                rule_key: None,
+            }];
+        }
+
+        let mut planner = Planner::new(ExecutionVerb::Unspecified, &settings)?;
+
+        planner.compute_workspace_entries_strategy()?;
+        planner.compute_enabled_plugins()?;
+
+        let active_plugins = planner.active_plugins.clone();
+
         let mut tools = vec![];
-        for plugin in &config.plugin {
-            if plugin.mode == IssueMode::Disabled {
-                continue;
-            }
-
-            if let Some(plugin_def) = config.plugins.definitions.get(&plugin.name) {
-                if !plugin_supported_on_platform(plugin_def, &plugin.name) {
-                    continue;
-                }
-
-                let mut plugin_def = plugin_def.clone();
-                if plugin.version != "latest" {
-                    plugin_def.version = Some(plugin.version.clone());
-                }
-
-                let tool = ToolBuilder::new(&config, &plugin.name, &plugin_def)
-                    .build_tool()
-                    .unwrap();
-                tools.push(tool);
-            } else {
-                log::warn!("Plugin {} not found in plugins definitions", plugin.name);
-            }
+        for active_plugin in active_plugins {
+            debug!("Building tool for plugin: {}", active_plugin.name);
+            let tool = ToolBuilder::new(&config, &active_plugin.name, &active_plugin.plugin)
+                .build_tool()
+                .with_context(|| format!("Failed to build tool for {}", active_plugin.name))?;
+            tools.push(tool);
         }
 
         let tools = Plan::all_unique_sorted_tools(tools);
