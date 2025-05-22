@@ -1,10 +1,34 @@
 # Changelog
 
+## Unreleased
+
+### New
+
+- Add terraform plugin support (#2067)
+
+### Fixed
+
+- Fix formatter invocation directory when runs from `target_directory` (#2066)
+
+Thank you @justinabrahms for your contribution!
+
+## v0.533.0 (2025-05-22)
+
+### Improved
+
+- Improve Git authentication to support credential configuration from gitconfig (#2068)
+
+## v0.532.0 (2025-05-21)
+
+### Improved
+
+- Improve behavior of `qlty install` to better align with `qlty check` (#2064)
+
 ## v0.531.0 (2025-05-20)
 
 ### New
 
-- Add extra trigger options: agent, ide (#2063)
+- Add extra trigger options: `agent`, `ide` (#2063)
 
 ### Improved
 
