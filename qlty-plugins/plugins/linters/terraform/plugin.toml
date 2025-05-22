@@ -49,5 +49,5 @@ script = "terraform fmt"
 success_codes = [0]
 runs_from = { type = "target_directory" }
 output = "rewrite"
-batch = "true"
+batch = true
 suggested = "never"

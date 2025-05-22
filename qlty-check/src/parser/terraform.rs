@@ -106,7 +106,7 @@ mod test {
   }
         "###;
 
-        let issues = Terraform::default().parse("sqlfluff", input);
+        let issues = Terraform::default().parse("terraform", input);
         insta::assert_yaml_snapshot!(issues.unwrap(), @r###"
         - tool: terraform
           message: Invalid quoted type constraints
