@@ -26,7 +26,6 @@ pub struct Settings {
     pub skip_errored_plugins: bool,
     pub emit_existing_issues: bool,
     pub auth_token: Option<String>,
-    pub skip_fetch_sources: bool,
 }
 
 impl Default for Settings {
@@ -54,7 +53,6 @@ impl Default for Settings {
             skip_errored_plugins: false,
             emit_existing_issues: false,
             auth_token: None,
-            skip_fetch_sources: false,
         }
     }
 }
