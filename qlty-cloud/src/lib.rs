@@ -1,5 +1,3 @@
-mod http;
-
 use anyhow::{anyhow, bail, Result};
 use qlty_config::version::QLTY_VERSION;
 use qlty_types::tests::v1::CoverageMetadata;
@@ -45,12 +43,12 @@ impl Client {
 
     pub fn post(&self, path: &str) -> Request {
         let url = self.build_url(path);
-        self.build_request(http::post(&url))
+        self.build_request(qlty_config::http::post(&url))
     }
 
     pub fn get(&self, path: &str) -> Request {
         let url = self.build_url(path);
-        self.build_request(http::get(&url))
+        self.build_request(qlty_config::http::get(&url))
     }
 
     fn build_url(&self, path: &str) -> String {

@@ -3,7 +3,6 @@ mod env;
 pub mod export;
 pub mod formats;
 pub mod git;
-mod http;
 pub mod parser;
 pub mod print;
 pub mod publish;

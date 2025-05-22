@@ -1,5 +1,4 @@
 use crate::export::CoverageExport;
-use crate::http;
 use crate::publish::Report;
 use anyhow::{anyhow, bail};
 use anyhow::{Context, Result};
@@ -79,7 +78,7 @@ impl Upload {
         content_type: &str,
         data: Vec<u8>,
     ) -> Result<(), anyhow::Error> {
-        let response = http::put(url)
+        let response = qlty_config::http::put(url)
             .set("Content-Type", content_type)
             .send_bytes(&data)
             .map_err(|err| {

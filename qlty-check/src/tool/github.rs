@@ -1,4 +1,3 @@
-use super::http;
 use super::installations::{initialize_installation, write_to_file};
 use super::ToolType;
 use crate::tool::Download;
@@ -399,7 +398,7 @@ impl GitHubReleaseTool {
     }
 
     fn get_release_assets(&self, url: &str) -> Result<Vec<serde_json::Value>> {
-        let mut request = http::get(url)
+        let mut request = qlty_config::http::get(url)
             .set(
                 "User-Agent",
                 &format!("{}/{}", USER_AGENT_PREFIX, QLTY_VERSION),

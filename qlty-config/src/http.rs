@@ -22,6 +22,14 @@ pub fn get(url: &str) -> ureq::Request {
     AGENT.get(url)
 }
 
+pub fn post(url: &str) -> ureq::Request {
+    AGENT.post(url)
+}
+
+pub fn put(url: &str) -> ureq::Request {
+    AGENT.put(url)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -29,6 +37,18 @@ mod tests {
     #[test]
     fn test_get_creates_request() {
         let request = get("https://example.com");
+        assert_eq!(request.url(), "https://example.com");
+    }
+
+    #[test]
+    fn test_post_creates_request() {
+        let request = post("https://example.com");
+        assert_eq!(request.url(), "https://example.com");
+    }
+
+    #[test]
+    fn test_put_creates_request() {
+        let request = put("https://example.com");
         assert_eq!(request.url(), "https://example.com");
     }
 }

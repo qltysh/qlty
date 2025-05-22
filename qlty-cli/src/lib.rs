@@ -6,7 +6,6 @@ mod errors;
 pub mod exe_name;
 pub mod export;
 pub mod format;
-mod http;
 mod initializer;
 mod logging;
 pub mod shell;
