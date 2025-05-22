@@ -47,6 +47,7 @@ suggested = "never"
 driver_type = "formatter"
 script = "terraform fmt"
 success_codes = [0]
+batch_by = "invocation_directory"
 runs_from = { type = "target_directory" }
 output = "rewrite"
 batch = true
