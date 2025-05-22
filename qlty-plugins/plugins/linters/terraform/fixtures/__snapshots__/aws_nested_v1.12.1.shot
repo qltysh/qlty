@@ -1,0 +1,82 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=terraform fixture=aws_nested version=1.12.1 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_STYLE",
+      "level": "LEVEL_FMT",
+      "location": {
+        "path": "aws.in.tf",
+      },
+      "message": "Incorrect formatting, autoformat by running \`qlty fmt\`.",
+      "mode": "MODE_BLOCK",
+      "onAddedLine": true,
+      "ruleKey": "fmt",
+      "tool": "terraform",
+    },
+    {
+      "category": "CATEGORY_STYLE",
+      "level": "LEVEL_FMT",
+      "location": {
+        "path": "nested/aws.in.tf",
+      },
+      "message": "Incorrect formatting, autoformat by running \`qlty fmt\`.",
+      "mode": "MODE_BLOCK",
+      "onAddedLine": true,
+      "ruleKey": "fmt",
+      "tool": "terraform",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "aws.in.tf",
+        "range": {
+          "endColumn": 15,
+          "endLine": 2,
+          "startColumn": 10,
+          "startLine": 2,
+        },
+      },
+      "message": "Invalid quoted type constraints",
+      "mode": "MODE_BLOCK",
+      "snippet": "  type = "map"",
+      "snippetWithContext": " variable "ssl_certificates" {
+  type = "map"
+  default = {
+      lorem-elb-us-west-3 = "lorem"
+        ipsum-elb-us-east-1 = "ipsum"
+          dolor-elb-us-east-2 = "dolor"
+  }
+}",
+      "tool": "terraform",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "nested/aws.in.tf",
+        "range": {
+          "endColumn": 15,
+          "endLine": 2,
+          "startColumn": 10,
+          "startLine": 2,
+        },
+      },
+      "message": "Invalid quoted type constraints",
+      "mode": "MODE_BLOCK",
+      "snippet": "  type = "map"",
+      "snippetWithContext": " variable "ssl_certificates" {
+  type = "map"
+  default = {
+      lorem-elb-us-west-3 = "lorem"
+        ipsum-elb-us-east-1 = "ipsum"
+          dolor-elb-us-east-2 = "dolor"
+  }
+}",
+      "tool": "terraform",
+    },
+  ],
+}
+`;

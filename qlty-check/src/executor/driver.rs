@@ -26,6 +26,7 @@ use crate::parser::shellcheck::Shellcheck;
 use crate::parser::sqlfluff::Sqlfluff;
 use crate::parser::stylelint::Stylelint;
 use crate::parser::taplo::Taplo;
+use crate::parser::terraform::Terraform;
 use crate::parser::trivy_sarif::TrivySarif;
 use crate::parser::trufflehog::Trufflehog;
 use crate::parser::tsc::Tsc;
@@ -466,6 +467,7 @@ impl Driver {
             OutputFormat::Stylelint => Box::new(Stylelint {}),
             OutputFormat::Sqlfluff => Box::new(Sqlfluff {}),
             OutputFormat::Taplo => Box::new(Taplo {}),
+            OutputFormat::Terraform => Box::new(Terraform {}),
             OutputFormat::Tsc => Box::new(Tsc {}),
 
             OutputFormat::TrivySarif => {

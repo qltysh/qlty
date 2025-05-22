@@ -238,7 +238,7 @@ globs = ["*.dml"]
 globs = ["*.ddl"]
 
 [file_types.terraform]
-globs = ["*.tf", "*.tf.json"]
+globs = ["*.tf", "*.tf.json", "*.tfvars"]
 
 [file_types.lockfile]
 globs = [
