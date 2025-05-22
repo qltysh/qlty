@@ -49,6 +49,7 @@ pub struct Build {
     #[arg(long)]
     pub skip_errored_plugins: bool,
 
+    /// Fetch sources before build
     #[arg(long)]
     pub fetch_sources: bool,
 
@@ -281,7 +282,7 @@ impl Build {
             ai: self.ai,
             r#unsafe: self.ai, // When AI is enabled, we also enable unsafe fixes
             skip_errored_plugins: self.skip_errored_plugins,
-            skip_fetch_sources: !self.fetch_sources,
+            skip_fetch_sources: true, // if we are supposed to fetch, it should have already been done
             emit_existing_issues: true,
             ..Default::default()
         };
