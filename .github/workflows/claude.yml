@@ -34,4 +34,28 @@ jobs:
         uses: anthropics/claude-code-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          allowed_tools: [
+            # Git inspection commands (read-only)
+            "Bash(git status)",
+            "Bash(git log)",
+            "Bash(git show)",
+            "Bash(git blame)",
+            "Bash(git reflog)",
+            "Bash(git stash list)",
+            "Bash(git ls-files)",
+            "Bash(git branch)",
+            "Bash(git tag)",
+            "Bash(git diff)",
+
+            # Cargo commands
+            "Bash(cargo build)",
+            "Bash(cargo test)",
+            "Bash(cargo check)",
+            "Bash(cargo clean)",
+
+            # Qlty commands
+            "Bash(qlty check)",
+            "Bash(qlty fmt)",
+          ]
+
 
