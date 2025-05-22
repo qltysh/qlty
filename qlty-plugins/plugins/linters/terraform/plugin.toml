@@ -1,0 +1,53 @@
+config_version = "0"
+
+[[plugins.downloads.terraform.system]]
+cpu = "x86_64"
+os = "linux"
+url = "https://releases.hashicorp.com/terraform/${version}/terraform_${version}_linux_amd64.zip"
+
+[[plugins.downloads.terraform.system]]
+cpu = "aarch64"
+os = "linux"
+url = "https://releases.hashicorp.com/terraform/${version}/terraform_${version}_linux_arm64.zip"
+
+[[plugins.downloads.terraform.system]]
+cpu = "x86_64"
+os = "macos"
+url = "https://releases.hashicorp.com/terraform/${version}/terraform_${version}_darwin_amd64.zip"
+
+[[plugins.downloads.terraform.system]]
+cpu = "aarch64"
+os = "macos"
+url = "https://releases.hashicorp.com/terraform/${version}/terraform_${version}_darwin_arm64.zip"
+
+[[plugins.downloads.terraform.system]]
+cpu = "x86_64"
+os = "windows"
+url = "https://releases.hashicorp.com/terraform/${version}/terraform_${version}_windows_amd64.zip"
+
+[plugins.definitions.terraform]
+downloads = ["terraform"]
+file_types = ["terraform"]
+latest_version = "1.12.1"
+known_good_version = "1.12.1"
+version_command = "terraform --version"
+description = "Validator and formatter for terraform"
+
+[plugins.definitions.terraform.drivers.lint]
+script = "terraform validate -json"
+success_codes = [0, 1]
+output = "stdout"
+target = { type = "parent" }
+runs_from = { type = "target_directory" }
+output_format = "terraform"
+cache_results = true
+suggested = "never"
+
+[plugins.definitions.terraform.drivers.format]
+driver_type = "formatter"
+script = "terraform fmt"
+success_codes = [0]
+runs_from = { type = "target_directory" }
+output = "rewrite"
+batch = "true"
+suggested = "never"

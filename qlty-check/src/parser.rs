@@ -27,6 +27,7 @@ pub mod shellcheck;
 pub mod sqlfluff;
 pub mod stylelint;
 pub mod taplo;
+pub mod terraform;
 pub mod trivy_sarif;
 pub mod trufflehog;
 pub mod tsc;

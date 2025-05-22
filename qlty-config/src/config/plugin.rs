@@ -548,6 +548,8 @@ pub enum OutputFormat {
     Stylelint,
     #[serde(rename = "taplo")]
     Taplo,
+    #[serde(rename = "terraform")]
+    Terraform,
     #[serde(rename = "trivy_sarif")]
     TrivySarif,
     #[serde(rename = "trufflehog")]
@@ -585,6 +587,7 @@ impl std::fmt::Display for OutputFormat {
             OutputFormat::Sqlfluff => write!(f, "sqlfluff"),
             OutputFormat::Stylelint => write!(f, "stylelint"),
             OutputFormat::Taplo => write!(f, "taplo"),
+            OutputFormat::Terraform => write!(f, "terraform"),
             OutputFormat::TrivySarif => write!(f, "trivy_sarif"),
             OutputFormat::Trufflehog => write!(f, "trufflehog"),
             OutputFormat::Tsc => write!(f, "tsc"),
