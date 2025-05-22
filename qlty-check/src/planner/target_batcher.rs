@@ -294,6 +294,7 @@ mod test {
                     ..Default::default()
                 }),
                 target_root: PathBuf::from("/User/test/project_root/"),
+                workspace_root: PathBuf::from("/User/test/project_root/"),
             },
             plugin_configs: vec![
                 plugin_config_file("/User/test/project_root/config1"),
@@ -525,6 +526,7 @@ mod test {
                     ..Default::default()
                 }),
                 target_root: temp_path.clone(),
+                workspace_root: temp_path.clone(),
             },
             plugin_configs: vec![],
             current_prefix: None,

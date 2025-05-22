@@ -10,6 +10,7 @@ pub struct InvocationDirectoryPlanner {
     pub plugin: PluginDef,
     pub tool: Box<dyn Tool>,
     pub target_root: PathBuf,
+    pub workspace_root: PathBuf,
 }
 
 impl InvocationDirectoryPlanner {
@@ -54,7 +55,7 @@ impl InvocationDirectoryPlanner {
     }
 
     fn target_directory(&self, target: &WorkspaceEntry) -> Result<PathBuf> {
-        let potential_dir = self.target_root.join(target.path.clone());
+        let potential_dir = self.workspace_root.join(target.path.clone());
 
         if potential_dir.exists() {
             let metadata = std::fs::metadata(potential_dir.clone()).with_context(|| {
@@ -64,10 +65,22 @@ impl InvocationDirectoryPlanner {
                 )
             })?;
 
-            if metadata.is_dir() {
-                Ok(potential_dir)
+            let potential_target_dir = if metadata.is_dir() {
+                potential_dir
             } else {
-                Ok(potential_dir.parent().unwrap().to_path_buf())
+                potential_dir.parent().unwrap().to_path_buf()
+            };
+
+            if self.target_root == self.workspace_root {
+                return Ok(potential_target_dir);
+            }
+
+            // Handle case for formatters where files haven't been staged yet
+            if let Ok(relative_path) = potential_target_dir.strip_prefix(&self.workspace_root) {
+                let target_dir = self.target_root.join(relative_path);
+                Ok(target_dir)
+            } else {
+                Ok(potential_target_dir)
             }
         } else {
             Ok(self.target_root.clone())
@@ -106,6 +119,7 @@ mod test {
     use qlty_config::config::InvocationDirectoryDef;
     use qlty_test_utilities::git::sample_repo;
     use std::{fs::File, time::SystemTime};
+    use tempfile::tempdir;
 
     fn target_files(path: &str) -> Target {
         Target {
@@ -141,6 +155,7 @@ mod test {
                 plugin: Default::default(),
             }),
             target_root: temp_dir.to_path_buf(),
+            workspace_root: temp_dir.to_path_buf(),
         }
     }
 
@@ -265,6 +280,62 @@ mod test {
             let result_str = path_to_string(result);
             let result = result_str.split("/./").last().unwrap_or(&result_str);
             assert!(invocation_directory.ends_with(result));
+        }
+    }
+
+    #[test]
+    fn test_target_directory_when_different_target_root_from_workspace_root() {
+        let (temp_dir, _) = sample_repo();
+        let temp_dir_path = temp_dir.path();
+        let temp_dir_staging = tempdir().unwrap();
+        let temp_dir_staging_path = temp_dir_staging.path();
+
+        let invocation_directory_def = InvocationDirectoryDef {
+            kind: InvocationDirectoryType::TargetDirectory,
+            path: None,
+        };
+
+        let planner = InvocationDirectoryPlanner {
+            driver: DriverDef {
+                invocation_directory_def,
+                ..Default::default()
+            },
+            plugin: PluginDef {
+                config_files: vec!["config_file.json".into()],
+                ..Default::default()
+            },
+            tool: Box::new(NullTool {
+                parent_directory: temp_dir_path
+                    .to_path_buf()
+                    .join(".qlty")
+                    .join("cache")
+                    .join("tools")
+                    .join("null_tool"),
+                plugin_name: "mock_plugin".to_string(),
+                plugin: Default::default(),
+            }),
+            target_root: temp_dir_staging_path.to_path_buf(),
+            workspace_root: temp_dir_path.to_path_buf(),
+        };
+
+        let targets_results = vec![
+            (
+                target_files("lib/hello.rb"),
+                temp_dir_staging_path.join("lib"),
+            ),
+            (
+                target_files("greetings.rb"),
+                temp_dir_staging_path.to_path_buf(),
+            ),
+            (
+                target_files("lib/tasks/some.rb"),
+                temp_dir_staging_path.join("lib/tasks"),
+            ),
+        ];
+
+        for (target, result) in targets_results {
+            let invocation_directory = planner.compute(&target).unwrap();
+            assert_eq!(invocation_directory, result);
         }
     }
 }
