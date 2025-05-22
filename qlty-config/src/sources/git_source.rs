@@ -1,6 +1,7 @@
 use super::{source::SourceFetch, LocalSource, Source, SourceFile};
 use crate::Library;
 use anyhow::{Context, Result};
+use auth_git2::GitAuthenticator;
 use git2::{Remote, Repository, ResetType};
 use std::path::{Path, PathBuf};
 use tracing::{debug, info};
@@ -207,24 +208,26 @@ impl GitSource {
             })?
         };
 
-        self.fetch(&mut origin, branches)
+        self.fetch(repository, &mut origin, branches)
     }
 
-    fn fetch(&self, origin: &mut Remote, branches: &[&str]) -> Result<()> {
+    fn fetch(&self, repository: &Repository, origin: &mut Remote, branches: &[&str]) -> Result<()> {
         // Per libgit2, passing an empty array of refspecs fetches base refspecs
-        origin.fetch(branches, None, None).with_context(|| {
-            if branches.is_empty() {
-                format!(
-                    "Failed to fetch base refspecs from remote origin {}",
-                    self.origin
-                )
-            } else {
-                format!(
-                    "Failed to fetch branches {:?} from remote origin {}",
-                    branches, self.origin
-                )
-            }
-        })
+        GitAuthenticator::default()
+            .fetch(repository, origin, branches, None)
+            .with_context(|| {
+                if branches.is_empty() {
+                    format!(
+                        "Failed to fetch base refspecs from remote origin {}",
+                        self.origin
+                    )
+                } else {
+                    format!(
+                        "Failed to fetch branches {:?} from remote origin {}",
+                        branches, self.origin
+                    )
+                }
+            })
     }
 
     fn global_origin_path(&self) -> Result<PathBuf> {
