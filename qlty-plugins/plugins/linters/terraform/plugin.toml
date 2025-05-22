@@ -28,6 +28,7 @@ url = "https://releases.hashicorp.com/terraform/${version}/terraform_${version}_
 [plugins.definitions.terraform]
 downloads = ["terraform"]
 file_types = ["terraform"]
+affects_cache = [".terraform.lock.hcl"]
 latest_version = "1.12.1"
 known_good_version = "1.12.1"
 version_command = "terraform --version"
