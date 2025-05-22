@@ -2771,7 +2771,6 @@ dependencies = [
  "tempfile",
  "time",
  "tracing",
- "ureq",
  "xml-rs",
  "zip",
 ]
