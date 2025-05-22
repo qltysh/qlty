@@ -1,4 +1,3 @@
-use super::http;
 use super::installations::initialize_installation;
 use super::installations::write_to_file;
 use super::Tool;
@@ -12,6 +11,7 @@ use itertools::Itertools;
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_config::config::PluginDef;
 use qlty_config::config::{Cpu, DownloadDef, DownloadFileType, OperatingSystem};
+use qlty_config::http;
 use qlty_types::analysis::v1::Installation;
 use sha2::Digest;
 use sha2::Sha256;

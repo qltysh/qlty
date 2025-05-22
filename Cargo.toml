@@ -85,7 +85,7 @@ rayon = "1.10.0"
 regex = "1.11.0"
 rust-embed = { version = "8.7.2", features = ["include-exclude"] }
 rustls = "0.23.19"
-rustls-platform-verifier = "0.4.1"
+rustls-platform-verifier = "0.5.3"
 schemars = "0.8.22"
 semver = "1.0.26"
 sentry = { version = "0.34.0", default-features = false, features = [
@@ -138,7 +138,7 @@ tree-sitter-rust = "0.21.2"
 tree-sitter-swift = "0.5.0"
 tree-sitter-typescript = "0.21.2"
 trycmd = "0.15.8"
-ureq = { version = "2.12.1", features = ["json", "proxy-from-env", "platform-verifier"] }
+ureq = { version = "2.12.1", features = ["json", "proxy-from-env"] }
 url = "2.5.4"
 uuid = { version = "1.14.0", features = ["v4"] }
 walkdir = "2.5.0"
