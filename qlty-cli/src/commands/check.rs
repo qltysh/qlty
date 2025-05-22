@@ -123,6 +123,10 @@ pub struct Check {
 
     /// Files to analyze
     pub paths: Vec<PathBuf>,
+
+    /// Skip fetching sources
+    #[arg(long, hide = true)]
+    pub skip_fetch_sources: bool,
 }
 
 impl Check {
@@ -130,7 +134,9 @@ impl Check {
         self.validate_options()?;
 
         let workspace = Workspace::require_initialized()?;
-        workspace.fetch_sources()?;
+        if !self.skip_fetch_sources {
+            workspace.fetch_sources()?;
+        }
 
         let settings = self.build_settings(&workspace)?;
 
@@ -302,6 +308,7 @@ impl Check {
         settings.paths = self.paths.clone();
         settings.trigger = self.trigger.into();
         settings.skip_errored_plugins = self.skip_errored_plugins;
+        settings.skip_fetch_sources = self.skip_fetch_sources;
 
         // Get auth token if AI is enabled
         if settings.ai {

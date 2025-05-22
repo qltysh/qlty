@@ -50,13 +50,19 @@ pub struct Build {
     pub skip_errored_plugins: bool,
 
     #[arg(long)]
+    pub fetch_sources: bool,
+
+    #[arg(long)]
     output_path: Option<PathBuf>,
 }
 
 impl Build {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
         let workspace = Workspace::require_initialized()?;
-        workspace.fetch_sources()?;
+
+        if self.fetch_sources {
+            workspace.fetch_sources()?;
+        }
 
         let config = workspace.config()?;
 
@@ -275,6 +281,7 @@ impl Build {
             ai: self.ai,
             r#unsafe: self.ai, // When AI is enabled, we also enable unsafe fixes
             skip_errored_plugins: self.skip_errored_plugins,
+            skip_fetch_sources: !self.fetch_sources,
             emit_existing_issues: true,
             ..Default::default()
         };
