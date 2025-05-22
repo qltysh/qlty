@@ -1,4 +1,5 @@
 use crate::get_exe_name;
+use crate::http;
 use anyhow::{bail, Context, Result};
 use dialoguer::{theme::ColorfulTheme, Confirm};
 use duct::cmd;
@@ -98,7 +99,7 @@ impl QltyRelease {
             DEFAULT_MANIFEST_LOCATION_URL.to_string()
         };
 
-        let response = ureq::get(&url)
+        let response = http::get(&url)
             .set(
                 "User-Agent",
                 &format!("{}/{}", USER_AGENT_PREFIX, QLTY_VERSION),

@@ -1,5 +1,6 @@
 // Portions of this code are from https://github.com/meilisearch/segment
 // MIT License: https://github.com/meilisearch/segment/blob/main/LICENSE
+use crate::http;
 use crate::telemetry::locale::current_locale;
 use anyhow::{Context, Result};
 use base64::Engine as _;
@@ -44,7 +45,7 @@ impl AnalyticsClient {
             TRACK_URL, http_basic_authorization, data
         );
 
-        ureq::post(TRACK_URL)
+        http::post(TRACK_URL)
             .set("Authorization", &http_basic_authorization)
             .send_json(data)
             .map(|_| ())

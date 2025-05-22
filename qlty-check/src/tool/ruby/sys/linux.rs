@@ -1,5 +1,6 @@
 use crate::{
     tool::{
+        http,
         installations::{initialize_installation, write_to_file},
         ruby::PlatformRuby,
     },
@@ -129,7 +130,7 @@ impl RubyLinux {
         installation.download_file_type = Some(".deb".to_string());
         installation.download_binary_name = Some(package.to_string());
 
-        let result = ureq::get(url.as_str()).call();
+        let result = http::get(url.as_str()).call();
         Self::finalize_installation(&mut installation, &result);
 
         match result {

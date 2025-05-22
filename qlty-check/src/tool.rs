@@ -2,6 +2,7 @@ pub mod command_builder;
 mod download;
 mod github;
 pub mod go;
+mod http;
 mod installations;
 pub mod java;
 pub mod node;

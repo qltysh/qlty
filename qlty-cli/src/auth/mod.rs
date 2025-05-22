@@ -1,6 +1,7 @@
 mod auth_flow;
 mod credentials;
 
+use crate::http;
 use anyhow::Result;
 use auth_flow::{launch_login_server, AppState};
 use console::style;
@@ -65,7 +66,7 @@ fn auth_via_browser() -> Result<String> {
     );
     thread::sleep(Duration::from_millis(500));
 
-    let open_url = ureq::get(&state.login_url)
+    let open_url = http::get(&state.login_url)
         .query("state", original_state)
         .query("response_type", "token")
         .query("redirect_uri", &server.base_url)
