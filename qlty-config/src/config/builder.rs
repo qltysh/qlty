@@ -1,13 +1,15 @@
 use super::exclude::Exclude;
+use crate::config::{Match, Set, Triage};
 use crate::sources::SourcesList;
 use crate::{workspace::Workspace, TomlMerge};
 use crate::{Library, QltyConfig};
 use anyhow::{anyhow, bail, Context as _, Result};
 use config::{Config, File, FileFormat};
 use console::style;
+use qlty_types::level_from_str;
 use std::path::Path;
 use toml::Value;
-use tracing::trace;
+use tracing::{debug, trace};
 
 const EXPECTED_CONFIG_VERSION: &str = "0";
 
@@ -179,14 +181,54 @@ impl Builder {
                     continue;
                 }
 
-                if ignore.plugins.is_empty() {
+                if !ignore.file_patterns.is_empty()
+                    && ignore.plugins.is_empty()
+                    && ignore.rules.is_empty()
+                    && ignore.levels.is_empty()
+                {
+                    debug!(
+                        "Adding ignore with only file patterns to exclude patterns, ignore: {:#?}",
+                        ignore
+                    );
                     all_exclude_patterns.extend(ignore.file_patterns.clone());
-                } else {
+                } else if !ignore.file_patterns.is_empty()
+                    && !ignore.plugins.is_empty()
+                    && ignore.rules.is_empty()
+                    && ignore.levels.is_empty()
+                {
+                    debug!(
+                        "Adding ignore with only file patterns and plugins to exclude, ignore: {:#?}",
+                        ignore
+                    );
+
                     config.exclude.push(Exclude {
                         file_patterns: ignore.file_patterns.clone(),
                         plugins: ignore.plugins.clone(),
                         ..Default::default()
                     });
+                } else {
+                    debug!(
+                        "Adding ignore with more than file patterns and plugins to triage, ignore: {:#?}",
+                        ignore
+                    );
+
+                    config.triage.push(Triage {
+                        r#match: Match {
+                            file_patterns: ignore.file_patterns.clone(),
+                            plugins: ignore.plugins.clone(),
+                            rules: ignore.rules.clone(),
+                            levels: ignore
+                                .levels
+                                .iter()
+                                .map(|level| level_from_str(level))
+                                .collect(),
+                            ..Default::default()
+                        },
+                        set: Set {
+                            ignored: true,
+                            ..Default::default()
+                        },
+                    })
                 }
             }
         }

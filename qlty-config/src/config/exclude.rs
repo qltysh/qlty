@@ -117,7 +117,7 @@ impl Exclude {
         if let Some(path) = issue.path() {
             self.matches_path(&path)
         } else {
-            // TODO: Issues without a path are not filterable
+            // Issues without a path are not filterable by path
             false
         }
     }
