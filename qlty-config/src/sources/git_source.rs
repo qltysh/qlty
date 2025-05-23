@@ -213,7 +213,7 @@ impl GitSource {
 
     fn fetch(&self, _repository: &Repository, origin: &mut Remote, branches: &[&str]) -> Result<()> {
         let mut fetch_options = self.create_fetch_options()?;
-        
+
         // Per libgit2, passing an empty array of refspecs fetches base refspecs
         origin
             .fetch(branches, Some(&mut fetch_options), None)
@@ -277,7 +277,7 @@ impl GitSource {
     fn create_fetch_options(&self) -> Result<FetchOptions> {
         let mut fetch_options = FetchOptions::new();
         let mut proxy_options = ProxyOptions::new();
-        
+
         // Configure proxy from environment variables
         if let Ok(https_proxy) = std::env::var("HTTPS_PROXY") {
             debug!("Using HTTPS proxy: {}", https_proxy);
@@ -286,14 +286,14 @@ impl GitSource {
             debug!("Using HTTP proxy: {}", http_proxy);
             proxy_options.url(&http_proxy);
         }
-        
+
         // Set proxy auto-detect to use system configuration
         proxy_options.auto();
         fetch_options.proxy_options(proxy_options);
-        
+
         // Configure remote callbacks for authentication
         let mut callbacks = RemoteCallbacks::new();
-        
+
         // Use GitAuthenticator::default() in the closure to avoid lifetime issues
         callbacks.credentials(|url, username, allowed| {
             let config = git2::Config::open_default().unwrap_or_else(|_| git2::Config::new().unwrap());
@@ -301,13 +301,13 @@ impl GitSource {
             let mut credential_fn = authenticator.credentials(&config);
             credential_fn(url, username, allowed)
         });
-        
-        // Configure certificate checking to validate against system certificate roots  
+
+        // Configure certificate checking to validate against system certificate roots
         // Use default certificate validation behavior (validates against system certificate store)
         // By not setting a certificate_check callback, git2 will use the default validation
-        
+
         fetch_options.remote_callbacks(callbacks);
-        
+
         Ok(fetch_options)
     }
 }
