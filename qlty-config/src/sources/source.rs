@@ -7,7 +7,7 @@ use globset::{Glob, GlobSetBuilder};
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
 use toml::Value;
-use tracing::{debug, trace};
+use tracing::trace;
 
 const SOURCE_PARSE_ERROR: &str = r#"There was an error reading configuration from one of your declared Sources.
 

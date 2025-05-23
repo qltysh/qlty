@@ -297,7 +297,7 @@ impl GitSource {
 
         callbacks.credentials(|url, username, allowed| {
             let config = git2::Config::open_default()
-                .map_err(|e| git2::Error::from_str(&format!("Failed to open Git configuration: {}", e)))?;
+                .map_err(|e| git2::Error::from_str(&format!("Failed to open Git configuration: {e}")))?;
             let authenticator = GitAuthenticator::default();
             let mut credential_fn = authenticator.credentials(&config);
             credential_fn(url, username, allowed)
