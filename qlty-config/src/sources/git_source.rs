@@ -1,10 +1,10 @@
-use super::{source::SourceFetch, LocalSource, Source, SourceFile};
+use super::{source::{SourceFetch, configure_proxy_options}, LocalSource, Source, SourceFile};
 use crate::Library;
 use anyhow::{Context, Result};
 use auth_git2::GitAuthenticator;
-use git2::{Remote, Repository, ResetType, FetchOptions, ProxyOptions, RemoteCallbacks};
+use git2::{Remote, Repository, ResetType, FetchOptions, RemoteCallbacks};
 use std::path::{Path, PathBuf};
-use tracing::{debug, info};
+use tracing::info;
 
 #[cfg(unix)]
 use std::os::unix::fs::symlink as symlink_dir;
@@ -67,6 +67,7 @@ impl SourceFetch for GitSource {
         Box::new(self.clone())
     }
 }
+
 
 impl GitSource {
     fn symlink_if_needed(&self) -> Result<()> {
@@ -276,35 +277,20 @@ impl GitSource {
 
     fn create_fetch_options(&self) -> Result<FetchOptions> {
         let mut fetch_options = FetchOptions::new();
-        let mut proxy_options = ProxyOptions::new();
-
-        // Configure proxy from environment variables
-        if let Ok(https_proxy) = std::env::var("HTTPS_PROXY") {
-            debug!("Using HTTPS proxy: {}", https_proxy);
-            proxy_options.url(&https_proxy);
-        } else if let Ok(http_proxy) = std::env::var("HTTP_PROXY") {
-            debug!("Using HTTP proxy: {}", http_proxy);
-            proxy_options.url(&http_proxy);
-        }
-
-        // Set proxy auto-detect to use system configuration
-        proxy_options.auto();
+        
+        let proxy_options = configure_proxy_options();
         fetch_options.proxy_options(proxy_options);
 
         // Configure remote callbacks for authentication
         let mut callbacks = RemoteCallbacks::new();
 
-        // Use GitAuthenticator::default() in the closure to avoid lifetime issues
         callbacks.credentials(|url, username, allowed| {
-            let config = git2::Config::open_default().unwrap_or_else(|_| git2::Config::new().unwrap());
+            let config = git2::Config::open_default()
+                .with_context(|| "Failed to open Git configuration")?;
             let authenticator = GitAuthenticator::default();
             let mut credential_fn = authenticator.credentials(&config);
             credential_fn(url, username, allowed)
         });
-
-        // Configure certificate checking to validate against system certificate roots
-        // Use default certificate validation behavior (validates against system certificate store)
-        // By not setting a certificate_check callback, git2 will use the default validation
 
         fetch_options.remote_callbacks(callbacks);
 

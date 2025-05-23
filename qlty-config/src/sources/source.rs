@@ -7,7 +7,7 @@ use globset::{Glob, GlobSetBuilder};
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
 use toml::Value;
-use tracing::trace;
+use tracing::{debug, trace};
 
 const SOURCE_PARSE_ERROR: &str = r#"There was an error reading configuration from one of your declared Sources.
 
@@ -16,6 +16,21 @@ Please make sure you are using the latest version of the CLI with `qlty upgrade`
 Also, please make sure you are specifying the latest source tag in your qlty.toml file.
 
 For more information, please visit: https://qlty.io/docs/troubleshooting/source-parse-error"#;
+
+pub fn configure_proxy_options() -> git2::ProxyOptions {
+    let mut proxy_options = git2::ProxyOptions::new();
+
+    if let Ok(https_proxy) = std::env::var("HTTPS_PROXY") {
+        debug!("Using HTTPS proxy: {}", https_proxy);
+        proxy_options.url(&https_proxy);
+    } else if let Ok(http_proxy) = std::env::var("HTTP_PROXY") {
+        debug!("Using HTTP proxy: {}", http_proxy);
+        proxy_options.url(&http_proxy);
+    }
+
+    proxy_options.auto();
+    proxy_options
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SourceFile {
