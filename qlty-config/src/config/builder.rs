@@ -182,7 +182,7 @@ impl Builder {
         }
     }
 
-    fn toml_to_config(toml: Value) -> Result<QltyConfig> {
+    pub fn toml_to_config(toml: Value) -> Result<QltyConfig> {
         let mut config: QltyConfig = Self::parse_toml_as_config(toml)?;
         Self::insert_ignores_from_exclude_patterns(&mut config);
         let config = Self::post_process_config(config);
@@ -335,7 +335,7 @@ mod test {
             runtime = "ruby"
         };
 
-        let result = Builder::parse_toml_as_config(Table(invalid_config));
+        let result = Builder::toml_to_config(Table(invalid_config));
         assert!(result.is_err());
         
         let error_message = result.unwrap_err().to_string();
@@ -359,7 +359,7 @@ mod test {
             runtime = "ruby"
         };
 
-        let result = Builder::parse_toml_as_config(Table(valid_config));
+        let result = Builder::toml_to_config(Table(valid_config));
         assert!(result.is_ok());
     }
 
@@ -377,7 +377,7 @@ mod test {
             runtime = "ruby"
         };
 
-        let result = Builder::parse_toml_as_config(Table(valid_config));
+        let result = Builder::toml_to_config(Table(valid_config));
         assert!(result.is_ok());
     }
 }
