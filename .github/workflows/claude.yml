@@ -24,6 +24,9 @@ jobs:
       issues: read
       id-token: write
     steps:
+      - name: Install Qlty CLI
+        uses: qltysh/qlty-action/install@main
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -34,4 +37,4 @@ jobs:
         uses: anthropics/claude-code-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          allowed_tools: "Bash(git status),Bash(git add),Bash(git commit),Bash(git push),Bash(git pull),Bash(git fetch),Bash(git reset),Bash(git checkout),Bash(git merge),Bash(git rebase),Bash(git cherry-pick),Bash(git stash),Bash(git tag),Bash(cargo build),Bash(cargo test),Bash(cargo check),Bash(cargo clean),Bash(qlty check),Bash(qlty fmt)"
+          allowed_tools: "WebFetch(domain:docs.qlty.sh),Bash(git status:*),Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git pull:*),Bash(git fetch:*),Bash(git reset:*),Bash(git checkout:*),Bash(git merge:*),Bash(git rebase:*),Bash(git cherry-pick:*),Bash(git stash:*),Bash(git tag:*),Bash(cargo build),Bash(cargo test:*),Bash(cargo check),Bash(cargo clean),Bash(qlty check:*),Bash(qlty fmt:*)"
