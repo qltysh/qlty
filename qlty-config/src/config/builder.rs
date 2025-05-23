@@ -173,7 +173,7 @@ impl Builder {
             for ignore in &config.ignore {
                 if ignore.file_patterns.is_empty() {
                     eprintln!(
-                        "{} The use of `{}` field in qlty.toml without {} is no longer supported. Skipping ignore without file_pattern.",
+                        "{} The use of `{}` field in qlty.toml without {} is no longer supported. Skipping ignore without file_patterns.",
                         style("WARNING:").bold().yellow(),
                         style("ignore").bold(),
                         style("file_patterns").bold()
