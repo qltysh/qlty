@@ -143,7 +143,8 @@ impl Planner {
             root: self.settings.root.clone(),
             paths: self.settings.paths.clone(),
             file_types: self.config.file_types.clone(),
-            ignores: self.config.ignore.clone(),
+            excludes: self.config.exclude.clone(),
+            exclude_patterns: self.config.exclude_patterns.clone(),
             ..Default::default()
         };
 

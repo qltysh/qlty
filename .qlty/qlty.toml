@@ -89,7 +89,7 @@ name = "yamllint"
 
 # Disable linters which are likely to produce false positives
 # on our test fixtures directories
-[[ignore]]
+[[exclude]]
 plugins = ["osv-scanner", "trufflehog"]
 file_patterns = ["qlty-cli/tests/**"]
 

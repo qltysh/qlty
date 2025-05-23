@@ -1,0 +1,18 @@
+config_version = "0"
+
+[plugins.definitions.triage-level]
+file_types = ["shell"]
+
+[plugins.definitions.triage-level.drivers.lint]
+script = "false"
+success_codes = [0]
+output = "pass_fail"
+batch = true
+
+[[plugin]]
+name = "triage-level"
+version = "1.0.0"
+
+[[triage]]
+match.levels = ["high"]
+set.mode = "comment"

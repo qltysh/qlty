@@ -1,7 +1,6 @@
 use super::{config::enabled_plugins, Planner};
 use anyhow::{Context, Result};
 use globset::{GlobBuilder, GlobSet, GlobSetBuilder};
-use qlty_config::config::Ignore;
 use serde::Serialize;
 use std::{
     collections::HashMap,
@@ -64,18 +63,16 @@ pub fn config_globset(config_files: &Vec<PathBuf>) -> Result<GlobSet> {
     Ok(globset.build()?)
 }
 
-pub fn ignore_globset(ignore: &Vec<Ignore>) -> Result<GlobSet> {
+fn exclude_globset(exclude_patterns: &Vec<String>) -> Result<GlobSet> {
     let mut globset = GlobSetBuilder::new();
 
-    for ignore in ignore {
-        for pattern in &ignore.file_patterns {
-            let glob = GlobBuilder::new(pattern)
-                .literal_separator(true)
-                .build()
-                .with_context(|| format!("Failed to build glob for pattern: {}", pattern))?;
+    for pattern in exclude_patterns {
+        let glob = GlobBuilder::new(pattern)
+            .literal_separator(true)
+            .build()
+            .with_context(|| format!("Failed to build glob for pattern: {pattern}"))?;
 
-            globset.add(glob);
-        }
+        globset.add(glob);
     }
 
     Ok(globset.build()?)
@@ -93,7 +90,7 @@ pub fn plugin_configs(planner: &Planner) -> Result<HashMap<String, Vec<PluginCon
     }
 
     let mut configs: HashMap<String, Vec<PluginConfigFile>> = HashMap::new();
-    let ignore_globset = ignore_globset(&planner.config.ignore)?;
+    let exclude_globset = exclude_globset(&planner.config.exclude_patterns)?;
 
     for entry in planner.workspace.walker() {
         let entry = entry?;
@@ -101,7 +98,7 @@ pub fn plugin_configs(planner: &Planner) -> Result<HashMap<String, Vec<PluginCon
             let file_name = os_str.to_os_string();
             for plugin_config in &plugins_configs {
                 if plugin_config.config_globset.is_match(&file_name)
-                    && !ignore_globset.is_match(entry.path())
+                    && !exclude_globset.is_match(entry.path())
                 {
                     let entry_path = entry.path();
                     let config_file = match PluginConfigFile::from_path(entry_path) {

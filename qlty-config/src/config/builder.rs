@@ -1,14 +1,15 @@
-use std::path::Path;
-
-use super::Ignore;
+use super::exclude::Exclude;
+use crate::config::{Match, Set, Triage};
 use crate::sources::SourcesList;
 use crate::{workspace::Workspace, TomlMerge};
 use crate::{Library, QltyConfig};
 use anyhow::{anyhow, bail, Context as _, Result};
 use config::{Config, File, FileFormat};
 use console::style;
+use qlty_types::level_from_str;
+use std::path::Path;
 use toml::Value;
-use tracing::trace;
+use tracing::{debug, trace};
 
 const EXPECTED_CONFIG_VERSION: &str = "0";
 
@@ -160,11 +161,80 @@ impl Builder {
             all_exclude_patterns.extend(config.ignore_patterns.clone());
         }
 
+        if !config.ignore.is_empty() {
+            eprintln!(
+                "{} The `{}` field in qlty.toml is deprecated. Please use `{}` or `{}` instead.",
+                style("WARNING:").bold().yellow(),
+                style("ignore").bold(),
+                style("exclude").bold(),
+                style("exclude_patterns").bold()
+            );
+
+            for ignore in &config.ignore {
+                if ignore.file_patterns.is_empty() {
+                    eprintln!(
+                        "{} The use of `{}` field in qlty.toml without {} is no longer supported. Skipping ignore without file_patterns.",
+                        style("WARNING:").bold().yellow(),
+                        style("ignore").bold(),
+                        style("file_patterns").bold()
+                    );
+                    continue;
+                }
+
+                if !ignore.file_patterns.is_empty()
+                    && ignore.plugins.is_empty()
+                    && ignore.rules.is_empty()
+                    && ignore.levels.is_empty()
+                {
+                    debug!(
+                        "Adding ignore with only file patterns to exclude patterns, ignore: {:#?}",
+                        ignore
+                    );
+                    all_exclude_patterns.extend(ignore.file_patterns.clone());
+                } else if !ignore.file_patterns.is_empty()
+                    && !ignore.plugins.is_empty()
+                    && ignore.rules.is_empty()
+                    && ignore.levels.is_empty()
+                {
+                    debug!(
+                        "Adding ignore with only file patterns and plugins to exclude, ignore: {:#?}",
+                        ignore
+                    );
+
+                    config.exclude.push(Exclude {
+                        file_patterns: ignore.file_patterns.clone(),
+                        plugins: ignore.plugins.clone(),
+                        ..Default::default()
+                    });
+                } else {
+                    debug!(
+                        "Adding ignore with more than file patterns and plugins to triage, ignore: {:#?}",
+                        ignore
+                    );
+
+                    config.triage.push(Triage {
+                        r#match: Match {
+                            file_patterns: ignore.file_patterns.clone(),
+                            plugins: ignore.plugins.clone(),
+                            rules: ignore.rules.clone(),
+                            levels: ignore
+                                .levels
+                                .iter()
+                                .map(|level| level_from_str(level))
+                                .collect(),
+                            ..Default::default()
+                        },
+                        set: Set {
+                            ignored: true,
+                            ..Default::default()
+                        },
+                    })
+                }
+            }
+        }
+
         if !all_exclude_patterns.is_empty() {
-            config.ignore.push(Ignore {
-                file_patterns: all_exclude_patterns.clone(),
-                ..Default::default()
-            });
+            config.exclude_patterns = all_exclude_patterns.clone();
 
             match config.coverage.ignores {
                 Some(_) => {
@@ -173,10 +243,10 @@ impl Builder {
                         .ignores
                         .as_mut()
                         .unwrap()
-                        .extend(all_exclude_patterns.clone());
+                        .extend(all_exclude_patterns);
                 }
                 None => {
-                    config.coverage.ignores = Some(all_exclude_patterns.clone());
+                    config.coverage.ignores = Some(all_exclude_patterns);
                 }
             }
         }

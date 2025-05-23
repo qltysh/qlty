@@ -1,13 +1,13 @@
 use super::{LanguagesShebangMatcher, OrMatcher, TargetMode};
 use crate::{
     git::GitDiff,
-    workspace_entries::{AndMatcher, IgnoreGroupsMatcher, LanguageGlobsMatcher},
+    workspace_entries::{matchers::ExcludeGroupsMatcher, AndMatcher, LanguageGlobsMatcher},
     AllSource, ArgsSource, DiffSource, FileMatcher, WorkspaceEntryFinder, WorkspaceEntryMatcher,
     WorkspaceEntrySource,
 };
 use anyhow::{bail, Result};
 use qlty_config::{
-    config::{ignore_group::IgnoreGroup, Ignore},
+    config::exclude_group::ExcludeGroup,
     issue_transformer::{IssueTransformer, NullIssueTransformer},
     QltyConfig,
 };
@@ -73,26 +73,23 @@ impl WorkspaceEntryFinderBuilder {
         // Files only
         matcher.push(Box::new(FileMatcher));
 
-        // Ignore explicit ignores and tests
-        let mut ignores = self.config.ignore.clone();
-        debug!("Ignoring globs: {:?}", ignores);
+        // Exclude explicit excludes and tests
+        let mut exclude_patterns = self.config.exclude_patterns.clone();
+        debug!("Ignoring globs: {:?}", exclude_patterns);
 
         if self.exclude_tests {
             if !self.config.test_patterns.is_empty() {
                 debug!("Ignoring test patterns: {:?}", self.config.test_patterns);
 
-                ignores.push(Ignore {
-                    file_patterns: self.config.test_patterns.clone(),
-                    ..Default::default()
-                });
+                exclude_patterns.extend(self.config.test_patterns.clone());
             } else {
                 debug!("Ignoring test patterns: none");
             }
         }
 
-        let ignore_groups = IgnoreGroup::build_from_ignores(&ignores.iter().collect());
+        let exclude_groups = ExcludeGroup::build_from_exclude_patterns(&exclude_patterns);
 
-        matcher.push(Box::new(IgnoreGroupsMatcher::new(ignore_groups)));
+        matcher.push(Box::new(ExcludeGroupsMatcher::new(exclude_groups)));
 
         // Must match a language
         matcher.push(self.languages_matcher()?);

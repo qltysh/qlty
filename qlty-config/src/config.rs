@@ -1,9 +1,10 @@
 mod builder;
 mod coverage;
 mod download;
+mod exclude;
+pub mod exclude_group;
 mod file_type;
 mod ignore;
-pub mod ignore_group;
 pub mod issue_transformer;
 mod language;
 mod overrides;
@@ -20,6 +21,7 @@ pub use builder::Builder;
 use console::style;
 pub use coverage::Coverage;
 pub use download::{Cpu, DownloadDef, DownloadFileType, OperatingSystem, System};
+pub use exclude::Exclude;
 pub use file_type::FileType;
 pub use language::Language;
 pub use plugin::{
@@ -53,6 +55,9 @@ pub struct QltyConfig {
 
     #[serde(default)]
     pub ignore: Vec<Ignore>,
+
+    #[serde(default)]
+    pub exclude: Vec<Exclude>,
 
     #[serde(default)]
     #[serde(rename = "override")] // Since `override` is a reserved keyword
