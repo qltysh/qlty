@@ -386,4 +386,53 @@ mod test {
         let result = Builder::toml_to_config(Table(valid_config));
         assert!(result.is_ok());
     }
+
+    #[test]
+    fn test_validate_plugin_with_package_filters_but_no_package_file() {
+        let invalid_config = toml! {
+            config_version = "0"
+
+            [[plugin]]
+            name = "rubocop"
+            version = "1.56.3"
+            package_filters = ["some-filter"]
+
+            [plugins.definitions.rubocop]
+            runtime = "ruby"
+        };
+
+        let result = Builder::toml_to_config(Table(invalid_config));
+        assert!(result.is_err());
+
+        let error = result.unwrap_err();
+        let error_chain = error
+            .chain()
+            .map(|e| e.to_string())
+            .collect::<Vec<_>>()
+            .join(" ");
+
+        assert!(error_chain.contains("rubocop"));
+        assert!(error_chain.contains("package_filters"));
+        assert!(error_chain.contains("package_file"));
+        assert!(error_chain.contains("requires"));
+    }
+
+    #[test]
+    fn test_validate_plugin_with_package_filters_and_package_file() {
+        let valid_config = toml! {
+            config_version = "0"
+
+            [[plugin]]
+            name = "rubocop"
+            version = "1.56.3"
+            package_file = "Gemfile"
+            package_filters = ["some-filter"]
+
+            [plugins.definitions.rubocop]
+            runtime = "ruby"
+        };
+
+        let result = Builder::toml_to_config(Table(valid_config));
+        assert!(result.is_ok());
+    }
 }
