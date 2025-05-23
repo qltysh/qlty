@@ -24,6 +24,9 @@ jobs:
       issues: read
       id-token: write
     steps:
+      - name: Install Qlty CLI
+        uses: qltysh/qlty-action/install@main
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
