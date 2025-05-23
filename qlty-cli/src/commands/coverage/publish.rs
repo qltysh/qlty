@@ -381,6 +381,18 @@ impl Publish {
             }
         );
 
+        if report.ignored_paths_count > 0 {
+            eprintln!(
+                "    {} {} ignored",
+                report.ignored_paths_count.to_formatted_string(&Locale::en),
+                if report.ignored_paths_count == 1 {
+                    "path"
+                } else {
+                    "paths"
+                }
+            );
+        }
+
         let mut missing_files = report.missing_files.iter().collect::<Vec<_>>();
         missing_files.sort();
 

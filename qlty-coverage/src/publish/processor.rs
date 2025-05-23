@@ -25,6 +25,8 @@ impl Processor {
             f.tag = self.plan.metadata.tag.clone();
         });
 
+        let pre_transform_file_coverages_count = self.results.file_coverages.len();
+
         let mut transformed_file_coverages = self
             .results
             .file_coverages
@@ -62,6 +64,8 @@ impl Processor {
         }
 
         let totals = CoverageMetrics::calculate(&transformed_file_coverages);
+        let ignored_paths_count =
+            pre_transform_file_coverages_count - transformed_file_coverages.len();
 
         Ok(Report {
             metadata: self.plan.metadata.clone(),
@@ -70,6 +74,7 @@ impl Processor {
             totals,
             missing_files,
             found_files,
+            ignored_paths_count,
         })
     }
 
