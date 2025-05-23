@@ -1,10 +1,10 @@
-use super::{source::{SourceFetch, configure_proxy_options}, LocalSource, Source, SourceFile};
+use super::{source::SourceFetch, LocalSource, Source, SourceFile};
 use crate::Library;
 use anyhow::{Context, Result};
 use auth_git2::GitAuthenticator;
 use git2::{Remote, Repository, ResetType, FetchOptions, RemoteCallbacks};
 use std::path::{Path, PathBuf};
-use tracing::info;
+use tracing::{debug, info};
 
 #[cfg(unix)]
 use std::os::unix::fs::symlink as symlink_dir;
@@ -278,7 +278,18 @@ impl GitSource {
     fn create_fetch_options(&self) -> Result<FetchOptions> {
         let mut fetch_options = FetchOptions::new();
         
-        let proxy_options = configure_proxy_options();
+        // Configure proxy options
+        let mut proxy_options = git2::ProxyOptions::new();
+        
+        if let Ok(https_proxy) = std::env::var("HTTPS_PROXY") {
+            debug!("Using HTTPS proxy: {}", https_proxy);
+            proxy_options.url(&https_proxy);
+        } else if let Ok(http_proxy) = std::env::var("HTTP_PROXY") {
+            debug!("Using HTTP proxy: {}", http_proxy);
+            proxy_options.url(&http_proxy);
+        }
+        
+        proxy_options.auto();
         fetch_options.proxy_options(proxy_options);
 
         // Configure remote callbacks for authentication
@@ -286,7 +297,7 @@ impl GitSource {
 
         callbacks.credentials(|url, username, allowed| {
             let config = git2::Config::open_default()
-                .with_context(|| "Failed to open Git configuration")?;
+                .map_err(|e| git2::Error::from_str(&format!("Failed to open Git configuration: {}", e)))?;
             let authenticator = GitAuthenticator::default();
             let mut credential_fn = authenticator.credentials(&config);
             credential_fn(url, username, allowed)
