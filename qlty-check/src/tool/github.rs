@@ -1,5 +1,6 @@
 use super::installations::{initialize_installation, write_to_file};
 use super::ToolType;
+use qlty_config::http;
 use crate::tool::Download;
 use crate::{
     ui::{ProgressBar as _, ProgressTask},
@@ -398,7 +399,7 @@ impl GitHubReleaseTool {
     }
 
     fn get_release_assets(&self, url: &str) -> Result<Vec<serde_json::Value>> {
-        let mut request = qlty_config::http::get(url)
+        let mut request = http::get(url)
             .set(
                 "User-Agent",
                 &format!("{}/{}", USER_AGENT_PREFIX, QLTY_VERSION),

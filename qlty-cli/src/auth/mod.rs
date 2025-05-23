@@ -1,6 +1,7 @@
 mod auth_flow;
 mod credentials;
 use anyhow::Result;
+use qlty_config::http;
 use auth_flow::{launch_login_server, AppState};
 use console::style;
 use credentials::read_token;
@@ -64,7 +65,7 @@ fn auth_via_browser() -> Result<String> {
     );
     thread::sleep(Duration::from_millis(500));
 
-    let open_url = qlty_config::http::get(&state.login_url)
+    let open_url = http::get(&state.login_url)
         .query("state", original_state)
         .query("response_type", "token")
         .query("redirect_uri", &server.base_url)

@@ -6,6 +6,7 @@ use crate::{
     ui::{ProgressBar, ProgressTask},
     Tool,
 };
+use qlty_config::http;
 use anyhow::{bail, Result};
 use ar::Entry;
 use chrono::Utc;
@@ -129,7 +130,7 @@ impl RubyLinux {
         installation.download_file_type = Some(".deb".to_string());
         installation.download_binary_name = Some(package.to_string());
 
-        let result = qlty_config::http::get(url.as_str()).call();
+        let result = http::get(url.as_str()).call();
         Self::finalize_installation(&mut installation, &result);
 
         match result {

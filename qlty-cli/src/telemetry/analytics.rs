@@ -2,6 +2,7 @@
 // MIT License: https://github.com/meilisearch/segment/blob/main/LICENSE
 use crate::telemetry::locale::current_locale;
 use anyhow::{Context, Result};
+use qlty_config::http;
 use base64::Engine as _;
 use qlty_config::version::{BUILD_IDENTIFIER, QLTY_VERSION};
 use serde::{Deserialize, Serialize};
@@ -44,7 +45,7 @@ impl AnalyticsClient {
             TRACK_URL, http_basic_authorization, data
         );
 
-        qlty_config::http::post(TRACK_URL)
+        http::post(TRACK_URL)
             .set("Authorization", &http_basic_authorization)
             .send_json(data)
             .map(|_| ())
