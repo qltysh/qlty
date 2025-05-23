@@ -4,10 +4,11 @@ use crate::{QltyConfig, TomlMerge};
 use anyhow::{Context, Result};
 use config::File;
 use globset::{Glob, GlobSetBuilder};
+use std::env;
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
 use toml::Value;
-use tracing::trace;
+use tracing::{debug, trace};
 
 const SOURCE_PARSE_ERROR: &str = r#"There was an error reading configuration from one of your declared Sources.
 
@@ -25,14 +26,11 @@ For more information, please visit: https://qlty.io/docs/troubleshooting/source-
 /// 3. Enabling auto-detection for system proxy configuration
 pub fn configure_proxy_options(proxy_options: &mut git2::ProxyOptions) {
     // Check for lowercase first, then uppercase (prefer lowercase)
-    if let Ok(https_proxy) = std::env::var("https_proxy").or_else(|_| std::env::var("HTTPS_PROXY"))
-    {
-        trace!("Using HTTPS proxy: {}", https_proxy);
+    if let Ok(https_proxy) = env::var("https_proxy").or_else(|_| env::var("HTTPS_PROXY")) {
+        debug!("Using HTTPS proxy: {}", https_proxy);
         proxy_options.url(&https_proxy);
-    } else if let Ok(http_proxy) =
-        std::env::var("http_proxy").or_else(|_| std::env::var("HTTP_PROXY"))
-    {
-        trace!("Using HTTP proxy: {}", http_proxy);
+    } else if let Ok(http_proxy) = env::var("http_proxy").or_else(|_| env::var("HTTP_PROXY")) {
+        debug!("Using HTTP proxy: {}", http_proxy);
         proxy_options.url(&http_proxy);
     }
 
