@@ -14,9 +14,9 @@ pub fn count<'a>(source_file: &'a File, node: &Node<'a>, filter: &NodeFilter) ->
 
     let all_matches = query_cursor.matches(query, *node, source_file.contents.as_bytes());
 
-    // For Java, we need to count field declarations individually, not deduplicate by name
-    // For other languages like Rust, we deduplicate field accesses by name
-    let is_java = language.name() == "java";
+    // Languages that don't deduplicate field names count field declarations individually
+    // Languages that deduplicate field names count unique field accesses by name
+    let deduplicate = language.deduplicate_field_names();
     let mut fields = HashSet::new();
     let mut field_count = 0;
 
@@ -31,27 +31,27 @@ pub fn count<'a>(source_file: &'a File, node: &Node<'a>, filter: &NodeFilter) ->
         if let Some(parent) = field_capture.node.parent() {
             // In some languages, field nodes appear within call nodes. We don't want to count those.
             if !language.call_nodes().contains(&parent.kind()) {
-                if is_java {
-                    // For Java field declarations, count each declaration individually
-                    field_count += 1;
-                } else {
-                    // For other languages (field accesses), deduplicate by name
+                if deduplicate {
+                    // For languages that deduplicate (field accesses), deduplicate by name
                     fields.insert(name);
+                } else {
+                    // For languages that don't deduplicate (field declarations), count each declaration individually
+                    field_count += 1;
                 }
             }
-        } else if is_java {
-            // For Java field declarations, count each declaration individually
-            field_count += 1;
-        } else {
-            // For other languages (field accesses), deduplicate by name
+        } else if deduplicate {
+            // For languages that deduplicate (field accesses), deduplicate by name
             fields.insert(name);
+        } else {
+            // For languages that don't deduplicate (field declarations), count each declaration individually
+            field_count += 1;
         }
     }
 
-    if is_java {
-        field_count
-    } else {
+    if deduplicate {
         fields.len()
+    } else {
+        field_count
     }
 }
 
