@@ -6,7 +6,6 @@ use toml_edit::{value, DocumentMut, Item};
 
 use crate::Workspace;
 
-
 #[derive(Debug, Default)]
 struct RemoteHeadRetriever;
 
@@ -19,15 +18,19 @@ impl HeadRetriever for RemoteHeadRetriever {
         let mut names = vec![];
         let mut remote = git2::Remote::create_detached(source_url)?;
 
-        // Configure proxy options
         let mut proxy_options = git2::ProxyOptions::new();
-        
-        if let Ok(https_proxy) = std::env::var("HTTPS_PROXY") {
+
+        // Check for lowercase first, then uppercase (prefer lowercase)
+        if let Ok(https_proxy) =
+            std::env::var("https_proxy").or_else(|_| std::env::var("HTTPS_PROXY"))
+        {
             proxy_options.url(&https_proxy);
-        } else if let Ok(http_proxy) = std::env::var("HTTP_PROXY") {
+        } else if let Ok(http_proxy) =
+            std::env::var("http_proxy").or_else(|_| std::env::var("HTTP_PROXY"))
+        {
             proxy_options.url(&http_proxy);
         }
-        
+
         proxy_options.auto();
         let callbacks = git2::RemoteCallbacks::new();
 
