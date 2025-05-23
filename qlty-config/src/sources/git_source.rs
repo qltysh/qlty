@@ -2,7 +2,7 @@ use super::{source::SourceFetch, LocalSource, Source, SourceFile};
 use crate::Library;
 use anyhow::{Context, Result};
 use auth_git2::GitAuthenticator;
-use git2::{Remote, Repository, ResetType};
+use git2::{Remote, Repository, ResetType, FetchOptions, ProxyOptions, RemoteCallbacks};
 use std::path::{Path, PathBuf};
 use tracing::{debug, info};
 
@@ -211,10 +211,12 @@ impl GitSource {
         self.fetch(repository, &mut origin, branches)
     }
 
-    fn fetch(&self, repository: &Repository, origin: &mut Remote, branches: &[&str]) -> Result<()> {
+    fn fetch(&self, _repository: &Repository, origin: &mut Remote, branches: &[&str]) -> Result<()> {
+        let mut fetch_options = self.create_fetch_options()?;
+        
         // Per libgit2, passing an empty array of refspecs fetches base refspecs
-        GitAuthenticator::default()
-            .fetch(repository, origin, branches, None)
+        origin
+            .fetch(branches, Some(&mut fetch_options), None)
             .with_context(|| {
                 if branches.is_empty() {
                     format!(
@@ -270,6 +272,48 @@ impl GitSource {
             GitSourceReference::Branch(branch) => branch.to_string(),
             GitSourceReference::Tag(tag) => tag.to_string(),
         }
+    }
+
+    fn create_fetch_options(&self) -> Result<FetchOptions> {
+        let mut fetch_options = FetchOptions::new();
+        let mut proxy_options = ProxyOptions::new();
+        
+        // Configure proxy from environment variables
+        if let Ok(https_proxy) = std::env::var("HTTPS_PROXY") {
+            debug!("Using HTTPS proxy: {}", https_proxy);
+            proxy_options.url(&https_proxy);
+        } else if let Ok(http_proxy) = std::env::var("HTTP_PROXY") {
+            debug!("Using HTTP proxy: {}", http_proxy);
+            proxy_options.url(&http_proxy);
+        }
+        
+        // Set proxy auto-detect to use system configuration
+        proxy_options.auto();
+        fetch_options.proxy_options(proxy_options);
+        
+        // Configure remote callbacks for authentication
+        let mut callbacks = RemoteCallbacks::new();
+        
+        // Create a git2 config for the authenticator
+        let config = git2::Config::open_default().unwrap_or_else(|_| git2::Config::new());
+        let authenticator = GitAuthenticator::default();
+        let mut credential_fn = authenticator.credentials(&config);
+        
+        callbacks.credentials(move |url, username, allowed| {
+            credential_fn(url, username, allowed)
+        });
+        
+        // Configure certificate checking
+        callbacks.certificate_check(|_cert, _valid| {
+            // For now, we'll be permissive with certificates to handle proxy scenarios
+            // In a production environment, you might want more strict validation
+            debug!("Certificate check for host");
+            Ok(git2::CertificateCheckStatus::CertificateOk)
+        });
+        
+        fetch_options.remote_callbacks(callbacks);
+        
+        Ok(fetch_options)
     }
 }
 

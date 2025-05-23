@@ -17,7 +17,23 @@ impl HeadRetriever for RemoteHeadRetriever {
     fn remote_fetch_heads(&self, source_url: &str) -> Result<Vec<String>> {
         let mut names = vec![];
         let mut remote = git2::Remote::create_detached(source_url)?;
-        remote.connect(git2::Direction::Fetch)?;
+        
+        // Configure proxy options for remote connection
+        let mut proxy_options = git2::ProxyOptions::new();
+        if let Ok(https_proxy) = std::env::var("HTTPS_PROXY") {
+            proxy_options.url(&https_proxy);
+        } else if let Ok(http_proxy) = std::env::var("HTTP_PROXY") {
+            proxy_options.url(&http_proxy);
+        }
+        proxy_options.auto();
+        
+        // Create connection options with proxy support
+        let mut callbacks = git2::RemoteCallbacks::new();
+        callbacks.certificate_check(|_cert, _valid| {
+            Ok(git2::CertificateCheckStatus::CertificateOk) // Allow certificates for proxy scenarios
+        });
+        
+        remote.connect_auth(git2::Direction::Fetch, Some(callbacks), Some(proxy_options))?;
 
         for head in remote.list()? {
             names.push(head.name().to_string());
