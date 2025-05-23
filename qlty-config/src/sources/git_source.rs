@@ -1,4 +1,5 @@
 use super::{source::SourceFetch, LocalSource, Source, SourceFile};
+use crate::configure_proxy_options;
 use crate::Library;
 use anyhow::{Context, Result};
 use auth_git2::GitAuthenticator;
@@ -278,16 +279,7 @@ impl GitSource {
         let mut fetch_options = FetchOptions::new();
 
         let mut proxy_options = git2::ProxyOptions::new();
-
-        if let Ok(https_proxy) = std::env::var("HTTPS_PROXY") {
-            debug!("Using HTTPS proxy: {}", https_proxy);
-            proxy_options.url(&https_proxy);
-        } else if let Ok(http_proxy) = std::env::var("HTTP_PROXY") {
-            debug!("Using HTTP proxy: {}", http_proxy);
-            proxy_options.url(&http_proxy);
-        }
-
-        proxy_options.auto();
+        configure_proxy_options!(proxy_options);
         fetch_options.proxy_options(proxy_options);
 
         let mut callbacks = RemoteCallbacks::new();

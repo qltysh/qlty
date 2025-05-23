@@ -4,7 +4,7 @@ use std::fs;
 use std::{fmt::Debug, sync::Arc};
 use toml_edit::{value, DocumentMut, Item};
 
-use crate::Workspace;
+use crate::{configure_proxy_options, Workspace};
 
 #[derive(Debug, Default)]
 struct RemoteHeadRetriever;
@@ -19,19 +19,7 @@ impl HeadRetriever for RemoteHeadRetriever {
         let mut remote = git2::Remote::create_detached(source_url)?;
 
         let mut proxy_options = git2::ProxyOptions::new();
-
-        // Check for lowercase first, then uppercase (prefer lowercase)
-        if let Ok(https_proxy) =
-            std::env::var("https_proxy").or_else(|_| std::env::var("HTTPS_PROXY"))
-        {
-            proxy_options.url(&https_proxy);
-        } else if let Ok(http_proxy) =
-            std::env::var("http_proxy").or_else(|_| std::env::var("HTTP_PROXY"))
-        {
-            proxy_options.url(&http_proxy);
-        }
-
-        proxy_options.auto();
+        configure_proxy_options!(proxy_options);
         let callbacks = git2::RemoteCallbacks::new();
 
         remote.connect_auth(git2::Direction::Fetch, Some(callbacks), Some(proxy_options))?;
