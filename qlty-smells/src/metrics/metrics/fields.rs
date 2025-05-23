@@ -14,7 +14,11 @@ pub fn count<'a>(source_file: &'a File, node: &Node<'a>, filter: &NodeFilter) ->
 
     let all_matches = query_cursor.matches(query, *node, source_file.contents.as_bytes());
 
+    // For Java, we need to count field declarations individually, not deduplicate by name
+    // For other languages like Rust, we deduplicate field accesses by name
+    let is_java = language.name() == "java";
     let mut fields = HashSet::new();
+    let mut field_count = 0;
 
     for field_match in all_matches {
         let name = capture_source(query, "name", &field_match, source_file);
@@ -27,14 +31,30 @@ pub fn count<'a>(source_file: &'a File, node: &Node<'a>, filter: &NodeFilter) ->
         if let Some(parent) = field_capture.node.parent() {
             // In some languages, field nodes appear within call nodes. We don't want to count those.
             if !language.call_nodes().contains(&parent.kind()) {
-                fields.insert(name);
+                if is_java {
+                    // For Java field declarations, count each declaration individually
+                    field_count += 1;
+                } else {
+                    // For other languages (field accesses), deduplicate by name
+                    fields.insert(name);
+                }
             }
         } else {
-            fields.insert(name);
+            if is_java {
+                // For Java field declarations, count each declaration individually
+                field_count += 1;
+            } else {
+                // For other languages (field accesses), deduplicate by name
+                fields.insert(name);
+            }
         }
     }
 
-    fields.len()
+    if is_java {
+        field_count
+    } else {
+        fields.len()
+    }
 }
 
 #[cfg(test)]
@@ -155,6 +175,59 @@ mod test {
             );
             assert_eq!(
                 0,
+                count(
+                    &source_file,
+                    &source_file.parse().root_node(),
+                    &NodeFilter::empty()
+                )
+            );
+        }
+    }
+
+    mod java {
+        use super::*;
+
+        #[test]
+        fn multiple_classes_same_field_names() {
+            let source_file = File::from_string(
+                "java",
+                r#"
+                class BooleanLogic {
+                    int foo;
+                    int bar;
+                }
+
+                class BooleanLogic1 {
+                    boolean foo;
+                    boolean bar;
+                    boolean baz;
+                    boolean qux;
+                }
+                "#,
+            );
+            assert_eq!(
+                6,
+                count(
+                    &source_file,
+                    &source_file.parse().root_node(),
+                    &NodeFilter::empty()
+                )
+            );
+        }
+
+        #[test]
+        fn single_class() {
+            let source_file = File::from_string(
+                "java",
+                r#"
+                class MyClass {
+                    private int field1;
+                    public String field2;
+                }
+                "#,
+            );
+            assert_eq!(
+                2,
                 count(
                     &source_file,
                     &source_file.parse().root_node(),
