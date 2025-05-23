@@ -19,6 +19,9 @@ pub struct Match {
     #[serde(default)]
     pub file_patterns: Vec<String>,
 
+    #[serde(default)]
+    pub levels: Vec<Level>,
+
     #[serde(skip)]
     pub glob_set: RwLock<Option<GlobSet>>,
 }
@@ -29,6 +32,7 @@ impl Clone for Match {
             plugins: self.plugins.clone(),
             rules: self.rules.clone(),
             file_patterns: self.file_patterns.clone(),
+            levels: self.levels.clone(),
             glob_set: RwLock::new(None),
         }
     }
