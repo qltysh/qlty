@@ -1,0 +1,10 @@
+[
+  {
+    "tool": "triage-level",
+    "ruleKey": "fail",
+    "message": "triage-level failed",
+    "level": "LEVEL_HIGH",
+    "category": "CATEGORY_LINT",
+    "mode": "MODE_COMMENT"
+  }
+]

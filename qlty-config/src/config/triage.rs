@@ -6,9 +6,10 @@ use qlty_types::analysis::v1::{Category, Issue, Level};
 use qlty_types::{category_from_str, level_from_str};
 use schemars::JsonSchema;
 use serde::{Deserialize, Deserializer, Serialize};
+use std::convert::TryFrom;
 use std::sync::RwLock;
 
-#[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
+#[derive(Debug, Serialize, Default, JsonSchema)]
 pub struct Match {
     #[serde(default)]
     pub plugins: Vec<String>,
@@ -24,6 +25,42 @@ pub struct Match {
 
     #[serde(skip)]
     pub glob_set: RwLock<Option<GlobSet>>,
+}
+
+impl<'de> Deserialize<'de> for Match {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct MatchHelper {
+            #[serde(default)]
+            pub plugins: Vec<String>,
+
+            #[serde(default)]
+            pub rules: Vec<String>,
+
+            #[serde(default)]
+            pub file_patterns: Vec<String>,
+
+            #[serde(default)]
+            pub levels: Vec<String>,
+        }
+
+        let helper = MatchHelper::deserialize(deserializer)?;
+
+        Ok(Match {
+            plugins: helper.plugins,
+            rules: helper.rules,
+            file_patterns: helper.file_patterns,
+            levels: helper
+                .levels
+                .iter()
+                .map(|level| level_from_str(level))
+                .collect(),
+            ..Default::default()
+        })
+    }
 }
 
 impl Clone for Match {
@@ -109,11 +146,21 @@ impl Match {
     fn applies_to_issue(&self, issue: &Issue) -> bool {
         self.plugin_applies_to_issue(issue)
             && is_rule_issue_match(&self.rules, issue)
+            && self.level_applies_to_issue(issue)
             && self.glob_applies_to_issue(issue)
     }
 
     fn plugin_applies_to_issue(&self, issue: &Issue) -> bool {
         self.plugins.is_empty() || self.plugins.contains(&issue.tool.to_string())
+    }
+
+    fn level_applies_to_issue(&self, issue: &Issue) -> bool {
+        if self.levels.is_empty() {
+            return true;
+        }
+
+        let level = Level::try_from(issue.level).unwrap_or(Level::Unspecified);
+        self.levels.contains(&level)
     }
 
     fn glob_applies_to_issue(&self, issue: &Issue) -> bool {
