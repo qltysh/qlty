@@ -2711,7 +2711,9 @@ dependencies = [
  "pbjson",
  "pbjson-types",
  "prost",
+ "schemars",
  "serde",
+ "serde_json",
  "tree-sitter",
 ]
 

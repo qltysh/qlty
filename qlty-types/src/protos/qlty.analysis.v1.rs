@@ -500,6 +500,7 @@ impl MessageLevel {
         }
     }
 }
+#[derive(schemars::JsonSchema)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
 pub enum Level {
@@ -538,6 +539,7 @@ impl Level {
         }
     }
 }
+#[derive(schemars::JsonSchema)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
 pub enum Category {
