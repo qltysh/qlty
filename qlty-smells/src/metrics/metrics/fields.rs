@@ -39,14 +39,12 @@ pub fn count<'a>(source_file: &'a File, node: &Node<'a>, filter: &NodeFilter) ->
                     fields.insert(name);
                 }
             }
+        } else if is_java {
+            // For Java field declarations, count each declaration individually
+            field_count += 1;
         } else {
-            if is_java {
-                // For Java field declarations, count each declaration individually
-                field_count += 1;
-            } else {
-                // For other languages (field accesses), deduplicate by name
-                fields.insert(name);
-            }
+            // For other languages (field accesses), deduplicate by name
+            fields.insert(name);
         }
     }
 
