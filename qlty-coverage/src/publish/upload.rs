@@ -1,9 +1,9 @@
 use crate::export::CoverageExport;
 use crate::publish::Report;
 use anyhow::{anyhow, bail};
-use qlty_config::http;
 use anyhow::{Context, Result};
 use qlty_cloud::{get_legacy_api_url, Client as QltyClient};
+use qlty_config::http;
 use qlty_types::tests::v1::CoverageMetadata;
 use serde_json::Value;
 use std::path::PathBuf;

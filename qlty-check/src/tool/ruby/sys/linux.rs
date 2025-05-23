@@ -6,12 +6,12 @@ use crate::{
     ui::{ProgressBar, ProgressTask},
     Tool,
 };
-use qlty_config::http;
 use anyhow::{bail, Result};
 use ar::Entry;
 use chrono::Utc;
 use duct::cmd;
 use qlty_analysis::{join_path_string, utils::fs::path_to_string};
+use qlty_config::http;
 use qlty_types::analysis::v1::Installation;
 use std::{
     collections::HashMap,

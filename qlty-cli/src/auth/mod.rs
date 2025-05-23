@@ -1,11 +1,11 @@
 mod auth_flow;
 mod credentials;
 use anyhow::Result;
-use qlty_config::http;
 use auth_flow::{launch_login_server, AppState};
 use console::style;
 use credentials::read_token;
 pub use credentials::{delete_token as clear_auth_token, write_token as store_auth_token};
+use qlty_config::http;
 use std::{env, thread, time::Duration};
 use tracing::{info, warn};
 

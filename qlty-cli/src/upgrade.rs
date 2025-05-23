@@ -1,8 +1,8 @@
 use crate::get_exe_name;
 use anyhow::{bail, Context, Result};
-use qlty_config::http;
 use dialoguer::{theme::ColorfulTheme, Confirm};
 use duct::cmd;
+use qlty_config::http;
 use qlty_config::version::{qlty_semver, QLTY_VERSION};
 use serde::Deserialize;
 use std::time::SystemTime;

@@ -1,6 +1,6 @@
 use anyhow::{anyhow, bail, Result};
-use qlty_config::version::QLTY_VERSION;
 use qlty_config::http;
+use qlty_config::version::QLTY_VERSION;
 use qlty_types::tests::v1::CoverageMetadata;
 use serde_json::Value;
 use ureq::{json, serde_json, Error, Request};

@@ -1,6 +1,5 @@
 use super::installations::{initialize_installation, write_to_file};
 use super::ToolType;
-use qlty_config::http;
 use crate::tool::Download;
 use crate::{
     ui::{ProgressBar as _, ProgressTask},
@@ -10,6 +9,7 @@ use anyhow::Result;
 use chrono::Utc;
 use once_cell::sync::OnceCell;
 use qlty_config::config::{Cpu, DownloadDef, OperatingSystem, PluginDef, ReleaseDef, System};
+use qlty_config::http;
 use qlty_config::version::QLTY_VERSION;
 use qlty_types::analysis::v1::Installation;
 use sha2::Digest;
