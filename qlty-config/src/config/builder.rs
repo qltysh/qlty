@@ -205,6 +205,9 @@ impl Builder {
         let mut config = config.clone();
 
         for enabled_plugin in &mut config.plugin {
+            enabled_plugin.validate().with_context(|| {
+                format!("Invalid configuration for plugin '{}'", enabled_plugin.name)
+            })?;
             let plugin_definition =
                 config
                     .plugins
@@ -315,5 +318,66 @@ mod test {
 
         let result = Builder::extract_sources(Table(input));
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_validate_plugin_with_mutually_exclusive_options() {
+        let invalid_config = toml! {
+            config_version = "0"
+            
+            [[plugin]]
+            name = "rubocop"
+            version = "1.56.3"
+            extra_packages = ["rubocop-factory_bot@2.25.1"]
+            package_file = "Gemfile"
+            
+            [plugins.definitions.rubocop]
+            runtime = "ruby"
+        };
+
+        let result = Builder::parse_toml_as_config(Table(invalid_config));
+        assert!(result.is_err());
+        
+        let error_message = result.unwrap_err().to_string();
+        assert!(error_message.contains("rubocop"));
+        assert!(error_message.contains("package_file"));
+        assert!(error_message.contains("extra_packages"));
+        assert!(error_message.contains("mutually exclusive"));
+    }
+
+    #[test]
+    fn test_validate_plugin_with_package_file_only() {
+        let valid_config = toml! {
+            config_version = "0"
+            
+            [[plugin]]
+            name = "rubocop"
+            version = "1.56.3"
+            package_file = "Gemfile"
+            
+            [plugins.definitions.rubocop]
+            runtime = "ruby"
+        };
+
+        let result = Builder::parse_toml_as_config(Table(valid_config));
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_validate_plugin_with_extra_packages_only() {
+        let valid_config = toml! {
+            config_version = "0"
+            
+            [[plugin]]
+            name = "rubocop"
+            version = "1.56.3"
+            extra_packages = ["rubocop-factory_bot@2.25.1"]
+            
+            [plugins.definitions.rubocop]
+            runtime = "ruby"
+        };
+
+        let result = Builder::parse_toml_as_config(Table(valid_config));
+        assert!(result.is_ok());
     }
 }
