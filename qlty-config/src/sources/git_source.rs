@@ -1,5 +1,4 @@
 use super::{source::SourceFetch, LocalSource, Source, SourceFile};
-use crate::configure_proxy_options;
 use crate::Library;
 use anyhow::{Context, Result};
 use auth_git2::GitAuthenticator;
@@ -279,7 +278,7 @@ impl GitSource {
         let mut fetch_options = FetchOptions::new();
 
         let mut proxy_options = git2::ProxyOptions::new();
-        configure_proxy_options!(proxy_options);
+        crate::sources::source::configure_proxy_options(&mut proxy_options);
         fetch_options.proxy_options(proxy_options);
 
         let mut callbacks = RemoteCallbacks::new();

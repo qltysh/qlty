@@ -17,30 +17,26 @@ Also, please make sure you are specifying the latest source tag in your qlty.tom
 
 For more information, please visit: https://qlty.io/docs/troubleshooting/source-parse-error"#;
 
-/// Macro to configure proxy options for git operations
+/// Configure proxy options for git operations
 ///
-/// This macro sets up proxy configuration by:
+/// This function sets up proxy configuration by:
 /// 1. Checking for lowercase environment variables first (https_proxy, http_proxy)
 /// 2. Falling back to uppercase versions (HTTPS_PROXY, HTTP_PROXY)
 /// 3. Enabling auto-detection for system proxy configuration
-#[macro_export]
-macro_rules! configure_proxy_options {
-    ($proxy_options:ident) => {
-        // Check for lowercase first, then uppercase (prefer lowercase)
-        if let Ok(https_proxy) =
-            std::env::var("https_proxy").or_else(|_| std::env::var("HTTPS_PROXY"))
-        {
-            tracing::debug!("Using HTTPS proxy: {}", https_proxy);
-            $proxy_options.url(&https_proxy);
-        } else if let Ok(http_proxy) =
-            std::env::var("http_proxy").or_else(|_| std::env::var("HTTP_PROXY"))
-        {
-            tracing::debug!("Using HTTP proxy: {}", http_proxy);
-            $proxy_options.url(&http_proxy);
-        }
+pub fn configure_proxy_options(proxy_options: &mut git2::ProxyOptions) {
+    // Check for lowercase first, then uppercase (prefer lowercase)
+    if let Ok(https_proxy) = std::env::var("https_proxy").or_else(|_| std::env::var("HTTPS_PROXY"))
+    {
+        trace!("Using HTTPS proxy: {}", https_proxy);
+        proxy_options.url(&https_proxy);
+    } else if let Ok(http_proxy) =
+        std::env::var("http_proxy").or_else(|_| std::env::var("HTTP_PROXY"))
+    {
+        trace!("Using HTTP proxy: {}", http_proxy);
+        proxy_options.url(&http_proxy);
+    }
 
-        $proxy_options.auto();
-    };
+    proxy_options.auto();
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
