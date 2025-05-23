@@ -20,9 +20,7 @@ pub struct Match {
     #[serde(default)]
     pub file_patterns: Vec<String>,
 
-    #[serde(default)]
     pub levels: Vec<Level>,
-
     #[serde(skip)]
     pub glob_set: RwLock<Option<GlobSet>>,
 }
