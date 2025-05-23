@@ -19,6 +19,7 @@ pub struct Report {
     pub missing_files: HashSet<String>,
 
     pub totals: CoverageMetrics,
+    pub ignored_paths_count: usize,
 }
 
 impl Report {

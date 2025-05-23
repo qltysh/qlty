@@ -102,5 +102,6 @@
     "omitted_lines": 26,
     "total_lines": 52,
     "coverage_percentage": 92.3076923076923
-  }
+  },
+  "ignored_paths_count": 0
 }

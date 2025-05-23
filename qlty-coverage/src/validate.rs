@@ -104,6 +104,7 @@ mod tests {
             found_files: HashSet::new(),
             missing_files: HashSet::new(),
             totals: Default::default(),
+            ignored_paths_count: 0,
         }
     }
 
