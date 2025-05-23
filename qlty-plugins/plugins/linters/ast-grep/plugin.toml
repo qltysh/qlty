@@ -9,8 +9,8 @@ strip_components = 0
 releases = ["ast-grep"]
 file_types = ["ALL"]
 version_command = "ast-grep --version"
-latest_version = "0.37.0"
-known_good_version = "0.37.0"
+latest_version = "0.38.2"
+known_good_version = "0.38.2"
 config_files = ["sgconfig.yml"]
 description = "CLI tool for code structural search, lint and rewriting"
 
