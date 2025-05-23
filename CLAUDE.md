@@ -1,25 +1,26 @@
 # Qlty Development Guide for AI Assistants
 
-## Build & Test Commands
+## Common commands
 
 - Typecheck (faster than build): `cargo check`
-- To auto-format or lint always used this command: `qlty check --fix`
 - Run all tests: `cargo test`
-- Build: `cargo build`
 - Run specific test: `cargo test test_name_here`
-- NEVER use `cargo insta review` to accept snapshots. Instead use `INSTA_UPDATE=always cargo test ...`
+- Build: `cargo build`
+- Auto-format: `qlty fmt`
+- Lint: `qlty check --level=low --fix`
 
 ## Code Style Guidelines
 
-- Follow standard Rust idioms and `.qlty/configs/.rustfmt.toml` settings
+- Follow standard Rust idioms
 - Use `anyhow::Error` for errors and `thiserror` for defining error types
 - Use `anyhow::Result` for return values instead of the built-in `Result`
+- Add use directives for `anyhow` to import it instead of qualifying it
 - Naming: snake_case for functions/variables, UpperCamelCase for types/enums
 - Always use strong typing with enums for bounded sets of values
 - Imports: group std first, then external crates, then internal modules
 - Comprehensive error handling with proper context using `context()` or `with_context()`
 - Use descriptive variable names that clearly express intent
-- Write docstrings for public APIs and complex functions
+- Do not add low value comments, let the code speak for itself unless there is something non-obvious
 
 ## Testing
 
@@ -31,8 +32,10 @@
 - Do not use control flow like if statements or loops in tests
 - `.unwrap()` is OK to use in tests
 
-## Development Workflow
+## Important!
 
 - Never commit to `main` branch. Always work on a new branch from `main` with a descriptive name
 - IMPORTANT: Before every commit, typecheck, run auto-formatting and linting, and run all the tests
 - Always open PRs in draft mode
+- Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) format for commit messages
+- Also use Conventional Commits format for PR titles and descriptions
