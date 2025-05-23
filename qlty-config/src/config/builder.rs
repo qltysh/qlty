@@ -206,7 +206,7 @@ impl Builder {
 
         for enabled_plugin in &mut config.plugin {
             enabled_plugin.validate().with_context(|| {
-                format!("Invalid configuration for plugin '{}'", enabled_plugin.name)
+                format!("Configuration error for plugin '{}'", enabled_plugin.name)
             })?;
             let plugin_definition =
                 config
@@ -338,11 +338,17 @@ mod test {
         let result = Builder::toml_to_config(Table(invalid_config));
         assert!(result.is_err());
 
-        let error_message = result.unwrap_err().to_string();
-        assert!(error_message.contains("rubocop"));
-        assert!(error_message.contains("package_file"));
-        assert!(error_message.contains("extra_packages"));
-        assert!(error_message.contains("mutually exclusive"));
+        let error = result.unwrap_err();
+        let error_chain = error
+            .chain()
+            .map(|e| e.to_string())
+            .collect::<Vec<_>>()
+            .join(" ");
+
+        assert!(error_chain.contains("rubocop"));
+        assert!(error_chain.contains("package_file"));
+        assert!(error_chain.contains("extra_packages"));
+        assert!(error_chain.contains("mutually exclusive"));
     }
 
     #[test]
