@@ -1,0 +1,490 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=ruff fixture=unformatted version=0.11.3 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://docs.astral.sh/ruff/rules/multiple-imports-on-one-line",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "unformatted.in.py",
+        "range": {
+          "endColumn": 14,
+          "endLine": 11,
+          "startColumn": 1,
+          "startLine": 11,
+        },
+      },
+      "message": "Multiple imports on one line",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "E401",
+      "snippet": "import os,sys",
+      "snippetWithContext": "def main( ):
+    x=1+2
+    y = [ 1,2, 3 ]
+    z={ 'a':1,'b':2 }
+    
+    if x==3:
+        print('hello world')
+    else   :
+        print( 'goodbye'  )
+
+import os,sys
+import json
+
+class    MyClass(   object ):
+    def __init__(self,arg1,arg2):
+        self.attr1=arg1
+        self.attr2 = arg2
+
+    def method_one( self,param ):
+        result=param*2
+        return result",
+      "suggestions": [
+        {
+          "patch": "--- original
++++ modified
+@@ -8,7 +8,8 @@
+     else   :
+         print( 'goodbye'  )
+
+-import os,sys
++import os
++import sys
+ import json
+
+ class    MyClass(   object ):
+",
+          "replacements": [
+            {
+              "data": "import os
+import sys",
+              "location": {
+                "path": "unformatted.in.py",
+                "range": {
+                  "endColumn": 14,
+                  "endLine": 11,
+                  "startColumn": 1,
+                  "startLine": 11,
+                },
+              },
+            },
+          ],
+          "source": "SUGGESTION_SOURCE_TOOL",
+        },
+      ],
+      "tool": "ruff",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "unformatted.in.py",
+        "range": {
+          "endColumn": 14,
+          "endLine": 11,
+          "startColumn": 1,
+          "startLine": 11,
+        },
+      },
+      "message": "Module level import not at top of file",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "E402",
+      "snippet": "import os,sys",
+      "snippetWithContext": "def main( ):
+    x=1+2
+    y = [ 1,2, 3 ]
+    z={ 'a':1,'b':2 }
+    
+    if x==3:
+        print('hello world')
+    else   :
+        print( 'goodbye'  )
+
+import os,sys
+import json
+
+class    MyClass(   object ):
+    def __init__(self,arg1,arg2):
+        self.attr1=arg1
+        self.attr2 = arg2
+
+    def method_one( self,param ):
+        result=param*2
+        return result",
+      "tool": "ruff",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "unformatted.in.py",
+        "range": {
+          "endColumn": 12,
+          "endLine": 12,
+          "startColumn": 1,
+          "startLine": 12,
+        },
+      },
+      "message": "Module level import not at top of file",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "E402",
+      "snippet": "import json",
+      "snippetWithContext": "    x=1+2
+    y = [ 1,2, 3 ]
+    z={ 'a':1,'b':2 }
+    
+    if x==3:
+        print('hello world')
+    else   :
+        print( 'goodbye'  )
+
+import os,sys
+import json
+
+class    MyClass(   object ):
+    def __init__(self,arg1,arg2):
+        self.attr1=arg1
+        self.attr2 = arg2
+
+    def method_one( self,param ):
+        result=param*2
+        return result
+",
+      "tool": "ruff",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://docs.astral.sh/ruff/rules/unused-import",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "unformatted.in.py",
+        "range": {
+          "endColumn": 12,
+          "endLine": 12,
+          "startColumn": 8,
+          "startLine": 12,
+        },
+      },
+      "message": "\`json\` imported but unused",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "F401",
+      "snippet": "import json",
+      "snippetWithContext": "    x=1+2
+    y = [ 1,2, 3 ]
+    z={ 'a':1,'b':2 }
+    
+    if x==3:
+        print('hello world')
+    else   :
+        print( 'goodbye'  )
+
+import os,sys
+import json
+
+class    MyClass(   object ):
+    def __init__(self,arg1,arg2):
+        self.attr1=arg1
+        self.attr2 = arg2
+
+    def method_one( self,param ):
+        result=param*2
+        return result
+",
+      "suggestions": [
+        {
+          "patch": "--- original
++++ modified
+@@ -9,7 +9,6 @@
+         print( 'goodbye'  )
+
+ import os,sys
+-import json
+
+ class    MyClass(   object ):
+     def __init__(self,arg1,arg2):
+",
+          "replacements": [
+            {
+              "location": {
+                "path": "unformatted.in.py",
+                "range": {
+                  "endColumn": 1,
+                  "endLine": 13,
+                  "startColumn": 1,
+                  "startLine": 12,
+                },
+              },
+            },
+          ],
+          "source": "SUGGESTION_SOURCE_TOOL",
+        },
+      ],
+      "tool": "ruff",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://docs.astral.sh/ruff/rules/unused-import",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "unformatted.in.py",
+        "range": {
+          "endColumn": 10,
+          "endLine": 11,
+          "startColumn": 8,
+          "startLine": 11,
+        },
+      },
+      "message": "\`os\` imported but unused",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "F401",
+      "snippet": "import os,sys",
+      "snippetWithContext": "def main( ):
+    x=1+2
+    y = [ 1,2, 3 ]
+    z={ 'a':1,'b':2 }
+    
+    if x==3:
+        print('hello world')
+    else   :
+        print( 'goodbye'  )
+
+import os,sys
+import json
+
+class    MyClass(   object ):
+    def __init__(self,arg1,arg2):
+        self.attr1=arg1
+        self.attr2 = arg2
+
+    def method_one( self,param ):
+        result=param*2
+        return result",
+      "suggestions": [
+        {
+          "patch": "--- original
++++ modified
+@@ -8,7 +8,6 @@
+     else   :
+         print( 'goodbye'  )
+
+-import os,sys
+ import json
+
+ class    MyClass(   object ):
+",
+          "replacements": [
+            {
+              "location": {
+                "path": "unformatted.in.py",
+                "range": {
+                  "endColumn": 1,
+                  "endLine": 12,
+                  "startColumn": 1,
+                  "startLine": 11,
+                },
+              },
+            },
+          ],
+          "source": "SUGGESTION_SOURCE_TOOL",
+        },
+      ],
+      "tool": "ruff",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://docs.astral.sh/ruff/rules/unused-import",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "unformatted.in.py",
+        "range": {
+          "endColumn": 14,
+          "endLine": 11,
+          "startColumn": 11,
+          "startLine": 11,
+        },
+      },
+      "message": "\`sys\` imported but unused",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "F401",
+      "snippet": "import os,sys",
+      "snippetWithContext": "def main( ):
+    x=1+2
+    y = [ 1,2, 3 ]
+    z={ 'a':1,'b':2 }
+    
+    if x==3:
+        print('hello world')
+    else   :
+        print( 'goodbye'  )
+
+import os,sys
+import json
+
+class    MyClass(   object ):
+    def __init__(self,arg1,arg2):
+        self.attr1=arg1
+        self.attr2 = arg2
+
+    def method_one( self,param ):
+        result=param*2
+        return result",
+      "suggestions": [
+        {
+          "patch": "--- original
++++ modified
+@@ -8,7 +8,6 @@
+     else   :
+         print( 'goodbye'  )
+
+-import os,sys
+ import json
+
+ class    MyClass(   object ):
+",
+          "replacements": [
+            {
+              "location": {
+                "path": "unformatted.in.py",
+                "range": {
+                  "endColumn": 1,
+                  "endLine": 12,
+                  "startColumn": 1,
+                  "startLine": 11,
+                },
+              },
+            },
+          ],
+          "source": "SUGGESTION_SOURCE_TOOL",
+        },
+      ],
+      "tool": "ruff",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://docs.astral.sh/ruff/rules/unused-variable",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "unformatted.in.py",
+        "range": {
+          "endColumn": 6,
+          "endLine": 3,
+          "startColumn": 5,
+          "startLine": 3,
+        },
+      },
+      "message": "Local variable \`y\` is assigned to but never used",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "F841",
+      "snippet": "    y = [ 1,2, 3 ]",
+      "snippetWithContext": "def main( ):
+    x=1+2
+    y = [ 1,2, 3 ]
+    z={ 'a':1,'b':2 }
+    
+    if x==3:
+        print('hello world')
+    else   :
+        print( 'goodbye'  )
+
+import os,sys
+import json
+",
+      "suggestions": [
+        {
+          "patch": "--- original
++++ modified
+@@ -1,6 +1,5 @@
+ def main( ):
+     x=1+2
+-    y = [ 1,2, 3 ]
+     z={ 'a':1,'b':2 }
+     
+     if x==3:
+",
+          "replacements": [
+            {
+              "location": {
+                "path": "unformatted.in.py",
+                "range": {
+                  "endColumn": 1,
+                  "endLine": 4,
+                  "startColumn": 1,
+                  "startLine": 3,
+                },
+              },
+            },
+          ],
+          "source": "SUGGESTION_SOURCE_TOOL",
+        },
+      ],
+      "tool": "ruff",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://docs.astral.sh/ruff/rules/unused-variable",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "unformatted.in.py",
+        "range": {
+          "endColumn": 6,
+          "endLine": 4,
+          "startColumn": 5,
+          "startLine": 4,
+        },
+      },
+      "message": "Local variable \`z\` is assigned to but never used",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "F841",
+      "snippet": "    z={ 'a':1,'b':2 }",
+      "snippetWithContext": "def main( ):
+    x=1+2
+    y = [ 1,2, 3 ]
+    z={ 'a':1,'b':2 }
+    
+    if x==3:
+        print('hello world')
+    else   :
+        print( 'goodbye'  )
+
+import os,sys
+import json
+
+class    MyClass(   object ):",
+      "suggestions": [
+        {
+          "patch": "--- original
++++ modified
+@@ -1,7 +1,6 @@
+ def main( ):
+     x=1+2
+     y = [ 1,2, 3 ]
+-    z={ 'a':1,'b':2 }
+     
+     if x==3:
+         print('hello world')
+",
+          "replacements": [
+            {
+              "location": {
+                "path": "unformatted.in.py",
+                "range": {
+                  "endColumn": 1,
+                  "endLine": 5,
+                  "startColumn": 1,
+                  "startLine": 4,
+                },
+              },
+            },
+          ],
+          "source": "SUGGESTION_SOURCE_TOOL",
+        },
+      ],
+      "tool": "ruff",
+    },
+  ],
+}
+`;
