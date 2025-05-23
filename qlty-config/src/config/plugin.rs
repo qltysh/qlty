@@ -945,7 +945,7 @@ mod tests {
 
         let result = plugin.validate();
         assert!(result.is_err());
-        
+
         let error_message = result.unwrap_err().to_string();
         assert!(error_message.contains("test-plugin"));
         assert!(error_message.contains("package_file"));

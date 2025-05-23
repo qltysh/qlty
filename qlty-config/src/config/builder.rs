@@ -324,20 +324,20 @@ mod test {
     fn test_validate_plugin_with_mutually_exclusive_options() {
         let invalid_config = toml! {
             config_version = "0"
-            
+
             [[plugin]]
             name = "rubocop"
             version = "1.56.3"
             extra_packages = ["rubocop-factory_bot@2.25.1"]
             package_file = "Gemfile"
-            
+
             [plugins.definitions.rubocop]
             runtime = "ruby"
         };
 
         let result = Builder::toml_to_config(Table(invalid_config));
         assert!(result.is_err());
-        
+
         let error_message = result.unwrap_err().to_string();
         assert!(error_message.contains("rubocop"));
         assert!(error_message.contains("package_file"));
@@ -349,12 +349,12 @@ mod test {
     fn test_validate_plugin_with_package_file_only() {
         let valid_config = toml! {
             config_version = "0"
-            
+
             [[plugin]]
             name = "rubocop"
             version = "1.56.3"
             package_file = "Gemfile"
-            
+
             [plugins.definitions.rubocop]
             runtime = "ruby"
         };
@@ -367,12 +367,12 @@ mod test {
     fn test_validate_plugin_with_extra_packages_only() {
         let valid_config = toml! {
             config_version = "0"
-            
+
             [[plugin]]
             name = "rubocop"
             version = "1.56.3"
             extra_packages = ["rubocop-factory_bot@2.25.1"]
-            
+
             [plugins.definitions.rubocop]
             runtime = "ruby"
         };
