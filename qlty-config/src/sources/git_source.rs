@@ -294,22 +294,17 @@ impl GitSource {
         // Configure remote callbacks for authentication
         let mut callbacks = RemoteCallbacks::new();
         
-        // Create a git2 config for the authenticator
-        let config = git2::Config::open_default().unwrap_or_else(|_| git2::Config::new());
-        let authenticator = GitAuthenticator::default();
-        let mut credential_fn = authenticator.credentials(&config);
-        
-        callbacks.credentials(move |url, username, allowed| {
+        // Use GitAuthenticator::default() in the closure to avoid lifetime issues
+        callbacks.credentials(|url, username, allowed| {
+            let config = git2::Config::open_default().unwrap_or_else(|_| git2::Config::new().unwrap());
+            let authenticator = GitAuthenticator::default();
+            let mut credential_fn = authenticator.credentials(&config);
             credential_fn(url, username, allowed)
         });
         
-        // Configure certificate checking
-        callbacks.certificate_check(|_cert, _valid| {
-            // For now, we'll be permissive with certificates to handle proxy scenarios
-            // In a production environment, you might want more strict validation
-            debug!("Certificate check for host");
-            Ok(git2::CertificateCheckStatus::CertificateOk)
-        });
+        // Configure certificate checking to validate against system certificate roots  
+        // Use default certificate validation behavior (validates against system certificate store)
+        // By not setting a certificate_check callback, git2 will use the default validation
         
         fetch_options.remote_callbacks(callbacks);
         

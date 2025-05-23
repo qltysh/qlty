@@ -28,10 +28,9 @@ impl HeadRetriever for RemoteHeadRetriever {
         proxy_options.auto();
         
         // Create connection options with proxy support
-        let mut callbacks = git2::RemoteCallbacks::new();
-        callbacks.certificate_check(|_cert, _valid| {
-            Ok(git2::CertificateCheckStatus::CertificateOk) // Allow certificates for proxy scenarios
-        });
+        let callbacks = git2::RemoteCallbacks::new();
+        // Use default certificate validation behavior (validates against system certificate store)
+        // By not setting a certificate_check callback, git2 will use the default validation
         
         remote.connect_auth(git2::Direction::Fetch, Some(callbacks), Some(proxy_options))?;
 
