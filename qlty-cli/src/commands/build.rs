@@ -49,6 +49,10 @@ pub struct Build {
     #[arg(long)]
     pub skip_errored_plugins: bool,
 
+    /// Fetch sources before build
+    #[arg(long)]
+    pub fetch_sources: bool,
+
     #[arg(long)]
     output_path: Option<PathBuf>,
 }
@@ -56,7 +60,10 @@ pub struct Build {
 impl Build {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
         let workspace = Workspace::require_initialized()?;
-        workspace.fetch_sources()?;
+
+        if self.fetch_sources {
+            workspace.fetch_sources()?;
+        }
 
         let config = workspace.config()?;
 
