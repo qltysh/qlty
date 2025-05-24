@@ -235,20 +235,6 @@ impl Builder {
 
         if !all_exclude_patterns.is_empty() {
             config.exclude_patterns = all_exclude_patterns.clone();
-
-            match config.coverage.ignores {
-                Some(_) => {
-                    config
-                        .coverage
-                        .ignores
-                        .as_mut()
-                        .unwrap()
-                        .extend(all_exclude_patterns);
-                }
-                None => {
-                    config.coverage.ignores = Some(all_exclude_patterns);
-                }
-            }
         }
     }
 
