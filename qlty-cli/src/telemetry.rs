@@ -304,8 +304,9 @@ impl Telemetry {
 }
 
 fn anonymous_id() -> Result<String> {
-    Ok(format!(
-        "{:x}",
-        md5::compute(get_mac_address()?.unwrap().bytes())
-    ))
+    let mac_option = get_mac_address()?;
+    match mac_option {
+        Some(mac) => Ok(format!("{:x}", md5::compute(mac.bytes()))),
+        None => Err(anyhow::anyhow!("MAC address not available")),
+    }
 }
