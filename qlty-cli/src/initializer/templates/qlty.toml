@@ -53,7 +53,7 @@ test_patterns = [
   "**/spec_*.*",
 ]
 
-coverage.ignores = [
+coverage.exclude_patterns = [
   "*_min.*",
   "*-min.*",
   "*.min.*",

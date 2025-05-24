@@ -30,7 +30,7 @@ exclude_patterns = [
 ]
 
 # When these are updated, also update initializer.rs
-coverage.ignores = [
+coverage.exclude_patterns = [
   "*_min.*",
   "*-min.*",
   "*.min.*",
