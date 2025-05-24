@@ -5,7 +5,6 @@
 ## Universal linting, auto-formatting, maintainability, and security scanning
 
 Qlty CLI is a multi-language code quality tool for linting, auto-formatting, maintainability, and security with support for 70+ static analysis tools for 40+ languages and technologies.
-
 With Qlty CLI, polyglot team can take advantage of the best code quality static analysis with fast, consistent, and unified results through a single tool. Configuration is done through a simple `.qlty/qlty.toml` file in your repository, which can be auto-generated based on the languages you use.
 
 The Qlty CLI is **completely free for all use**, including for commercial projects, with no limits on contributors.
