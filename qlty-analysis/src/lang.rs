@@ -157,6 +157,10 @@ pub trait Language {
         false
     }
 
+    fn deduplicate_field_names(&self) -> bool {
+        true
+    }
+
     fn sanitize_parameter_name(&self, parameter_name: String) -> Option<String> {
         if let Some(self_keyword) = self.self_keyword() {
             if parameter_name != self_keyword

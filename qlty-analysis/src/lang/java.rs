@@ -194,6 +194,10 @@ impl Language for Java {
         true
     }
 
+    fn deduplicate_field_names(&self) -> bool {
+        false
+    }
+
     fn call_identifiers(&self, source_file: &File, node: &Node) -> (Option<String>, String) {
         match node.kind() {
             Self::METHOD_INVOCATION => {
