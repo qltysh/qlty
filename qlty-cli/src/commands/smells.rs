@@ -1,3 +1,4 @@
+use crate::format::SarifFormatter;
 use crate::ui::Highlighter;
 use crate::ui::Steps;
 use crate::{Arguments, CommandError, CommandSuccess};
@@ -46,8 +47,12 @@ pub struct Smells {
     pub quiet: bool,
 
     /// JSON output
-    #[arg(long, hide = true)]
+    #[arg(long, hide = true, conflicts_with = "sarif")]
     json: bool,
+
+    /// SARIF output
+    #[arg(long, conflicts_with = "json")]
+    sarif: bool,
 
     /// Files to analyze
     pub paths: Vec<PathBuf>,
@@ -101,7 +106,7 @@ impl Smells {
 
         steps.start(SPARKLES, "Reporting... ");
         println!();
-        self.write_stdout(&workspace, &report.issues)?;
+        self.write_stdout(&workspace, &report)?;
 
         CommandSuccess::ok()
     }
@@ -207,11 +212,15 @@ impl Smells {
         Ok(executor.report())
     }
 
-    fn write_stdout(&self, workspace: &Workspace, issues: &[Issue]) -> Result<()> {
+    fn write_stdout(&self, workspace: &Workspace, report: &Report) -> Result<()> {
         if self.json {
-            self.write_stdout_json(issues)
+            self.write_stdout_json(&report.issues)
+        } else if self.sarif {
+            let formatter = SarifFormatter::boxed(report.messages.clone(), report.issues.clone());
+            formatter.write_to(&mut std::io::stdout())?;
+            Ok(())
         } else {
-            self.write_stdout_text(workspace, issues)
+            self.write_stdout_text(workspace, &report.issues)
         }
     }
 
