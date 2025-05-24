@@ -78,16 +78,38 @@ impl Upload {
         content_type: &str,
         data: Vec<u8>,
     ) -> Result<(), anyhow::Error> {
-        let response = ureq::put(url)
+        let response_result = ureq::put(url)
             .set("Content-Type", content_type)
-            .send_bytes(&data)
-            .map_err(|err| {
-                anyhow!(
-                    "HTTP Error: PUT {}: Error sending upload bytes: {:?}",
+            .send_bytes(&data);
+
+        let response = match response_result {
+            Ok(resp) => resp,
+            Err(ureq::Error::Status(code, resp)) => match resp.into_string() {
+                Ok(body) => {
+                    bail!(
+                        "HTTP Error {}: PUT {}: Upload request failed with response body: {}",
+                        code,
+                        url,
+                        body
+                    );
+                }
+                Err(err) => {
+                    bail!(
+                            "HTTP Error {}: PUT {}: Upload request failed, error reading response body: {:?}",
+                            code,
+                            url,
+                            err
+                        );
+                }
+            },
+            Err(ureq::Error::Transport(transport_error)) => {
+                bail!(
+                    "Transport Error: PUT {}: Error sending upload bytes: {:?}",
                     url,
-                    err
-                )
-            })?;
+                    transport_error
+                );
+            }
+        };
 
         if response.status() < 200 || response.status() >= 300 {
             bail!(
