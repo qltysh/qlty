@@ -1,11 +1,11 @@
-name: Check linked issues
+name: linked issues
 
 on:
   pull_request_target:
     types: [opened, edited, reopened, synchronize]
 
 jobs:
-  check_pull_requests:
+  check:
     runs-on: ubuntu-latest
     name: Check linked issues
     permissions:
