@@ -1,0 +1,19 @@
+name: Check linked issues
+
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  check_pull_requests:
+    runs-on: ubuntu-latest
+    name: Check linked issues
+    permissions:
+        issues: read
+        pull-requests: write
+    steps:
+      - uses: nearform-actions/github-action-check-linked-issues@v1
+        id: check-linked-issues
+        with:
+          exclude-branches: "dependabot/**"
+          loose-matching: true
