@@ -69,7 +69,7 @@ BRDA:91,8,1,5
 BRF:16
 BRH:9
 end_of_record
-SF:src/ignore.js
+SF:vendor/ignore.js
 DA:1,1
 DA:2,0
 DA:5,10
