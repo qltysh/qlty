@@ -3,6 +3,7 @@ use crate::publish::Report;
 use anyhow::{anyhow, bail};
 use anyhow::{Context, Result};
 use qlty_cloud::{get_legacy_api_url, Client as QltyClient};
+use qlty_config::http;
 use qlty_types::tests::v1::CoverageMetadata;
 use serde_json::Value;
 use std::path::PathBuf;
@@ -78,7 +79,7 @@ impl Upload {
         content_type: &str,
         data: Vec<u8>,
     ) -> Result<(), anyhow::Error> {
-        let response = ureq::put(url)
+        let response = http::put(url)
             .set("Content-Type", content_type)
             .send_bytes(&data)
             .map_err(|err| {

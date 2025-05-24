@@ -64,6 +64,7 @@ qlty-smells.workspace = true
 qlty-types.workspace = true
 rayon.workspace = true
 regex.workspace = true
+rustls.workspace = true
 sentry-backtrace.workspace = true
 serde_yaml.workspace = true
 similar.workspace = true

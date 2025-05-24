@@ -1,4 +1,5 @@
 pub mod config;
+pub mod http;
 mod library;
 mod migration;
 pub mod sources;

@@ -1,11 +1,11 @@
 mod auth_flow;
 mod credentials;
-
 use anyhow::Result;
 use auth_flow::{launch_login_server, AppState};
 use console::style;
 use credentials::read_token;
 pub use credentials::{delete_token as clear_auth_token, write_token as store_auth_token};
+use qlty_config::http;
 use std::{env, thread, time::Duration};
 use tracing::{info, warn};
 
@@ -65,7 +65,7 @@ fn auth_via_browser() -> Result<String> {
     );
     thread::sleep(Duration::from_millis(500));
 
-    let open_url = ureq::get(&state.login_url)
+    let open_url = http::get(&state.login_url)
         .query("state", original_state)
         .query("response_type", "token")
         .query("redirect_uri", &server.base_url)
