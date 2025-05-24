@@ -1,0 +1,3 @@
+coverage.exclude_patterns = [
+  "**/vendor/**",
+]

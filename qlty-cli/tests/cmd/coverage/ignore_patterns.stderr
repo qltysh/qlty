@@ -17,27 +17,27 @@ https://qlty.sh/d/coverage
  COVERAGE FILES: 1 
 
     Coverage File  Format  Size
-    lcov.info      lcov    956 B
+    lcov.info      lcov    959 B
 
  COVERAGE DATA 
 
-    2 unique code file paths
-    2 paths are missing on disk (100.0%)
+    1 unique code file path
+    1 path ignored
+    1 path is missing on disk (100.0%)
 
     Missing code files:
 
       formatter.js
-      src/ignore.js
 
     TIP: Consider using add-prefix or strip-prefix to fix paths
     https://qlty.sh/d/coverage-path-fixing
 
 
-    Covered Lines:      26
-    Uncovered Lines:     3
-    Omitted Lines:      28
+    Covered Lines:      24
+    Uncovered Lines:     2
+    Omitted Lines:      26
 
-    Line Coverage:       89.66%
+    Line Coverage:       92.31%
 
  EXPORTING... 
 

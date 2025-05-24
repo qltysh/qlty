@@ -140,9 +140,9 @@ impl Planner {
 
         transformers.push(Box::new(StripDotSlashPrefix));
 
-        if self.config.coverage.ignores.is_some() {
+        if !self.config.coverage.exclude_patterns.is_empty() {
             transformers.push(Box::new(IgnorePaths::new(
-                self.config.coverage.ignores.as_ref().unwrap(),
+                &self.config.coverage.exclude_patterns,
             )?));
         }
 
