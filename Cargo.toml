@@ -20,7 +20,7 @@ actix-web = "4.9.0"
 anyhow = { version = "1.0.98", features = ["backtrace"] }
 ar = "0.9.0"
 assert-json-diff = "2.0.2"
-auth-git2 = "0.5.7"
+auth-git2 = "0.5.8"
 base64 = "0.22.1"
 bencher = "0.1.5"
 bytesize = "1.3.0"
