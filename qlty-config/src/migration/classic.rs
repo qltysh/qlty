@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::{
+    collections::HashMap,
     fs::File,
     io::BufReader,
     path::{Path, PathBuf},
@@ -55,11 +56,17 @@ pub struct Checks {
     pub similar_code: Option<Check>,
 }
 
+#[derive(Debug, Serialize, Deserialize, Default, Clone)]
+pub struct Plugin {
+    pub enabled: Option<bool>,
+}
+
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct ClassicConfig {
     pub prepare: Option<Prepare>,
     pub checks: Option<Checks>,
     pub exclude_patterns: Option<Vec<String>>,
+    pub plugins: Option<HashMap<String, Plugin>>,
 }
 
 impl ClassicConfig {
@@ -76,6 +83,24 @@ impl ClassicConfig {
         self.prepare
             .as_ref()
             .map(|prepare| prepare.fetch.clone())
+            .unwrap_or_default()
+    }
+
+    pub fn enabled_plugin_names(&self) -> Vec<String> {
+        self.plugins
+            .as_ref()
+            .map(|plugins| {
+                plugins
+                    .iter()
+                    .filter_map(|(name, plugin)| {
+                        if plugin.enabled.unwrap_or(false) {
+                            Some(name.clone())
+                        } else {
+                            None
+                        }
+                    })
+                    .collect()
+            })
             .unwrap_or_default()
     }
 }
