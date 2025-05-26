@@ -30,3 +30,9 @@ checks:
   identical-code:
     config:
       threshold: 25
+
+plugins:
+  rubocop:
+    enabled: true
+  exists:
+    enabled: true
