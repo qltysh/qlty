@@ -1,0 +1,46 @@
+config_version = "0"
+cli_version = "0.163.0"
+
+[plugins.definitions.exists]
+file_types = ["shell"]
+config_files = ["asd.yml"]
+
+[plugins.definitions.exists.drivers.lint]
+script = "exists --format json ${target}"
+
+[plugins.definitions.rubocop]
+file_types = ["ruby"]
+config_files = [".rubocop.yml"]
+
+[plugins.definitions.rubocop.drivers.lint]
+script = "rubocop --format json ${target}"
+
+[[plugin]]
+name = "rubocop"
+version = "1.0.0"
+
+[[plugin]]
+name = "exists"
+version = "1.0.0"
+
+[smells.boolean_logic]
+threshold = 4
+
+[smells.file_complexity]
+threshold = 55
+
+[smells.return_statements]
+threshold = 4
+
+[smells.nested_control_flow]
+threshold = 4
+
+[smells.function_parameters]
+threshold = 4
+
+[smells.function_complexity]
+threshold = 5
+
+[smells.duplication]
+threshold = 22
+
