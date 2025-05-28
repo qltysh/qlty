@@ -23,7 +23,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-      issues: read
+      issues: write
       id-token: write
     steps:
       - name: Checkout repository
@@ -50,4 +50,32 @@ jobs:
         uses: anthropics/claude-code-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          allowed_tools: "mcp__github__create_pull_request,WebFetch(domain:docs.qlty.sh),Bash(git status:*),Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git pull:*),Bash(git fetch:*),Bash(git reset:*),Bash(git checkout:*),Bash(git merge:*),Bash(git rebase:*),Bash(git cherry-pick:*),Bash(git stash:*),Bash(git tag:*),Bash(cargo build),Bash(TRYCMD=overwrite cargo test:*),Bash(INSTA_UPDATE=always cargo test:*),Bash(cargo test:*),Bash(cargo check),Bash(cargo insta:*),Bash(cargo clean),Bash(npm install),Bash(npm test:*),Bash(qlty check:*),Bash(qlty fmt:*)"
+          allowed_tools: >-
+            mcp__github__create_pull_request
+            mcp__github__create_issue
+            WebFetch(domain:docs.qlty.sh)
+            Bash(git add:*)
+            Bash(git checkout:*)
+            Bash(git cherry-pick:*)
+            Bash(git commit:*)
+            Bash(git fetch:*)
+            Bash(git merge:*)
+            Bash(git pull:*)
+            Bash(git push:*)
+            Bash(git rebase:*)
+            Bash(git reset:*)
+            Bash(git revert:*)
+            Bash(git stash:*)
+            Bash(git status:*)
+            Bash(git tag:*)
+            Bash(cargo build)
+            Bash(TRYCMD=overwrite cargo test:*)
+            Bash(INSTA_UPDATE=always cargo test:*)
+            Bash(cargo test:*)
+            Bash(cargo check)
+            Bash(cargo insta:*)
+            Bash(cargo clean)
+            Bash(npm install)
+            Bash(npm test:*)
+            Bash(qlty check:*)
+            Bash(qlty fmt:*)"
