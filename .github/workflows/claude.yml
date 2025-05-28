@@ -49,14 +49,4 @@ jobs:
         uses: anthropics/claude-code-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          allowed_tools: >-
-            mcp__github__create_pull_request
-            mcp__github__create_issue
-            WebFetch(domain:docs.qlty.sh)
-            Bash(git:*)
-            Bash(cargo:*)
-            Bash(TRYCMD=overwrite cargo:*)
-            Bash(INSTA_UPDATE=always cargo:*)
-            Bash(npm install:*)
-            Bash(npm test:*)
-            Bash(qlty:*)
+          allowed_tools: mcp__github__create_pull_request,mcp__github__create_issue,WebFetch(domain:docs.qlty.sh),Bash(git:*),Bash(cargo:*),Bash(TRYCMD=overwrite cargo:*),Bash(INSTA_UPDATE=always cargo:*),Bash(npm install:*),Bash(npm test:*),Bash(qlty:*)
