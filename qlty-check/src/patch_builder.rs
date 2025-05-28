@@ -21,7 +21,8 @@ impl IssueTransformer for PatchBuilder {
             }
             let replacements = suggestion.replacements.clone();
             suggestion.replacements = self.sorted_replacements(replacements).collect();
-            suggestion.patch = self.build_patch(&suggestion.replacements, &issue.location);
+            suggestion.patch =
+                self.build_patch(&suggestion.replacements, &issue.location, &issue.tool);
         }
 
         Some(issue)
@@ -48,7 +49,12 @@ impl PatchBuilder {
             .sorted_by(|a, b| a.range().end_byte.cmp(&b.range().end_byte))
     }
 
-    fn build_patch(&self, replacements: &Vec<Replacement>, location: &Option<Location>) -> String {
+    fn build_patch(
+        &self,
+        replacements: &Vec<Replacement>,
+        location: &Option<Location>,
+        tool: &str,
+    ) -> String {
         let mut patch = String::from("");
         let file_path = if let Some(location) = location {
             &location.path
@@ -62,7 +68,38 @@ impl PatchBuilder {
         if let Ok(data) = &contents {
             let mut mdata = data.clone();
             let apply = replacements.iter().rev().all(|replacement| {
-                let range = replacement.range();
+                let mut range = replacement.range();
+
+                if tool == "shellcheck" {
+                    // Shellcheck adds 8 to columns for every tab (\t) char
+                    // So we need to adjust the start and end column
+                    if let Some(target_line) = data.split('\n').nth(range.start_line as usize - 1) {
+                        // Count tabs before the start column position
+                        let tabs_before_start = target_line
+                            .chars()
+                            .take((range.start_column as usize).saturating_sub(1))
+                            .filter(|&c| c == '\t')
+                            .count();
+
+                        let tabs_before_end = target_line
+                            .chars()
+                            .take((range.end_column as usize).saturating_sub(1))
+                            .filter(|&c| c == '\t')
+                            .count();
+
+                        // Adjust columns: shellcheck adds 7 extra positions per tab (8 total - 1 for the tab itself)
+                        if tabs_before_start > 0 {
+                            range.start_column = range
+                                .start_column
+                                .saturating_sub((tabs_before_start * 7) as u32);
+                        }
+                        if tabs_before_end > 0 {
+                            range.end_column = range
+                                .end_column
+                                .saturating_sub((tabs_before_end * 7) as u32);
+                        }
+                    }
+                }
 
                 let (start_byte, end_byte) = if let (Some(start_byte), Some(end_byte)) =
                     (range.start_byte, range.end_byte)
@@ -616,6 +653,52 @@ mod test {
                       startLine: 3
                       endLine: 4
                       endColumn: 13
+        "###);
+    }
+
+    #[test]
+    fn parse_shellcheck_tabs() {
+        let input = include_str!("../tests/fixtures/planner/patch_builder/parse.05.output.txt");
+        let patch_builder = new_from_cache([(
+            "/tmp/src/main.sh".into(),
+            include_str!("../tests/fixtures/planner/patch_builder/parse.05.input.sh").into(),
+        )]);
+
+        let issues = Shellcheck {}.parse("shellcheck", input).ok().unwrap();
+        let issues = transformed_issues(issues, &patch_builder);
+        insta::assert_yaml_snapshot!(issues, @r###"
+        - tool: shellcheck
+          ruleKey: "2086"
+          message: Double quote to prevent globbing and word splitting.
+          level: LEVEL_LOW
+          category: CATEGORY_LINT
+          location:
+            path: /tmp/src/main.sh
+            range:
+              startLine: 5
+              startColumn: 19
+              endLine: 5
+              endColumn: 30
+          suggestions:
+            - patch: "--- original\n+++ modified\n@@ -2,6 +2,6 @@\n\n if [[ $# != 3 ]]; then\n \tusername=$1\n-\tsudo su - ${username} -c whoami\n+\tsudo su - \"${username}\" -c whoami\n \texit 1\n fi\n"
+              source: SUGGESTION_SOURCE_TOOL
+              replacements:
+                - data: "\""
+                  location:
+                    path: /tmp/src/main.sh
+                    range:
+                      startLine: 5
+                      startColumn: 19
+                      endLine: 5
+                      endColumn: 19
+                - data: "\""
+                  location:
+                    path: /tmp/src/main.sh
+                    range:
+                      startLine: 5
+                      startColumn: 30
+                      endLine: 5
+                      endColumn: 30
         "###);
     }
 }
