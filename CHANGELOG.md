@@ -4,13 +4,31 @@
 
 ### New
 
-- Add terraform plugin support (#2067)
+- Add support for `[[triage]]` blocks (replaces `[[override]]`) (#2005)
+- Add support for `[[exclude]]` blocks (replaces `[[ignore]]`) (#1954)
+- Support linux/arm64 platform in Docker image (#1990)
+
+Thank you @ujlbu4 for your contribution of linux/arm64 Docker support!
+
+### Improved
+
+- Update many linter versions (#2029)
+- Add output for ignored coverage paths (#2078)
+- Ignore note issues in Git pre-push hook (#2079)
 
 ### Fixed
 
-- Fix formatter invocation directory when runs from `target_directory` (#2066)
+- Eliminate panic from telemetry when network is disabled (#2086)
 
-Thank you @justinabrahms for your contribution!
+## v0.534.0 (2025-05-22)
+
+### New
+
+- Add terraform plugin with support for formatting and validation (#2067)
+
+### Fixed
+
+- Fix formatter invocation directory when runs from target_directory (#2066)
 
 ## v0.533.0 (2025-05-22)
 
