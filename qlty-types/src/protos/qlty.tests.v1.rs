@@ -76,6 +76,8 @@ pub struct CoverageMetadata {
     pub name: ::core::option::Option<::prost::alloc::string::String>,
     #[prost(bool, tag = "36")]
     pub incomplete: bool,
+    #[prost(uint32, tag = "38")]
+    pub excluded_files_count: u32,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ReportFile {
