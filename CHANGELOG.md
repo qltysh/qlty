@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Improved
+
+- Report the number of files excluded for code coverage up to Qlty Cloud (#2098)
+
+## v0.535.0 (2025-05-28)
+
 ### New
 
 - Add support for `[[triage]]` blocks (replaces `[[override]]`) (#2005)
@@ -13,7 +19,7 @@ Thank you @ujlbu4 for your contribution of linux/arm64 Docker support!
 ### Improved
 
 - Update many linter versions (#2029)
-- Add output for ignored coverage paths (#2078)
+- Add output to indicate the number of excluded code coverage paths (#2078)
 - Ignore note issues in Git pre-push hook (#2079)
 
 ### Fixed
