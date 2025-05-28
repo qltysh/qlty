@@ -51,7 +51,7 @@ impl PatchBuilder {
 
     fn build_patch(
         &self,
-        replacements: &Vec<Replacement>,
+        replacements: &[Replacement],
         location: &Option<Location>,
         tool: &str,
     ) -> String {
