@@ -44,7 +44,7 @@ impl Report {
         metadata.excluded_files_count = self.excluded_files_count as u32;
 
         let mut exporter = CoverageExport {
-            metadata: metadata,
+            metadata,
             report_files: self.report_files.clone(),
             file_coverages: self.file_coverages.clone(),
             ..Default::default()
