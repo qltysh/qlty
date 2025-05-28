@@ -19,7 +19,7 @@ pub struct Report {
     pub missing_files: HashSet<String>,
 
     pub totals: CoverageMetrics,
-    pub ignored_paths_count: usize,
+    pub excluded_files_count: usize,
 }
 
 impl Report {
@@ -40,8 +40,11 @@ impl Report {
     }
 
     pub fn export_to(&self, directory: Option<PathBuf>) -> Result<CoverageExport> {
+        let mut metadata = self.metadata.clone();
+        metadata.excluded_files_count = self.excluded_files_count as u32;
+
         let mut exporter = CoverageExport {
-            metadata: self.metadata.clone(),
+            metadata: metadata,
             report_files: self.report_files.clone(),
             file_coverages: self.file_coverages.clone(),
             ..Default::default()
