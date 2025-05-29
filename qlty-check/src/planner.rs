@@ -13,6 +13,7 @@ use check_filters::CheckFilters;
 use console::style;
 use document_url_generator::DocumentUrlGenerator;
 use itertools::Itertools;
+use plugin_tab_column_width_transformer::PluginTabColumnWidthTransformer;
 use qlty_analysis::cache::{Cache, FilesystemCache, NullCache};
 use qlty_analysis::git::{compute_upstream, DiffLineFilter};
 use qlty_analysis::workspace_entries::TargetMode;
@@ -23,6 +24,7 @@ use qlty_types::analysis::v1::ExecutionVerb;
 use qlty_types::{category_from_str, level_from_str};
 use rayon::prelude::*;
 use std::collections::HashMap;
+use std::sync::Arc;
 use std::time::Instant;
 use tracing::{debug, info};
 
@@ -37,6 +39,7 @@ mod level_filter;
 mod plan;
 mod plugin;
 mod plugin_mode_transformer;
+mod plugin_tab_column_width_transformer;
 mod plugin_workspace_entry_finder_builder;
 pub mod source_extractor;
 pub mod target;
@@ -267,6 +270,17 @@ impl Planner {
         self.transformers.push(Box::new(PluginModeTransformer {
             plugins: self.config.plugin.clone(),
         }));
+
+        for plugin in &self.active_plugins {
+            if let Some(tab_column_width) = plugin.plugin.tab_column_width {
+                self.transformers
+                    .push(Box::new(PluginTabColumnWidthTransformer {
+                        source_reader: Arc::new(self.staging_area.clone()),
+                        plugin_name: plugin.name.clone(),
+                        tab_column_width,
+                    }));
+            }
+        }
 
         self.transformers
             .push(Box::new(PatchBuilder::new(self.staging_area.clone())));

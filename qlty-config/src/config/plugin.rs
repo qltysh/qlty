@@ -407,6 +407,9 @@ pub struct PluginDef {
 
     #[serde(default)]
     pub suggested_mode: IssueMode,
+
+    #[serde(default)]
+    pub tab_column_width: Option<usize>,
 }
 
 fn default_idempotent() -> bool {
