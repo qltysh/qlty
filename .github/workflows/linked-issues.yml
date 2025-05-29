@@ -7,12 +7,51 @@ on:
 jobs:
   required:
     runs-on: ubuntu-latest
+    if: ${{ ! startsWith(github.event.pull_request.head.ref, 'dependabot/') }}
     permissions:
-        issues: read
-        pull-requests: write
+      issues: read
+      pull-requests: write
     steps:
-      - uses: nearform-actions/github-action-check-linked-issues@v1
-        id: check-linked-issues
+      - uses: actions/github-script@v7
         with:
-          exclude-branches: "dependabot/**"
-          loose-matching: true
+          # Find a string in the PR body which matches one of these patterns:
+          # close #123
+          # closes #123
+          # closed #123
+          # fix #123
+          # fixes #123
+          # fixed #123
+          # resolve #123
+          # resolves #123
+          # resolved #123
+          # repository#123
+          # https://github.com/org/repo/issues/123
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || '';
+            const issuePattern = /(?:close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#(\d+)|(?:\w+\/)?#(\d+)|https:\/\/github\.com\/[^/]+\/[^/]+\/issues\/(\d+)/ig;
+            const matches = [...body.matchAll(issuePattern)];
+
+            if (matches.length === 0) {
+              const comment = "No issue mentions found. Please mention an issues in the pull request description.";
+
+              // Check if the comment already exists on this PR
+              const { data: existingComments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+              });
+
+              const alreadyCommented = existingComments.some(c => c.body.includes(comment));
+
+              if (!alreadyCommented) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  body: comment,
+                });
+              }
+
+              core.setFailed("No issues mentioned in the PR body.");
+            }
