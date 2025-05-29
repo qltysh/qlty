@@ -29,11 +29,18 @@ jobs:
           script: |
             const pr = context.payload.pull_request;
             const body = pr.body || '';
+            const hiddenTag = '<!-- metadata = {"action":"linked_issue"} -->';
             const issuePattern = /(?:close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#(\d+)|(?:\w+\/)?#(\d+)|https:\/\/github\.com\/[^/]+\/[^/]+\/issues\/(\d+)/ig;
             const matches = [...body.matchAll(issuePattern)];
 
+            if (/^chore:/i.test(pr.title)) {
+              console.log("PR title starts with chore:, skipping linked issue check.");
+              return;
+            }
+
             if (matches.length === 0) {
-              const comment = "No issue mentions found. Please mention an issues in the pull request description.";
+              const comment = "No issue mentions found. Please mention an issue in the pull request description.";
+              const helpLink = '[Use GitHub automation to close the issue when a PR is merged](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword)';
 
               // Check if the comment already exists on this PR
               const { data: existingComments } = await github.rest.issues.listComments({
@@ -42,14 +49,14 @@ jobs:
                 issue_number: pr.number,
               });
 
-              const alreadyCommented = existingComments.some(c => c.body.includes(comment));
+              const alreadyCommented = existingComments.some(c => c.body.includes(hiddenTag));
 
               if (!alreadyCommented) {
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: pr.number,
-                  body: comment,
+                  body: comment + '\n\n' + helpLink + '\n\n' + hiddenTag,
                 });
               }
 
