@@ -16,7 +16,7 @@ impl IssueTransformer for PluginTabColumnWidthTransformer {
             if let Some(location) = issue.location.as_mut() {
                 if let Some(range) = location.range.as_mut() {
                     if let Some([start_column, end_column]) =
-                        self.get_correct_columns_for_path_and_range(&location.path, range.clone())
+                        self.get_correct_columns_for_path_and_range(&location.path, *range)
                     {
                         range.start_column = start_column;
                         range.end_column = end_column;
@@ -28,11 +28,8 @@ impl IssueTransformer for PluginTabColumnWidthTransformer {
                 for replacement in &mut suggestion.replacements {
                     if let Some(location) = replacement.location.as_mut() {
                         if let Some(range) = location.range.as_mut() {
-                            if let Some([start_column, end_column]) = self
-                                .get_correct_columns_for_path_and_range(
-                                    &location.path,
-                                    range.clone(),
-                                )
+                            if let Some([start_column, end_column]) =
+                                self.get_correct_columns_for_path_and_range(&location.path, *range)
                             {
                                 range.start_column = start_column;
                                 range.end_column = end_column;
