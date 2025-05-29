@@ -29,7 +29,7 @@ jobs:
           script: |
             const pr = context.payload.pull_request;
             const body = pr.body || '';
-            const hiddenTag = '<!-- metadata = {"action":"linked_issue"} -->';
+            const hiddenTag = '<!-- metadata = {"action":"linked-issue"} -->';
             const issuePattern = /(?:close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#(\d+)|(?:\w+\/)?#(\d+)|https:\/\/github\.com\/[^/]+\/[^/]+\/issues\/(\d+)/ig;
             const matches = [...body.matchAll(issuePattern)];
 
@@ -51,7 +51,9 @@ jobs:
 
               const alreadyCommented = existingComments.some(c => c.body.includes(hiddenTag));
 
-              if (!alreadyCommented) {
+              if (alreadyCommented) {
+                console.log("Note: Comment with hidden tag already exists, skipping comment creation.");
+              } else {
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
