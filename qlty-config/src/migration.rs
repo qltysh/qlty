@@ -177,11 +177,41 @@ impl MigrateConfig {
         Ok(())
     }
 
+    fn migrate_plugins(&mut self, classic_config: &ClassicConfig) -> Result<()> {
+        if self.document.get("plugin").is_none() {
+            return Ok(());
+        }
+
+        let enabled_plugin_names = classic_config.enabled_plugin_names();
+
+        let plugin_array = self
+            .document
+            .get_mut("plugin")
+            .unwrap()
+            .as_array_of_tables_mut()
+            .unwrap();
+
+        plugin_array.retain(|table| {
+            if let Some(name_value) = table.get("name") {
+                if let Some(name_str) = name_value.as_str() {
+                    enabled_plugin_names.contains(&name_str.to_string())
+                } else {
+                    false
+                }
+            } else {
+                false
+            }
+        });
+
+        Ok(())
+    }
+
     fn apply_migrations(&mut self) -> Result<()> {
         let classic_config = ClassicConfig::load(self.settings.classic_config_path.as_path())?;
         self.migrate_prepare_statement(&classic_config)?;
         self.migrate_checks(&classic_config)?;
         self.migrate_exclude_patterns(&classic_config)?;
+        self.migrate_plugins(&classic_config)?;
 
         Ok(())
     }
@@ -276,6 +306,173 @@ exclude_patterns = ["dist/", "build/"]
         };
 
         migrator.migrate_exclude_patterns(&config).unwrap();
+
+        assert_eq!(migrator.document.to_string(), doc.to_string());
+    }
+
+    #[test]
+    fn test_migrate_plugins_filters_out_unmentioned_plugins() {
+        let doc = r#"
+[[plugin]]
+name = "shellcheck"
+
+[[plugin]]
+name = "rubocop"
+
+[[plugin]]
+name = "eslint"
+"#
+        .parse::<DocumentMut>()
+        .unwrap();
+
+        let mut plugins = std::collections::HashMap::new();
+        plugins.insert(
+            "rubocop".to_string(),
+            classic::Plugin {
+                enabled: Some(true),
+            },
+        );
+        plugins.insert(
+            "eslint".to_string(),
+            classic::Plugin {
+                enabled: Some(true),
+            },
+        );
+
+        let config = ClassicConfig {
+            plugins: Some(plugins),
+            ..Default::default()
+        };
+
+        let settings = basic_settings();
+        let mut migrator = MigrateConfig {
+            settings,
+            document: doc,
+        };
+
+        migrator.migrate_plugins(&config).unwrap();
+
+        let plugin_array = migrator
+            .document
+            .get("plugin")
+            .unwrap()
+            .as_array_of_tables()
+            .unwrap();
+
+        assert_eq!(plugin_array.len(), 2);
+
+        let plugin_names: Vec<_> = plugin_array
+            .iter()
+            .map(|table| table.get("name").unwrap().as_str().unwrap())
+            .collect();
+
+        assert!(plugin_names.contains(&"rubocop"));
+        assert!(plugin_names.contains(&"eslint"));
+        assert!(!plugin_names.contains(&"shellcheck"));
+    }
+
+    #[test]
+    fn test_migrate_plugins_with_no_enabled_plugins() {
+        let doc = r#"
+[[plugin]]
+name = "shellcheck"
+
+[[plugin]]
+name = "rubocop"
+"#
+        .parse::<DocumentMut>()
+        .unwrap();
+
+        let config = ClassicConfig {
+            plugins: None,
+            ..Default::default()
+        };
+
+        let settings = basic_settings();
+        let mut migrator = MigrateConfig {
+            settings,
+            document: doc,
+        };
+
+        migrator.migrate_plugins(&config).unwrap();
+
+        let plugin_array = migrator
+            .document
+            .get("plugin")
+            .unwrap()
+            .as_array_of_tables()
+            .unwrap();
+
+        assert_eq!(plugin_array.len(), 0);
+    }
+
+    #[test]
+    fn test_migrate_plugins_with_disabled_plugins() {
+        let doc = r#"
+[[plugin]]
+name = "shellcheck"
+
+[[plugin]]
+name = "rubocop"
+"#
+        .parse::<DocumentMut>()
+        .unwrap();
+
+        let mut plugins = std::collections::HashMap::new();
+        plugins.insert(
+            "rubocop".to_string(),
+            classic::Plugin {
+                enabled: Some(false),
+            },
+        );
+
+        let config = ClassicConfig {
+            plugins: Some(plugins),
+            ..Default::default()
+        };
+
+        let settings = basic_settings();
+        let mut migrator = MigrateConfig {
+            settings,
+            document: doc,
+        };
+
+        migrator.migrate_plugins(&config).unwrap();
+
+        let plugin_array = migrator
+            .document
+            .get("plugin")
+            .unwrap()
+            .as_array_of_tables()
+            .unwrap();
+
+        assert_eq!(plugin_array.len(), 0);
+    }
+
+    #[test]
+    fn test_migrate_plugins_with_no_plugin_array() {
+        let doc = "[settings]\n".parse::<DocumentMut>().unwrap();
+
+        let mut plugins = std::collections::HashMap::new();
+        plugins.insert(
+            "rubocop".to_string(),
+            classic::Plugin {
+                enabled: Some(true),
+            },
+        );
+
+        let config = ClassicConfig {
+            plugins: Some(plugins),
+            ..Default::default()
+        };
+
+        let settings = basic_settings();
+        let mut migrator = MigrateConfig {
+            settings,
+            document: doc.clone(),
+        };
+
+        migrator.migrate_plugins(&config).unwrap();
 
         assert_eq!(migrator.document.to_string(), doc.to_string());
     }
