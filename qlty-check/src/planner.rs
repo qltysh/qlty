@@ -288,8 +288,8 @@ impl Planner {
             eprintln!(
                 "{} The `{}` field in qlty.toml is deprecated. Please use `{}` instead.",
                 style("WARNING:").bold().yellow(),
-                style("override").bold(),
-                style("triage").bold()
+                style("[[override]]").bold(),
+                style("[[triage]]").bold()
             );
 
             for issue_override in &self.config.overrides {
