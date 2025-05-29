@@ -1,11 +1,34 @@
-name: linked issue
+name: metadata
 
 on:
   pull_request_target:
     types: [opened, edited, reopened, synchronize]
 
 jobs:
-  required:
+  conventional:
+    runs-on: ubuntu-latest
+    if: ${{ ! startsWith(github.event.pull_request.head.ref, 'dependabot/') }}
+    permissions:
+      pull-requests: read
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          requireScope: false
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            chore
+            build
+            ci
+            revert
+  issue:
     runs-on: ubuntu-latest
     if: ${{ ! startsWith(github.event.pull_request.head.ref, 'dependabot/') }}
     permissions:
@@ -33,8 +56,10 @@ jobs:
             const issuePattern = /(?:close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#(\d+)|(?:\w+\/)?#(\d+)|https:\/\/github\.com\/[^/]+\/[^/]+\/issues\/(\d+)/ig;
             const matches = [...body.matchAll(issuePattern)];
 
-            if (/^chore:/i.test(pr.title)) {
-              console.log("PR title starts with chore:, skipping linked issue check.");
+            const allowedTypes = ['chore', 'docs', 'style', 'test', 'build', 'ci', 'revert'];
+
+            if (/^(?:chore|docs|style|test|build|ci|revert):/i.test(pr.title)) {
+              console.log("PR title starts with one of allowed types, skipping linked issue check.");
               return;
             }
 
