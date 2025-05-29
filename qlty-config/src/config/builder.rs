@@ -165,8 +165,8 @@ impl Builder {
             eprintln!(
                 "{} The `{}` field in qlty.toml is deprecated. Please use `{}` or `{}` instead.",
                 style("WARNING:").bold().yellow(),
-                style("ignore").bold(),
-                style("exclude").bold(),
+                style("[[ignore]]").bold(),
+                style("[[exclude]]").bold(),
                 style("exclude_patterns").bold()
             );
 
@@ -175,7 +175,7 @@ impl Builder {
                     eprintln!(
                         "{} The use of `{}` field in qlty.toml without {} is no longer supported. Skipping ignore without file_patterns.",
                         style("WARNING:").bold().yellow(),
-                        style("ignore").bold(),
+                        style("[[ignore]]").bold(),
                         style("file_patterns").bold()
                     );
                     continue;

@@ -1,2 +1,2 @@
-WARNING: The `ignore` field in qlty.toml is deprecated. Please use `exclude` or `exclude_patterns` instead.
+WARNING: The `[[ignore]]` field in qlty.toml is deprecated. Please use `[[exclude]]` or `exclude_patterns` instead.
 ✖ 4 issues

@@ -118,6 +118,9 @@ impl serde::Serialize for CoverageMetadata {
         if self.incomplete {
             len += 1;
         }
+        if self.excluded_files_count != 0 {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("qlty.tests.v1.CoverageMetadata", len)?;
         if !self.upload_id.is_empty() {
             struct_ser.serialize_field("uploadId", &self.upload_id)?;
@@ -230,6 +233,9 @@ impl serde::Serialize for CoverageMetadata {
         if self.incomplete {
             struct_ser.serialize_field("incomplete", &self.incomplete)?;
         }
+        if self.excluded_files_count != 0 {
+            struct_ser.serialize_field("excludedFilesCount", &self.excluded_files_count)?;
+        }
         struct_ser.end()
     }
 }
@@ -305,6 +311,8 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             "uploaderToolVersion",
             "name",
             "incomplete",
+            "excluded_files_count",
+            "excludedFilesCount",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -346,6 +354,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             UploaderToolVersion,
             Name,
             Incomplete,
+            ExcludedFilesCount,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -404,6 +413,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                             "uploaderToolVersion" | "uploader_tool_version" => Ok(GeneratedField::UploaderToolVersion),
                             "name" => Ok(GeneratedField::Name),
                             "incomplete" => Ok(GeneratedField::Incomplete),
+                            "excludedFilesCount" | "excluded_files_count" => Ok(GeneratedField::ExcludedFilesCount),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -460,6 +470,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                 let mut uploader_tool_version__ = None;
                 let mut name__ = None;
                 let mut incomplete__ = None;
+                let mut excluded_files_count__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::UploadId => {
@@ -686,6 +697,14 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                             }
                             incomplete__ = Some(map_.next_value()?);
                         }
+                        GeneratedField::ExcludedFilesCount => {
+                            if excluded_files_count__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("excludedFilesCount"));
+                            }
+                            excluded_files_count__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
                     }
                 }
                 Ok(CoverageMetadata {
@@ -726,6 +745,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                     uploader_tool_version: uploader_tool_version__,
                     name: name__,
                     incomplete: incomplete__.unwrap_or_default(),
+                    excluded_files_count: excluded_files_count__.unwrap_or_default(),
                 })
             }
         }

@@ -403,9 +403,9 @@ dependencies = [
 
 [[package]]
 name = "clap_complete"
-version = "4.5.50"
+version = "4.5.51"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c91d3baa3bcd889d60e6ef28874126a0b384fd225ab83aa6d8a801c519194ce1"
+checksum = "8d2267df7f3c8e74e38268887ea5235d4dfadd39bfff2d56ab82d61776be355e"
 dependencies = [
  "clap",
 ]
@@ -2419,7 +2419,7 @@ dependencies = [
 
 [[package]]
 name = "qlty"
-version = "0.534.0"
+version = "0.535.0"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -2492,7 +2492,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-analysis"
-version = "0.534.0"
+version = "0.535.0"
 dependencies = [
  "anyhow",
  "config",
@@ -2533,7 +2533,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-check"
-version = "0.534.0"
+version = "0.535.0"
 dependencies = [
  "anyhow",
  "ar",
@@ -2585,7 +2585,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-cloud"
-version = "0.534.0"
+version = "0.535.0"
 dependencies = [
  "anyhow",
  "insta",
@@ -2597,7 +2597,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-config"
-version = "0.534.0"
+version = "0.535.0"
 dependencies = [
  "anyhow",
  "auth-git2",
@@ -2629,7 +2629,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-coverage"
-version = "0.534.0"
+version = "0.535.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -2658,7 +2658,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-formats"
-version = "0.534.0"
+version = "0.535.0"
 dependencies = [
  "anyhow",
  "flate2",
@@ -2671,14 +2671,14 @@ dependencies = [
 
 [[package]]
 name = "qlty-plugins"
-version = "0.534.0"
+version = "0.535.0"
 dependencies = [
  "rust-embed",
 ]
 
 [[package]]
 name = "qlty-smells"
-version = "0.534.0"
+version = "0.535.0"
 dependencies = [
  "anyhow",
  "bencher",
@@ -2697,7 +2697,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-test-utilities"
-version = "0.534.0"
+version = "0.535.0"
 dependencies = [
  "git2",
  "tempfile",
@@ -2705,7 +2705,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-types"
-version = "0.534.0"
+version = "0.535.0"
 dependencies = [
  "clap",
  "pbjson",
