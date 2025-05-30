@@ -519,6 +519,8 @@ pub enum OutputFormat {
     GolangciLint,
     #[serde(rename = "hadolint")]
     Hadolint,
+    #[serde(rename = "haml_lint")]
+    HamlLint,
     #[serde(rename = "knip")]
     Knip,
     #[serde(rename = "markdownlint")]
@@ -573,6 +575,7 @@ impl std::fmt::Display for OutputFormat {
             OutputFormat::Eslint => write!(f, "eslint"),
             OutputFormat::GolangciLint => write!(f, "golangci_lint"),
             OutputFormat::Hadolint => write!(f, "hadolint"),
+            OutputFormat::HamlLint => write!(f, "haml_lint"),
             OutputFormat::Knip => write!(f, "knip"),
             OutputFormat::Markdownlint => write!(f, "markdownlint"),
             OutputFormat::Mypy => write!(f, "mypy"),

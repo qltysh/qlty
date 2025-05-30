@@ -1,0 +1,83 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=haml-lint fixture=basic version=0.62.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "basic.in.haml",
+        "range": {
+          "endLine": 5,
+          "startLine": 5,
+        },
+      },
+      "message": "Empty script should be removed",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "EmptyScript",
+      "snippet": "-",
+      "snippetWithContext": "-# Should report issues on line 2 and 3
+#PascalCase
+%img{ alt: 'A relevant description' }
+
+-",
+      "tool": "haml-lint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "basic.in.haml",
+        "range": {
+          "endLine": 2,
+          "startLine": 2,
+        },
+      },
+      "message": "\`id\` attribute must be in lisp-case",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "IdNames",
+      "snippet": "#PascalCase",
+      "snippetWithContext": "-# Should report issues on line 2 and 3
+#PascalCase
+%img{ alt: 'A relevant description' }
+
+-",
+      "tool": "haml-lint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "basic.in.haml",
+        "range": {},
+      },
+      "message": "Couldn't process the file for linting. ArgumentError: comparison of Integer with nil failed",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "RuboCop",
+      "tool": "haml-lint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "basic.in.haml",
+        "range": {
+          "endLine": 5,
+          "startLine": 5,
+        },
+      },
+      "message": "The - symbol should have one space separating it from code",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "SpaceBeforeScript",
+      "snippet": "-",
+      "snippetWithContext": "-# Should report issues on line 2 and 3
+#PascalCase
+%img{ alt: 'A relevant description' }
+
+-",
+      "tool": "haml-lint",
+    },
+  ],
+}
+`;
