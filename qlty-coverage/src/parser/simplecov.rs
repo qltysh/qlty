@@ -101,19 +101,8 @@ impl SimplecovFormatter for SimplecovJson {
                     (file.get("filename"), file.get("coverage"))
                 {
                     if let (Some(filename_str), Some(coverage_arr)) =
-                        (filename.as_str(), coverage.as_array())
+                        (filename.as_str(), Simplecov::extract_hits(coverage))
                     {
-                        let line_hits =
-                            Simplecov::parse_line_coverage(&Value::Array(coverage_arr.clone()));
-                        file_coverages.push(FileCoverage {
-                            path: filename_str.to_string(),
-                            hits: line_hits,
-                            ..Default::default()
-                        });
-                    } else if let (Some(filename_str), Some(coverage_arr)) = (
-                        filename.as_str(),
-                        coverage.get("lines").and_then(|v| v.as_array()),
-                    ) {
                         let line_hits =
                             Simplecov::parse_line_coverage(&Value::Array(coverage_arr.clone()));
                         file_coverages.push(FileCoverage {
@@ -130,6 +119,16 @@ impl SimplecovFormatter for SimplecovJson {
 }
 
 impl Simplecov {
+    fn extract_hits(coverage: &Value) -> Option<&Vec<Value>> {
+        if let Some(hits) = coverage.as_array() {
+            Some(hits)
+        } else if let Some(hits) = coverage.get("lines").and_then(|v| v.as_array()) {
+            Some(hits)
+        } else {
+            None
+        }
+    }
+
     fn extract_file_coverage(map: &Map<String, Value>) -> Vec<FileCoverage> {
         map.iter()
             .map(|(key, value)| {
