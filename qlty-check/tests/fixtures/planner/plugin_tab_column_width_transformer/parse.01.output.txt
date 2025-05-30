@@ -1,0 +1,34 @@
+[
+  {
+    "file": "/tmp/src/main.sh",
+    "line": 5,
+    "endLine": 5,
+    "column": 19,
+    "endColumn": 30,
+    "level": "info",
+    "code": 2086,
+    "message": "Double quote to prevent globbing and word splitting.",
+    "fix": {
+      "replacements": [
+        {
+          "column": 19,
+          "endColumn": 19,
+          "endLine": 5,
+          "insertionPoint": "afterEnd",
+          "line": 5,
+          "precedence": 10,
+          "replacement": "\""
+        },
+        {
+          "column": 30,
+          "endColumn": 30,
+          "endLine": 5,
+          "insertionPoint": "beforeStart",
+          "line": 5,
+          "precedence": 10,
+          "replacement": "\""
+        }
+      ]
+    }
+  }
+]

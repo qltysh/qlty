@@ -48,7 +48,7 @@ impl PatchBuilder {
             .sorted_by(|a, b| a.range().end_byte.cmp(&b.range().end_byte))
     }
 
-    fn build_patch(&self, replacements: &Vec<Replacement>, location: &Option<Location>) -> String {
+    fn build_patch(&self, replacements: &[Replacement], location: &Option<Location>) -> String {
         let mut patch = String::from("");
         let file_path = if let Some(location) = location {
             &location.path
