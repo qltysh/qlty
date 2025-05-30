@@ -22,6 +22,6 @@ jobs:
         uses: anthropics/claude-code-base-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          model: claude-4-0-sonnet
+          model: claude-sonnet-4-20250514
           prompt_file: .claude/prompts/changelog.md
           allowed_tools: WebFetch(domain:docs.qlty.sh),Bash(git:*),Bash(qlty:*)
