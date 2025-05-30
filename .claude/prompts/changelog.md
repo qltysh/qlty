@@ -8,6 +8,5 @@ Ignore changes which are chores, docs only, CI changes, tests only, style/format
 
 Follow the existing format of the CHANGELOG.md file. Organize changes underneath headers for the version number and date. If changes are not yet in a released version, make an "Unreleased" header at the top of the CHANGELOG.md for those.
 
-Finally, if a PR author is not a member of the team, be sure to give them a shout out. (Team members are @noahd1, @lsegal, @brynary, @marschattha, @davehenton, @laura-mlg. They don't need shout outs.)
+Finally, if a PR author is not a member of the team, be sure to include a shout out. (Team members are @noahd1, @lsegal, @brynary, @marschattha, @davehenton, @laura-mlg. They don't need shout outs.)
 
-When you're done, if there are any changes to CHANGELOG.md, open a pull request.
