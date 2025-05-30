@@ -5,7 +5,7 @@ exports[`linter=haml-lint fixture=basic version=0.62.0 1`] = `
   "issues": [
     {
       "category": "CATEGORY_LINT",
-      "level": "LEVEL_LOW",
+      "level": "LEVEL_MEDIUM",
       "location": {
         "path": "basic.in.haml",
         "range": {
@@ -26,7 +26,7 @@ exports[`linter=haml-lint fixture=basic version=0.62.0 1`] = `
     },
     {
       "category": "CATEGORY_LINT",
-      "level": "LEVEL_LOW",
+      "level": "LEVEL_MEDIUM",
       "location": {
         "path": "basic.in.haml",
         "range": {
@@ -59,7 +59,7 @@ exports[`linter=haml-lint fixture=basic version=0.62.0 1`] = `
     },
     {
       "category": "CATEGORY_LINT",
-      "level": "LEVEL_LOW",
+      "level": "LEVEL_MEDIUM",
       "location": {
         "path": "basic.in.haml",
         "range": {
