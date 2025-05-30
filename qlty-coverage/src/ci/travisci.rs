@@ -55,7 +55,7 @@ impl CI for TravisCI {
     fn pull_number(&self) -> String {
         let travis_pull_request = self.env.var("TRAVIS_PULL_REQUEST").unwrap_or_default();
         (travis_pull_request != "false")
-            .then(|| travis_pull_request)
+            .then_some(travis_pull_request)
             .unwrap_or_default()
     }
 
