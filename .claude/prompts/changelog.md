@@ -2,7 +2,7 @@ We need to update the CHANGELOG.md file to make sure everything important that h
 
 First, review the Git log to see what pull requests were merged. (If a change was not done through a pull request, you can safely skip it.)
 
-For each merged pull request, retrieve the PR title and description from GitHub for additional context.
+For each merged pull request, retrieve the PR title and description from GitHub for additional context using `gh pr view`.
 
 Ignore changes which are chores, docs only, CI changes, tests only, style/formatting changes, and build pipeline changes. The CHANGELOG.md only contains changes which are externally observable new features, enhancements, and fixes.
 
