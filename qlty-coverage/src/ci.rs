@@ -4,6 +4,7 @@ mod codefresh;
 mod github;
 mod gitlab;
 mod semaphore;
+mod travisci;
 
 pub use buildkite::Buildkite;
 pub use circleci::CircleCI;
@@ -12,6 +13,7 @@ pub use github::GitHub;
 pub use gitlab::GitLab;
 use qlty_types::tests::v1::CoverageMetadata;
 pub use semaphore::Semaphore;
+pub use travisci::TravisCI;
 
 const QLTY_CI_UPLOADER_TOOL: &str = "QLTY_CI_UPLOADER_TOOL";
 const QLTY_CI_UPLOADER_TOOL_VERSION: &str = "QLTY_CI_UPLOADER_TOOL_VERSION";
@@ -74,5 +76,6 @@ pub fn all() -> Vec<Box<dyn CI>> {
         Box::<GitHub>::default(),
         Box::<GitLab>::default(),
         Box::<Semaphore>::default(),
+        Box::<TravisCI>::default(),
     ]
 }
