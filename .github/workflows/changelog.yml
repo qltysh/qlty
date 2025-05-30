@@ -1,0 +1,27 @@
+name: Update CHANGELOG.md
+
+on:
+  workflow_dispatch:
+
+jobs:
+  claude:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 500
+
+      - name: Update CHANGELOG.md
+        id: claude
+        uses: anthropics/claude-code-base-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: claude-4-0-sonnet
+          prompt_file: .claude/prompts/changelog.md
+          allowed_tools: WebFetch(domain:docs.qlty.sh),Bash(git:*),Bash(qlty:*)

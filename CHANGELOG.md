@@ -2,8 +2,16 @@
 
 ## Unreleased
 
+### New
+
+- Add support for auto-detection of coverage variables for Travis CI users (#2108)
+
+## v0.536.0 (2025-05-29)
+
 ### Improved
 
+- Filter plugins in `qlty config migrate` based on .codeclimate.yml (#2094)
+- Improve warning messages for deprecated configuration syntax (#2101)
 - Report the number of files excluded for code coverage up to Qlty Cloud (#2098)
 
 ## v0.535.0 (2025-05-28)
