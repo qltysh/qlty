@@ -1,5 +1,6 @@
 use super::{Language, ReleaseDef};
 use crate::config::DownloadDef;
+use crate::http;
 use crate::QltyConfig;
 use anyhow::{Context, Result};
 use qlty_types::analysis::v1::{Category, Level};
@@ -721,7 +722,7 @@ impl EnabledPlugin {
 
 impl PluginFetch {
     pub fn download_file_to(&self, directories: &[PathBuf]) -> Result<()> {
-        let response = ureq::get(&self.url)
+        let response = http::get(&self.url)
             .call()
             .with_context(|| format!("Failed to get url: {}", &self.url))?;
 

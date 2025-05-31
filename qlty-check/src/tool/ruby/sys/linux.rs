@@ -11,6 +11,7 @@ use ar::Entry;
 use chrono::Utc;
 use duct::cmd;
 use qlty_analysis::{join_path_string, utils::fs::path_to_string};
+use qlty_config::http;
 use qlty_types::analysis::v1::Installation;
 use std::{
     collections::HashMap,
@@ -129,7 +130,7 @@ impl RubyLinux {
         installation.download_file_type = Some(".deb".to_string());
         installation.download_binary_name = Some(package.to_string());
 
-        let result = ureq::get(url.as_str()).call();
+        let result = http::get(url.as_str()).call();
         Self::finalize_installation(&mut installation, &result);
 
         match result {

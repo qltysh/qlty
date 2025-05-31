@@ -32,6 +32,11 @@ use std::time::Instant;
 use tracing::{debug, error, info, trace};
 
 pub fn run_command_line() {
+    // Initialize the default crypto provider for rustls
+    rustls::crypto::aws_lc_rs::default_provider()
+        .install_default()
+        .expect("Failed to install default crypto provider");
+
     let start_time = Instant::now();
     let current = std::env::current_dir().expect("current dir");
     let repository_path = Workspace::closest_git_repository_path(&current);

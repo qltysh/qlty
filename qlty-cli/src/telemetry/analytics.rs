@@ -3,6 +3,7 @@
 use crate::telemetry::locale::current_locale;
 use anyhow::{Context, Result};
 use base64::Engine as _;
+use qlty_config::http;
 use qlty_config::version::{BUILD_IDENTIFIER, QLTY_VERSION};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -44,7 +45,7 @@ impl AnalyticsClient {
             TRACK_URL, http_basic_authorization, data
         );
 
-        ureq::post(TRACK_URL)
+        http::post(TRACK_URL)
             .set("Authorization", &http_basic_authorization)
             .send_json(data)
             .map(|_| ())
