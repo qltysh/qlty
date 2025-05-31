@@ -14,6 +14,7 @@
 
 ### Fixed
 
+- Include AWS response body in coverage upload error messages (#2085)
 - Warn instead of error in `config migrate` if we can't find a plugin for a fetch item (#2096)
 - Use system TLS certificate roots for downloads (#2075)
 - Improve accuracy of field counting for Java (#2082)
