@@ -33,7 +33,7 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           model: claude-sonnet-4-20250514
           prompt_file: .claude/prompts/changelog.md
-          allowed_tools: "View,Write,GlobTool,GrepTool,BatchTool,WebFetch(domain:docs.qlty.sh),Bash(git:*),Bash(qlty:*),Bash(gh pr view:*)"
+          allowed_tools: "Edit,MultiEdit,LS,Read,View,Write,Glob,GlobTool,Grep,GrepTool,BatchTool,WebFetch(domain:docs.qlty.sh),Bash(git:*),Bash(qlty:*),Bash(gh pr view:*)"
 
       - name: Commit changes
         uses: peter-evans/create-pull-request@v7
