@@ -9,6 +9,7 @@ use crate::parser::coffeelint::Coffeelint;
 use crate::parser::eslint::Eslint;
 use crate::parser::golangci_lint::GolangciLint;
 use crate::parser::hadolint::Hadolint;
+use crate::parser::haml_lint::HamlLint;
 use crate::parser::knip::Knip;
 use crate::parser::markdownlint::Markdownlint;
 use crate::parser::mypy::Mypy;
@@ -424,6 +425,7 @@ impl Driver {
             OutputFormat::Eslint => Box::<Eslint>::default(),
             OutputFormat::GolangciLint => Box::new(GolangciLint {}),
             OutputFormat::Hadolint => Box::new(Hadolint {}),
+            OutputFormat::HamlLint => Box::new(HamlLint {}),
             OutputFormat::Knip => Box::new(Knip {}),
             OutputFormat::Markdownlint => Box::new(Markdownlint {}),
             OutputFormat::Mypy => Box::new(Mypy {}),

@@ -1,8 +1,9 @@
 use super::{source::SourceFetch, LocalSource, Source, SourceFile};
+use crate::sources::source::configure_proxy_options;
 use crate::Library;
 use anyhow::{Context, Result};
 use auth_git2::GitAuthenticator;
-use git2::{Remote, Repository, ResetType};
+use git2::{FetchOptions, Remote, RemoteCallbacks, Repository, ResetType};
 use std::path::{Path, PathBuf};
 use tracing::{debug, info};
 
@@ -208,13 +209,15 @@ impl GitSource {
             })?
         };
 
-        self.fetch(repository, &mut origin, branches)
+        self.fetch(&mut origin, branches)
     }
 
-    fn fetch(&self, repository: &Repository, origin: &mut Remote, branches: &[&str]) -> Result<()> {
+    fn fetch(&self, origin: &mut Remote, branches: &[&str]) -> Result<()> {
+        let mut fetch_options = self.create_fetch_options()?;
+
         // Per libgit2, passing an empty array of refspecs fetches base refspecs
-        GitAuthenticator::default()
-            .fetch(repository, origin, branches, None)
+        origin
+            .fetch(branches, Some(&mut fetch_options), None)
             .with_context(|| {
                 if branches.is_empty() {
                     format!(
@@ -270,6 +273,29 @@ impl GitSource {
             GitSourceReference::Branch(branch) => branch.to_string(),
             GitSourceReference::Tag(tag) => tag.to_string(),
         }
+    }
+
+    fn create_fetch_options(&self) -> Result<FetchOptions> {
+        let mut fetch_options = FetchOptions::new();
+
+        let mut proxy_options = git2::ProxyOptions::new();
+        configure_proxy_options(&mut proxy_options);
+        fetch_options.proxy_options(proxy_options);
+
+        let mut callbacks = RemoteCallbacks::new();
+
+        callbacks.credentials(|url, username, allowed| {
+            let config = git2::Config::open_default().map_err(|e| {
+                git2::Error::from_str(&format!("Failed to open Git configuration: {e}"))
+            })?;
+            let authenticator = GitAuthenticator::default();
+            let mut credential_fn = authenticator.credentials(&config);
+            credential_fn(url, username, allowed)
+        });
+
+        fetch_options.remote_callbacks(callbacks);
+
+        Ok(fetch_options)
     }
 }
 

@@ -9,6 +9,7 @@ use anyhow::Result;
 use chrono::Utc;
 use once_cell::sync::OnceCell;
 use qlty_config::config::{Cpu, DownloadDef, OperatingSystem, PluginDef, ReleaseDef, System};
+use qlty_config::http;
 use qlty_config::version::QLTY_VERSION;
 use qlty_types::analysis::v1::Installation;
 use sha2::Digest;
@@ -398,7 +399,7 @@ impl GitHubReleaseTool {
     }
 
     fn get_release_assets(&self, url: &str) -> Result<Vec<serde_json::Value>> {
-        let mut request = ureq::get(url)
+        let mut request = http::get(url)
             .set(
                 "User-Agent",
                 &format!("{}/{}", USER_AGENT_PREFIX, QLTY_VERSION),

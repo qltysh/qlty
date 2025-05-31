@@ -10,6 +10,7 @@ pub mod coffeelint;
 pub mod eslint;
 pub mod golangci_lint;
 pub mod hadolint;
+pub mod haml_lint;
 pub mod knip;
 pub mod markdownlint;
 pub mod mypy;

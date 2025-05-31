@@ -101,7 +101,7 @@ impl SimplecovFormatter for SimplecovJson {
                     (file.get("filename"), file.get("coverage"))
                 {
                     if let (Some(filename_str), Some(coverage_arr)) =
-                        (filename.as_str(), coverage.as_array())
+                        (filename.as_str(), Simplecov::extract_hits(coverage))
                     {
                         let line_hits =
                             Simplecov::parse_line_coverage(&Value::Array(coverage_arr.clone()));
@@ -119,6 +119,16 @@ impl SimplecovFormatter for SimplecovJson {
 }
 
 impl Simplecov {
+    fn extract_hits(coverage: &Value) -> Option<&Vec<Value>> {
+        if let Some(hits) = coverage.as_array() {
+            Some(hits)
+        } else if let Some(hits) = coverage.get("lines").and_then(|v| v.as_array()) {
+            Some(hits)
+        } else {
+            None
+        }
+    }
+
     fn extract_file_coverage(map: &Map<String, Value>) -> Vec<FileCoverage> {
         map.iter()
             .map(|(key, value)| {
@@ -383,6 +393,48 @@ mod test {
             - "1"
             - "1"
             - "-1"
+            - "-1"
+            - "-1"
+        "###);
+    }
+
+    #[test]
+    fn simplecov_new_json_fixture() {
+        let input = r#"
+        {
+            "timestamp": 1748371514,
+            "command_name": "RSpec",
+            "files": [
+                {
+                    "filename": "/app/controllers/api/base_controller.rb",
+                    "covered_percent": 100.0,
+                    "coverage": {
+                        "lines": [1, 1, null, 1, null, 1, 50, 46, null, null, 4, null, null]
+                    },
+                    "covered_strength": 14.857142857142858,
+                    "covered_lines": 7,
+                    "lines_of_code": 7
+                }
+            ]
+        }
+        "#;
+
+        let parsed_results = Simplecov::new().parse_text(input).unwrap();
+
+        insta::assert_yaml_snapshot!(parsed_results, @r###"
+        - path: /app/controllers/api/base_controller.rb
+          hits:
+            - "1"
+            - "1"
+            - "-1"
+            - "1"
+            - "-1"
+            - "1"
+            - "50"
+            - "46"
+            - "-1"
+            - "-1"
+            - "4"
             - "-1"
             - "-1"
         "###);

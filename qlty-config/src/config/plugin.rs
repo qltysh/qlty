@@ -1,5 +1,6 @@
 use super::{Language, ReleaseDef};
 use crate::config::DownloadDef;
+use crate::http;
 use crate::QltyConfig;
 use anyhow::{Context, Result};
 use qlty_types::analysis::v1::{Category, Level};
@@ -407,6 +408,9 @@ pub struct PluginDef {
 
     #[serde(default)]
     pub suggested_mode: IssueMode,
+
+    #[serde(default)]
+    pub tab_column_width: Option<usize>,
 }
 
 fn default_idempotent() -> bool {
@@ -516,6 +520,8 @@ pub enum OutputFormat {
     GolangciLint,
     #[serde(rename = "hadolint")]
     Hadolint,
+    #[serde(rename = "haml_lint")]
+    HamlLint,
     #[serde(rename = "knip")]
     Knip,
     #[serde(rename = "markdownlint")]
@@ -570,6 +576,7 @@ impl std::fmt::Display for OutputFormat {
             OutputFormat::Eslint => write!(f, "eslint"),
             OutputFormat::GolangciLint => write!(f, "golangci_lint"),
             OutputFormat::Hadolint => write!(f, "hadolint"),
+            OutputFormat::HamlLint => write!(f, "haml_lint"),
             OutputFormat::Knip => write!(f, "knip"),
             OutputFormat::Markdownlint => write!(f, "markdownlint"),
             OutputFormat::Mypy => write!(f, "mypy"),
@@ -693,9 +700,29 @@ pub struct PluginFetch {
     pub path: String,
 }
 
+impl EnabledPlugin {
+    pub fn validate(&self) -> Result<()> {
+        if self.package_file.is_some() && !self.extra_packages.is_empty() {
+            return Err(anyhow::anyhow!(
+                "Plugin '{}' has both 'package_file' and 'extra_packages' configured. These options are mutually exclusive.",
+                self.name
+            ));
+        }
+
+        if !self.package_filters.is_empty() && self.package_file.is_none() {
+            return Err(anyhow::anyhow!(
+                "Plugin '{}' has 'package_filters' configured but no 'package_file'. The 'package_filters' option requires 'package_file' to be specified.",
+                self.name
+            ));
+        }
+
+        Ok(())
+    }
+}
+
 impl PluginFetch {
     pub fn download_file_to(&self, directories: &[PathBuf]) -> Result<()> {
-        let response = ureq::get(&self.url)
+        let response = http::get(&self.url)
             .call()
             .with_context(|| format!("Failed to get url: {}", &self.url))?;
 
@@ -873,5 +900,126 @@ impl fmt::Display for Platform {
             Platform::Linux => "linux",
         };
         write!(f, "{}", name)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_enabled_plugin_validate_success_with_package_file() {
+        let plugin = EnabledPlugin {
+            name: "test-plugin".to_string(),
+            package_file: Some("Gemfile".to_string()),
+            extra_packages: vec![],
+            ..Default::default()
+        };
+
+        assert!(plugin.validate().is_ok());
+    }
+
+    #[test]
+    fn test_enabled_plugin_validate_success_with_extra_packages() {
+        let plugin = EnabledPlugin {
+            name: "test-plugin".to_string(),
+            package_file: None,
+            extra_packages: vec![ExtraPackage {
+                name: "some-package".to_string(),
+                version: "1.0.0".to_string(),
+            }],
+            ..Default::default()
+        };
+
+        assert!(plugin.validate().is_ok());
+    }
+
+    #[test]
+    fn test_enabled_plugin_validate_success_with_neither() {
+        let plugin = EnabledPlugin {
+            name: "test-plugin".to_string(),
+            package_file: None,
+            extra_packages: vec![],
+            ..Default::default()
+        };
+
+        assert!(plugin.validate().is_ok());
+    }
+
+    #[test]
+    fn test_enabled_plugin_validate_failure_with_both() {
+        let plugin = EnabledPlugin {
+            name: "test-plugin".to_string(),
+            package_file: Some("Gemfile".to_string()),
+            extra_packages: vec![ExtraPackage {
+                name: "some-package".to_string(),
+                version: "1.0.0".to_string(),
+            }],
+            ..Default::default()
+        };
+
+        let result = plugin.validate();
+        assert!(result.is_err());
+
+        let error_message = result.unwrap_err().to_string();
+        assert!(error_message.contains("test-plugin"));
+        assert!(error_message.contains("package_file"));
+        assert!(error_message.contains("extra_packages"));
+        assert!(error_message.contains("mutually exclusive"));
+    }
+
+    #[test]
+    fn test_enabled_plugin_validate_success_with_package_file_and_filters() {
+        let plugin = EnabledPlugin {
+            name: "test-plugin".to_string(),
+            package_file: Some("Gemfile".to_string()),
+            package_filters: vec!["some-filter".to_string()],
+            ..Default::default()
+        };
+
+        assert!(plugin.validate().is_ok());
+    }
+
+    #[test]
+    fn test_enabled_plugin_validate_success_with_package_file_no_filters() {
+        let plugin = EnabledPlugin {
+            name: "test-plugin".to_string(),
+            package_file: Some("Gemfile".to_string()),
+            package_filters: vec![],
+            ..Default::default()
+        };
+
+        assert!(plugin.validate().is_ok());
+    }
+
+    #[test]
+    fn test_enabled_plugin_validate_success_without_package_file_or_filters() {
+        let plugin = EnabledPlugin {
+            name: "test-plugin".to_string(),
+            package_file: None,
+            package_filters: vec![],
+            ..Default::default()
+        };
+
+        assert!(plugin.validate().is_ok());
+    }
+
+    #[test]
+    fn test_enabled_plugin_validate_failure_with_filters_but_no_package_file() {
+        let plugin = EnabledPlugin {
+            name: "test-plugin".to_string(),
+            package_file: None,
+            package_filters: vec!["some-filter".to_string()],
+            ..Default::default()
+        };
+
+        let result = plugin.validate();
+        assert!(result.is_err());
+
+        let error_message = result.unwrap_err().to_string();
+        assert!(error_message.contains("test-plugin"));
+        assert!(error_message.contains("package_filters"));
+        assert!(error_message.contains("package_file"));
+        assert!(error_message.contains("requires"));
     }
 }

@@ -74,7 +74,7 @@ impl Processor {
             totals,
             missing_files,
             found_files,
-            ignored_paths_count,
+            excluded_files_count: ignored_paths_count,
         })
     }
 

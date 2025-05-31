@@ -1,0 +1,21 @@
+config_version = "0"
+
+[plugins.definitions.haml-lint]
+runtime = "ruby"
+package = "haml_lint"
+file_types = ["haml"]
+latest_version = "0.62.0"
+known_good_version = "0.62.0"
+version_command = "haml-lint --version"
+config_files = [".haml-lint.yml"]
+description = "Keeps HAML files clean and readable"
+
+[plugins.definitions.haml-lint.drivers.lint]
+script = "haml-lint --reporter=json ${target}"
+success_codes = [0, 65]
+output = "stdout"
+output_format = "haml_lint"
+batch = true
+cache_results = true
+suggested = "targets"
+output_missing = "parse"

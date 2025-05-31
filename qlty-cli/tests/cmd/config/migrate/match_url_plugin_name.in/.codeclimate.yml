@@ -2,3 +2,9 @@ prepare:
   fetch:
     - url: https://raw.githubusercontent.com/codeclimate/styleguide/master/rubocop/something.yml
       path: something.yml
+
+plugins:
+  rubocop:
+    enabled: true
+  exists:
+    enabled: true

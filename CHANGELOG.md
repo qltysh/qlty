@@ -4,13 +4,45 @@
 
 ### New
 
-- Add terraform plugin support (#2067)
+- Add support for auto-detection of coverage variables for Travis CI users (#2108)
+
+## v0.536.0 (2025-05-29)
+
+### Improved
+
+- Filter plugins in `qlty config migrate` based on .codeclimate.yml (#2094)
+- Improve warning messages for deprecated configuration syntax (#2101)
+- Report the number of files excluded for code coverage up to Qlty Cloud (#2098)
+
+## v0.535.0 (2025-05-28)
+
+### New
+
+- Add support for `[[triage]]` blocks (replaces `[[override]]`) (#2005)
+- Add support for `[[exclude]]` blocks (replaces `[[ignore]]`) (#1954)
+- Support linux/arm64 platform in Docker image (#1990)
+
+Thank you @ujlbu4 for your contribution of linux/arm64 Docker support!
+
+### Improved
+
+- Update many linter versions (#2029)
+- Add output to indicate the number of excluded code coverage paths (#2078)
+- Ignore note issues in Git pre-push hook (#2079)
 
 ### Fixed
 
-- Fix formatter invocation directory when runs from `target_directory` (#2066)
+- Eliminate panic from telemetry when network is disabled (#2086)
 
-Thank you @justinabrahms for your contribution!
+## v0.534.0 (2025-05-22)
+
+### New
+
+- Add terraform plugin with support for formatting and validation (#2067)
+
+### Fixed
+
+- Fix formatter invocation directory when runs from target_directory (#2066)
 
 ## v0.533.0 (2025-05-22)
 

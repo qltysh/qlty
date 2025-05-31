@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.534.0"
+version = "0.537.0"
 authors = ["Qlty Software Inc."]
 description = "Code quality toolkit"
 documentation = "https://docs.qlty.sh"
@@ -20,7 +20,7 @@ actix-web = "4.9.0"
 anyhow = { version = "1.0.98", features = ["backtrace"] }
 ar = "0.9.0"
 assert-json-diff = "2.0.2"
-auth-git2 = "0.5.7"
+auth-git2 = "0.5.8"
 base64 = "0.22.1"
 bencher = "0.1.5"
 bytesize = "1.3.0"
@@ -70,20 +70,22 @@ pathdiff = "0.2.3"
 pbjson = "0.7.0"
 pbjson-types = "0.7.0"
 prost = "0.13.5"
-qlty-analysis = { version = "0.534.0", path = "qlty-analysis" }
-qlty-check = { version = "0.534.0", path = "qlty-check" }
-qlty-cloud = { version = "0.534.0", path = "qlty-cloud" }
-qlty-config = { version = "0.534.0", path = "qlty-config" }
-qlty-coverage = { version = "0.534.0", path = "qlty-coverage" }
-qlty-formats = { version = "0.534.0", path = "qlty-formats" }
-qlty-plugins = { version = "0.534.0", path = "qlty-plugins" }
-qlty-smells = { version = "0.534.0", path = "qlty-smells" }
-qlty-test-utilities = { version = "0.534.0", path = "qlty-test-utilities" }
-qlty-types = { version = "0.534.0", path = "qlty-types" }
+qlty-analysis = { version = "0.537.0", path = "qlty-analysis" }
+qlty-check = { version = "0.537.0", path = "qlty-check" }
+qlty-cloud = { version = "0.537.0", path = "qlty-cloud" }
+qlty-config = { version = "0.537.0", path = "qlty-config" }
+qlty-coverage = { version = "0.537.0", path = "qlty-coverage" }
+qlty-formats = { version = "0.537.0", path = "qlty-formats" }
+qlty-plugins = { version = "0.537.0", path = "qlty-plugins" }
+qlty-smells = { version = "0.537.0", path = "qlty-smells" }
+qlty-test-utilities = { version = "0.537.0", path = "qlty-test-utilities" }
+qlty-types = { version = "0.537.0", path = "qlty-types" }
 rand = "0.8.5"
 rayon = "1.10.0"
 regex = "1.11.0"
 rust-embed = { version = "8.7.2", features = ["include-exclude"] }
+rustls = "0.23.27"
+rustls-platform-verifier = "0.5.3"
 schemars = "0.8.22"
 semver = "1.0.26"
 sentry = { version = "0.34.0", default-features = false, features = [
