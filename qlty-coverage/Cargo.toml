@@ -32,12 +32,15 @@ serde-xml-rs.workspace = true
 serde.workspace = true
 time.workspace = true
 tracing.workspace = true
+ureq.workspace = true
 xml-rs.workspace = true
 zip.workspace = true
 
 [dev-dependencies]
 insta.workspace = true
+rustls.workspace = true
 tempfile.workspace = true
+tiny_http.workspace = true
 
 [package.metadata.cargo-machete]
 ignored = ["xml-rs"]
