@@ -2,6 +2,7 @@ use crate::migration::classic::{ClassicConfig, FetchItem};
 use crate::QltyConfig;
 use anyhow::Result;
 use std::{collections::HashMap, path::PathBuf};
+use tracing::warn;
 use url::Url;
 
 pub fn get_plugins_fetch_items(
@@ -11,14 +12,9 @@ pub fn get_plugins_fetch_items(
     let mut fetch_items = HashMap::new();
 
     for fetch_item in classic_config.fetch_items() {
-        if find_plugin_for_fetch_item(qlty_config, &fetch_item, &mut fetch_items)? {
-            continue;
+        if !find_plugin_for_fetch_item(qlty_config, &fetch_item, &mut fetch_items)? {
+            warn!("Could not find a plugin for fetch item: {:?}", fetch_item);
         }
-
-        return Err(anyhow::anyhow!(format!(
-            "Could not find a plugin for fetch item: {:?}",
-            fetch_item
-        )));
     }
 
     Ok(fetch_items)
