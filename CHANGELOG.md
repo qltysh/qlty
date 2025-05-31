@@ -5,6 +5,21 @@
 ### New
 
 - Add support for auto-detection of coverage variables for Travis CI users (#2108)
+- Add haml lint plugin (#2112)
+
+### Improved
+
+- Reject invalid configuration combinations in qlty.toml (#2077)
+- Support Git fetches through HTTPS proxies (#2081)
+- Add ruff auto-formatting support (#2080)
+
+### Fixed
+
+- Warn instead of error in `config migrate` if we can't find a plugin for a fetch item (#2096)
+- Use system certificate roots for downloads (#2075)
+- Improve accuracy of field counting for Java (#2082)
+- Fix shellcheck tab column handling in location ranges (#2099)
+- Add more support for simplecov parser (#2111)
 
 ## v0.536.0 (2025-05-29)
 
