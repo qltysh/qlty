@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v0.538.0 (2025-05-31)
+
 ### New
 
 - Add haml-lint plugin (#2112)
