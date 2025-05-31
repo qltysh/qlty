@@ -132,3 +132,168 @@ impl Upload {
         client.post_coverage_metadata("/coverage", metadata)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::Arc;
+    use std::sync::Mutex;
+    use std::sync::Once;
+    use std::thread;
+    use std::time::Duration;
+
+    static INIT: Once = Once::new();
+
+    fn setup_crypto_provider() {
+        INIT.call_once(|| {
+            let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+        });
+    }
+    
+    struct TestServer {
+        base_url: String,
+        handle: thread::JoinHandle<()>,
+        stop_signal: Arc<Mutex<bool>>,
+    }
+
+    impl TestServer {
+        fn start(status_code: u16, response_body: &str) -> TestServer {
+            let response_body = response_body.to_string();
+            let stop_signal = Arc::new(Mutex::new(false));
+            let stop_signal_clone = stop_signal.clone();
+            
+            let server = tiny_http::Server::http("127.0.0.1:0").unwrap();
+            let base_url = format!("http://{}", server.server_addr().to_ip().unwrap());
+            
+            let handle = thread::spawn(move || {
+                while !*stop_signal_clone.lock().unwrap() {
+                    if let Ok(Some(request)) = server.recv_timeout(Duration::from_millis(100)) {
+                        let response = tiny_http::Response::from_string(&response_body)
+                            .with_status_code(status_code);
+                        let _ = request.respond(response);
+                        break;
+                    }
+                }
+            });
+
+            TestServer {
+                base_url,
+                handle,
+                stop_signal,
+            }
+        }
+
+        fn url(&self) -> String {
+            self.base_url.clone()
+        }
+
+        fn stop(self) {
+            *self.stop_signal.lock().unwrap() = true;
+            let _ = self.handle.join();
+        }
+    }
+
+    #[test]
+    fn test_upload_data_success() {
+        setup_crypto_provider();
+        let server = TestServer::start(200, "Upload successful");
+        let upload = Upload::default();
+        
+        let result = upload.upload_data(&server.url(), "application/zip", vec![1, 2, 3, 4]);
+        
+        assert!(result.is_ok());
+        server.stop();
+    }
+
+    #[test]
+    fn test_upload_data_http_error_with_response_body() {
+        setup_crypto_provider();
+        let error_body = "Access denied: Invalid credentials";
+        let server = TestServer::start(403, error_body);
+        let upload = Upload::default();
+        
+        let result = upload.upload_data(&server.url(), "application/zip", vec![1, 2, 3, 4]);
+        
+        assert!(result.is_err());
+        let error_message = result.unwrap_err().to_string();
+        assert!(error_message.contains("HTTP Error 403"));
+        assert!(error_message.contains("Upload request failed with response body"));
+        assert!(error_message.contains(error_body));
+        server.stop();
+    }
+
+    #[test]
+    fn test_upload_data_http_error_4xx() {
+        setup_crypto_provider();
+        let error_body = "Bad Request: Invalid file format";
+        let server = TestServer::start(400, error_body);
+        let upload = Upload::default();
+        
+        let result = upload.upload_data(&server.url(), "application/zip", vec![1, 2, 3, 4]);
+        
+        assert!(result.is_err());
+        let error_message = result.unwrap_err().to_string();
+        assert!(error_message.contains("HTTP Error 400"));
+        assert!(error_message.contains("Upload request failed with response body"));
+        assert!(error_message.contains(error_body));
+        server.stop();
+    }
+
+    #[test]
+    fn test_upload_data_http_error_5xx() {
+        setup_crypto_provider();
+        let error_body = "Internal Server Error: Database connection failed";
+        let server = TestServer::start(500, error_body);
+        let upload = Upload::default();
+        
+        let result = upload.upload_data(&server.url(), "application/zip", vec![1, 2, 3, 4]);
+        
+        assert!(result.is_err());
+        let error_message = result.unwrap_err().to_string();
+        assert!(error_message.contains("HTTP Error 500"));
+        assert!(error_message.contains("Upload request failed with response body"));
+        assert!(error_message.contains(error_body));
+        server.stop();
+    }
+
+    #[test]
+    fn test_upload_data_transport_error() {
+        setup_crypto_provider();
+        let upload = Upload::default();
+        let invalid_url = "http://non-existent-host-12345.invalid:99999/upload";
+        
+        let result = upload.upload_data(invalid_url, "application/zip", vec![1, 2, 3, 4]);
+        
+        assert!(result.is_err());
+        let error_message = result.unwrap_err().to_string();
+        assert!(error_message.contains("Transport Error"));
+        assert!(error_message.contains("Error sending upload bytes"));
+    }
+
+    #[test]
+    fn test_upload_data_successful_response_fallback_error_handling() {
+        setup_crypto_provider();
+        let server = TestServer::start(201, "Created successfully");
+        let upload = Upload::default();
+        
+        let result = upload.upload_data(&server.url(), "application/zip", vec![1, 2, 3, 4]);
+        
+        assert!(result.is_ok());
+        server.stop();
+    }
+
+    #[test]
+    fn test_upload_data_non_2xx_success_response_fallback() {
+        setup_crypto_provider();
+        let server = TestServer::start(301, "Moved permanently");
+        let upload = Upload::default();
+        
+        let result = upload.upload_data(&server.url(), "application/zip", vec![1, 2, 3, 4]);
+        
+        assert!(result.is_err());
+        let error_message = result.unwrap_err().to_string();
+        assert!(error_message.contains("HTTP Error 301"));
+        assert!(error_message.contains("Upload request returned an error"));
+        server.stop();
+    }
+}
