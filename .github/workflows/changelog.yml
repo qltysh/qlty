@@ -24,6 +24,9 @@ jobs:
         with:
           fetch-depth: 500
 
+      - name: Install Qlty CLI
+        uses: qltysh/qlty-action/install@main
+
       - name: Update CHANGELOG.md
         id: claude
         uses: anthropics/claude-code-base-action@beta
