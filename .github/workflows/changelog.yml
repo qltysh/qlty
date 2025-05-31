@@ -33,7 +33,7 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           model: claude-sonnet-4-20250514
           prompt_file: .claude/prompts/changelog.md
-          allowed_tools: WebFetch(domain:docs.qlty.sh),Bash(git:*),Bash(qlty:*),Bash(gh pr view:*)
+          allowed_tools: "View,Write,GlobTool,GrepTool,BatchTool,WebFetch(domain:docs.qlty.sh),Bash(git:*),Bash(qlty:*),Bash(gh pr view:*)"
 
       - name: Commit changes
         uses: peter-evans/create-pull-request@v7
@@ -42,6 +42,7 @@ jobs:
           title: "chore: Update CHANGELOG.md"
           body: "Automated PR for updating CHANGELOG.md"
           branch: changelog
+          add-paths: CHANGELOG.md
           delete-branch: true
           sign-commits: true
           commit-message: "chore: Update CHANGELOG.md"
