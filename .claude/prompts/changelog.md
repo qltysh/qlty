@@ -10,3 +10,4 @@ Follow the existing format of the CHANGELOG.md file. Organize changes underneath
 
 Finally, if a PR author is not a member of the team, be sure to include a shout out. (Team members are @noahd1, @lsegal, @brynary, @marschattha, @davehenton, @laura-mlg. They don't need shout outs.)
 
+Finally, run `qlty fmt` to auto-format the results.
