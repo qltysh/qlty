@@ -149,7 +149,7 @@ mod tests {
             let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
         });
     }
-    
+
     struct TestServer {
         base_url: String,
         handle: thread::JoinHandle<()>,
@@ -161,10 +161,10 @@ mod tests {
             let response_body = response_body.to_string();
             let stop_signal = Arc::new(Mutex::new(false));
             let stop_signal_clone = stop_signal.clone();
-            
+
             let server = tiny_http::Server::http("127.0.0.1:0").unwrap();
             let base_url = format!("http://{}", server.server_addr().to_ip().unwrap());
-            
+
             let handle = thread::spawn(move || {
                 while !*stop_signal_clone.lock().unwrap() {
                     if let Ok(Some(request)) = server.recv_timeout(Duration::from_millis(100)) {
@@ -198,9 +198,9 @@ mod tests {
         setup_crypto_provider();
         let server = TestServer::start(200, "Upload successful");
         let upload = Upload::default();
-        
+
         let result = upload.upload_data(&server.url(), "application/zip", vec![1, 2, 3, 4]);
-        
+
         assert!(result.is_ok());
         server.stop();
     }
@@ -211,9 +211,9 @@ mod tests {
         let error_body = "Access denied: Invalid credentials";
         let server = TestServer::start(403, error_body);
         let upload = Upload::default();
-        
+
         let result = upload.upload_data(&server.url(), "application/zip", vec![1, 2, 3, 4]);
-        
+
         assert!(result.is_err());
         let error_message = result.unwrap_err().to_string();
         assert!(error_message.contains("HTTP Error 403"));
@@ -228,9 +228,9 @@ mod tests {
         let error_body = "Bad Request: Invalid file format";
         let server = TestServer::start(400, error_body);
         let upload = Upload::default();
-        
+
         let result = upload.upload_data(&server.url(), "application/zip", vec![1, 2, 3, 4]);
-        
+
         assert!(result.is_err());
         let error_message = result.unwrap_err().to_string();
         assert!(error_message.contains("HTTP Error 400"));
@@ -245,9 +245,9 @@ mod tests {
         let error_body = "Internal Server Error: Database connection failed";
         let server = TestServer::start(500, error_body);
         let upload = Upload::default();
-        
+
         let result = upload.upload_data(&server.url(), "application/zip", vec![1, 2, 3, 4]);
-        
+
         assert!(result.is_err());
         let error_message = result.unwrap_err().to_string();
         assert!(error_message.contains("HTTP Error 500"));
@@ -261,9 +261,9 @@ mod tests {
         setup_crypto_provider();
         let upload = Upload::default();
         let invalid_url = "http://non-existent-host-12345.invalid:99999/upload";
-        
+
         let result = upload.upload_data(invalid_url, "application/zip", vec![1, 2, 3, 4]);
-        
+
         assert!(result.is_err());
         let error_message = result.unwrap_err().to_string();
         assert!(error_message.contains("Transport Error"));
@@ -275,9 +275,9 @@ mod tests {
         setup_crypto_provider();
         let server = TestServer::start(201, "Created successfully");
         let upload = Upload::default();
-        
+
         let result = upload.upload_data(&server.url(), "application/zip", vec![1, 2, 3, 4]);
-        
+
         assert!(result.is_ok());
         server.stop();
     }
@@ -287,9 +287,9 @@ mod tests {
         setup_crypto_provider();
         let server = TestServer::start(301, "Moved permanently");
         let upload = Upload::default();
-        
+
         let result = upload.upload_data(&server.url(), "application/zip", vec![1, 2, 3, 4]);
-        
+
         assert!(result.is_err());
         let error_message = result.unwrap_err().to_string();
         assert!(error_message.contains("HTTP Error 301"));
