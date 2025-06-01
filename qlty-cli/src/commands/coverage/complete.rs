@@ -1,8 +1,9 @@
 use super::utils::{
     load_config, print_authentication_info, print_initial_messages, print_metadata, print_settings,
+    validate_metadata,
 };
 use crate::{CommandError, CommandSuccess};
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
 use clap::Args;
 use console::style;
 use qlty_cloud::{get_legacy_api_url, Client as QltyClient};
@@ -48,6 +49,10 @@ pub struct Complete {
     /// workspace and if it cannot be inferred from the git origin.
     pub project: Option<String>,
 
+    #[arg(long)]
+    /// Perform a dry-run without actually completing the coverage
+    pub dry_run: bool,
+
     #[clap(long, short)]
     pub quiet: bool,
 }
@@ -74,9 +79,14 @@ impl Complete {
 
         let timer = Instant::now();
         self.print_section_header(" COMPLETING... ");
-        let result = Self::request_complete(&plan.metadata, &token)
-            .context("Failed to complete coverage")?;
-        self.print_complete_success(timer.elapsed().as_secs_f32(), &result.url);
+
+        if self.dry_run {
+            self.print_complete_success(timer.elapsed().as_secs_f32(), &None);
+        } else {
+            let result = Self::request_complete(&plan.metadata, &token)
+                .context("Failed to complete coverage")?;
+            self.print_complete_success(timer.elapsed().as_secs_f32(), &result.url);
+        }
 
         CommandSuccess::ok()
     }
@@ -104,13 +114,7 @@ impl Complete {
     }
 
     fn validate_plan(&self, plan: &Plan) -> Result<()> {
-        if plan.metadata.commit_sha.is_empty() {
-            bail!(
-                "Unable to determine commit SHA from the environment.\nPlease provide it using --override-commit-sha"
-            )
-        }
-
-        Ok(())
+        validate_metadata(&plan.metadata)
     }
 
     fn print_complete_success(&self, elapsed_seconds: f32, url: &Option<String>) {

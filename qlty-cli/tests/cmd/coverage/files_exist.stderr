@@ -6,6 +6,7 @@ https://qlty.sh/d/coverage
     cwd: [CWD]
     dry-run: true
     override-build-id: 123
+    override-branch: main
     override-commit-sha: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
     skip-missing-files: true
     incomplete: true
@@ -14,6 +15,7 @@ https://qlty.sh/d/coverage
 
     CI: unknown
     Commit: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
+    Branch: main
     Build ID: 123
 
  COVERAGE FILES: 1 

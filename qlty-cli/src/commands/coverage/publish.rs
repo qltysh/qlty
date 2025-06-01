@@ -1,5 +1,6 @@
 use super::utils::{
     load_config, print_authentication_info, print_initial_messages, print_metadata, print_settings,
+    validate_metadata,
 };
 use crate::{CommandError, CommandSuccess};
 use anyhow::{bail, Result};
@@ -270,14 +271,10 @@ impl Publish {
     }
 
     fn validate_plan(&self, plan: &Plan) -> Result<()> {
-        if plan.metadata.commit_sha.is_empty() {
-            bail!(
-                "Unable to determine commit SHA from the environment.\nPlease provide it using --override-commit-sha"
-            )
-        }
+        validate_metadata(&plan.metadata)?;
 
         if plan.report_files.is_empty() {
-            bail!("No coverage reports data files were provided.")
+            bail!("No coverage reports data files were provided.");
         }
 
         Ok(())
