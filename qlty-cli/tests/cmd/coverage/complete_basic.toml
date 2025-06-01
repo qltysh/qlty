@@ -1,23 +1,17 @@
 args = [
   "coverage",
-  "publish",
+  "complete",
   "--dry-run",
   "--override-commit-sha",
   "2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67",
   "--override-build-id",
-  "123",
-  "--override-branch",
-  "main",
-  "lcov.info",
-  "--print",
-  "--json",
-  "--skip-missing-files",
-  "--incomplete"
+  "123"
 ]
 bin.name = "qlty"
-
-[env]
-remove = ["GITHUB_ACTIONS"]
+status.code = 0
 
 [env.add]
+BUILDKITE_BUILD_NUMBER = "123"
+BUILDKITE_BRANCH = "main"
+BUILDKITE_BUILD_ID = "build-456"
 QLTY_COVERAGE_TOKEN = "123"

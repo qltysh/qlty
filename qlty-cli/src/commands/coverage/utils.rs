@@ -1,6 +1,8 @@
+use anyhow::{bail, Result};
 use console::style;
 use qlty_config::{version::LONG_VERSION, QltyConfig, Workspace};
 use qlty_coverage::publish::{Plan, Settings};
+use qlty_types::tests::v1::CoverageMetadata;
 use regex::Regex;
 use std::path::PathBuf;
 
@@ -132,4 +134,20 @@ pub fn print_authentication_info(token: &str, quiet: bool) {
     eprintln!("    Auth Method: {token_type}");
     eprintln!("    Token: {token}");
     eprintln!();
+}
+
+pub fn validate_metadata(metadata: &CoverageMetadata) -> Result<()> {
+    if metadata.commit_sha.is_empty() {
+        bail!(
+            "Unable to determine commit SHA from the environment.\nPlease provide it using --override-commit-sha"
+        )
+    }
+
+    if metadata.branch.is_empty() {
+        bail!(
+            "Unable to determine branch name from the environment.\nPlease provide it using --override-branch"
+        )
+    }
+
+    Ok(())
 }
