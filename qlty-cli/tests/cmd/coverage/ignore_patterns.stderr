@@ -6,12 +6,14 @@ https://qlty.sh/d/coverage
     cwd: [CWD]
     dry-run: true
     override-build-id: 123
+    override-branch: main
     override-commit-sha: 822641a8a442eab5981096a0d734ac180aa40106
 
  METADATA 
 
     CI: unknown
     Commit: 822641a8a442eab5981096a0d734ac180aa40106
+    Branch: main
     Build ID: 123
 
  COVERAGE FILES: 1 

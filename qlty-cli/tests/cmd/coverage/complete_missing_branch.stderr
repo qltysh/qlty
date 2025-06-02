@@ -1,0 +1,15 @@
+qlty [..] [..]-[..] ([..] debug [..])
+https://qlty.sh/d/coverage
+
+ SETTINGS 
+
+    cwd: [CWD]
+    override-build-id: 123
+    override-commit-sha: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
+
+WARNING: The `[[ignore]]` field in qlty.toml is deprecated. Please use `[[exclude]]` or `exclude_patterns` instead.
+
+   ERROR   
+
+ > Unable to determine branch name from the environment.
+ > Please provide it using --override-branch
