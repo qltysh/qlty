@@ -1,8 +1,8 @@
 use super::exclude::Exclude;
 use crate::config::{Match, Set, Triage};
 use crate::sources::SourcesList;
+use crate::{warn_once, Library, QltyConfig};
 use crate::{workspace::Workspace, TomlMerge};
-use crate::{Library, QltyConfig};
 use anyhow::{anyhow, bail, Context as _, Result};
 use config::{Config, File, FileFormat};
 use console::style;
@@ -152,32 +152,32 @@ impl Builder {
         let mut all_exclude_patterns = config.exclude_patterns.clone();
 
         if !config.ignore_patterns.is_empty() {
-            eprintln!(
+            warn_once(&format!(
                 "{} The `{}` field in qlty.toml is deprecated. Please use `{}` instead.",
                 style("WARNING:").bold().yellow(),
                 style("ignore_patterns").bold(),
                 style("exclude_patterns").bold()
-            );
+            ));
             all_exclude_patterns.extend(config.ignore_patterns.clone());
         }
 
         if !config.ignore.is_empty() {
-            eprintln!(
+            warn_once(&format!(
                 "{} The `{}` field in qlty.toml is deprecated. Please use `{}` or `{}` instead.",
                 style("WARNING:").bold().yellow(),
                 style("[[ignore]]").bold(),
                 style("[[exclude]]").bold(),
                 style("exclude_patterns").bold()
-            );
+            ));
 
             for ignore in &config.ignore {
                 if ignore.file_patterns.is_empty() {
-                    eprintln!(
+                    warn_once(&format!(
                         "{} The use of `{}` field in qlty.toml without {} is no longer supported. Skipping ignore without file_patterns.",
                         style("WARNING:").bold().yellow(),
                         style("[[ignore]]").bold(),
                         style("file_patterns").bold()
-                    );
+                    ));
                     continue;
                 }
 

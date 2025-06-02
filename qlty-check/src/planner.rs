@@ -19,7 +19,7 @@ use qlty_analysis::git::{compute_upstream, DiffLineFilter};
 use qlty_analysis::workspace_entries::TargetMode;
 use qlty_config::config::issue_transformer::IssueTransformer;
 use qlty_config::config::{DriverType, Match, PluginDef, Set, Triage};
-use qlty_config::{QltyConfig, Workspace};
+use qlty_config::{warn_once, QltyConfig, Workspace};
 use qlty_types::analysis::v1::ExecutionVerb;
 use qlty_types::{category_from_str, level_from_str};
 use rayon::prelude::*;
@@ -299,12 +299,12 @@ impl Planner {
         let mut triages = self.config.triage.clone();
 
         if !self.config.overrides.is_empty() {
-            eprintln!(
+            warn_once(&format!(
                 "{} The `{}` field in qlty.toml is deprecated. Please use `{}` instead.",
                 style("WARNING:").bold().yellow(),
                 style("[[override]]").bold(),
                 style("[[triage]]").bold()
-            );
+            ));
 
             for issue_override in &self.config.overrides {
                 triages.push(Triage {
