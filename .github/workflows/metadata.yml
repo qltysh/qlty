@@ -56,7 +56,7 @@ jobs:
             const issuePattern = /(?:close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#(\d+)|(?:\w+\/)?#(\d+)|https:\/\/github\.com\/[^/]+\/[^/]+\/issues\/(\d+)/ig;
             const matches = [...body.matchAll(issuePattern)];
 
-            const allowedTypes = ['chore', 'docs', 'style', 'test', 'build', 'ci', 'revert'];
+            const allowedTypes = ['fix', 'chore', 'docs', 'style', 'test', 'build', 'ci', 'revert'];
 
             if (/^(?:chore|docs|style|test|build|ci|revert):/i.test(pr.title)) {
               console.log("PR title starts with one of allowed types, skipping linked issue check.");
