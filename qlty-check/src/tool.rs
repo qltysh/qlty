@@ -68,7 +68,13 @@ const BASE_SHELL_PATH: &[&str] = &[
 ];
 
 #[cfg(unix)]
-const SYSTEM_ENV_KEYS: &[&str] = &["HOME"];
+const SYSTEM_ENV_KEYS: &[&str] = &[
+    "HOME",
+    "https_proxy",
+    "HTTPS_PROXY",
+    "http_proxy",
+    "HTTP_PROXY",
+];
 #[cfg(windows)]
 const SYSTEM_ENV_KEYS: &[&str] = &[
     "SYSTEMROOT",
@@ -89,6 +95,10 @@ const SYSTEM_ENV_KEYS: &[&str] = &[
     "ProgramW6432",
     "HOMEDRIVE",
     "HOMEPATH",
+    "https_proxy",
+    "HTTPS_PROXY",
+    "http_proxy",
+    "HTTP_PROXY",
 ];
 
 pub fn global_tools_root() -> String {
@@ -1072,7 +1082,11 @@ mod test {
         let env = tool.env().unwrap();
 
         for key in SYSTEM_ENV_KEYS {
-            assert_eq!(env.get(*key), Some(&std::env::var(key).unwrap()));
+            if let Ok(expected_value) = std::env::var(key) {
+                assert_eq!(env.get(*key), Some(&expected_value));
+            } else {
+                assert_eq!(env.get(*key), None);
+            }
         }
 
         let mut paths = vec![join_path_string!(tool.directory(), "bin"), tool.directory()];

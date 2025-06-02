@@ -18,6 +18,7 @@ RUN cargo build --release --bin qlty
 RUN mv ./target/release/qlty ./qlty
 
 FROM debian:bookworm-slim AS runtime
+RUN apt-get update -yqq && apt-get install -yqq ca-certificates
 WORKDIR /app
 COPY --from=builder /app/qlty /usr/local/bin/
 ENTRYPOINT ["/usr/local/bin/qlty"]
