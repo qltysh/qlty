@@ -272,12 +272,12 @@ impl Planner {
         }));
 
         for plugin in &self.active_plugins {
-            if let Some(tab_column_width) = plugin.plugin.tab_column_width {
+            if plugin.plugin.tab_column_width > 1 {
                 self.transformers
                     .push(Box::new(PluginTabColumnWidthTransformer {
                         source_reader: Arc::new(self.staging_area.clone()),
                         plugin_name: plugin.name.clone(),
-                        tab_column_width,
+                        tab_column_width: plugin.plugin.tab_column_width,
                     }));
             }
         }
