@@ -69,11 +69,11 @@ impl PluginTabColumnWidthTransformer {
                     .count();
                 if tabs_before_start > 0 {
                     start_column = start_column
-                        .saturating_sub((tabs_before_start * self.tab_column_width) as u32);
+                        .saturating_sub((tabs_before_start * (self.tab_column_width - 1)) as u32);
                 }
                 if tabs_before_end > 0 {
-                    end_column =
-                        end_column.saturating_sub((tabs_before_end * self.tab_column_width) as u32);
+                    end_column = end_column
+                        .saturating_sub((tabs_before_end * (self.tab_column_width - 1)) as u32);
                 }
             }
         }
@@ -115,7 +115,7 @@ mod test {
             )]
             .into(),
         )),
-            tab_column_width: 7,
+            tab_column_width: 8,
             plugin_name: "shellcheck".to_string(),
         };
 

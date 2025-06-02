@@ -409,12 +409,16 @@ pub struct PluginDef {
     #[serde(default)]
     pub suggested_mode: IssueMode,
 
-    #[serde(default)]
-    pub tab_column_width: Option<usize>,
+    #[serde(default = "default_tab_column_width")]
+    pub tab_column_width: usize,
 }
 
 fn default_idempotent() -> bool {
     true
+}
+
+fn default_tab_column_width() -> usize {
+    1
 }
 
 #[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Default, JsonSchema)]
