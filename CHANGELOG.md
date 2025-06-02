@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+## v0.539.0 (2025-06-02)
+
+### New
+
+- Add support for `--sarif` flag to `qlty smells` command (#2037)
+
+Thank you @ujlbu4 for your contribution!
+
+### Fixed
+
+- Reject coverage reports when branch name is missing (#2119)
+- Handle terraform parser to handle missing location (#2129)
+- Update shellcheck and tab column width (#2127)
+- Only print identical warnings once (#2125)
+- Pass proxy env variables to installations and invocations (#2126)
+- Add ca-certificates to Docker image (#2124)
+- Support head diff mode for `qlty smells` (#2039)
+
+Thank you @relu and @ujlbu4 for your contributions!
+
 ## v0.538.0 (2025-05-31)
 
 ### New
