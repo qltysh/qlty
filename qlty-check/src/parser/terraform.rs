@@ -17,7 +17,7 @@ struct DiagnosticPosition {
 struct Diagnostic {
     severity: String,
     summary: String,
-    range: DiagnosticRange,
+    range: Option<DiagnosticRange>,
 }
 #[derive(Debug, Deserialize)]
 struct TerraformOutput {
@@ -32,21 +32,27 @@ impl Parser for Terraform {
         let parsed: TerraformOutput = serde_json::from_str(output)?;
         let mut issues = vec![];
         for diag in parsed.diagnostics {
+            let location = if let Some(range) = diag.range {
+                Some(Location {
+                    path: range.filename,
+                    range: Some(Range {
+                        start_line: range.start.line,
+                        start_column: range.start.column,
+                        end_line: range.end.line,
+                        end_column: range.end.column,
+                        ..Default::default()
+                    }),
+                })
+            } else {
+                None
+            };
+
             issues.push(Issue {
                 tool: "terraform".to_string(),
                 message: diag.summary,
                 category: Category::Lint.into(),
                 level: severity_to_level(&diag.severity).into(),
-                location: Some(Location {
-                    path: diag.range.filename,
-                    range: Some(Range {
-                        start_line: diag.range.start.line,
-                        start_column: diag.range.start.column,
-                        end_line: diag.range.end.line,
-                        end_column: diag.range.end.column,
-                        ..Default::default()
-                    }),
-                }),
+                location,
                 ..Default::default()
             });
         }
@@ -119,6 +125,42 @@ mod test {
               startColumn: 10
               endLine: 2
               endColumn: 15
+        "###);
+    }
+
+    #[test]
+    fn parse_missing_location() {
+        let input = r###"
+          {
+            "format_version": "1.0",
+            "valid": false,
+            "error_count": 2,
+            "warning_count": 0,
+            "diagnostics": [
+              {
+                "severity": "error",
+                "summary": "Missing required provider",
+                "detail": "This configuration requires provider registry.terraform.io/hashicorp/aws, but that provider isn't available. You may be able to install it automatically by running:\n  terraform init"
+              },
+              {
+                "severity": "error",
+                "summary": "Missing required provider",
+                "detail": "This configuration requires provider registry.terraform.io/hashicorp/random, but that provider isn't available. You may be able to install it automatically by running:\n  terraform init"
+              }
+            ]
+          }
+        "###;
+
+        let issues = Terraform::default().parse("terraform", input);
+        insta::assert_yaml_snapshot!(issues.unwrap(), @r###"
+        - tool: terraform
+          message: Missing required provider
+          level: LEVEL_HIGH
+          category: CATEGORY_LINT
+        - tool: terraform
+          message: Missing required provider
+          level: LEVEL_HIGH
+          category: CATEGORY_LINT
         "###);
     }
 }
