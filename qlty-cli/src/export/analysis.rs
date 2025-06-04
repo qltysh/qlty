@@ -1,5 +1,5 @@
 use anyhow::Result;
-use qlty_analysis::Report;
+use qlty_analysis::{report::INVOCATION_BATCH_SIZE, Report};
 use qlty_config::Workspace;
 use qlty_formats::{
     CopyFormatter, Formatter, GzFormatter, InvocationJsonFormatter, JsonEachRowFormatter,
@@ -45,9 +45,16 @@ impl AnalysisExport {
         messages_formatter.write_to_file(&self.path.join("messages.jsonl"))?;
 
         // Write invocations using InvocationJsonFormatter
-        let invocations_formatter = InvocationJsonFormatter::new(self.report.invocations.clone());
-        invocations_formatter.write_to_file(&self.path.join("invocations.jsonl"))?;
-
+        for (i, chunk) in self
+            .report
+            .invocations
+            .chunks(INVOCATION_BATCH_SIZE)
+            .enumerate()
+        {
+            let filename = format!("invocations-{}.jsonl", i);
+            let invocations_formatter = InvocationJsonFormatter::new(chunk.to_vec());
+            invocations_formatter.write_to_file(&self.path.join(filename))?;
+        }
         // Write issues using JsonEachRowFormatter
         let issues_formatter = JsonEachRowFormatter::new(self.report.issues.clone());
         issues_formatter.write_to_file(&self.path.join("issues.jsonl"))?;

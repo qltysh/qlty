@@ -3022,6 +3022,9 @@ impl serde::Serialize for Metadata {
         if self.authored_at.is_some() {
             len += 1;
         }
+        if self.invocation_files_count != 0 {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("qlty.analysis.v1.Metadata", len)?;
         if !self.workspace_id.is_empty() {
             struct_ser.serialize_field("workspaceId", &self.workspace_id)?;
@@ -3091,6 +3094,9 @@ impl serde::Serialize for Metadata {
         if let Some(v) = self.authored_at.as_ref() {
             struct_ser.serialize_field("authoredAt", v)?;
         }
+        if self.invocation_files_count != 0 {
+            struct_ser.serialize_field("invocationFilesCount", &self.invocation_files_count)?;
+        }
         struct_ser.end()
     }
 }
@@ -3141,6 +3147,8 @@ impl<'de> serde::Deserialize<'de> for Metadata {
             "authorName",
             "authored_at",
             "authoredAt",
+            "invocation_files_count",
+            "invocationFilesCount",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -3167,6 +3175,7 @@ impl<'de> serde::Deserialize<'de> for Metadata {
             AuthorEmail,
             AuthorName,
             AuthoredAt,
+            InvocationFilesCount,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -3210,6 +3219,7 @@ impl<'de> serde::Deserialize<'de> for Metadata {
                             "authorEmail" | "author_email" => Ok(GeneratedField::AuthorEmail),
                             "authorName" | "author_name" => Ok(GeneratedField::AuthorName),
                             "authoredAt" | "authored_at" => Ok(GeneratedField::AuthoredAt),
+                            "invocationFilesCount" | "invocation_files_count" => Ok(GeneratedField::InvocationFilesCount),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -3251,6 +3261,7 @@ impl<'de> serde::Deserialize<'de> for Metadata {
                 let mut author_email__ = None;
                 let mut author_name__ = None;
                 let mut authored_at__ = None;
+                let mut invocation_files_count__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::WorkspaceId => {
@@ -3387,6 +3398,14 @@ impl<'de> serde::Deserialize<'de> for Metadata {
                             }
                             authored_at__ = map_.next_value()?;
                         }
+                        GeneratedField::InvocationFilesCount => {
+                            if invocation_files_count__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("invocationFilesCount"));
+                            }
+                            invocation_files_count__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
                     }
                 }
                 Ok(Metadata {
@@ -3412,6 +3431,7 @@ impl<'de> serde::Deserialize<'de> for Metadata {
                     author_email: author_email__.unwrap_or_default(),
                     author_name: author_name__.unwrap_or_default(),
                     authored_at: authored_at__,
+                    invocation_files_count: invocation_files_count__.unwrap_or_default(),
                 })
             }
         }

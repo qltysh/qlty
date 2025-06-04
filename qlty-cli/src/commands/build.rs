@@ -140,6 +140,7 @@ impl Build {
         report.transform_issues(diff_line_filter);
         report.relativeize_paths(&workspace.root);
         report.attach_metadata();
+        report.compute_invocation_file_count();
 
         debug!("Finishing analysis...");
         report.finish();

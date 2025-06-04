@@ -46,6 +46,8 @@ pub struct Metadata {
     pub author_name: ::prost::alloc::string::String,
     #[prost(message, optional, tag="22")]
     pub authored_at: ::core::option::Option<::pbjson_types::Timestamp>,
+    #[prost(uint32, tag="24")]
+    pub invocation_files_count: u32,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Message {

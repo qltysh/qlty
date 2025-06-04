@@ -13,6 +13,8 @@ use std::{
 use time::OffsetDateTime;
 use tracing::debug;
 
+pub const INVOCATION_BATCH_SIZE: usize = 200;
+
 #[derive(Clone, Debug, Serialize, Default)]
 pub struct Report {
     pub metadata: Metadata,
@@ -187,5 +189,11 @@ impl Report {
             seconds: now.unix_timestamp(),
             nanos: now.nanosecond() as i32,
         }
+    }
+
+    pub fn compute_invocation_file_count(&mut self) {
+        let invocation_count = self.invocations.len();
+        self.metadata.invocation_files_count =
+            (invocation_count as f64 / INVOCATION_BATCH_SIZE as f64).ceil() as u32;
     }
 }
