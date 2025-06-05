@@ -81,33 +81,25 @@ impl SourceExtractor {
                 if start_line != 0 && end_line != 0 {
                     let start_index = start_line.saturating_sub(before).max(1) - 1;
                     let end_index = (end_line - 1 + after).min(lines.len() - 1);
+                    let mut snippet = lines.get(start_index..=end_index)?.join("\n");
+                    snippet.truncate(MAX_SNIPPET_LENGTH);
 
-                    return Self::truncate_snippet(lines.get(start_index..=end_index)?.join("\n"));
+                    return Some(snippet);
                 }
                 if start_line != 0 && end_line == 0 {
                     let single_line_index = start_line - 1;
                     let start_index = single_line_index.saturating_sub(before).max(0);
                     let end_index = (single_line_index + after).min(lines.len() - 1);
+                    let mut snippet = lines.get(start_index..=end_index)?.join("\n");
+                    snippet.truncate(MAX_SNIPPET_LENGTH);
 
-                    return Self::truncate_snippet(lines.get(start_index..=end_index)?.join("\n"));
+                    return Some(snippet);
                 }
             }
 
             debug!("start_line and/or end_line not provided or zero in issue location");
             None
         })
-    }
-
-    fn truncate_snippet(snippet: String) -> Option<String> {
-        if snippet.len() > MAX_SNIPPET_LENGTH {
-            debug!(
-                "Extracted snippet is too long, truncating to {} characters",
-                MAX_SNIPPET_LENGTH
-            );
-            Some(snippet.chars().take(MAX_SNIPPET_LENGTH).collect())
-        } else {
-            Some(snippet.to_string())
-        }
     }
 }
 
