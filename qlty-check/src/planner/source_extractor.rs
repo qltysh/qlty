@@ -23,8 +23,7 @@ impl IssueTransformer for SourceExtractor {
         if let Some(location) = &issue.location {
             let (snippet, context) = self.extract_snippet_and_context(location);
             issue.snippet = Self::truncate_snippet(&snippet.unwrap_or_default());
-            issue.snippet_with_context =
-                Self::truncate_snippet(&context.unwrap_or_default());
+            issue.snippet_with_context = Self::truncate_snippet(&context.unwrap_or_default());
         }
 
         Some(issue)
