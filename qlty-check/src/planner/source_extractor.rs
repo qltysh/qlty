@@ -81,25 +81,32 @@ impl SourceExtractor {
                 if start_line != 0 && end_line != 0 {
                     let start_index = start_line.saturating_sub(before).max(1) - 1;
                     let end_index = (end_line - 1 + after).min(lines.len() - 1);
-                    let mut snippet = lines.get(start_index..=end_index)?.join("\n");
-                    snippet.truncate(MAX_SNIPPET_LENGTH);
 
-                    return Some(snippet);
+                    return Self::get_snippet_from_lines(lines, start_index, end_index);
                 }
                 if start_line != 0 && end_line == 0 {
                     let single_line_index = start_line - 1;
                     let start_index = single_line_index.saturating_sub(before).max(0);
                     let end_index = (single_line_index + after).min(lines.len() - 1);
-                    let mut snippet = lines.get(start_index..=end_index)?.join("\n");
-                    snippet.truncate(MAX_SNIPPET_LENGTH);
 
-                    return Some(snippet);
+                    return Self::get_snippet_from_lines(lines, start_index, end_index);
                 }
             }
 
             debug!("start_line and/or end_line not provided or zero in issue location");
             None
         })
+    }
+
+    fn get_snippet_from_lines(
+        lines: &[String],
+        start_index: usize,
+        end_index: usize,
+    ) -> Option<String> {
+        let mut snippet = lines.get(start_index..=end_index)?.join("\n");
+        snippet.truncate(MAX_SNIPPET_LENGTH);
+
+        Some(snippet)
     }
 }
 
