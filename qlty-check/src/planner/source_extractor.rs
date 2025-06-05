@@ -5,6 +5,8 @@ use tracing::debug;
 
 use crate::executor::staging_area::StagingArea;
 
+const MAX_SNIPPET_LENGTH: usize = 1000;
+
 #[derive(Debug, Clone)]
 pub struct SourceExtractor {
     pub staging_area: StagingArea,
@@ -80,20 +82,32 @@ impl SourceExtractor {
                     let start_index = start_line.saturating_sub(before).max(1) - 1;
                     let end_index = (end_line - 1 + after).min(lines.len() - 1);
 
-                    return Some(lines.get(start_index..=end_index)?.join("\n"));
+                    return Self::truncate_snippet(lines.get(start_index..=end_index)?.join("\n"));
                 }
                 if start_line != 0 && end_line == 0 {
                     let single_line_index = start_line - 1;
                     let start_index = single_line_index.saturating_sub(before).max(0);
                     let end_index = (single_line_index + after).min(lines.len() - 1);
 
-                    return Some(lines.get(start_index..=end_index)?.join("\n"));
+                    return Self::truncate_snippet(lines.get(start_index..=end_index)?.join("\n"));
                 }
             }
 
             debug!("start_line and/or end_line not provided or zero in issue location");
             None
         })
+    }
+
+    fn truncate_snippet(snippet: String) -> Option<String> {
+        if snippet.len() > MAX_SNIPPET_LENGTH {
+            debug!(
+                "Extracted snippet is too long, truncating to {} characters",
+                MAX_SNIPPET_LENGTH
+            );
+            Some(snippet.chars().take(MAX_SNIPPET_LENGTH).collect())
+        } else {
+            Some(snippet.to_string())
+        }
     }
 }
 
@@ -332,6 +346,45 @@ mod test {
             Some("Line 1\nLine 2\nLine 3".to_string()),
             "Expected exact content of the file but got {:?}",
             result
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_truncation_of_long_snippet() -> Result<()> {
+        let (staging_area, source_dir) = setup()?;
+        let long_lines: Vec<&str> = std::iter::repeat("a")
+            .take(MAX_SNIPPET_LENGTH + 100)
+            .collect();
+        create_temp_file(&staging_area, &source_dir, "long_file.txt", &long_lines)?;
+
+        let location = Location {
+            path: "long_file.txt".to_string(),
+            range: Some(Range {
+                start_line: 1,
+                end_line: (MAX_SNIPPET_LENGTH + 100) as u32,
+                ..Default::default()
+            }),
+        };
+        let lines = staging_area
+            .read_lines(Path::new("long_file.txt"))
+            .with_context(|| "Failed to read lines from staged long file")?;
+        let source_extractor = SourceExtractor {
+            staging_area: staging_area.clone(),
+        };
+        let result = source_extractor.extract_lines(&location, &lines, 0, 0);
+        assert!(result.is_some(), "Expected Some for long snippet");
+        let snippet = result.unwrap();
+        assert_eq!(
+            snippet.len(),
+            MAX_SNIPPET_LENGTH,
+            "Snippet should be truncated to {} characters, got {}",
+            MAX_SNIPPET_LENGTH,
+            snippet.len()
+        );
+        assert!(
+            snippet.chars().all(|c| c == 'a' || c == '\n'),
+            "Snippet should only contain 'a' and newlines"
         );
         Ok(())
     }
