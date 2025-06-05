@@ -22,9 +22,9 @@ impl IssueTransformer for SourceExtractor {
 
         if let Some(location) = &issue.location {
             let (snippet, context) = self.extract_snippet_and_context(location);
-            issue.snippet = Self::truncate_snippet(snippet.unwrap_or_else(|| "".to_owned()));
+            issue.snippet = Self::truncate_snippet(&snippet.unwrap_or_default());
             issue.snippet_with_context =
-                Self::truncate_snippet(context.unwrap_or_else(|| "".to_owned()));
+                Self::truncate_snippet(&context.unwrap_or_default());
         }
 
         Some(issue)
@@ -39,41 +39,25 @@ impl SourceExtractor {
     const MAX_SNIPPET_LINES: usize = 1000;
     const MAX_SNIPPET_BYTES: usize = 50 * 1024; // 50 kilobytes
 
-    fn truncate_snippet(snippet: String) -> String {
-        let lines: Vec<&str> = snippet.lines().collect();
+    fn truncate_snippet(snippet: &str) -> String {
+        let mut truncated = String::new();
+        let mut byte_count = 0;
 
-        // First, truncate by line count
-        let truncated_lines = if lines.len() > Self::MAX_SNIPPET_LINES {
-            &lines[..Self::MAX_SNIPPET_LINES]
-        } else {
-            &lines
-        };
-
-        let line_truncated = truncated_lines.join("\n");
-
-        // Second, truncate by byte size
-        if line_truncated.len() > Self::MAX_SNIPPET_BYTES {
-            let mut truncated = String::new();
-            let mut byte_count = 0;
-
-            for line in truncated_lines {
-                let line_with_newline = format!("{line}\n");
-                if byte_count + line_with_newline.len() > Self::MAX_SNIPPET_BYTES {
-                    break;
-                }
-                truncated.push_str(&line_with_newline);
-                byte_count += line_with_newline.len();
+        for line in snippet.split_inclusive('\n').take(Self::MAX_SNIPPET_LINES) {
+            if byte_count + line.len() > Self::MAX_SNIPPET_BYTES {
+                break;
             }
 
-            // Remove the trailing newline if present
-            if truncated.ends_with('\n') {
-                truncated.pop();
-            }
-
-            truncated
-        } else {
-            line_truncated
+            truncated.push_str(line);
+            byte_count += line.len();
         }
+
+        // Remove the trailing newline if present and it wasn't in the original
+        if truncated.ends_with('\n') && !snippet.ends_with('\n') {
+            truncated.pop();
+        }
+
+        truncated
     }
 
     fn extract_snippet_and_context(&self, location: &Location) -> (Option<String>, Option<String>) {
@@ -379,8 +363,8 @@ mod test {
 
     #[test]
     fn test_truncate_snippet_no_truncation_needed() {
-        let input = "Line 1\nLine 2\nLine 3".to_string();
-        let result = SourceExtractor::truncate_snippet(input.clone());
+        let input = "Line 1\nLine 2\nLine 3";
+        let result = SourceExtractor::truncate_snippet(input);
         assert_eq!(result, input);
     }
 
@@ -388,7 +372,7 @@ mod test {
     fn test_truncate_snippet_by_line_count() {
         let lines: Vec<String> = (1..=1500).map(|i| format!("Line {}", i)).collect();
         let input = lines.join("\n");
-        let result = SourceExtractor::truncate_snippet(input);
+        let result = SourceExtractor::truncate_snippet(&input);
 
         let result_lines: Vec<&str> = result.lines().collect();
         assert_eq!(result_lines.len(), 1000);
@@ -400,7 +384,7 @@ mod test {
     fn test_truncate_snippet_by_byte_size() {
         let long_line = "a".repeat(60 * 1024);
         let input = format!("Short line\n{}", long_line);
-        let result = SourceExtractor::truncate_snippet(input);
+        let result = SourceExtractor::truncate_snippet(&input);
 
         assert!(result.len() <= 50 * 1024);
         assert!(result.starts_with("Short line"));
@@ -415,7 +399,7 @@ mod test {
         let lines: Vec<String> = (0..num_lines).map(|_| line.clone()).collect();
         let input = lines.join("\n");
 
-        let result = SourceExtractor::truncate_snippet(input);
+        let result = SourceExtractor::truncate_snippet(&input);
 
         assert!(result.len() <= 50 * 1024);
         let result_lines: Vec<&str> = result.lines().collect();
@@ -426,15 +410,15 @@ mod test {
 
     #[test]
     fn test_truncate_snippet_empty_string() {
-        let input = "".to_string();
+        let input = "";
         let result = SourceExtractor::truncate_snippet(input);
         assert_eq!(result, "");
     }
 
     #[test]
     fn test_truncate_snippet_single_line() {
-        let input = "Single line".to_string();
-        let result = SourceExtractor::truncate_snippet(input.clone());
+        let input = "Single line";
+        let result = SourceExtractor::truncate_snippet(input);
         assert_eq!(result, input);
     }
 
@@ -442,7 +426,7 @@ mod test {
     fn test_truncate_snippet_exactly_at_limits() {
         let lines: Vec<String> = (1..=1000).map(|i| format!("Line {}", i)).collect();
         let input = lines.join("\n");
-        let result = SourceExtractor::truncate_snippet(input.clone());
+        let result = SourceExtractor::truncate_snippet(&input);
         assert_eq!(result, input);
     }
 
