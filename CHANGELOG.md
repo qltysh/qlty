@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## v0.540.0 (2025-06-05)
+
+### Fixed
+
+- Truncate issue snippets to prevent large Issue records (#2135)
+
 ## v0.539.0 (2025-06-02)
 
 ### New
