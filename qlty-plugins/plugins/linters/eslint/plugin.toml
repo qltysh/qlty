@@ -21,6 +21,7 @@ error_codes = [2]
 success_codes = [0, 1]
 config_files = [
   "eslint.config.js",
+  "eslint.config.ts",
   "eslint.config.mjs",
   "eslint.config.cjs",
 ]
