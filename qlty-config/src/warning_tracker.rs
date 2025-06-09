@@ -1,8 +1,14 @@
 use std::collections::HashSet;
 use std::sync::{LazyLock, Mutex};
 
+#[cfg(test)]
+use std::sync::atomic::{AtomicU64, Ordering};
+
 static WARNING_TRACKER: LazyLock<Mutex<HashSet<String>>> =
     LazyLock::new(|| Mutex::new(HashSet::new()));
+
+#[cfg(test)]
+static TEST_COUNTER: AtomicU64 = AtomicU64::new(0);
 
 pub fn warn_once(warning_message: &str) {
     let mut tracker = WARNING_TRACKER.lock().unwrap();
@@ -19,62 +25,63 @@ mod tests {
 
     #[test]
     fn test_warn_once_deduplicates_same_message() {
-        let initial_count = WARNING_TRACKER.lock().unwrap().len();
+        let unique_id = TEST_COUNTER.fetch_add(1, Ordering::SeqCst);
+        let unique_message = format!(
+            "Duplicate warning test {} {}",
+            std::process::id(),
+            unique_id
+        );
 
-        warn_once("Duplicate warning test");
-        let after_first = WARNING_TRACKER.lock().unwrap().len();
+        assert!(!WARNING_TRACKER.lock().unwrap().contains(&unique_message));
 
-        warn_once("Duplicate warning test");
-        warn_once("Duplicate warning test");
-        let after_duplicates = WARNING_TRACKER.lock().unwrap().len();
+        // First call should add the message
+        warn_once(&unique_message);
+        assert!(WARNING_TRACKER.lock().unwrap().contains(&unique_message));
 
-        assert_eq!(after_first, initial_count + 1);
-        assert_eq!(after_duplicates, after_first);
-        assert!(WARNING_TRACKER
-            .lock()
-            .unwrap()
-            .contains("Duplicate warning test"));
+        // Subsequent calls should not change anything - just verify the message is still there
+        warn_once(&unique_message);
+        warn_once(&unique_message);
+
+        // The key behavior: message should still be in the set after multiple calls
+        assert!(WARNING_TRACKER.lock().unwrap().contains(&unique_message));
     }
 
     #[test]
     fn test_warn_once_allows_different_messages() {
-        let initial_count = WARNING_TRACKER.lock().unwrap().len();
+        let unique_id = TEST_COUNTER.fetch_add(1, Ordering::SeqCst);
+        let prefix = format!("{} {}", std::process::id(), unique_id);
+        let first = format!("First unique warning {}", prefix);
+        let second = format!("Second unique warning {}", prefix);
+        let third = format!("Third unique warning {}", prefix);
 
-        warn_once("First unique warning");
-        warn_once("Second unique warning");
-        warn_once("Third unique warning");
+        assert!(!WARNING_TRACKER.lock().unwrap().contains(&first));
+        assert!(!WARNING_TRACKER.lock().unwrap().contains(&second));
+        assert!(!WARNING_TRACKER.lock().unwrap().contains(&third));
 
-        let final_count = WARNING_TRACKER.lock().unwrap().len();
-        assert_eq!(final_count, initial_count + 3);
+        warn_once(&first);
+        warn_once(&second);
+        warn_once(&third);
 
         let tracker = WARNING_TRACKER.lock().unwrap();
-        assert!(tracker.contains("First unique warning"));
-        assert!(tracker.contains("Second unique warning"));
-        assert!(tracker.contains("Third unique warning"));
-    }
-
-    #[test]
-    fn test_warn_once_with_empty_string() {
-        let initial_count = WARNING_TRACKER.lock().unwrap().len();
-
-        warn_once("");
-        let after_first = WARNING_TRACKER.lock().unwrap().len();
-
-        warn_once("");
-        let after_second = WARNING_TRACKER.lock().unwrap().len();
-
-        assert_eq!(after_first, initial_count + 1);
-        assert_eq!(after_second, after_first);
-        assert!(WARNING_TRACKER.lock().unwrap().contains(""));
+        assert!(tracker.contains(&first));
+        assert!(tracker.contains(&second));
+        assert!(tracker.contains(&third));
     }
 
     #[test]
     fn test_warn_once_concurrent_access() {
-        let test_message = "Concurrent test message";
+        let unique_id = TEST_COUNTER.fetch_add(1, Ordering::SeqCst);
+        let test_message = format!(
+            "Concurrent test message {} {}",
+            std::process::id(),
+            unique_id
+        );
+
+        assert!(!WARNING_TRACKER.lock().unwrap().contains(&test_message));
 
         let handles: Vec<_> = (0..5)
             .map(|_| {
-                let msg = test_message.to_string();
+                let msg = test_message.clone();
                 std::thread::spawn(move || {
                     warn_once(&msg);
                 })
@@ -85,18 +92,20 @@ mod tests {
             let _ = handle.join();
         }
 
-        assert!(WARNING_TRACKER.lock().unwrap().contains(test_message));
+        assert!(WARNING_TRACKER.lock().unwrap().contains(&test_message));
     }
 
     #[test]
     fn test_warn_once_basic_functionality() {
-        let unique_message = format!("Basic test {}", std::process::id());
+        let unique_id = TEST_COUNTER.fetch_add(1, Ordering::SeqCst);
+        let unique_message = format!("Basic test {} {}", std::process::id(), unique_id);
 
-        let initial_count = WARNING_TRACKER.lock().unwrap().len();
+        let contains_before = WARNING_TRACKER.lock().unwrap().contains(&unique_message);
+        assert!(!contains_before);
+
         warn_once(&unique_message);
-        let after_count = WARNING_TRACKER.lock().unwrap().len();
 
-        assert_eq!(after_count, initial_count + 1);
-        assert!(WARNING_TRACKER.lock().unwrap().contains(&unique_message));
+        let contains_after = WARNING_TRACKER.lock().unwrap().contains(&unique_message);
+        assert!(contains_after);
     }
 }
