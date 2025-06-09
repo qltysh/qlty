@@ -120,7 +120,7 @@ time = { version = "0.3.37", features = [
 ] }
 tiny_http = "0.12.0"
 toml = "0.8.22"
-toml_edit = "0.22.26"
+toml_edit = "0.22.27"
 tracing = "0.1.41"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
