@@ -13,6 +13,7 @@ pub enum Formats {
     Clover,
     Cobertura,
     Coverprofile,
+    Dotcover,
     Lcov,
     Jacoco,
     Qlty,
@@ -25,6 +26,7 @@ impl std::fmt::Display for Formats {
             Formats::Clover => write!(f, "clover"),
             Formats::Cobertura => write!(f, "cobertura"),
             Formats::Coverprofile => write!(f, "coverprofile"),
+            Formats::Dotcover => write!(f, "dotcover"),
             Formats::Lcov => write!(f, "lcov"),
             Formats::Jacoco => write!(f, "jacoco"),
             Formats::Qlty => write!(f, "qlty"),
@@ -47,8 +49,14 @@ impl TryFrom<&Path> for Formats {
                     Ok(Formats::Jacoco)
                 } else if path_str.contains("clover") {
                     Ok(Formats::Clover)
+                } else if path_str.contains("dotcover") {
+                    Ok(Formats::Dotcover)
                 } else {
-                    Ok(Formats::Cobertura)
+                    // Try to detect dotCover by reading content
+                    match std::fs::read_to_string(path) {
+                        Ok(content) if content.contains("DotCoverVersion") => Ok(Formats::Dotcover),
+                        _ => Ok(Formats::Cobertura),
+                    }
                 }
             }
             Some(other) => bail!("Unknown file extension for coverage report: {}\nSpecify the format with --report-format=FORMAT", other),
@@ -69,6 +77,7 @@ impl FromStr for Formats {
             "clover" => Ok(Formats::Clover),
             "cobertura" => Ok(Formats::Cobertura),
             "coverprofile" => Ok(Formats::Coverprofile),
+            "dotcover" => Ok(Formats::Dotcover),
             "lcov" => Ok(Formats::Lcov),
             "jacoco" => Ok(Formats::Jacoco),
             "qlty" => Ok(Formats::Qlty),
@@ -83,6 +92,7 @@ pub fn parser_for(&format: &Formats) -> Box<dyn Parser> {
         Formats::Clover => Box::new(parser::Clover::new()),
         Formats::Cobertura => Box::new(parser::Cobertura::new()),
         Formats::Coverprofile => Box::new(parser::Coverprofile::new()),
+        Formats::Dotcover => Box::new(parser::Dotcover::new()),
         Formats::Lcov => Box::new(parser::Lcov::new()),
         Formats::Jacoco => Box::new(parser::Jacoco::new()),
         Formats::Qlty => Box::new(parser::Qlty::new()),
