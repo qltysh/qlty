@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Root CoveredStatements="17" TotalStatements="24" CoveragePercent="71" ReportType="DetailedXml" DotCoverVersion="2022.3.2">
+  <FileIndices>
+    <File Index="1" Name="C:\Users\fulano\Desktop\unit-testing-using-mstest\PrimeService.Tests\PrimeService_IsPrimeShould.cs" ChecksumAlgorithm="SHA256" Checksum="23612935A1229C4721145EACB2122A220B0F761AD0DB20CC980DBDB0D5003C2A" />
+    <File Index="2" Name="C:\Users\fulano\Desktop\unit-testing-using-mstest\PrimeService\PrimeService.cs" ChecksumAlgorithm="SHA256" Checksum="CA22D548019CFF7919E45E7289DC438D453674E827BBFCE249587AD9DDFAD47D" />
+    <File Index="3" Name="C:\Users\fulano\Desktop\unit-testing-using-mstest\PrimeService\SecondService.cs" ChecksumAlgorithm="SHA256" Checksum="073781814111C3F1C12EB8C41863004150417FC1A9D1E08D7F48C95214356D6E" />
+  </FileIndices>
+  <Assembly Name="PrimeService" CoveredStatements="5" TotalStatements="12" CoveragePercent="42">
+    <Namespace Name="Prime.Services" CoveredStatements="5" TotalStatements="12" CoveragePercent="42">
+      <Type Name="PrimeService" CoveredStatements="5" TotalStatements="6" CoveragePercent="83">
+        <Method Name="IsPrime(System.Int32):System.Boolean" CoveredStatements="5" TotalStatements="6" CoveragePercent="83">
+          <Statement FileIndex="2" Line="8" Column="9" EndLine="8" EndColumn="10" Covered="True" />
+          <Statement FileIndex="2" Line="9" Column="13" EndLine="9" EndColumn="31" Covered="True" />
+          <Statement FileIndex="2" Line="10" Column="13" EndLine="10" EndColumn="14" Covered="True" />
+          <Statement FileIndex="2" Line="11" Column="17" EndLine="11" EndColumn="30" Covered="True" />
+          <Statement FileIndex="2" Line="13" Column="13" EndLine="13" EndColumn="77" Covered="False" />
+          <Statement FileIndex="2" Line="14" Column="9" EndLine="14" EndColumn="10" Covered="True" />
+        </Method>
+      </Type>
+      <Type Name="SecondService" CoveredStatements="0" TotalStatements="6" CoveragePercent="0">
+        <Method Name="IsPrime(System.Int32):System.Boolean" CoveredStatements="0" TotalStatements="6" CoveragePercent="0">
+          <Statement FileIndex="3" Line="8" Column="9" EndLine="8" EndColumn="10" Covered="False" />
+          <Statement FileIndex="3" Line="9" Column="13" EndLine="9" EndColumn="31" Covered="False" />
+          <Statement FileIndex="3" Line="10" Column="13" EndLine="10" EndColumn="14" Covered="False" />
+          <Statement FileIndex="3" Line="11" Column="17" EndLine="11" EndColumn="30" Covered="False" />
+          <Statement FileIndex="3" Line="13" Column="13" EndLine="13" EndColumn="77" Covered="False" />
+          <Statement FileIndex="3" Line="14" Column="9" EndLine="14" EndColumn="10" Covered="False" />
+        </Method>
+      </Type>
+    </Namespace>
+  </Assembly>
+  <Assembly Name="PrimeService.Tests" CoveredStatements="12" TotalStatements="12" CoveragePercent="100">
+    <Namespace Name="Prime.UnitTests.Services" CoveredStatements="12" TotalStatements="12" CoveragePercent="100">
+      <Type Name="PrimeService_IsPrimeShould" CoveredStatements="12" TotalStatements="12" CoveragePercent="100">
+        <Method Name=".ctor():System.Void" CoveredStatements="4" TotalStatements="4" CoveragePercent="100">
+          <Statement FileIndex="1" Line="11" Column="9" EndLine="11" EndColumn="44" Covered="True" />
+          <Statement FileIndex="1" Line="12" Column="9" EndLine="12" EndColumn="10" Covered="True" />
+          <Statement FileIndex="1" Line="13" Column="13" EndLine="13" EndColumn="48" Covered="True" />
+          <Statement FileIndex="1" Line="14" Column="9" EndLine="14" EndColumn="10" Covered="True" />
+        </Method>
+        <Method Name="IsPrime_InputIs1_ReturnFalse():System.Void" CoveredStatements="4" TotalStatements="4" CoveragePercent="100">
+          <Statement FileIndex="1" Line="18" Column="9" EndLine="18" EndColumn="10" Covered="True" />
+          <Statement FileIndex="1" Line="19" Column="13" EndLine="19" EndColumn="51" Covered="True" />
+          <Statement FileIndex="1" Line="21" Column="13" EndLine="21" EndColumn="62" Covered="True" />
+          <Statement FileIndex="1" Line="22" Column="9" EndLine="22" EndColumn="10" Covered="True" />
+        </Method>
+        <Method Name="IsPrime_ValuesLessThan2_ReturnFalse(System.Int32):System.Void" CoveredStatements="4" TotalStatements="4" CoveragePercent="100">
+          <Statement FileIndex="1" Line="30" Column="9" EndLine="30" EndColumn="10" Covered="True" />
+          <Statement FileIndex="1" Line="31" Column="13" EndLine="31" EndColumn="55" Covered="True" />
+          <Statement FileIndex="1" Line="33" Column="13" EndLine="33" EndColumn="68" Covered="True" />
+          <Statement FileIndex="1" Line="34" Column="9" EndLine="34" EndColumn="10" Covered="True" />
+        </Method>
+      </Type>
+    </Namespace>
+  </Assembly>
+</Root>
