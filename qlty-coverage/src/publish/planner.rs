@@ -9,6 +9,7 @@ use crate::transformer::StripDotSlashPrefix;
 use crate::transformer::StripPrefix;
 use crate::utils::extract_path_and_format;
 use crate::Transformer;
+use anyhow::bail;
 use anyhow::Result;
 use pbjson_types::Timestamp;
 use qlty_config::version::LONG_VERSION;
@@ -98,6 +99,23 @@ impl Planner {
             seconds: commit_metadata.commit_time.seconds(),
             nanos: 0,
         });
+
+        if let Some(override_commit_time) = &self.settings.override_commit_time {
+            if let Ok(datetime) = time::OffsetDateTime::parse(
+                override_commit_time,
+                &time::format_description::well_known::Rfc3339,
+            ) {
+                metadata.commit_time = Some(Timestamp {
+                    seconds: datetime.unix_timestamp(),
+                    nanos: 0,
+                });
+            } else {
+                bail!(
+                    "Invalid commit time format: {}. Expected RFC 3339 format.",
+                    override_commit_time
+                );
+            }
+        }
 
         Ok(metadata)
     }
