@@ -1,7 +1,7 @@
 use anyhow::{bail, Result};
 use console::style;
 use qlty_config::{version::LONG_VERSION, QltyConfig, Workspace};
-use qlty_coverage::publish::{Plan, Settings};
+use qlty_coverage::publish::Settings;
 use qlty_types::tests::v1::CoverageMetadata;
 use regex::Regex;
 use std::path::PathBuf;
@@ -11,6 +11,7 @@ const COVERAGE_TOKEN_PROJECT_PREFIX: &str = "qltcp_";
 const OIDC_REGEX: &str = r"^([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+)$";
 
 pub fn load_config() -> QltyConfig {
+    // Try to load config from git workspace, but fall back to default if not in git repo
     Workspace::new()
         .and_then(|workspace| workspace.config())
         .unwrap_or_default()
@@ -88,26 +89,26 @@ pub fn print_settings(settings: &Settings) {
     eprintln!();
 }
 
-pub fn print_metadata(plan: &Plan, quiet: bool) {
+pub fn print_metadata(metadata: &CoverageMetadata, quiet: bool) {
     if quiet {
         return;
     }
 
-    if !plan.metadata.ci.is_empty() {
-        eprintln!("    CI: {}", plan.metadata.ci);
+    if !metadata.ci.is_empty() {
+        eprintln!("    CI: {}", metadata.ci);
     }
 
-    eprintln!("    Commit: {}", plan.metadata.commit_sha);
-    if !plan.metadata.pull_request_number.is_empty() {
-        eprintln!("    Pull Request: #{}", plan.metadata.pull_request_number);
+    eprintln!("    Commit: {}", metadata.commit_sha);
+    if !metadata.pull_request_number.is_empty() {
+        eprintln!("    Pull Request: #{}", metadata.pull_request_number);
     }
 
-    if !plan.metadata.branch.is_empty() {
-        eprintln!("    Branch: {}", plan.metadata.branch);
+    if !metadata.branch.is_empty() {
+        eprintln!("    Branch: {}", metadata.branch);
     }
 
-    if !plan.metadata.build_id.is_empty() {
-        eprintln!("    Build ID: {}", plan.metadata.build_id);
+    if !metadata.build_id.is_empty() {
+        eprintln!("    Build ID: {}", metadata.build_id);
     }
 
     eprintln!();

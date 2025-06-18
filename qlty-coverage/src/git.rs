@@ -1,10 +1,10 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use git2::Repository;
 
 #[derive(Debug, Clone)]
 pub struct CommitMetadata {
-    pub commit_time: git2::Time,
-    pub author_time: git2::Time,
+    pub commit_time: Option<git2::Time>,
+    pub author_time: Option<git2::Time>,
     pub committer_name: String,
     pub committer_email: String,
     pub author_name: String,
@@ -13,14 +13,26 @@ pub struct CommitMetadata {
 }
 
 pub fn retrieve_commit_metadata() -> Result<CommitMetadata> {
-    let repo = Repository::discover(".")
-        .with_context(|| "Error opening git repository for retrieving commit metadata")?;
+    let repo = match Repository::discover(".") {
+        Ok(repo) => repo,
+        Err(_) => {
+            return Ok(CommitMetadata {
+                commit_time: None,
+                author_time: None,
+                committer_name: "Unknown".to_string(),
+                committer_email: "Unknown".to_string(),
+                author_name: "Unknown".to_string(),
+                author_email: "Unknown".to_string(),
+                commit_message: "".to_string(),
+            });
+        }
+    };
 
     let head = repo.head()?;
     let oid = head.peel_to_commit()?.id();
     let commit = repo.find_commit(oid)?;
 
-    let commit_time = commit.time();
+    let commit_time = Some(commit.time());
 
     let committer = commit.committer();
     let committer_name = committer.name().unwrap_or("Unknown").to_string();
@@ -29,7 +41,7 @@ pub fn retrieve_commit_metadata() -> Result<CommitMetadata> {
     let author = commit.author();
     let author_name = author.name().unwrap_or("Unknown").to_string();
     let author_email = author.email().unwrap_or("Unknown").to_string();
-    let author_time = author.when();
+    let author_time = Some(author.when());
 
     let commit_message = commit.message().unwrap_or("").to_string();
 

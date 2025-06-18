@@ -1,0 +1,19 @@
+args = [
+  "coverage",
+  "complete",
+  "--dry-run",
+  "--override-commit-sha",
+  "2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67",
+  "--override-build-id",
+  "123",
+  "--override-commit-time",
+  "2025-05-30T05:00:00+00:00"
+]
+bin.name = "qlty"
+status.code = 99
+
+[env]
+remove = ["GITHUB_ACTIONS", "GITHUB_REF_TYPE", "GITHUB_REF_NAME", "GITHUB_HEAD_REF", "CI", "BUILDKITE", "CIRCLECI", "TRAVIS", "GITLAB_CI", "SEMAPHORE"]
+
+[env.add]
+QLTY_COVERAGE_TOKEN = "123"

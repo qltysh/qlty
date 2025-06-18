@@ -9,6 +9,7 @@ use crate::transformer::StripDotSlashPrefix;
 use crate::transformer::StripPrefix;
 use crate::utils::extract_path_and_format;
 use crate::Transformer;
+use anyhow::bail;
 use anyhow::Result;
 use pbjson_types::Timestamp;
 use qlty_config::version::LONG_VERSION;
@@ -43,7 +44,7 @@ impl Planner {
         })
     }
 
-    fn compute_metadata(&self) -> Result<CoverageMetadata> {
+    pub fn compute_metadata(&self) -> Result<CoverageMetadata> {
         let now = OffsetDateTime::now_utc();
 
         let mut metadata = if let Some(ci) = crate::ci::current() {
@@ -89,15 +90,35 @@ impl Planner {
         metadata.committer_name = commit_metadata.committer_name;
         metadata.author_email = commit_metadata.author_email;
         metadata.author_name = commit_metadata.author_name;
-        metadata.author_time = Some(Timestamp {
-            seconds: commit_metadata.author_time.seconds(),
+        metadata.author_time = commit_metadata.author_time.map(|time| Timestamp {
+            seconds: time.seconds(),
             nanos: 0,
         });
 
-        metadata.commit_time = Some(Timestamp {
-            seconds: commit_metadata.commit_time.seconds(),
+        metadata.commit_time = commit_metadata.commit_time.map(|time| Timestamp {
+            seconds: time.seconds(),
             nanos: 0,
         });
+
+        if metadata.commit_time.is_none() {
+            if let Some(commit_time) = &self.settings.override_commit_time {
+                // Parse the string (e.g., "2025-05-30T05:42:46+00:00") into OffsetDateTime
+                if let Ok(datetime) = time::OffsetDateTime::parse(
+                    &commit_time,
+                    &time::format_description::well_known::Rfc3339,
+                ) {
+                    metadata.commit_time = Some(Timestamp {
+                        seconds: datetime.unix_timestamp(),
+                        nanos: 0,
+                    });
+                } else {
+                    bail!(
+                        "Invalid commit time format: {}. Expected RFC 3339 format.",
+                        commit_time
+                    );
+                }
+            }
+        }
 
         Ok(metadata)
     }

@@ -56,6 +56,11 @@ pub struct Publish {
     /// Override the pull request number from the CI environment
     pub override_pr_number: Option<String>,
 
+    // Hide for now, as it is a bit of an experimental feature
+    #[arg(long, hide = true)]
+    /// Override the commit time, used to avoid git as a requirement.
+    pub override_commit_time: Option<String>,
+
     #[arg(long, hide = true)]
     /// [DEPRECATED, use --add-prefix] The prefix to add to file paths in coverage payloads, to make them match the project's directory structure.
     pub transform_add_prefix: Option<String>,
@@ -153,7 +158,7 @@ impl Publish {
         self.validate_plan(&plan)?;
 
         self.print_section_header(" METADATA ");
-        print_metadata(&plan, self.quiet);
+        print_metadata(&plan.metadata, self.quiet);
         self.print_coverage_files(&plan);
 
         let results = Reader::new(&plan).read()?;
@@ -233,6 +238,7 @@ impl Publish {
             override_build_id: self.override_build_id.clone(),
             override_commit_sha: self.override_commit_sha.clone(),
             override_pull_request_number: self.override_pr_number.clone(),
+            override_commit_time: self.override_commit_time.clone(),
             paths: self.paths.clone(),
             project: self.project.clone(),
             quiet: self.quiet,
