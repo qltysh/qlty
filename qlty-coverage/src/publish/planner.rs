@@ -94,12 +94,49 @@ impl Planner {
             nanos: 0,
         });
 
-        metadata.commit_time = Some(Timestamp {
-            seconds: commit_metadata.commit_time.seconds(),
-            nanos: 0,
-        });
+        // Use override commit time if provided, otherwise use git commit time
+        if let Some(override_time) = &self.settings.override_commit_time {
+            let parsed_timestamp = self.parse_timestamp(override_time)?;
+            metadata.commit_time = Some(Timestamp {
+                seconds: parsed_timestamp,
+                nanos: 0,
+            });
+        } else {
+            metadata.commit_time = Some(Timestamp {
+                seconds: commit_metadata.commit_time.seconds(),
+                nanos: 0,
+            });
+        }
 
         Ok(metadata)
+    }
+
+    fn parse_timestamp(&self, timestamp_str: &str) -> Result<i64> {
+        // Try parsing as Unix timestamp (seconds since epoch) first
+        if let Ok(timestamp) = timestamp_str.parse::<i64>() {
+            return Ok(timestamp);
+        }
+
+        // Try parsing as RFC3339/ISO8601 format
+        if let Ok(datetime) = time::OffsetDateTime::parse(
+            timestamp_str,
+            &time::format_description::well_known::Rfc3339,
+        ) {
+            return Ok(datetime.unix_timestamp());
+        }
+
+        // Try parsing as ISO8601 with a basic format
+        if let Ok(datetime) = time::OffsetDateTime::parse(
+            timestamp_str,
+            &time::format_description::well_known::Iso8601::DEFAULT,
+        ) {
+            return Ok(datetime.unix_timestamp());
+        }
+
+        anyhow::bail!(
+            "Failed to parse timestamp '{}'. Expected Unix timestamp (seconds since epoch) or RFC3339/ISO8601 format (e.g., '2023-01-01T12:00:00Z')",
+            timestamp_str
+        )
     }
 
     fn compute_report_files(&self) -> Result<Vec<ReportFile>> {
