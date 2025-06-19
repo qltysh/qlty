@@ -63,6 +63,9 @@ pub fn print_settings(settings: &Settings) {
     if let Some(override_pr_number) = &settings.override_pull_request_number {
         eprintln!("    override-pr-number: {override_pr_number}");
     }
+    if let Some(override_commit_time) = &settings.override_commit_time {
+        eprintln!("    override-commit-time: {override_commit_time}");
+    }
     if let Some(add_prefix) = &settings.add_prefix {
         eprintln!("    add-prefix: {add_prefix}");
     }
