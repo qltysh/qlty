@@ -9,6 +9,7 @@ use std::path::{Path, PathBuf};
 use tracing::info;
 
 const INVOCATION_BATCH_SIZE: usize = 200;
+const ISSUES_BATCH_SIZE: usize = 5000;
 
 #[derive(Default, Debug)]
 pub struct AnalysisExport {
@@ -59,9 +60,13 @@ impl AnalysisExport {
             invocations_formatter.write_to_file(&self.path.join(filename))?;
         }
 
-        // Write issues using JsonEachRowFormatter
-        let issues_formatter = JsonEachRowFormatter::new(self.report.issues.clone());
-        issues_formatter.write_to_file(&self.path.join("issues.jsonl"))?;
+        // Write issues using JsonEachRowFormatter after breaking into chunks
+        // to avoid memory issues with large reports, particularly during ingestion
+        for (i, chunk) in self.report.issues.chunks(ISSUES_BATCH_SIZE).enumerate() {
+            let filename = format!("issues-{i:03}.jsonl");
+            let issues_formatter = JsonEachRowFormatter::new(chunk.to_vec());
+            issues_formatter.write_to_file(&self.path.join(filename))?;
+        }
 
         // Write stats using JsonEachRowFormatter
         let stats_formatter = JsonEachRowFormatter::new(self.report.stats.clone());
