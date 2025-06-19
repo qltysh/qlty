@@ -8,6 +8,8 @@ use qlty_formats::{
 use std::path::{Path, PathBuf};
 use tracing::info;
 
+const INVOCATION_BATCH_SIZE: usize = 200;
+
 #[derive(Default, Debug)]
 pub struct AnalysisExport {
     pub report: Report,
@@ -44,9 +46,18 @@ impl AnalysisExport {
         let messages_formatter = JsonEachRowFormatter::new(self.report.messages.clone());
         messages_formatter.write_to_file(&self.path.join("messages.jsonl"))?;
 
-        // Write invocations using InvocationJsonFormatter
-        let invocations_formatter = InvocationJsonFormatter::new(self.report.invocations.clone());
-        invocations_formatter.write_to_file(&self.path.join("invocations.jsonl"))?;
+        // Write invocations using InvocationJsonFormatter after breaking into chunks
+        // to avoid memory issues with large reports, particularly during ingestion
+        for (i, chunk) in self
+            .report
+            .invocations
+            .chunks(INVOCATION_BATCH_SIZE)
+            .enumerate()
+        {
+            let filename = format!("invocations-{i:03}.jsonl");
+            let invocations_formatter = InvocationJsonFormatter::new(chunk.to_vec());
+            invocations_formatter.write_to_file(&self.path.join(filename))?;
+        }
 
         // Write issues using JsonEachRowFormatter
         let issues_formatter = JsonEachRowFormatter::new(self.report.issues.clone());
