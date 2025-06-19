@@ -96,7 +96,7 @@ impl Planner {
 
         // Use override commit time if provided, otherwise use git commit time
         if let Some(override_time) = &self.settings.override_commit_time {
-            let parsed_timestamp = self.parse_timestamp(override_time)?;
+            let parsed_timestamp = Self::parse_timestamp(override_time)?;
             metadata.commit_time = Some(Timestamp {
                 seconds: parsed_timestamp,
                 nanos: 0,
@@ -111,7 +111,7 @@ impl Planner {
         Ok(metadata)
     }
 
-    fn parse_timestamp(&self, timestamp_str: &str) -> Result<i64> {
+    fn parse_timestamp(timestamp_str: &str) -> Result<i64> {
         // Try parsing as Unix timestamp (seconds since epoch) first
         if let Ok(timestamp) = timestamp_str.parse::<i64>() {
             return Ok(timestamp);
@@ -189,5 +189,56 @@ impl Planner {
 
         transformers.push(Box::new(AppendMetadata::new(metadata)));
         Ok(transformers)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn planner_override_commit_time_tests() {
+        let config = QltyConfig::default();
+        let settings = Settings {
+            override_commit_time: Some("2025-05-30T05:00:00+00:00".to_string()),
+            ..Default::default()
+        };
+        let planner = Planner::new(&config, &settings);
+        let metadata = planner.compute_metadata().unwrap();
+        assert_eq!(
+            metadata.commit_time,
+            Some(Timestamp {
+                seconds: 1748581200,
+                nanos: 0
+            })
+        );
+    }
+
+    #[test]
+    fn test_parse_unix_timestamp() {
+        let input = "1729100000";
+        let parsed = Planner::parse_timestamp(input).unwrap();
+        assert_eq!(parsed, 1729100000);
+    }
+
+    #[test]
+    fn test_parse_rfc3339() {
+        let input = "2023-01-01T12:00:00Z";
+        let parsed = Planner::parse_timestamp(input).unwrap();
+        assert_eq!(parsed, 1672574400);
+    }
+
+    #[test]
+    fn test_parse_iso8601_basic() {
+        let input = "2023-01-01T12:00:00+00:00"; // valid ISO8601::DEFAULT format
+        let parsed = Planner::parse_timestamp(input).unwrap();
+        assert_eq!(parsed, 1672574400);
+    }
+
+    #[test]
+    fn test_parse_invalid_format() {
+        let input = "not-a-valid-timestamp";
+        let result = Planner::parse_timestamp(input);
+        assert!(result.is_err());
     }
 }
