@@ -56,6 +56,10 @@ pub struct Publish {
     /// Override the pull request number from the CI environment
     pub override_pr_number: Option<String>,
 
+    #[arg(long)]
+    /// Override the commit time from git metadata. Accepts a Unix timestamp (seconds since epoch) or RFC3339/ISO8601 format
+    pub override_commit_time: Option<String>,
+
     #[arg(long, hide = true)]
     /// [DEPRECATED, use --add-prefix] The prefix to add to file paths in coverage payloads, to make them match the project's directory structure.
     pub transform_add_prefix: Option<String>,
@@ -232,6 +236,7 @@ impl Publish {
             override_branch: self.override_branch.clone(),
             override_build_id: self.override_build_id.clone(),
             override_commit_sha: self.override_commit_sha.clone(),
+            override_commit_time: self.override_commit_time.clone(),
             override_pull_request_number: self.override_pr_number.clone(),
             paths: self.paths.clone(),
             project: self.project.clone(),
