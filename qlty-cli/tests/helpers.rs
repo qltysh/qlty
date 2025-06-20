@@ -4,9 +4,11 @@ use itertools::Itertools;
 use qlty_analysis::join_path_string;
 use std::{
     ffi::OsStr,
+    fs,
     path::{Component, Path, PathBuf},
     time::Duration,
 };
+use tempfile::TempDir;
 use trycmd::TestCases;
 
 const MANIFEST_DIR: &str = env!("CARGO_MANIFEST_DIR");
@@ -34,6 +36,15 @@ pub fn setup_and_run_diff_test_cases(glob: &str) {
 
 pub fn setup_and_run_test_cases(glob: &str) {
     setup_and_run_test_cases_diff_flag(glob, false);
+}
+
+pub fn setup_and_run_git_free_test_cases(glob: &str) {
+    let (cases, fixtures) = detect_cases_and_fixtures(glob);
+
+    let _isolated_fixtures: Vec<_> = cases
+        .iter()
+        .map(|case| setup_isolated_git_free_test(case, &fixtures))
+        .collect();
 }
 
 fn setup_and_run_test_cases_diff_flag(glob: &str, diff: bool) {
@@ -82,6 +93,107 @@ fn detect_cases_and_fixtures(path_glob: &str) -> (Vec<PathBuf>, Vec<PathBuf>) {
     }
 
     (cases, fixtures)
+}
+
+fn setup_isolated_git_free_test(case: &Path, fixtures: &[PathBuf]) -> GitFreeFixture {
+    let temp_dir = tempfile::tempdir().unwrap();
+
+    // Find matching fixture for this test case
+    let case_name = case.file_stem().unwrap().to_str().unwrap();
+    let matching_fixture = fixtures.iter().find(|fixture| {
+        fixture
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .starts_with(case_name)
+    });
+
+    // Read the original test case file
+    let test_content = fs::read_to_string(case).unwrap();
+
+    // Create a new isolated test that runs in the temp directory
+    let temp_test_dir = temp_dir.path().join("test");
+    fs::create_dir_all(&temp_test_dir).unwrap();
+
+    let test_stdout = case
+        .parent()
+        .unwrap()
+        .join(case_name)
+        .with_extension("stdout");
+
+    if test_stdout.exists() {
+        // If a .stdout file exists, read its content
+        let stdout_str = fs::read_to_string(test_stdout).unwrap();
+        // Append the expected stdout to the test content
+        let temp_stdout_path = temp_test_dir.join(case_name).with_extension("stdout");
+        fs::write(temp_stdout_path, stdout_str).unwrap();
+    }
+
+    let test_stderr = case
+        .parent()
+        .unwrap()
+        .join(case_name)
+        .with_extension("stderr");
+    if test_stderr.exists() {
+        // If a .stdout file exists, read its content
+        let stdout_str = fs::read_to_string(test_stderr).unwrap();
+        // Append the expected stdout to the test content
+        let temp_stdout_path = temp_test_dir.join(case_name).with_extension("stderr");
+        fs::write(temp_stdout_path, stdout_str).unwrap();
+    }
+
+    // Write test case to temp directory with modified working directory
+    let temp_test_case = temp_test_dir.join(format!("{}.toml", case_name));
+    fs::write(&temp_test_case, &test_content).unwrap();
+
+    // Create .in directory in temp location
+    let temp_in_dir = temp_test_dir.join(format!("{}.in", case_name));
+    fs::create_dir_all(&temp_in_dir).unwrap();
+
+    if let Some(fixture_path) = matching_fixture {
+        copy_dir_contents(fixture_path, &temp_in_dir, true);
+    }
+
+    // Run the test case from the isolated temp directory
+    TestCases::new()
+        .case(temp_test_case)
+        .env("RUST_BACKTRACE", "0")
+        .timeout(Duration::from_secs(DEFAULT_TEST_TIMEOUT));
+
+    GitFreeFixture {
+        _temp_dir: temp_dir,
+    }
+}
+
+fn copy_dir_contents(source: &Path, destination: &Path, exclude_git: bool) {
+    if !destination.exists() {
+        fs::create_dir_all(destination).unwrap();
+    }
+
+    for entry in fs::read_dir(source).unwrap() {
+        let entry = entry.unwrap();
+        let file_name = entry.file_name();
+
+        // Skip .git directories in git-free tests
+        if exclude_git && file_name == ".git" {
+            continue;
+        }
+
+        let src_path = entry.path();
+        let dst_path = destination.join(file_name);
+
+        if src_path.is_dir() {
+            copy_dir_contents(&src_path, &dst_path, exclude_git);
+        } else {
+            fs::copy(&src_path, &dst_path).unwrap();
+        }
+    }
+}
+
+struct GitFreeFixture {
+    // Need to keep reference to TempDir to prevent it from being dropped
+    _temp_dir: TempDir,
 }
 
 #[derive(Debug)]
