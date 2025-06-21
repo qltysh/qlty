@@ -4,14 +4,14 @@
 
 ### New
 
-- Break build issues into smaller files (#2157)
-- Add `--override-commit-time` flag to coverage publish command (#2155)
+- Batch build issues records into multiple JSONL files (#2157)
+- Add `--override-commit-time` flag to `coverage publish` command (#2155)
 
 ## v0.542.0 (2025-06-19)
 
 ### New
 
-- Batch build invocation files into chunks (#2149)
+- Batch build invocation records into multiple JSONL files (#2149)
 
 ## v0.541.0 (2025-06-11)
 
@@ -21,7 +21,7 @@
 
 ### Fixed
 
-- ESLint plugin is missing support for TypeScript eslint configuration (eslint.config.ts) (#2137)
+- Add eslint.config.ts as a known ESLint config file (#2137)
 
 Thank you @kolarski for your contribution!
 
