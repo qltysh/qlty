@@ -152,5 +152,11 @@ pub fn validate_metadata(metadata: &CoverageMetadata) -> Result<()> {
         )
     }
 
+    if metadata.commit_time.is_none() {
+        bail!(
+            "Unable to determine commit time from the environment.\nPlease provide it using --override-commit-time"
+        )
+    }
+
     Ok(())
 }
