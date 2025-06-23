@@ -220,6 +220,8 @@ impl Planner {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::env;
+    use tempfile::tempdir;
 
     #[test]
     fn planner_override_commit_time_tests() {
@@ -265,5 +267,75 @@ mod tests {
         let input = "not-a-valid-timestamp";
         let result = Planner::parse_timestamp(input);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_metadata_with_all_overrides() {
+        let config = QltyConfig::default();
+        let settings = Settings {
+            override_build_id: Some("build-123".to_string()),
+            override_commit_sha: Some("sha-abc".to_string()),
+            override_branch: Some("main".to_string()),
+            override_pull_request_number: Some("42".to_string()),
+            override_commit_time: Some("2023-01-01T12:00:00Z".to_string()),
+            tag: Some("tag".to_string()),
+            name: Some("test-report".to_string()),
+            total_parts_count: Some(2),
+            incomplete: true,
+            ..Default::default()
+        };
+        let planner = Planner::new(&config, &settings);
+        let metadata = planner.compute_metadata().unwrap();
+        assert_eq!(metadata.build_id, "build-123");
+        assert_eq!(metadata.commit_sha, "sha-abc");
+        assert_eq!(metadata.branch, "main");
+        assert_eq!(metadata.pull_request_number, "42");
+        assert_eq!(metadata.tag, Some("tag".to_string()));
+        assert_eq!(metadata.name, Some("test-report".to_string()));
+        assert_eq!(metadata.total_parts_count, Some(2));
+        assert_eq!(metadata.incomplete, true);
+        assert_eq!(
+            metadata.commit_time,
+            Some(Timestamp {
+                seconds: 1672574400,
+                nanos: 0
+            })
+        );
+    }
+
+    #[test]
+    fn test_metadata_without_git_and_no_override_commit_time() {
+        let temp = tempdir().unwrap();
+        let orig_dir = env::current_dir().unwrap();
+        env::set_current_dir(temp.path()).unwrap();
+        let config = QltyConfig::default();
+        let settings = Settings {
+            override_commit_time: None,
+            ..Default::default()
+        };
+        let planner = Planner::new(&config, &settings);
+        let result = planner.compute_metadata();
+        env::set_current_dir(orig_dir).unwrap();
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(err.contains("Git repository not found"));
+    }
+
+    #[test]
+    fn test_metadata_with_only_commit_time_override() {
+        let config = QltyConfig::default();
+        let settings = Settings {
+            override_commit_time: Some("1729100000".to_string()),
+            ..Default::default()
+        };
+        let planner = Planner::new(&config, &settings);
+        let metadata = planner.compute_metadata().unwrap();
+        assert_eq!(
+            metadata.commit_time,
+            Some(Timestamp {
+                seconds: 1729100000,
+                nanos: 0
+            })
+        );
     }
 }
