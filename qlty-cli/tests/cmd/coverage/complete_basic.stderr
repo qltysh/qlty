@@ -1,4 +1,5 @@
 qlty [..] [..]-[..] ([..] debug [..])
+[..]
 https://qlty.sh/d/coverage
 
  SETTINGS 
@@ -22,5 +23,5 @@ WARNING: The `[[ignore]]` field in qlty.toml is deprecated. Please use `[[exclud
 
  COMPLETING... 
 
-    Coverage marked as complete in [..]s!
+    Coverage marked as complete in 0.00s!
 

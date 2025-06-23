@@ -1,4 +1,5 @@
 use anyhow::{bail, Result};
+use chrono::Utc;
 use console::style;
 use qlty_config::{version::LONG_VERSION, QltyConfig, Workspace};
 use qlty_coverage::publish::{Plan, Settings};
@@ -19,6 +20,7 @@ pub fn load_config() -> QltyConfig {
 pub fn print_initial_messages(quiet: bool) {
     if !quiet {
         eprintln!("qlty {}", LONG_VERSION.as_str());
+        eprintln!("{}", Utc::now().format("%Y-%m-%dT%H:%M:%S%.6fZ"));
         eprintln!("{}", style("https://qlty.sh/d/coverage").dim());
         eprintln!();
     }
