@@ -10,6 +10,8 @@ use tracing::info;
 
 const INVOCATION_BATCH_SIZE: usize = 200;
 const ISSUES_BATCH_SIZE: usize = 5000;
+const MESSAGES_BATCH_SIZE: usize = 10000;
+const STATS_BATCH_SIZE: usize = 10000;
 
 #[derive(Default, Debug)]
 pub struct AnalysisExport {
@@ -43,9 +45,13 @@ impl AnalysisExport {
         let metadata_formatter = JsonFormatter::new(self.report.metadata.clone());
         metadata_formatter.write_to_file(&self.path.join("metadata.json"))?;
 
-        // Write messages using JsonEachRowFormatter
-        let messages_formatter = JsonEachRowFormatter::new(self.report.messages.clone());
-        messages_formatter.write_to_file(&self.path.join("messages.jsonl"))?;
+        // Write messages using JsonEachRowFormatter after breaking into chunks
+        // to avoid memory messages with large reports, particularly during ingestion
+        for (i, chunk) in self.report.messages.chunks(MESSAGES_BATCH_SIZE).enumerate() {
+            let filename = format!("messages-{i:03}.jsonl");
+            let messages_formatter = JsonEachRowFormatter::new(chunk.to_vec());
+            messages_formatter.write_to_file(&self.path.join(filename))?;
+        }
 
         // Write invocations using InvocationJsonFormatter after breaking into chunks
         // to avoid memory issues with large reports, particularly during ingestion
@@ -68,9 +74,13 @@ impl AnalysisExport {
             issues_formatter.write_to_file(&self.path.join(filename))?;
         }
 
-        // Write stats using JsonEachRowFormatter
-        let stats_formatter = JsonEachRowFormatter::new(self.report.stats.clone());
-        stats_formatter.write_to_file(&self.path.join("stats.jsonl"))?;
+        // Write stats using JsonEachRowFormatter after breaking into chunks
+        // to avoid memory stats with large reports, particularly during ingestion
+        for (i, chunk) in self.report.stats.chunks(STATS_BATCH_SIZE).enumerate() {
+            let filename = format!("stats-{i:03}.jsonl");
+            let stats_formatter = JsonEachRowFormatter::new(chunk.to_vec());
+            stats_formatter.write_to_file(&self.path.join(filename))?;
+        }
 
         // Write config using CopyFormatter
         let config_path = Self::qlty_config_path()?;
