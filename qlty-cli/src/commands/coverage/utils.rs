@@ -113,6 +113,10 @@ pub fn print_metadata(plan: &Plan, quiet: bool) {
         eprintln!("    Build ID: {}", plan.metadata.build_id);
     }
 
+    if plan.metadata.commit_time.is_some() {
+        eprintln!("    Commit Time: {:#?}", plan.metadata.commit_time.unwrap());
+    }
+
     eprintln!();
 }
 
