@@ -43,7 +43,7 @@ impl Planner {
         })
     }
 
-    fn compute_metadata(&self) -> Result<CoverageMetadata> {
+    pub fn compute_metadata(&self) -> Result<CoverageMetadata> {
         let now = OffsetDateTime::now_utc();
 
         let mut metadata = if let Some(ci) = crate::ci::current() {
