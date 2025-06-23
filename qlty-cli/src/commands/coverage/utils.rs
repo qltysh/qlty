@@ -1,4 +1,5 @@
 use anyhow::{bail, Result};
+use chrono::DateTime;
 use console::style;
 use qlty_config::{version::LONG_VERSION, QltyConfig, Workspace};
 use qlty_coverage::publish::{Plan, Settings};
@@ -114,7 +115,10 @@ pub fn print_metadata(plan: &Plan, quiet: bool) {
     }
 
     if plan.metadata.commit_time.is_some() {
-        eprintln!("    Commit Time: {:#?}", plan.metadata.commit_time.unwrap());
+        let commit_time = plan.metadata.commit_time.unwrap();
+        let date_time =
+            DateTime::from_timestamp(commit_time.seconds, commit_time.nanos as u32).unwrap();
+        eprintln!("    Commit Time: {}", date_time);
     }
 
     eprintln!();
