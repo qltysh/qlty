@@ -84,7 +84,7 @@ rand = "0.8.5"
 rayon = "1.10.0"
 regex = "1.11.0"
 rust-embed = { version = "8.7.2", features = ["include-exclude"] }
-rustls = "0.23.27"
+rustls = "0.23.28"
 rustls-platform-verifier = "0.5.3"
 schemars = "0.8.22"
 semver = "1.0.26"
