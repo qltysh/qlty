@@ -84,28 +84,56 @@ impl Planner {
         }
 
         let commit_metadata = retrieve_commit_metadata()?;
-        metadata.commit_message = commit_metadata.commit_message;
-        metadata.committer_email = commit_metadata.committer_email;
-        metadata.committer_name = commit_metadata.committer_name;
-        metadata.author_email = commit_metadata.author_email;
-        metadata.author_name = commit_metadata.author_name;
-        metadata.author_time = Some(Timestamp {
-            seconds: commit_metadata.author_time.seconds(),
-            nanos: 0,
-        });
 
-        // Use override commit time if provided, otherwise use git commit time
-        if let Some(override_time) = &self.settings.override_commit_time {
-            let parsed_timestamp = Self::parse_timestamp(override_time)?;
-            metadata.commit_time = Some(Timestamp {
-                seconds: parsed_timestamp,
+        if let Some(commit_data) = commit_metadata {
+            // Git is available, use git metadata
+            metadata.commit_message = commit_data.commit_message;
+            metadata.committer_email = commit_data.committer_email;
+            metadata.committer_name = commit_data.committer_name;
+            metadata.author_email = commit_data.author_email;
+            metadata.author_name = commit_data.author_name;
+            metadata.author_time = Some(Timestamp {
+                seconds: commit_data.author_time.seconds(),
                 nanos: 0,
             });
+
+            // Use override commit time if provided, otherwise use git commit time
+            if let Some(override_time) = &self.settings.override_commit_time {
+                let parsed_timestamp = Self::parse_timestamp(override_time)?;
+                metadata.commit_time = Some(Timestamp {
+                    seconds: parsed_timestamp,
+                    nanos: 0,
+                });
+            } else {
+                metadata.commit_time = Some(Timestamp {
+                    seconds: commit_data.commit_time.seconds(),
+                    nanos: 0,
+                });
+            }
         } else {
-            metadata.commit_time = Some(Timestamp {
-                seconds: commit_metadata.commit_time.seconds(),
+            // Git is not available, use defaults and require override_commit_time
+            metadata.commit_message = String::new();
+            metadata.committer_email = "unknown@example.com".to_string();
+            metadata.committer_name = "Unknown".to_string();
+            metadata.author_email = "unknown@example.com".to_string();
+            metadata.author_name = "Unknown".to_string();
+            metadata.author_time = Some(Timestamp {
+                seconds: 0,
                 nanos: 0,
             });
+
+            // When git is not available, override_commit_time is required
+            if let Some(override_time) = &self.settings.override_commit_time {
+                let parsed_timestamp = Self::parse_timestamp(override_time)?;
+                metadata.commit_time = Some(Timestamp {
+                    seconds: parsed_timestamp,
+                    nanos: 0,
+                });
+            } else {
+                return Err(anyhow::anyhow!(
+                    "Git repository not found. When running without git, --override-commit-time must be provided."
+                ));
+            }
         }
 
         Ok(metadata)
