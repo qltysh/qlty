@@ -46,7 +46,7 @@ impl AnalysisExport {
         metadata_formatter.write_to_file(&self.path.join("metadata.json"))?;
 
         // Write messages using JsonEachRowFormatter after breaking into chunks
-        // to avoid memory messages with large reports, particularly during ingestion
+        // to avoid memory issues with large reports, particularly during ingestion
         for (i, chunk) in self.report.messages.chunks(MESSAGES_BATCH_SIZE).enumerate() {
             let filename = format!("messages-{i:03}.jsonl");
             let messages_formatter = JsonEachRowFormatter::new(chunk.to_vec());
@@ -75,7 +75,7 @@ impl AnalysisExport {
         }
 
         // Write stats using JsonEachRowFormatter after breaking into chunks
-        // to avoid memory stats with large reports, particularly during ingestion
+        // to avoid memory issues with large reports, particularly during ingestion
         for (i, chunk) in self.report.stats.chunks(STATS_BATCH_SIZE).enumerate() {
             let filename = format!("stats-{i:03}.jsonl");
             let stats_formatter = JsonEachRowFormatter::new(chunk.to_vec());
