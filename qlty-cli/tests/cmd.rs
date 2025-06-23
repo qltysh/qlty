@@ -1,4 +1,6 @@
-use crate::helpers::{setup_and_run_diff_test_cases, setup_and_run_test_cases};
+use crate::helpers::{
+    setup_and_run_diff_test_cases, setup_and_run_test_cases, setup_and_run_test_cases_without_git,
+};
 use trycmd::TestCases;
 
 #[test]
@@ -49,6 +51,11 @@ fn smells_tests() {
 #[test]
 fn coverage_tests() {
     setup_and_run_test_cases("tests/cmd/coverage/**/*.toml");
+}
+
+#[test]
+fn without_git_tests() {
+    setup_and_run_test_cases_without_git("tests/cmd/without_git/**/*.toml");
 }
 
 #[test]
