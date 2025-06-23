@@ -113,14 +113,11 @@ impl Planner {
         } else {
             // Git is not available, use defaults and require override_commit_time
             metadata.commit_message = String::new();
-            metadata.committer_email = "unknown@example.com".to_string();
-            metadata.committer_name = "Unknown".to_string();
-            metadata.author_email = "unknown@example.com".to_string();
-            metadata.author_name = "Unknown".to_string();
-            metadata.author_time = Some(Timestamp {
-                seconds: 0,
-                nanos: 0,
-            });
+            metadata.committer_email = String::new();
+            metadata.committer_name = String::new();
+            metadata.author_email = String::new();
+            metadata.author_name = String::new();
+            metadata.author_time = None;
 
             // When git is not available, override_commit_time is required
             if let Some(override_time) = &self.settings.override_commit_time {
