@@ -1,8 +1,8 @@
 use anyhow::{bail, Result};
-use chrono::Utc;
+use chrono::{Utc, DateTime};
 use console::style;
 use qlty_config::{version::LONG_VERSION, QltyConfig, Workspace};
-use qlty_coverage::publish::{Plan, Settings};
+use qlty_coverage::publish::Settings;
 use qlty_types::tests::v1::CoverageMetadata;
 use regex::Regex;
 use std::path::PathBuf;
@@ -93,26 +93,33 @@ pub fn print_settings(settings: &Settings) {
     eprintln!();
 }
 
-pub fn print_metadata(plan: &Plan, quiet: bool) {
+pub fn print_metadata(metadata: &CoverageMetadata, quiet: bool) {
     if quiet {
         return;
     }
 
-    if !plan.metadata.ci.is_empty() {
-        eprintln!("    CI: {}", plan.metadata.ci);
+    if !metadata.ci.is_empty() {
+        eprintln!("    CI: {}", metadata.ci);
     }
 
-    eprintln!("    Commit: {}", plan.metadata.commit_sha);
-    if !plan.metadata.pull_request_number.is_empty() {
-        eprintln!("    Pull Request: #{}", plan.metadata.pull_request_number);
+    eprintln!("    Commit: {}", metadata.commit_sha);
+    if !metadata.pull_request_number.is_empty() {
+        eprintln!("    Pull Request: #{}", metadata.pull_request_number);
     }
 
-    if !plan.metadata.branch.is_empty() {
-        eprintln!("    Branch: {}", plan.metadata.branch);
+    if !metadata.branch.is_empty() {
+        eprintln!("    Branch: {}", metadata.branch);
     }
 
-    if !plan.metadata.build_id.is_empty() {
-        eprintln!("    Build ID: {}", plan.metadata.build_id);
+    if !metadata.build_id.is_empty() {
+        eprintln!("    Build ID: {}", metadata.build_id);
+    }
+
+    if metadata.commit_time.is_some() {
+        let commit_time = metadata.commit_time.unwrap();
+        let date_time =
+            DateTime::from_timestamp(commit_time.seconds, commit_time.nanos as u32).unwrap();
+        eprintln!("    Commit Time: {}", date_time);
     }
 
     eprintln!();
@@ -151,6 +158,12 @@ pub fn validate_metadata(metadata: &CoverageMetadata) -> Result<()> {
     if metadata.branch.is_empty() {
         bail!(
             "Unable to determine branch name from the environment.\nPlease provide it using --override-branch"
+        )
+    }
+
+    if metadata.commit_time.is_none() {
+        bail!(
+            "Unable to determine commit time from the environment.\nPlease provide it using --override-commit-time"
         )
     }
 

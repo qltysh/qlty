@@ -1,5 +1,4 @@
 qlty [..] [..]-[..] ([..] debug [..])
-[..]
 https://qlty.sh/d/coverage
 
  SETTINGS 
@@ -8,40 +7,41 @@ https://qlty.sh/d/coverage
     dry-run: true
     override-build-id: 123
     override-branch: main
-    override-commit-sha: 822641a8a442eab5981096a0d734ac180aa40106
+    override-commit-sha: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
+    override-commit-time: 2025-05-30T05:00:00+00:00
+    strip-prefix: /
 
  METADATA 
 
     CI: unknown
-    Commit: 822641a8a442eab5981096a0d734ac180aa40106
+    Commit: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
     Branch: main
     Build ID: 123
-    Commit Time: 2024-01-01 00:00:00 UTC
+    Commit Time: 2025-05-30 05:00:00 UTC
 
  COVERAGE FILES: 1 
 
     Coverage File  Format  Size
-    lcov.info      lcov    956 B
+    lcov.info      lcov    903 B
 
  COVERAGE DATA 
 
-    2 unique code file paths
-    2 paths are missing on disk (100.0%)
+    1 unique code file path
+    1 path is missing on disk (100.0%)
 
     Missing code files:
 
       formatter.js
-      src/ignore.js
 
     TIP: Consider using add-prefix or strip-prefix to fix paths
     https://qlty.sh/d/coverage-path-fixing
 
 
-    Covered Lines:      26
-    Uncovered Lines:     3
-    Omitted Lines:      28
+    Covered Lines:      24
+    Uncovered Lines:     2
+    Omitted Lines:      26
 
-    Line Coverage:       89.66%
+    Line Coverage:       92.31%
 
  EXPORTING... 
 

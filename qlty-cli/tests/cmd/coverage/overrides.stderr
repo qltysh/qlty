@@ -21,6 +21,7 @@ WARNING: --transform-add-prefix is deprecated, use --add-prefix instead
     Pull Request: #99
     Branch: test-branch-1
     Build ID: 42:2
+    Commit Time: 2024-01-01 00:00:00 UTC
 
  COVERAGE FILES: 1 
 
