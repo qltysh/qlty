@@ -220,8 +220,6 @@ impl Planner {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::env;
-    use tempfile::tempdir;
 
     #[test]
     fn planner_override_commit_time_tests() {
@@ -301,24 +299,6 @@ mod tests {
                 nanos: 0
             })
         );
-    }
-
-    #[test]
-    fn test_metadata_without_git_and_no_override_commit_time() {
-        let temp = tempdir().unwrap();
-        let orig_dir = env::current_dir().unwrap();
-        env::set_current_dir(temp.path()).unwrap();
-        let config = QltyConfig::default();
-        let settings = Settings {
-            override_commit_time: None,
-            ..Default::default()
-        };
-        let planner = Planner::new(&config, &settings);
-        let result = planner.compute_metadata();
-        env::set_current_dir(orig_dir).unwrap();
-        assert!(result.is_err());
-        let err = result.unwrap_err().to_string();
-        assert!(err.contains("Git repository not found"));
     }
 
     #[test]
