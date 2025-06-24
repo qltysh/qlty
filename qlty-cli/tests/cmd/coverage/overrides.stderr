@@ -1,4 +1,5 @@
 qlty [..] [..]-[..] ([..] debug [..])
+[..]
 https://qlty.sh/d/coverage
 
 WARNING: --transform-add-prefix is deprecated, use --add-prefix instead
