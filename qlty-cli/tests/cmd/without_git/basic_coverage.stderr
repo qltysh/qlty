@@ -9,6 +9,7 @@ https://qlty.sh/d/coverage
     override-branch: main
     override-commit-sha: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
     override-commit-time: 2025-05-30T05:00:00+00:00
+    strip-prefix: /
 
  METADATA 
 

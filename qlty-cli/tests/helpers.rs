@@ -29,19 +29,23 @@ const GIT_DIFF_SETUP_SCRIPT: &str = r#"
 "#;
 
 pub fn setup_and_run_diff_test_cases(glob: &str) {
-    setup_and_run_test_cases_diff_flag(glob, true);
+    setup_and_run_test_cases_diff_flag(glob, true, true);
 }
 
 pub fn setup_and_run_test_cases(glob: &str) {
-    setup_and_run_test_cases_diff_flag(glob, false);
+    setup_and_run_test_cases_diff_flag(glob, false, true);
 }
 
-fn setup_and_run_test_cases_diff_flag(glob: &str, diff: bool) {
+pub fn setup_and_run_test_cases_without_git(glob: &str) {
+    setup_and_run_test_cases_diff_flag(glob, false, false);
+}
+
+fn setup_and_run_test_cases_diff_flag(glob: &str, diff: bool, git: bool) {
     let (cases, fixtures) = detect_cases_and_fixtures(glob);
 
     let _repositories: Vec<_> = fixtures
         .iter()
-        .map(|path: &PathBuf| RepositoryFixture::setup(path, diff))
+        .map(|path: &PathBuf| RepositoryFixture::setup(path, diff, git))
         .collect();
 
     for case in cases {
@@ -88,13 +92,15 @@ fn detect_cases_and_fixtures(path_glob: &str) -> (Vec<PathBuf>, Vec<PathBuf>) {
 struct RepositoryFixture {
     path: PathBuf,
     diff_tests: bool,
+    git_tests: bool,
 }
 
 impl RepositoryFixture {
-    pub fn setup(path: &Path, diff_tests: bool) -> Self {
+    pub fn setup(path: &Path, diff_tests: bool, git_tests: bool) -> Self {
         let test_repository = Self {
             path: path.to_path_buf(),
             diff_tests,
+            git_tests,
         };
         test_repository.create();
         test_repository
@@ -103,6 +109,10 @@ impl RepositoryFixture {
     pub fn create(&self) {
         if self.git_dir().exists() {
             self.destroy();
+        }
+
+        if !self.git_tests {
+            return;
         }
 
         let (shell, flag) = Self::get_shell_and_flag();
@@ -131,6 +141,10 @@ impl RepositoryFixture {
     }
 
     fn reset_git(&self) {
+        if !self.git_tests {
+            return;
+        }
+
         let (shell, flag) = Self::get_shell_and_flag();
         cmd!(shell, flag, "git reset --hard")
             .dir(&self.path)

@@ -84,28 +84,53 @@ impl Planner {
         }
 
         let commit_metadata = retrieve_commit_metadata()?;
-        metadata.commit_message = commit_metadata.commit_message;
-        metadata.committer_email = commit_metadata.committer_email;
-        metadata.committer_name = commit_metadata.committer_name;
-        metadata.author_email = commit_metadata.author_email;
-        metadata.author_name = commit_metadata.author_name;
-        metadata.author_time = Some(Timestamp {
-            seconds: commit_metadata.author_time.seconds(),
-            nanos: 0,
-        });
 
-        // Use override commit time if provided, otherwise use git commit time
-        if let Some(override_time) = &self.settings.override_commit_time {
-            let parsed_timestamp = Self::parse_timestamp(override_time)?;
-            metadata.commit_time = Some(Timestamp {
-                seconds: parsed_timestamp,
+        if let Some(commit_data) = commit_metadata {
+            // Git is available, use git metadata
+            metadata.commit_message = commit_data.commit_message;
+            metadata.committer_email = commit_data.committer_email;
+            metadata.committer_name = commit_data.committer_name;
+            metadata.author_email = commit_data.author_email;
+            metadata.author_name = commit_data.author_name;
+            metadata.author_time = Some(Timestamp {
+                seconds: commit_data.author_time.seconds(),
                 nanos: 0,
             });
+
+            // Use override commit time if provided, otherwise use git commit time
+            if let Some(override_time) = &self.settings.override_commit_time {
+                let parsed_timestamp = Self::parse_timestamp(override_time)?;
+                metadata.commit_time = Some(Timestamp {
+                    seconds: parsed_timestamp,
+                    nanos: 0,
+                });
+            } else {
+                metadata.commit_time = Some(Timestamp {
+                    seconds: commit_data.commit_time.seconds(),
+                    nanos: 0,
+                });
+            }
         } else {
-            metadata.commit_time = Some(Timestamp {
-                seconds: commit_metadata.commit_time.seconds(),
-                nanos: 0,
-            });
+            // Git is not available, use defaults and require override_commit_time
+            metadata.commit_message = String::new();
+            metadata.committer_email = String::new();
+            metadata.committer_name = String::new();
+            metadata.author_email = String::new();
+            metadata.author_name = String::new();
+            metadata.author_time = None;
+
+            // When git is not available, override_commit_time is required
+            if let Some(override_time) = &self.settings.override_commit_time {
+                let parsed_timestamp = Self::parse_timestamp(override_time)?;
+                metadata.commit_time = Some(Timestamp {
+                    seconds: parsed_timestamp,
+                    nanos: 0,
+                });
+            } else {
+                return Err(anyhow::anyhow!(
+                    "Git repository not found. When running without git, --override-commit-time must be provided."
+                ));
+            }
         }
 
         Ok(metadata)
@@ -195,6 +220,8 @@ impl Planner {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::env;
+    use tempfile::tempdir;
 
     #[test]
     fn planner_override_commit_time_tests() {
@@ -240,5 +267,75 @@ mod tests {
         let input = "not-a-valid-timestamp";
         let result = Planner::parse_timestamp(input);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_metadata_with_all_overrides() {
+        let config = QltyConfig::default();
+        let settings = Settings {
+            override_build_id: Some("build-123".to_string()),
+            override_commit_sha: Some("sha-abc".to_string()),
+            override_branch: Some("main".to_string()),
+            override_pull_request_number: Some("42".to_string()),
+            override_commit_time: Some("2023-01-01T12:00:00Z".to_string()),
+            tag: Some("tag".to_string()),
+            name: Some("test-report".to_string()),
+            total_parts_count: Some(2),
+            incomplete: true,
+            ..Default::default()
+        };
+        let planner = Planner::new(&config, &settings);
+        let metadata = planner.compute_metadata().unwrap();
+        assert_eq!(metadata.build_id, "build-123");
+        assert_eq!(metadata.commit_sha, "sha-abc");
+        assert_eq!(metadata.branch, "main");
+        assert_eq!(metadata.pull_request_number, "42");
+        assert_eq!(metadata.tag, Some("tag".to_string()));
+        assert_eq!(metadata.name, Some("test-report".to_string()));
+        assert_eq!(metadata.total_parts_count, Some(2));
+        assert_eq!(metadata.incomplete, true);
+        assert_eq!(
+            metadata.commit_time,
+            Some(Timestamp {
+                seconds: 1672574400,
+                nanos: 0
+            })
+        );
+    }
+
+    #[test]
+    fn test_metadata_without_git_and_no_override_commit_time() {
+        let temp = tempdir().unwrap();
+        let orig_dir = env::current_dir().unwrap();
+        env::set_current_dir(temp.path()).unwrap();
+        let config = QltyConfig::default();
+        let settings = Settings {
+            override_commit_time: None,
+            ..Default::default()
+        };
+        let planner = Planner::new(&config, &settings);
+        let result = planner.compute_metadata();
+        env::set_current_dir(orig_dir).unwrap();
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(err.contains("Git repository not found"));
+    }
+
+    #[test]
+    fn test_metadata_with_only_commit_time_override() {
+        let config = QltyConfig::default();
+        let settings = Settings {
+            override_commit_time: Some("1729100000".to_string()),
+            ..Default::default()
+        };
+        let planner = Planner::new(&config, &settings);
+        let metadata = planner.compute_metadata().unwrap();
+        assert_eq!(
+            metadata.commit_time,
+            Some(Timestamp {
+                seconds: 1729100000,
+                nanos: 0
+            })
+        );
     }
 }
