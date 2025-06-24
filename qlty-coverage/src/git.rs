@@ -13,7 +13,7 @@ pub struct CommitMetadata {
 }
 
 pub fn retrieve_commit_metadata() -> Result<Option<CommitMetadata>> {
-    if let Ok(_) = std::env::var("QLTY_COVERAGE_TESTING_WITHOUT_GIT") {
+    if std::env::var("QLTY_COVERAGE_TESTING_WITHOUT_GIT").is_ok() {
         // If we're in testing for scenario without git, return None
         return Ok(None);
     }
