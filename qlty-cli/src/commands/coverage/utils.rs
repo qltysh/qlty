@@ -1,5 +1,5 @@
 use anyhow::{bail, Result};
-use chrono::{Utc, DateTime};
+use chrono::{DateTime, Utc};
 use console::style;
 use qlty_config::{version::LONG_VERSION, QltyConfig, Workspace};
 use qlty_coverage::publish::Settings;
