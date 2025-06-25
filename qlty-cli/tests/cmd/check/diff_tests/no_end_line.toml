@@ -1,0 +1,3 @@
+bin.name = "qlty"
+args = ["check", "--no-cache", "--verbose"]
+status.code = 1

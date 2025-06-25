@@ -224,11 +224,19 @@ impl Eq for analysis::v1::Location {}
 
 impl analysis::v1::Range {
     pub fn line_range_u32(&self) -> RangeInclusive<u32> {
-        self.start_line..=self.end_line
+        if self.end_line < self.start_line {
+            self.start_line..=self.start_line
+        } else {
+            self.start_line..=self.end_line
+        }
     }
 
     pub fn line_range(&self) -> RangeInclusive<usize> {
-        (self.start_line as usize)..=(self.end_line as usize)
+        if self.end_line < self.start_line {
+            (self.start_line as usize)..=(self.start_line as usize)
+        } else {
+            (self.start_line as usize)..=(self.end_line as usize)
+        }
     }
 }
 
