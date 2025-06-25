@@ -8,7 +8,7 @@ script = "echo \"${target}:1:1: F821 undefined name 'foo'\""
 success_codes = [0]
 output = "stdout"
 output_format = "regex"
-output_regex = "((?P<path>.*):(?P<line>-?\\d+):(?P<col>-?\\d+): (?P<code>\\S+) (?P<message>.+))\n"
+output_regex = "^\"?((?P<path>.*):(?P<line>-?\\d+):(?P<col>-?\\d+): (?P<code>\\S+) (?P<message>.+))\"?"
 batch = false
 
 [[plugin]]
