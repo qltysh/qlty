@@ -193,7 +193,7 @@ impl Executor {
             &self.plan.hits,
             &invocations,
             self.plan.settings.skip_errored_plugins,
-        );
+        )?;
         let formatted = Self::build_formatted(&invocations);
 
         let messages = invocations
@@ -603,7 +603,7 @@ impl Executor {
         cache_hits: &[IssuesCacheHit],
         invocations: &[InvocationResult],
         skip_errored_plugins: bool,
-    ) -> Vec<Issue> {
+    ) -> Result<Vec<Issue>> {
         let mut issues = vec![];
 
         for cache_hit in cache_hits {
@@ -611,18 +611,14 @@ impl Executor {
                 issues.push(issue.to_owned());
 
                 if issues.len() >= MAX_ISSUES {
-                    warn!(
-                        "Maximum issue count of {} reached in cache, skipping further issues.",
-                        MAX_ISSUES
-                    );
-                    return issues;
+                    bail!("Maximum issue count of {} reached in cache. Execution halted. Please adjust your configuration to reduce the number of issues generated.", MAX_ISSUES);
                 }
             }
         }
 
         let mut errored_plugins = HashSet::new();
 
-        'invocation_loop: for invocation in invocations {
+        for invocation in invocations {
             if skip_errored_plugins && invocation.status() != InvocationStatus::Success {
                 errored_plugins.insert(invocation.invocation.plugin_name.clone());
             }
@@ -636,11 +632,7 @@ impl Executor {
                     issues_count += 1;
 
                     if issues.len() >= MAX_ISSUES {
-                        warn!(
-                            "{}: Maximum issue count of {} reached in {}.",
-                            invocation.invocation.id, MAX_ISSUES, invocation_label,
-                        );
-                        break 'invocation_loop;
+                        bail!("Maximum issue count of {} reached in {}. Execution halted. Please adjust your configuration to reduce the number of issues generated.", MAX_ISSUES, invocation_label);
                     }
                 }
             }
@@ -655,7 +647,7 @@ impl Executor {
             issues.retain(|issue| !errored_plugins.contains(&issue.tool));
         }
 
-        issues
+        Ok(issues)
     }
 
     fn cleanup_config_files(&self, loaded_config_files: &[String]) -> Result<()> {
