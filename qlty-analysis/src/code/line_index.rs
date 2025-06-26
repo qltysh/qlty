@@ -62,15 +62,17 @@ impl FileIndex {
     pub fn matches_line_range(
         &self,
         path: &Path,
-        mut line_numbers: RangeInclusive<LineNumber>,
+        line_numbers: RangeInclusive<LineNumber>,
     ) -> bool {
         let (start, end) = (*line_numbers.start(), *line_numbers.end());
 
         // if end < start it is an empty range, so we treat it as a single line range
         // that starts and ends at start.
-        if end < start {
-            line_numbers = start..=start;
-        }
+        let line_numbers = if end < start {
+            start..=start
+        } else {
+            line_numbers
+        };
 
         if let Some(file_info) = self.inner.get(path) {
             if file_info.new_file {
