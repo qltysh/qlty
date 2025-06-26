@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use tracing::info;
 
 const INVOCATION_BATCH_SIZE: usize = 200;
-const ISSUES_BATCH_SIZE: usize = 5000;
+const ISSUES_BATCH_SIZE: usize = 2000;
 const MESSAGES_BATCH_SIZE: usize = 10000;
 const STATS_BATCH_SIZE: usize = 10000;
 
