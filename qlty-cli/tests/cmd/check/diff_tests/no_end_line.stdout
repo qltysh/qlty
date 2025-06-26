@@ -1,10 +1,10 @@
 
- ISSUES: 1
+ ISSUES: 1 
 
 diff/test_sample.rb:1:0
     1:0  medium  undefined name 'foo'[..]no_end_line:F821
 
- JOBS: 1
+ JOBS: 1 
 
 Plugin       Result   Targets   Time   Debug File
 no_end_line  Success  1 target  [..]s  .qlty/out/invoke-[..].yaml
