@@ -224,15 +224,11 @@ impl Eq for analysis::v1::Location {}
 
 impl analysis::v1::Range {
     pub fn line_range_u32(&self) -> RangeInclusive<u32> {
-        // start_line should always be less than or equal to end_line
-        let end = std::cmp::max(self.end_line, self.start_line);
-        self.start_line..=end
+        self.start_line..=self.end_line
     }
 
     pub fn line_range(&self) -> RangeInclusive<usize> {
-        // start_line should always be less than or equal to end_line
-        let end = std::cmp::max(self.end_line, self.start_line);
-        (self.start_line as usize)..=(end as usize)
+        (self.start_line as usize)..=(self.end_line as usize)
     }
 }
 
