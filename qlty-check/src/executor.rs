@@ -210,7 +210,7 @@ impl Executor {
         if issues.len() >= MAX_ISSUES {
             issues.truncate(MAX_ISSUES);
             issues.shrink_to_fit();
-            bail!("{}", Self::format_max_issues_error(&issues, ""));
+            bail!("{}", Self::format_max_issues_error(&issues));
         }
 
         Ok(Results::new(messages, invocations, issues, formatted))
@@ -611,7 +611,7 @@ impl Executor {
                 issues.push(issue.to_owned());
 
                 if issues.len() >= MAX_ISSUES {
-                    bail!("{}", Self::format_max_issues_error(&issues, " in cache"));
+                    bail!("{}", Self::format_max_issues_error(&issues));
                 }
             }
         }
@@ -632,13 +632,7 @@ impl Executor {
                     issues_count += 1;
 
                     if issues.len() >= MAX_ISSUES {
-                        bail!(
-                            "{}",
-                            Self::format_max_issues_error(
-                                &issues,
-                                &format!(" in {}", invocation_label)
-                            )
-                        );
+                        bail!("{}", Self::format_max_issues_error(&issues));
                     }
                 }
             }
@@ -664,7 +658,21 @@ impl Executor {
         Ok(())
     }
 
-    fn format_max_issues_error(issues: &[Issue], context: &str) -> String {
+    fn format_number(n: usize) -> String {
+        n.to_string()
+            .chars()
+            .rev()
+            .collect::<Vec<_>>()
+            .chunks(3)
+            .map(|chunk| chunk.iter().rev().collect::<String>())
+            .collect::<Vec<_>>()
+            .into_iter()
+            .rev()
+            .collect::<Vec<_>>()
+            .join(",")
+    }
+
+    fn format_max_issues_error(issues: &[Issue]) -> String {
         let mut tool_counts: HashMap<String, usize> = HashMap::new();
 
         for issue in issues {
@@ -676,13 +684,12 @@ impl Executor {
 
         let tool_summary_text = tool_summary
             .iter()
-            .map(|(tool, count)| format!("  {} ({} issues)", tool, count))
+            .map(|(tool, count)| format!("  {tool} ({} issues)", Self::format_number(*count)))
             .join("\n");
 
         format!(
-            "Maximum issue count of {} reached{}. Execution halted.\n\nIssue count by tool:\n{}\n\nPlease adjust your configuration to reduce the number of issues generated.\nFor more information: https://qlty.sh/d/too-many-issues",
-            MAX_ISSUES,
-            context,
+            "Maximum issue count of {} reached. Execution halted.\n\nIssue count by tool:\n{}\n\nPlease adjust your configuration to reduce the number of issues generated.\nFor more information: https://qlty.sh/d/too-many-issues",
+            Self::format_number(MAX_ISSUES),
             tool_summary_text
         )
     }
