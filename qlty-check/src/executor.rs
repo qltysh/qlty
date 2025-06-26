@@ -210,7 +210,7 @@ impl Executor {
         if issues.len() >= MAX_ISSUES {
             issues.truncate(MAX_ISSUES);
             issues.shrink_to_fit();
-            bail!("Maximum issue count of {} reached. Execution halted. Please adjust your configuration to reduce the number of issues generated.", MAX_ISSUES);
+            bail!("{}", Self::format_max_issues_error(&issues, ""));
         }
 
         Ok(Results::new(messages, invocations, issues, formatted))
@@ -611,7 +611,7 @@ impl Executor {
                 issues.push(issue.to_owned());
 
                 if issues.len() >= MAX_ISSUES {
-                    bail!("Maximum issue count of {} reached in cache. Execution halted. Please adjust your configuration to reduce the number of issues generated.", MAX_ISSUES);
+                    bail!("{}", Self::format_max_issues_error(&issues, " in cache"));
                 }
             }
         }
@@ -632,7 +632,13 @@ impl Executor {
                     issues_count += 1;
 
                     if issues.len() >= MAX_ISSUES {
-                        bail!("Maximum issue count of {} reached in {}. Execution halted. Please adjust your configuration to reduce the number of issues generated.", MAX_ISSUES, invocation_label);
+                        bail!(
+                            "{}",
+                            Self::format_max_issues_error(
+                                &issues,
+                                &format!(" in {}", invocation_label)
+                            )
+                        );
                     }
                 }
             }
@@ -656,6 +662,29 @@ impl Executor {
         }
 
         Ok(())
+    }
+
+    fn format_max_issues_error(issues: &[Issue], context: &str) -> String {
+        let mut tool_counts: HashMap<String, usize> = HashMap::new();
+
+        for issue in issues {
+            *tool_counts.entry(issue.tool.clone()).or_insert(0) += 1;
+        }
+
+        let mut tool_summary: Vec<_> = tool_counts.into_iter().collect();
+        tool_summary.sort_by(|a, b| b.1.cmp(&a.1));
+
+        let tool_summary_text = tool_summary
+            .iter()
+            .map(|(tool, count)| format!("  {} ({} issues)", tool, count))
+            .join("\n");
+
+        format!(
+            "Maximum issue count of {} reached{}. Execution halted.\n\nIssue count by tool:\n{}\n\nPlease adjust your configuration to reduce the number of issues generated.\nFor more information: https://qlty.sh/d/too-many-issues",
+            MAX_ISSUES,
+            context,
+            tool_summary_text
+        )
     }
 }
 
