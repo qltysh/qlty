@@ -89,3 +89,28 @@ impl FileIndex {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_matches_line_range_existing_file() {
+        use std::path::Path;
+
+        let mut index = FileIndex::new();
+        let path = Path::new("foo.txt");
+
+        // Insert line 3 for foo.txt (not a new file)
+        index.insert_line(path, 3);
+
+        // Should return true for a range that includes 3
+        assert!(index.matches_line_range(path, 3..=0));
+
+        // Should return false for a range that does not include 3
+        assert!(!index.matches_line_range(path, 4..=6));
+
+        // Should return false for a range that does not include 3
+        assert!(!index.matches_line_range(path, 4..=0));
+    }
+}
