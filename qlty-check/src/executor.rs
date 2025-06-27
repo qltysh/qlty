@@ -193,7 +193,7 @@ impl Executor {
             &self.plan.hits,
             &invocations,
             self.plan.settings.skip_errored_plugins,
-        );
+        )?;
         let formatted = Self::build_formatted(&invocations);
 
         let messages = invocations
@@ -210,7 +210,7 @@ impl Executor {
         if issues.len() >= MAX_ISSUES {
             issues.truncate(MAX_ISSUES);
             issues.shrink_to_fit();
-            bail!("Maximum issue count of {} reached. Execution halted. Please adjust your configuration to reduce the number of issues generated.", MAX_ISSUES);
+            bail!("{}", Self::format_max_issues_error(&issues));
         }
 
         Ok(Results::new(messages, invocations, issues, formatted))
@@ -603,7 +603,7 @@ impl Executor {
         cache_hits: &[IssuesCacheHit],
         invocations: &[InvocationResult],
         skip_errored_plugins: bool,
-    ) -> Vec<Issue> {
+    ) -> Result<Vec<Issue>> {
         let mut issues = vec![];
 
         for cache_hit in cache_hits {
@@ -611,18 +611,14 @@ impl Executor {
                 issues.push(issue.to_owned());
 
                 if issues.len() >= MAX_ISSUES {
-                    warn!(
-                        "Maximum issue count of {} reached in cache, skipping further issues.",
-                        MAX_ISSUES
-                    );
-                    return issues;
+                    bail!("{}", Self::format_max_issues_error(&issues));
                 }
             }
         }
 
         let mut errored_plugins = HashSet::new();
 
-        'invocation_loop: for invocation in invocations {
+        for invocation in invocations {
             if skip_errored_plugins && invocation.status() != InvocationStatus::Success {
                 errored_plugins.insert(invocation.invocation.plugin_name.clone());
             }
@@ -636,11 +632,7 @@ impl Executor {
                     issues_count += 1;
 
                     if issues.len() >= MAX_ISSUES {
-                        warn!(
-                            "{}: Maximum issue count of {} reached in {}.",
-                            invocation.invocation.id, MAX_ISSUES, invocation_label,
-                        );
-                        break 'invocation_loop;
+                        bail!("{}", Self::format_max_issues_error(&issues));
                     }
                 }
             }
@@ -655,7 +647,7 @@ impl Executor {
             issues.retain(|issue| !errored_plugins.contains(&issue.tool));
         }
 
-        issues
+        Ok(issues)
     }
 
     fn cleanup_config_files(&self, loaded_config_files: &[String]) -> Result<()> {
@@ -664,6 +656,42 @@ impl Executor {
         }
 
         Ok(())
+    }
+
+    fn format_number(n: usize) -> String {
+        n.to_string()
+            .chars()
+            .rev()
+            .collect::<Vec<_>>()
+            .chunks(3)
+            .map(|chunk| chunk.iter().rev().collect::<String>())
+            .collect::<Vec<_>>()
+            .into_iter()
+            .rev()
+            .collect::<Vec<_>>()
+            .join(",")
+    }
+
+    fn format_max_issues_error(issues: &[Issue]) -> String {
+        let mut tool_counts: HashMap<String, usize> = HashMap::new();
+
+        for issue in issues {
+            *tool_counts.entry(issue.tool.clone()).or_insert(0) += 1;
+        }
+
+        let mut tool_summary: Vec<_> = tool_counts.into_iter().collect();
+        tool_summary.sort_by(|a, b| b.1.cmp(&a.1));
+
+        let tool_summary_text = tool_summary
+            .iter()
+            .map(|(tool, count)| format!("  {tool} ({} issues)", Self::format_number(*count)))
+            .join("\n");
+
+        format!(
+            "Maximum issue count of {} reached. Execution halted.\n\nIssue count by tool:\n{}\n\nPlease adjust your configuration to reduce the number of issues generated.\nFor more information: https://qlty.sh/d/too-many-issues",
+            Self::format_number(MAX_ISSUES),
+            tool_summary_text
+        )
     }
 }
 
