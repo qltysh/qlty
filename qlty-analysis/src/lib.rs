@@ -5,6 +5,7 @@ pub mod code;
 pub mod git;
 pub mod lang;
 mod report;
+pub mod snippet;
 pub mod utils;
 mod walker;
 pub mod workspace_entries;
