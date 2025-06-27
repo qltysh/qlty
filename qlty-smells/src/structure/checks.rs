@@ -5,7 +5,7 @@ pub mod nested_control;
 pub mod parameters;
 pub mod returns;
 
-use qlty_analysis::{code::File, utils::fs::path_to_string};
+use qlty_analysis::{code::File, snippet::truncate_snippet, utils::fs::path_to_string};
 use qlty_types::{
     analysis::v1::{Category, Issue, Location},
     language_enum_from_name,
@@ -25,8 +25,12 @@ pub fn issue_for(source_file: &Arc<File>, node: &Node) -> Issue {
         .to_string();
 
     Issue {
-        snippet,
-        snippet_with_context: snippet_with_context(source_file, node, CONTEXT_LINES),
+        snippet: truncate_snippet(&snippet),
+        snippet_with_context: truncate_snippet(&snippet_with_context(
+            source_file,
+            node,
+            CONTEXT_LINES,
+        )),
         language: language_enum_from_name(source_file.language().name()).into(),
         tool: TOOL.to_string(),
         driver: DRIVER.to_string(),
