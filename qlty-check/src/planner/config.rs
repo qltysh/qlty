@@ -168,6 +168,7 @@ fn configure_plugin(
         plugin_def.fetch = enabled_plugin.fetch.clone();
         plugin_def.package_filters = enabled_plugin.package_filters.clone();
         plugin_def.prefix = enabled_plugin.prefix.clone();
+        plugin_def.sandbox = enabled_plugin.sandbox;
 
         plugin_def
             .extra_packages
