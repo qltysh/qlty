@@ -95,7 +95,15 @@ jobs:
           role-to-assume: ${{ secrets.QLTY_RELEASE_AWS_ROLE_ARN }}
           role-session-name: ${{ secrets.QLTY_RELEASE_AWS_ROLE_SESSION_NAME }}
           aws-region: ${{ secrets.QLTY_RELEASE_AWS_REGION }}
-
+      - name: Fetch local artifacts
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ inputs.workflow_run_id }}
+          pattern: artifacts-*
+          path: target/distrib/
+          merge-multiple: true
+      - name: List artifacts
+        run: find target/distrib/
       - name: Upload to S3
         working-directory: target/distrib
         run: |
