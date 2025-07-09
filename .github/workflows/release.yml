@@ -102,6 +102,8 @@ jobs:
           pattern: artifacts-*
           path: target/distrib/
           merge-multiple: true
+      - name: Create dist-manifest.json
+        run: echo "{\"announcement_tag\":\"${{ needs.release.outputs.tag }}\"}" > target/distrib/dist-manifest.json
       - name: List artifacts
         run: find target/distrib/
       - name: Upload to S3
