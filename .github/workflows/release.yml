@@ -7,6 +7,7 @@ on:
         type: string
 permissions:
   contents: read
+  "id-token": "write"
 jobs:
   release:
     runs-on: ubuntu-latest
