@@ -453,6 +453,7 @@ pub mod test {
             plugin: PluginDef {
                 package: Some("test".to_string()),
                 version: Some("1.0.0".to_string()),
+                sandbox: true,
                 ..Default::default()
             },
             runtime: super::Ruby::new_tool("1.0.0"),

@@ -29,6 +29,7 @@ use qlty_analysis::utils::fs::path_to_native_string;
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_config::config::{PluginDef, PluginEnvironment};
 use qlty_config::Library;
+use qlty_config::Workspace;
 use qlty_types::analysis::v1::Installation;
 use regex::Regex;
 use sha2::Digest;
@@ -127,6 +128,19 @@ pub trait Tool: Debug + Sync + Send {
     fn version(&self) -> Option<String>;
 
     fn directory(&self) -> String {
+        if let Some(plugin) = self.plugin() {
+            if !plugin.sandbox {
+                if let Ok(current_dir) = Workspace::assert_within_git_directory() {
+                    let path = if let Some(prefix) = plugin.prefix {
+                        current_dir.join(prefix)
+                    } else {
+                        current_dir
+                    };
+                    return path_to_string(path);
+                }
+            }
+        }
+
         path_to_string(PathBuf::from(self.parent_directory()).join(self.directory_name()))
     }
 
@@ -139,7 +153,7 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn debug_files_directory(&self) -> String {
-        format!("{}-installation-debug-files", self.directory())
+        format!("{}-installation-debug-files", self.install_dir())
     }
 
     fn runtime(&self) -> Option<Box<dyn Tool>> {
@@ -289,12 +303,29 @@ pub trait Tool: Debug + Sync + Send {
         Ok(())
     }
 
+    fn install_dir(&self) -> String {
+        if let Some(plugin) = self.plugin() {
+            if !plugin.sandbox {
+                let dir = PathBuf::from(self.directory());
+
+                // place .done, .lock and debug files in the plugin cache directory
+                return path_to_string(dir.join(".qlty").join("plugin_cachedir").join(format!(
+                    "{}-{}",
+                    self.name(),
+                    self.directory_name()
+                )));
+            }
+        }
+
+        self.directory()
+    }
+
     fn donefile_path(&self) -> PathBuf {
-        PathBuf::from(format!("{}.done", self.directory()))
+        PathBuf::from(format!("{}.done", self.install_dir()))
     }
 
     fn lockfile_path(&self) -> PathBuf {
-        PathBuf::from(format!("{}.lock", self.directory()))
+        PathBuf::from(format!("{}.lock", self.install_dir()))
     }
 
     fn exists(&self) -> bool {
@@ -311,7 +342,9 @@ pub trait Tool: Debug + Sync + Send {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         if let Some(plugin) = self.plugin() {
-            self.package_install(task, &plugin.package.unwrap(), &plugin.version.unwrap())?;
+            if plugin.sandbox {
+                self.package_install(task, &plugin.package.unwrap(), &plugin.version.unwrap())?;
+            }
 
             if plugin.package_file.is_some() {
                 self.package_file_install(task)?;

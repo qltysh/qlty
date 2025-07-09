@@ -178,7 +178,10 @@ impl Tool for NodePackage {
     }
 
     fn package_file_install(&self, task: &ProgressTask) -> Result<()> {
-        self.update_package_json(&self.name, &self.plugin.package_file)?;
+        if self.plugin.sandbox {
+            self.update_package_json(&self.name, &self.plugin.package_file)?;
+        }
+
         task.set_dim_message(
             format!(
                 "{} install {}",
@@ -266,6 +269,7 @@ pub mod test {
             plugin: PluginDef {
                 package: Some("test".to_string()),
                 version: Some("1.0.0".to_string()),
+                sandbox: true,
                 ..Default::default()
             },
             runtime: super::NodeJS {

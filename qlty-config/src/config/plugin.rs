@@ -411,6 +411,9 @@ pub struct PluginDef {
 
     #[serde(default = "default_tab_column_width")]
     pub tab_column_width: usize,
+
+    #[serde(default = "default_sandbox")]
+    pub sandbox: bool,
 }
 
 fn default_idempotent() -> bool {
@@ -696,6 +699,13 @@ pub struct EnabledPlugin {
 
     #[serde(default)]
     pub prefix: Option<String>,
+
+    #[serde(default = "default_sandbox")]
+    pub sandbox: bool,
+}
+
+fn default_sandbox() -> bool {
+    true
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, JsonSchema)]
