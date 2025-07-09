@@ -93,8 +93,8 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.QLTY_RELEASE_AWS_ROLE_ARN }}
-          role-session-name: ${{ secrets.QLTY_RELEASE_AWS_ROLE_SESSION_NAME }}
-          aws-region: ${{ secrets.QLTY_RELEASE_AWS_REGION }}
+          role-session-name: ${{ vars.QLTY_RELEASE_AWS_ROLE_SESSION_NAME }}
+          aws-region: ${{ vars.QLTY_RELEASE_AWS_REGION }}
       - name: Fetch local artifacts
         uses: actions/download-artifact@v4
         with:
@@ -107,5 +107,5 @@ jobs:
       - name: Upload to S3
         working-directory: target/distrib
         run: |
-          aws s3 cp --recursive . ${{ secrets.QLTY_RELEASE_AWS_S3_DESTINATION }}/${{ needs.release.outputs.tag }}/
-          aws s3 cp --recursive ${{ secrets.QLTY_RELEASE_AWS_S3_DESTINATION }}/${{ needs.release.outputs.tag }}/ ${{ secrets.QLTY_RELEASE_AWS_S3_DESTINATION }}/latest/
+          aws s3 cp --recursive . ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/${{ needs.release.outputs.tag }}/
+          aws s3 cp --recursive ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/${{ needs.release.outputs.tag }}/ ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/latest/
