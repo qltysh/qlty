@@ -97,7 +97,7 @@ jobs:
           cd package/
           if [ "${{ matrix.archive_format }}" = "zip" ]; then
             if [ "$RUNNER_OS" = "Windows" ]; then
-              powershell -Command "Compress-Archive -Path . -DestinationPath '../${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }}'"
+              powershell -Command "Compress-Archive -Path '*' -DestinationPath '../${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }}'"
             else
               zip -r ../${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }} .
             fi
