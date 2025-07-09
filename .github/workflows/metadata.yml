@@ -7,7 +7,7 @@ on:
 jobs:
   conventional:
     runs-on: ubuntu-latest
-    if: ${{ ! startsWith(github.event.pull_request.head.ref, 'dependabot/') && github.event.user.login != 'qlty-releases[bot]' }}
+    if: ${{ ! startsWith(github.event.pull_request.head.ref, 'dependabot/') && github.event.pull_request.user.login != 'qlty-releases[bot]' }}
     permissions:
       pull-requests: read
     steps:
@@ -30,7 +30,7 @@ jobs:
             revert
   issue:
     runs-on: ubuntu-latest
-    if: ${{ ! startsWith(github.event.pull_request.head.ref, 'dependabot/') && github.event.user.login != 'qlty-releases[bot]' }}
+    if: ${{ ! startsWith(github.event.pull_request.head.ref, 'dependabot/') && github.event.pull_request.user.login != 'qlty-releases[bot]' }}
     permissions:
       issues: read
       pull-requests: write
