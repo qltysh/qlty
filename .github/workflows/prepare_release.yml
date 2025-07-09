@@ -1,0 +1,62 @@
+name: Prepare Release
+on:
+  workflow_dispatch:
+    inputs:
+      increment:
+        description: "How to increment version (use `version` to specify version)"
+        required: true
+        type: choice
+        default: minor
+        options:
+          - major
+          - minor
+          - patch
+          - version
+      version:
+        description: "The version to release (specify `version` increment value)"
+        required: false
+        type: string
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.QLTY_APP_ID }}
+          private-key: ${{ secrets.QLTY_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+      - name: Git config
+        run: |
+          git config --global core.longpaths true
+          git config --global core.autocrlf false
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install cargo-release
+        uses: jaxxstorm/action-install-gh-release@v1.14.0
+        with:
+          repo: crate-ci/cargo-release
+          tag: v0.25.17
+      - name: Bump version
+        id: version
+        run: |
+          cargo release version \
+            --execute \
+            --no-confirm \
+            ${{ inputs.increment == 'version' && inputs.version || inputs.increment || 'minor' }}
+
+          echo "version=$(cargo metadata --format-version 1 | jq -r ".workspace_members[0]" | cut -d# -f2)" >> "$GITHUB_OUTPUT"
+      - name: Commit changes
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          title: Release ${{ steps.version.outputs.version }}
+          body: Automated PR for release ${{ steps.version.outputs.version }}
+          branch: release-${{ steps.version.outputs.version }}
+          sign-commits: true
+          commit-message: Release ${{ steps.version.outputs.version }}

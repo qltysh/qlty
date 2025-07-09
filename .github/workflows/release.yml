@@ -1,0 +1,102 @@
+name: Release
+on:
+  workflow_call:
+    inputs:
+      workflow_run_id:
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: v${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.QLTY_APP_ID }}
+          private-key: ${{ secrets.QLTY_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Get GitHub App User ID
+        id: get-user-id
+        run: echo "user-id=$(gh api "/users/${{ steps.app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Git config
+        run: |
+          git config --global core.longpaths true
+          git config --global core.autocrlf false
+          git config --global user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
+          git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com>'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install cargo-release
+        uses: jaxxstorm/action-install-gh-release@v1.14.0
+        with:
+          repo: crate-ci/cargo-release
+          tag: v0.25.17
+
+      - name: Fetch local artifacts
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ inputs.workflow_run_id }}
+          pattern: artifacts-*
+          path: target/distrib/
+          merge-multiple: true
+
+      - name: List artifacts
+        run: find target/distrib/
+
+      - name: Retrieve version number using cargo-release
+        id: version
+        run: |
+          # Get the version number from the Cargo.toml file
+          VERSION=$(cargo metadata --format-version 1 | jq -r ".workspace_members[0]" | cut -d# -f2)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create release tag via GitHub API
+        id: tag
+        uses: octokit/request-action@v2.x
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        with:
+          route: POST /repos/${{ github.repository }}/git/refs
+          ref: "refs/tags/v${{ steps.version.outputs.version }}"
+          sha: ${{ github.sha }}
+
+      - name: Create GitHub Release
+        env:
+          PRERELEASE_FLAG: "${{ false && '--prerelease' || '' }}"
+          ANNOUNCEMENT_TITLE: "Release v${{ steps.version.outputs.version }}"
+          ANNOUNCEMENT_BODY: "Automated release created by GitHub Actions."
+          RELEASE_COMMIT: "${{ github.sha }}"
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          # Write and read notes from a file to avoid quoting breaking things
+          echo "$ANNOUNCEMENT_BODY" > $RUNNER_TEMP/notes.txt
+          gh release create "v${{ steps.version.outputs.version }}" $PRERELEASE_FLAG --title "$ANNOUNCEMENT_TITLE" --notes-file "$RUNNER_TEMP/notes.txt" target/distrib/*
+  s3-upload:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup AWS CLI
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.QLTY_RELEASE_AWS_ROLE_ARN }}
+          role-session-name: ${{ secrets.QLTY_RELEASE_AWS_ROLE_SESSION_NAME }}
+          aws-region: ${{ secrets.QLTY_RELEASE_AWS_REGION }}
+
+      - name: Upload to S3
+        working-directory: target/distrib
+        run: |
+          aws s3 cp --recursive . ${{ secrets.QLTY_RELEASE_AWS_S3_DESTINATION }}/${{ needs.release.outputs.tag }}/
+          aws s3 cp --recursive ${{ secrets.QLTY_RELEASE_AWS_S3_DESTINATION }}/${{ needs.release.outputs.tag }}/ ${{ secrets.QLTY_RELEASE_AWS_S3_DESTINATION }}/latest/

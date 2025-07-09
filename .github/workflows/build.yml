@@ -1,0 +1,130 @@
+name: Build
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+  attestations: write
+  id-token: write
+jobs:
+  compile:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux with glibc
+          - target: x86_64-unknown-linux-gnu
+            runner: ubuntu-22.04
+            archive_format: tar.xz
+          - target: aarch64-unknown-linux-gnu
+            runner: ubuntu-22.04-arm
+            archive_format: tar.xz
+
+          # Linux with musl
+          - target: x86_64-unknown-linux-musl
+            runner: ubuntu-22.04
+            packages_install: sudo apt-get update && sudo apt-get install musl-tools
+            archive_format: tar.xz
+          - target: aarch64-unknown-linux-musl
+            runner: ubuntu-22.04-arm
+            packages_install: sudo apt-get update && sudo apt-get install musl-tools
+            archive_format: tar.xz
+
+          # macOS
+          - target: x86_64-apple-darwin
+            runner: macos-15
+            archive_format: tar.xz
+          - target: aarch64-apple-darwin
+            runner: macos-15
+            archive_format: tar.xz
+
+          # Windows
+          - target: x86_64-pc-windows-msvc
+            runner: windows-latest
+            archive_format: zip
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    env:
+      BINARY_NAME: qlty
+    steps:
+      - name: Print GitHub event context
+        run: echo '${{ toJson(github) }}'
+        shell: bash
+
+      - name: Git config
+        run: |
+          git config --global core.longpaths true
+          git config --global core.autocrlf false
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: ${{ matrix.runner }}
+          cache-on-failure: true
+          cache-all-crates: true
+
+      - name: Install dependencies
+        run: |
+          ${{ matrix.packages_install }}
+
+      - name: Build
+        run: |
+          cargo build --target ${{ matrix.target }} --all-features --release
+          cargo test --target ${{ matrix.target }} --all-features --release
+
+      - name: Package artifacts
+        shell: bash
+        run: |
+          mkdir -p package
+          cp target/${{ matrix.target }}/release/${{ env.BINARY_NAME }} package/
+          cp README.md package/
+          cp LICENSE.md package/
+          cp CHANGELOG.md package/
+          if [ "${{ matrix.archive_format }}" = "zip" ]; then
+            if [ "$RUNNER_OS" = "Windows" ]; then
+              powershell -Command "Compress-Archive -Path package -DestinationPath '${{ env.BINARY_NAME }}-${{ matrix.target }}.zip'"
+            else
+              zip -r ${{ env.BINARY_NAME }}-${{ matrix.target }}.zip package
+            fi
+          else
+            tar -cJf ${{ env.BINARY_NAME }}-${{ matrix.target }}.tar.xz -C package .
+          fi
+
+      - name: Generate SHA256 signature
+        run: sha256sum ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }} > ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }}.sha256
+
+      - name: Generate binary attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-${{ env.BINARY_NAME }}-${{ matrix.target }}
+          if-no-files-found: error
+          path: |
+            ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }}
+            ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }}.sha256
+
+  release:
+    needs: compile
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.commits[0].author.name == 'qlty-releases[bot]' && startsWith(github.event.commits[0].message, 'Release ') }}
+    uses: ./.github/workflows/release.yml
+    with:
+      workflow_run_id: ${{ github.event.workflow_run.id }}
+    secrets: inherit
