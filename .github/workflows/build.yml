@@ -122,8 +122,21 @@ jobs:
             ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }}
             ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }}.sha256
 
+  dist-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create dist-manifest.json
+        run: |
+          echo "{\"announcement_tag\":\"${{ needs.release.outputs.tag }}\"}" > dist-manifest.json
+      - name: Upload dist-manifest.json
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-manifest.json
+          if-no-files-found: error
+          path: dist-manifest.json
+
   release:
-    needs: compile
+    needs: [compile, dist-manifest]
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.commits[0].author.name == 'qlty-releases[bot]' && startsWith(github.event.commits[0].message, 'Release ') }}
     uses: ./.github/workflows/release.yml
     with:
