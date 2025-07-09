@@ -18,28 +18,28 @@ jobs:
           # Linux with glibc
           - target: x86_64-unknown-linux-gnu
             runner: ubuntu-22.04
-            archive_format: tar.xz
+            archive_format: tar.gz
           - target: aarch64-unknown-linux-gnu
             runner: ubuntu-22.04-arm
-            archive_format: tar.xz
+            archive_format: tar.gz
 
           # Linux with musl
           - target: x86_64-unknown-linux-musl
             runner: ubuntu-22.04
             packages_install: sudo apt-get update && sudo apt-get install musl-tools
-            archive_format: tar.xz
+            archive_format: tar.gz
           - target: aarch64-unknown-linux-musl
             runner: ubuntu-22.04-arm
             packages_install: sudo apt-get update && sudo apt-get install musl-tools
-            archive_format: tar.xz
+            archive_format: tar.gz
 
           # macOS
           - target: x86_64-apple-darwin
             runner: macos-15
-            archive_format: tar.xz
+            archive_format: tar.gz
           - target: aarch64-apple-darwin
             runner: macos-15
-            archive_format: tar.xz
+            archive_format: tar.gz
 
           # Windows
           - target: x86_64-pc-windows-msvc
@@ -94,14 +94,15 @@ jobs:
           cp README.md package/
           cp LICENSE.md package/
           cp CHANGELOG.md package/
+          cd package/
           if [ "${{ matrix.archive_format }}" = "zip" ]; then
             if [ "$RUNNER_OS" = "Windows" ]; then
-              powershell -Command "Compress-Archive -Path package -DestinationPath '${{ env.BINARY_NAME }}-${{ matrix.target }}.zip'"
+              powershell -Command "Compress-Archive -Path . -DestinationPath '../${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }}'"
             else
-              zip -r ${{ env.BINARY_NAME }}-${{ matrix.target }}.zip package
+              zip -r ../${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }} .
             fi
           else
-            tar -cJf ${{ env.BINARY_NAME }}-${{ matrix.target }}.tar.xz -C package .
+            tar -czf ../${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }} .
           fi
 
       - name: Generate SHA256 signature
