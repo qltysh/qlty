@@ -130,7 +130,7 @@ if [ -n "${QLTY_VERSION-}" ]; then
 	version="v${QLTY_VERSION#v}"
 fi
 
-url_prefix=${QLTY_INSTALL_URL-https://qlty-releases.s3.amazonaws.com/qlty}
+url_prefix=${QLTY_INSTALL_URL:-https://qlty-releases.s3.amazonaws.com/qlty}
 qlty_uri="$url_prefix/$version/qlty-$target.tar.xz"
 
 install_env=QLTY_INSTALL
