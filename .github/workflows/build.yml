@@ -89,20 +89,20 @@ jobs:
       - name: Package artifacts
         shell: bash
         run: |
-          mkdir -p package
-          cp target/${{ matrix.target }}/release/${{ env.BINARY_NAME }} package/
-          cp README.md package/
-          cp LICENSE.md package/
-          cp CHANGELOG.md package/
-          cd package/
+          mkdir -p ${{ env.BINARY_NAME }}-${{ matrix.target }}
+          cp target/${{ matrix.target }}/release/${{ env.BINARY_NAME }} ${{ env.BINARY_NAME }}-${{ matrix.target }}/
+          cp README.md ${{ env.BINARY_NAME }}-${{ matrix.target }}/
+          cp LICENSE.md ${{ env.BINARY_NAME }}-${{ matrix.target }}/
+          cp CHANGELOG.md ${{ env.BINARY_NAME }}-${{ matrix.target }}/
           if [ "${{ matrix.archive_format }}" = "zip" ]; then
             if [ "$RUNNER_OS" = "Windows" ]; then
+              cd ${{ env.BINARY_NAME }}-${{ matrix.target }}
               powershell -Command "Compress-Archive -Path '*' -DestinationPath '../${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }}'"
             else
-              zip -r ../${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }} .
+              zip -r ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }} ${{ env.BINARY_NAME }}-${{ matrix.target }}
             fi
           else
-            tar -cJf ../${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }} .
+            tar -cJf ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }} ${{ env.BINARY_NAME }}-${{ matrix.target }}
           fi
 
       - name: Generate SHA256 signature
@@ -122,8 +122,52 @@ jobs:
             ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }}
             ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }}.sha256
 
-  release:
+  extra:
     needs: compile
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch local artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: artifacts-*
+          path: target/distrib/
+          merge-multiple: true
+      - name: Retrieve version number and checksums
+        id: data
+        run: |
+          echo "version=$(cargo metadata --format-version 1 | jq -r ".workspace_members[0]" | cut -d# -f2)" >> "$GITHUB_OUTPUT"
+          echo "sha_aarch64_mac=$(cat target/distrib/qlty-aarch64-apple-darwin.tar.xz.sha256 | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "sha_x86_64_mac=$(cat target/distrib/qlty-x86_64-apple-darwin.tar.xz.sha256 | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "sha_aarch64_linux=$(cat target/distrib/qlty-aarch64-unknown-linux-gnu.tar.xz.sha256 | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "sha_x86_64_linux=$(cat target/distrib/qlty-x86_64-unknown-linux-gnu.tar.xz.sha256 | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+      - name: Create Homebrew formula
+        run: |
+          sed "s/{{VERSION}}/${{ steps.data.outputs.version }}/g" installer/qlty.rb.template > qlty.rb
+          sed -i "s/{{SHA_AARCH64_MAC}}/${{ steps.data.outputs.sha_aarch64_mac }}/g" qlty.rb
+          sed -i "s/{{SHA_X86_64_MAC}}/${{ steps.data.outputs.sha_x86_64_mac }}/g" qlty.rb
+          sed -i "s/{{SHA_AARCH64_LINUX}}/${{ steps.data.outputs.sha_aarch64_linux }}/g" qlty.rb
+          sed -i "s/{{SHA_X86_64_LINUX}}/${{ steps.data.outputs.sha_x86_64_linux }}/g" qlty.rb
+      - name: Upload Homebrew formula
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-homebrew
+          if-no-files-found: error
+          path: qlty.rb
+      - name: Create dist-manifest.json
+        run: echo "{\"announcement_tag\":\"v${{ steps.data.outputs.version }}\"}" > dist-manifest.json
+      - name: Upload manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-manifest
+          if-no-files-found: error
+          path: dist-manifest.json
+
+  release:
+    needs: [compile, extra]
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.commits[0].author.name == 'qlty-releases[bot]' && startsWith(github.event.commits[0].message, 'Release ') }}
     uses: ./.github/workflows/release.yml
     with:
