@@ -108,4 +108,8 @@ jobs:
         working-directory: target/distrib
         run: |
           aws s3 cp --recursive . ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/${{ needs.release.outputs.tag }}/
-          aws s3 cp --recursive ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/${{ needs.release.outputs.tag }}/ ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/latest/
+  promote:
+    needs: [release, s3-upload]
+    uses: ./.github/workflows/release_promote.yml
+    with:
+      version: ${{ needs.release.outputs.tag }}
