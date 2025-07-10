@@ -29,4 +29,6 @@ jobs:
           aws-region: ${{ vars.QLTY_RELEASE_AWS_REGION }}
       - name: Upload to S3
         working-directory: installer
-        run: aws s3 cp install.ps1 install.sh ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/installer/
+        run: |
+          aws s3 cp install.ps1 ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/installer/
+          aws s3 cp install.sh ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/installer/
