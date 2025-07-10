@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - main
+    paths:
+      - .github/workflows/build.yml
+      - qlty-*
+      - Cargo.*
   pull_request:
     paths:
       - .github/workflows/build.yml
