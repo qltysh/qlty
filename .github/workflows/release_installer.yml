@@ -1,0 +1,31 @@
+name: Release Installer
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - installer/install.*
+permissions:
+  contents: read
+  "id-token": "write"
+jobs:
+  test:
+    uses: ./.github/workflows/installer_test.yml
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup AWS CLI
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.QLTY_RELEASE_AWS_ROLE_ARN }}
+          role-session-name: ${{ vars.QLTY_RELEASE_AWS_ROLE_SESSION_NAME }}
+          aws-region: ${{ vars.QLTY_RELEASE_AWS_REGION }}
+      - name: Upload to S3
+        working-directory: installer
+        run: aws s3 cp install.ps1 install.sh ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/installer/
