@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   test:
-    name: test (${{ matrix.name }})
+    name: Test ${{ matrix.name }}
     runs-on: ${{ matrix.runner }}
     env:
       INSTALL_SH: installer/install.sh
