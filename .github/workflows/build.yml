@@ -4,6 +4,10 @@ on:
     branches:
       - main
   pull_request:
+    paths:
+      - .github/workflows/build.yml
+      - qlty-*
+      - Cargo.*
   workflow_dispatch:
 permissions:
   contents: read
