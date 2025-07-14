@@ -459,7 +459,7 @@ impl Publish {
 
             eprintln!(
                 "    {}",
-                style("https://qlty.sh/d/coverage-path-fixing").dim()
+                style("https://docs.qlty.sh/coverage/path-fixing").dim()
             );
 
             eprintln!();

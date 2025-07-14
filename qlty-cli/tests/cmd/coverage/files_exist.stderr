@@ -36,7 +36,7 @@ https://qlty.sh/d/coverage
       src/doesnt_exist.js
 
     TIP: Consider using add-prefix or strip-prefix to fix paths
-    https://qlty.sh/d/coverage-path-fixing
+    https://docs.qlty.sh/coverage/path-fixing
 
 
     Covered Lines:      24

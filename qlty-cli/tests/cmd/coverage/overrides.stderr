@@ -38,7 +38,7 @@ WARNING: --transform-add-prefix is deprecated, use --add-prefix instead
       rails/formatter.js
 
     TIP: Consider using add-prefix or strip-prefix to fix paths
-    https://qlty.sh/d/coverage-path-fixing
+    https://docs.qlty.sh/coverage/path-fixing
 
 
     Covered Lines:      24

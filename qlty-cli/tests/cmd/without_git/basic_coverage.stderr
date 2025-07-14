@@ -35,7 +35,7 @@ https://qlty.sh/d/coverage
       formatter.js
 
     TIP: Consider using add-prefix or strip-prefix to fix paths
-    https://qlty.sh/d/coverage-path-fixing
+    https://docs.qlty.sh/coverage/path-fixing
 
 
     Covered Lines:      24
