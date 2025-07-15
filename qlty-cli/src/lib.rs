@@ -165,7 +165,9 @@ fn handle_result(
                 }
                 CommandError::Lint => {
                     error!("Lint error");
+                    error!("Some common debugging steps can be found at: https://docs.qlty.sh/cli/debugging");
                     eprintln!("❌ Lint error");
+                    eprintln!("Some common debugging steps can be found at: https://docs.qlty.sh/cli/debugging");
                 }
                 CommandError::Unknown { ref source } => {
                     error!("Command failed: {}", command);
