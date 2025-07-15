@@ -172,10 +172,7 @@ fn handle_result(
                         DEBUG_DOC_URL
                     );
                     eprintln!("❌ Lint error");
-                    eprintln!(
-                        "Some common debugging steps can be found at: {}",
-                        DEBUG_DOC_URL
-                    );
+                    eprintln!("Some common debugging steps can be found at: {DEBUG_DOC_URL}");
                 }
                 CommandError::Unknown { ref source } => {
                     error!("Command failed: {}", command);
