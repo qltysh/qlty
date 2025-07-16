@@ -99,7 +99,7 @@ impl Parser for Coverprofile {
                     .and_modify(|v| {
                         // update only if the current value is 0
                         if *v == 0 {
-                            *v = count
+                            *v = count;
                         }
                     })
                     .or_insert(count); // insert if the key wasn't present
