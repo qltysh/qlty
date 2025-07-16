@@ -258,6 +258,18 @@ pub trait Tool: Debug + Sync + Send {
 
                     let log_path = self.install_log_path();
                     if Path::new(&log_path).exists() {
+                        let build_log_lines = match std::fs::read_to_string(&log_path) {
+                            Ok(contents) => {
+                                let lines: Vec<&str> = contents.lines().collect();
+                                lines[lines.len().saturating_sub(50)..].join("\n")
+                            }
+                            Err(err) => {
+                                error!("Failed to read log file {}: {:?}", log_path, err);
+                                String::from("<failed to read log file>")
+                            }
+                        };
+                        error!("Install log:\n{}", build_log_lines);
+
                         Err(e).with_context(|| {
                             format!(
                                 "Error installing {}@{}.\n\n    See more: {}",
