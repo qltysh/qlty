@@ -94,7 +94,15 @@ impl Parser for Coverprofile {
                 .unwrap();
 
             for x in start_line..(end_line + 1) {
-                line_count_map.insert(x, count);
+                line_count_map
+                    .entry(x)
+                    .and_modify(|v| {
+                        // update only if the current value is 0
+                        if *v == 0 {
+                            *v = count
+                        }
+                    })
+                    .or_insert(count); // insert if the key wasn't present
             }
         });
 
@@ -198,7 +206,7 @@ mod tests {
         - "1"
         - "1"
         - "1"
-        - "0"
+        - "1"
         - "0"
         - "0"
         - "-1"
@@ -340,7 +348,7 @@ mod tests {
         - "-1"
         - "-1"
         - "1"
-        - "0"
+        - "1"
         - "0"
         - "0"
         - "0"
@@ -370,11 +378,11 @@ mod tests {
         - "1"
         - "1"
         - "1"
-        - "0"
+        - "1"
         - "0"
         - "0"
         - "1"
-        - "0"
+        - "1"
         - "0"
         - "0"
         - "0"
@@ -419,7 +427,7 @@ mod tests {
         - "1"
         - "1"
         - "1"
-        - "0"
+        - "1"
         - "0"
         - "0"
         - "1"
