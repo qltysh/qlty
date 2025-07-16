@@ -31,7 +31,7 @@ use std::panic;
 use std::time::Instant;
 use tracing::{debug, error, info, trace};
 
-const DEBUG_DOC_URL: &str = "https://docs.qlty.sh/cli/debugging";
+const DEBUG_DOC_URL: &str = "https://qlty.sh/d/lint-error";
 
 pub fn run_command_line() {
     // Initialize the default crypto provider for rustls
