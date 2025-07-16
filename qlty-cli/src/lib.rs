@@ -31,6 +31,8 @@ use std::panic;
 use std::time::Instant;
 use tracing::{debug, error, info, trace};
 
+const DEBUG_DOC_URL: &str = "https://qlty.sh/d/lint-error";
+
 pub fn run_command_line() {
     // Initialize the default crypto provider for rustls
     rustls::crypto::aws_lc_rs::default_provider()
@@ -165,7 +167,12 @@ fn handle_result(
                 }
                 CommandError::Lint => {
                     error!("Lint error");
+                    error!(
+                        "Some common debugging steps can be found at: {}",
+                        DEBUG_DOC_URL
+                    );
                     eprintln!("❌ Lint error");
+                    eprintln!("Some common debugging steps can be found at: {DEBUG_DOC_URL}");
                 }
                 CommandError::Unknown { ref source } => {
                     error!("Command failed: {}", command);
