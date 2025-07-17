@@ -97,7 +97,8 @@ impl Parser for Coverprofile {
                 line_count_map
                     .entry(x)
                     .and_modify(|v| {
-                        // update only if the current value is 0
+                        // partially covered lines can get multiple entries, once as covered and once as uncovered
+                        // if it is marked as uncovered, we should update that to covered
                         if *v == 0 {
                             *v = count;
                         }
