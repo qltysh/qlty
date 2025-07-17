@@ -113,3 +113,4 @@ jobs:
     uses: ./.github/workflows/release_promote.yml
     with:
       version: ${{ needs.release.outputs.tag }}
+    secrets: inherit
