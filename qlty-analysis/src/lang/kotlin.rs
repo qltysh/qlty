@@ -1,6 +1,7 @@
 use crate::code::node_source;
 use crate::code::File;
 use crate::lang::Language;
+use std::sync::Arc;
 use tree_sitter::Node;
 
 const CLASS_QUERY: &str = r#"
@@ -286,6 +287,31 @@ impl Language for Kotlin {
 
     fn function_name_node<'a>(&'a self, node: &'a Node) -> Node<'a> {
         node.child(0).unwrap()
+    }
+
+    fn get_parameter_names(
+        &self,
+        parameters_node: tree_sitter::Node,
+        source_file: &Arc<File>,
+    ) -> Vec<String> {
+        let mut parameter_names = vec![];
+        let cursor = &mut parameters_node.walk();
+
+        for parameter_node in parameters_node.named_children(cursor) {
+            // Skip parameter_modifiers nodes which contain annotations
+            if parameter_node.kind() == "parameter_modifiers" {
+                continue;
+            }
+            
+            let parameter_name = crate::code::node_source(&parameter_node, source_file);
+
+            let sanitized_parameter_name = self.sanitize_parameter_name(parameter_name);
+            match sanitized_parameter_name {
+                Some(sanitized_parameter_name) => parameter_names.push(sanitized_parameter_name),
+                _ => {}
+            };
+        }
+        parameter_names
     }
 }
 
