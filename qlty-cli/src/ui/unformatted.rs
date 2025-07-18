@@ -105,7 +105,13 @@ fn apply_fmt(writer: &mut dyn std::io::Write, settings: &Settings) -> Result<boo
     settings.paths = settings
         .paths
         .iter()
-        .map(|p| settings.root.join(p))
+        .map(|p| {
+            if p.is_absolute() {
+                p.clone()
+            } else {
+                settings.root.join(p)
+            }
+        })
         .collect::<Vec<_>>();
 
     let plan = Planner::new(ExecutionVerb::Fmt, &settings)?.compute()?;
