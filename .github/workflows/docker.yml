@@ -164,7 +164,7 @@ jobs:
           done
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.9.1
+        uses: sigstore/cosign-installer@v3.9.2
 
       - name: Sign the published Docker image
         env:
