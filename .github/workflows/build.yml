@@ -58,10 +58,6 @@ jobs:
     env:
       BINARY_NAME: qlty
     steps:
-      - name: Print GitHub event context
-        run: echo '${{ toJson(github) }}'
-        shell: bash
-
       - name: Git config
         run: |
           git config --global core.longpaths true
