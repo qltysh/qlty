@@ -274,10 +274,7 @@ impl GitSource {
                 if branches.is_empty() {
                     format!("Failed to fetch base refspecs from remote origin {resolved_origin}")
                 } else {
-                    format!(
-                        "Failed to fetch branches {:?} from remote origin {resolved_origin}",
-                        branches
-                    )
+                    format!("Failed to fetch branches {branches:?} from remote origin {resolved_origin}")
                 }
             })
     }
