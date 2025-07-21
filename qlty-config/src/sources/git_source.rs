@@ -272,14 +272,11 @@ impl GitSource {
             .fetch(branches, Some(&mut fetch_options), None)
             .with_context(|| {
                 if branches.is_empty() {
-                    format!(
-                        "Failed to fetch base refspecs from remote origin {}",
-                        resolved_origin
-                    )
+                    format!("Failed to fetch base refspecs from remote origin {resolved_origin}")
                 } else {
                     format!(
-                        "Failed to fetch branches {:?} from remote origin {}",
-                        branches, resolved_origin
+                        "Failed to fetch branches {:?} from remote origin {resolved_origin}",
+                        branches
                     )
                 }
             })
