@@ -15,7 +15,7 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       tag: v${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/create-github-app-token@v1
+      - uses: actions/create-github-app-token@v2
         id: app-token
         with:
           app-id: ${{ vars.QLTY_APP_ID }}
