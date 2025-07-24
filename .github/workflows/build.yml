@@ -68,6 +68,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
@@ -135,6 +136,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Fetch local artifacts
         uses: actions/download-artifact@v4
         with:
@@ -151,11 +153,17 @@ jobs:
           echo "sha_x86_64_linux=$(cat target/distrib/qlty-x86_64-unknown-linux-gnu.tar.xz.sha256 | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
       - name: Create Homebrew formula
         run: |
-          sed "s/{{VERSION}}/${{ steps.data.outputs.version }}/g" installer/qlty.rb.template > qlty.rb
-          sed -i "s/{{SHA_AARCH64_MAC}}/${{ steps.data.outputs.sha_aarch64_mac }}/g" qlty.rb
-          sed -i "s/{{SHA_X86_64_MAC}}/${{ steps.data.outputs.sha_x86_64_mac }}/g" qlty.rb
-          sed -i "s/{{SHA_AARCH64_LINUX}}/${{ steps.data.outputs.sha_aarch64_linux }}/g" qlty.rb
-          sed -i "s/{{SHA_X86_64_LINUX}}/${{ steps.data.outputs.sha_x86_64_linux }}/g" qlty.rb
+          sed "s/{{VERSION}}/${STEPS_DATA_OUTPUTS_VERSION}/g" installer/qlty.rb.template > qlty.rb
+          sed -i "s/{{SHA_AARCH64_MAC}}/${STEPS_DATA_OUTPUTS_SHA_AARCH64_MAC}/g" qlty.rb
+          sed -i "s/{{SHA_X86_64_MAC}}/${STEPS_DATA_OUTPUTS_SHA_X86_64_MAC}/g" qlty.rb
+          sed -i "s/{{SHA_AARCH64_LINUX}}/${STEPS_DATA_OUTPUTS_SHA_AARCH64_LINUX}/g" qlty.rb
+          sed -i "s/{{SHA_X86_64_LINUX}}/${STEPS_DATA_OUTPUTS_SHA_X86_64_LINUX}/g" qlty.rb
+        env:
+          STEPS_DATA_OUTPUTS_VERSION: ${{ steps.data.outputs.version }}
+          STEPS_DATA_OUTPUTS_SHA_AARCH64_MAC: ${{ steps.data.outputs.sha_aarch64_mac }}
+          STEPS_DATA_OUTPUTS_SHA_X86_64_MAC: ${{ steps.data.outputs.sha_x86_64_mac }}
+          STEPS_DATA_OUTPUTS_SHA_AARCH64_LINUX: ${{ steps.data.outputs.sha_aarch64_linux }}
+          STEPS_DATA_OUTPUTS_SHA_X86_64_LINUX: ${{ steps.data.outputs.sha_x86_64_linux }}
       - name: Upload Homebrew formula
         uses: actions/upload-artifact@v4
         with:
@@ -163,7 +171,9 @@ jobs:
           if-no-files-found: error
           path: qlty.rb
       - name: Create dist-manifest.json
-        run: echo "{\"announcement_tag\":\"v${{ steps.data.outputs.version }}\"}" > dist-manifest.json
+        run: echo "{\"announcement_tag\":\"v${STEPS_DATA_OUTPUTS_VERSION}\"}" > dist-manifest.json
+        env:
+          STEPS_DATA_OUTPUTS_VERSION: ${{ steps.data.outputs.version }}
       - name: Upload manifest
         uses: actions/upload-artifact@v4
         with:

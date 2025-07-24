@@ -21,6 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Setup AWS CLI
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -30,5 +31,7 @@ jobs:
       - name: Upload to S3
         working-directory: installer
         run: |
-          aws s3 cp install.ps1 ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/installer/
-          aws s3 cp install.sh ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/installer/
+          aws s3 cp install.ps1 ${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/installer/
+          aws s3 cp install.sh ${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/installer/
+        env:
+          VARS_QLTY_RELEASE_AWS_S3_DESTINATION: ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}

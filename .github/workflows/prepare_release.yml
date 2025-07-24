@@ -37,6 +37,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Install cargo-release
         uses: jaxxstorm/action-install-gh-release@v2.1.0
         with:

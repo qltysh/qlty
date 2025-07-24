@@ -32,6 +32,8 @@ jobs:
     steps:
       - name: Checkout cloud
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Rust toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1

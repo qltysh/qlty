@@ -23,6 +23,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 500
+          persist-credentials: false
 
       - name: Install Qlty CLI
         uses: qltysh/qlty-action/install@main
