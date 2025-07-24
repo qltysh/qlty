@@ -25,6 +25,7 @@ jobs:
       - name: Get GitHub App User ID
         id: get-user-id
         run: echo "user-id=$(gh api "/users/${STEPS_APP_TOKEN_OUTPUTS_APP_SLUG}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+        shell: bash
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           STEPS_APP_TOKEN_OUTPUTS_APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
@@ -35,6 +36,7 @@ jobs:
           git config --global core.autocrlf false
           git config --global user.name '${STEPS_APP_TOKEN_OUTPUTS_APP_SLUG}[bot]'
           git config --global user.email '${STEPS_GET_USER_ID_OUTPUTS_USER_ID}+${STEPS_APP_TOKEN_OUTPUTS_APP_SLUG}[bot]@users.noreply.github.com>'
+        shell: bash
         env:
           STEPS_APP_TOKEN_OUTPUTS_APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
           STEPS_GET_USER_ID_OUTPUTS_USER_ID: ${{ steps.get-user-id.outputs.user-id }}
@@ -114,6 +116,7 @@ jobs:
         working-directory: target/distrib
         run: |
           aws s3 cp --recursive . ${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/${NEEDS_RELEASE_OUTPUTS_TAG}/
+        shell: bash
         env:
           VARS_QLTY_RELEASE_AWS_S3_DESTINATION: ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}
           NEEDS_RELEASE_OUTPUTS_TAG: ${{ needs.release.outputs.tag }}

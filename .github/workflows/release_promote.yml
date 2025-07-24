@@ -49,6 +49,7 @@ jobs:
         run: |
           VERSION="${INPUTS_VERSION}"
           aws s3 cp --recursive ${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/v${VERSION#v}/ ${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/latest/
+        shell: bash
         env:
           INPUTS_VERSION: ${{ inputs.version }}
           VARS_QLTY_RELEASE_AWS_S3_DESTINATION: ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}

@@ -33,5 +33,6 @@ jobs:
         run: |
           aws s3 cp install.ps1 ${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/installer/
           aws s3 cp install.sh ${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/installer/
+        shell: bash
         env:
           VARS_QLTY_RELEASE_AWS_S3_DESTINATION: ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}

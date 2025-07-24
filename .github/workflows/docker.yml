@@ -93,6 +93,7 @@ jobs:
           mkdir -p ${{ runner.temp }}/digests
           digest="${STEPS_BUILD_OUTPUTS_DIGEST}"
           touch "${{ runner.temp }}/digests/${digest#sha256:}"
+        shell: bash
         env:
           STEPS_BUILD_OUTPUTS_DIGEST: ${{ steps.build.outputs.digest }}
 
@@ -157,6 +158,7 @@ jobs:
 
           echo "Image digest: $DIGEST"
           echo "digest=$DIGEST" >> $GITHUB_OUTPUT
+        shell: bash
         env:
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
 

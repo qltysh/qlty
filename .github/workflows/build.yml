@@ -158,6 +158,7 @@ jobs:
           sed -i "s/{{SHA_X86_64_MAC}}/${STEPS_DATA_OUTPUTS_SHA_X86_64_MAC}/g" qlty.rb
           sed -i "s/{{SHA_AARCH64_LINUX}}/${STEPS_DATA_OUTPUTS_SHA_AARCH64_LINUX}/g" qlty.rb
           sed -i "s/{{SHA_X86_64_LINUX}}/${STEPS_DATA_OUTPUTS_SHA_X86_64_LINUX}/g" qlty.rb
+        shell: bash
         env:
           STEPS_DATA_OUTPUTS_VERSION: ${{ steps.data.outputs.version }}
           STEPS_DATA_OUTPUTS_SHA_AARCH64_MAC: ${{ steps.data.outputs.sha_aarch64_mac }}
@@ -172,6 +173,7 @@ jobs:
           path: qlty.rb
       - name: Create dist-manifest.json
         run: echo "{\"announcement_tag\":\"v${STEPS_DATA_OUTPUTS_VERSION}\"}" > dist-manifest.json
+        shell: bash
         env:
           STEPS_DATA_OUTPUTS_VERSION: ${{ steps.data.outputs.version }}
       - name: Upload manifest
