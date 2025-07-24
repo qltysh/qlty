@@ -20,13 +20,13 @@ jobs:
           owner: ${{ github.repository_owner }}
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 500
           persist-credentials: false
 
       - name: Install Qlty CLI
-        uses: qltysh/qlty-action/install@main
+        uses: qltysh/qlty-action/install@b9133a486505563742d768da29f7951271678c87
 
       - name: Update CHANGELOG.md
         id: claude
@@ -40,7 +40,7 @@ jobs:
           allowed_tools: "Edit,MultiEdit,LS,Read,View,Write,Glob,GlobTool,Grep,GrepTool,BatchTool,WebFetch(domain:docs.qlty.sh),Bash(git:*),Bash(qlty:*),Bash(gh pr view:*),Bash(gh release list:*)"
 
       - name: Commit changes
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
         with:
           token: ${{ steps.app-token.outputs.token }}
           title: "chore: Update CHANGELOG.md"

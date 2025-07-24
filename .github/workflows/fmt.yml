@@ -18,13 +18,13 @@ jobs:
           app-id: ${{ vars.QLTY_APP_ID }}
           private-key: ${{ secrets.QLTY_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: ${{ github.head_ref }}
           persist-credentials: false
-      - uses: qltysh/qlty-action/fmt@main
+      - uses: qltysh/qlty-action/fmt@b9133a486505563742d768da29f7951271678c87
       - name: Commit changes
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
         with:
           token: ${{ steps.app-token.outputs.token }}
           title: qlty fmt --all
