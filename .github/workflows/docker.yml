@@ -20,9 +20,6 @@ env:
 
 permissions:
   contents: read
-  packages: write
-  attestations: write
-  id-token: write
 
 jobs:
   build:
@@ -38,7 +35,9 @@ jobs:
           - platform: linux/arm64
             os: ubuntu-24.04-arm
     runs-on: ${{ matrix.os }}
-
+    permissions:
+      attestations: write
+      packages: write
     steps:
       - name: Prepare
         run: |
@@ -108,6 +107,8 @@ jobs:
 
   merge:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     if: ${{ github.event_name != 'pull_request' }}
     needs:
       - build
