@@ -166,6 +166,7 @@ targets = [
     "x86_64-unknown-linux-musl",
 ]
 
+
 # Path that installers should place binaries in
 install-path = "CARGO_HOME"
 # Publish jobs to run in CI
