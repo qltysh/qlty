@@ -34,11 +34,11 @@ jobs:
           git config --global core.longpaths true
           git config --global core.autocrlf false
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
       - name: Install cargo-release
-        uses: jaxxstorm/action-install-gh-release@v2.1.0
+        uses: jaxxstorm/action-install-gh-release@6096f2a2bbfee498ced520b6922ac2c06e990ed2
         with:
           repo: crate-ci/cargo-release
           tag: v0.25.17
@@ -52,7 +52,7 @@ jobs:
 
           echo "version=$(cargo metadata --format-version 1 | jq -r ".workspace_members[0]" | cut -d# -f2)" >> "$GITHUB_OUTPUT"
       - name: Commit changes
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
         with:
           token: ${{ steps.app-token.outputs.token }}
           title: Release ${{ steps.version.outputs.version }}
