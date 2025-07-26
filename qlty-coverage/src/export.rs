@@ -73,7 +73,8 @@ impl CoverageExport {
         JsonFormatter::new(self.metadata.clone())
             .write_to_file(&directory.join("metadata.json"))?;
 
-        let zip_file_contents = self.compute_zip_file_contents(directory, &file_coverage_filenames)?;
+        let zip_file_contents =
+            self.compute_zip_file_contents(directory, &file_coverage_filenames)?;
 
         compress_files(zip_file_contents, &directory.join("coverage.zip"))
     }
@@ -82,7 +83,11 @@ impl CoverageExport {
         Ok(self.read_file("coverage.zip")?.len() as u64)
     }
 
-    fn compute_zip_file_contents(&self, directory: &Path, file_coverage_filenames: &[String]) -> Result<HashMap<String, PathBuf>> {
+    fn compute_zip_file_contents(
+        &self,
+        directory: &Path,
+        file_coverage_filenames: &[String],
+    ) -> Result<HashMap<String, PathBuf>> {
         let mut files_to_zip = HashMap::new();
 
         files_to_zip.insert(
