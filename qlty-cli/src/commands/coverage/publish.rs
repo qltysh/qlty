@@ -116,12 +116,17 @@ pub struct Publish {
     pub total_parts_count: Option<u32>,
 
     #[arg(long)]
-    /// Validate the coverage report before uploading it.
-    /// This will check if the report is valid and minimum number of files are present.
+    /// [DEPRECATED] Validate the coverage report before uploading it.
+    /// Validation is now enabled by default. Use --no-validate to disable.
     pub validate: bool,
 
     #[arg(long)]
-    /// Custom threshold percentage for validation (0-100). Only applies when --validate is used.
+    /// Disable validation of the coverage report before uploading it.
+    /// By default, validation checks if the report is valid and minimum number of files are present.
+    pub no_validate: bool,
+
+    #[arg(long)]
+    /// Custom threshold percentage for validation (0-100). Only applies when validation is enabled.
     /// Default is 90.
     pub validate_file_threshold: Option<f64>,
 
@@ -135,6 +140,12 @@ pub struct Publish {
 }
 
 impl Publish {
+    /// Determines if validation should be performed based on the flags.
+    /// Validation is enabled by default and can be disabled with --no-validate.
+    fn should_validate(&self) -> bool {
+        !self.no_validate
+    }
+
     // TODO: Use CommandSuccess and CommandError, which is not straight forward since those types aren't available here.
     pub fn execute(&self, _args: &crate::Arguments) -> Result<CommandSuccess, CommandError> {
         print_initial_messages(self.quiet);
@@ -169,7 +180,7 @@ impl Publish {
             self.show_report(&report)?;
         }
 
-        if self.validate {
+        if self.should_validate() {
             let validator = Validator::new(self.validate_file_threshold);
             let validation_result = validator.validate(&report)?;
 
@@ -264,6 +275,9 @@ impl Publish {
             eprintln!(
                 "WARNING: --transform-strip-prefix is deprecated, use --strip-prefix instead\n"
             );
+        }
+        if self.validate {
+            eprintln!("WARNING: --validate is deprecated, validation is now enabled by default. Use --no-validate to disable validation\n");
         }
     }
 

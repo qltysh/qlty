@@ -8,12 +8,11 @@ args = [
   "123",
   "--override-branch",
   "main",
-  "--override-commit-time",
-  "2025-05-30T05:00:00+00:00",
-  "--no-validate",
+  "--validate",
   "lcov.info"
 ]
 bin.name = "qlty"
+status.code = 99
 
 [env]
 remove = ["GITHUB_ACTIONS"]
