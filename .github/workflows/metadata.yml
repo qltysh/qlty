@@ -7,11 +7,11 @@ on:
 jobs:
   conventional:
     runs-on: ubuntu-latest
-    if: ${{ ! startsWith(github.event.pull_request.head.ref, 'dependabot/') }}
+    if: ${{ ! startsWith(github.event.pull_request.head.ref, 'dependabot/') && github.event.pull_request.user.login != 'qlty-releases[bot]' }}
     permissions:
       pull-requests: read
     steps:
-      - uses: amannn/action-semantic-pull-request@v5
+      - uses: amannn/action-semantic-pull-request@0723387faaf9b38adef4775cd42cfd5155ed6017
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -30,7 +30,7 @@ jobs:
             revert
   issue:
     runs-on: ubuntu-latest
-    if: ${{ ! startsWith(github.event.pull_request.head.ref, 'dependabot/') }}
+    if: ${{ ! startsWith(github.event.pull_request.head.ref, 'dependabot/') && github.event.pull_request.user.login != 'qlty-releases[bot]' }}
     permissions:
       issues: read
       pull-requests: write

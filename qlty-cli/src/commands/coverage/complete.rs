@@ -8,7 +8,7 @@ use clap::Args;
 use console::style;
 use qlty_cloud::{get_legacy_api_url, Client as QltyClient};
 use qlty_coverage::{
-    publish::{Plan, Planner, Settings},
+    publish::{Planner, Settings},
     token::load_auth_token,
 };
 use std::time::Instant;
@@ -39,6 +39,10 @@ pub struct Complete {
     /// Override the build identifier from the CI environment
     pub override_build_id: Option<String>,
 
+    #[arg(long)]
+    /// Override the commit time from git metadata. Accepts a Unix timestamp (seconds since epoch) or RFC3339/ISO8601 format
+    pub override_commit_time: Option<String>,
+
     #[arg(long, short)]
     /// The token to use for authentication when uploading the report.
     /// By default, it retrieves the token from the QLTY_COVERAGE_TOKEN environment variable.
@@ -67,12 +71,12 @@ impl Complete {
         print_settings(&settings);
 
         let token = load_auth_token(&self.token, self.project.as_deref())?;
-        let plan = Planner::new(&load_config(), &settings).compute()?;
+        let metadata = Planner::new(&load_config(), &settings).compute_metadata()?;
 
-        self.validate_plan(&plan)?;
+        validate_metadata(&metadata)?;
 
         self.print_section_header(" METADATA ");
-        print_metadata(&plan, self.quiet);
+        print_metadata(&metadata, self.quiet);
 
         self.print_section_header(" AUTHENTICATION ");
         print_authentication_info(&token, self.quiet);
@@ -83,8 +87,8 @@ impl Complete {
         if self.dry_run {
             self.print_complete_success(timer.elapsed().as_secs_f32(), &None);
         } else {
-            let result = Self::request_complete(&plan.metadata, &token)
-                .context("Failed to complete coverage")?;
+            let result =
+                Self::request_complete(&metadata, &token).context("Failed to complete coverage")?;
             self.print_complete_success(timer.elapsed().as_secs_f32(), &result.url);
         }
 
@@ -106,15 +110,12 @@ impl Complete {
             override_branch: self.override_branch.clone(),
             override_pull_request_number: self.override_pr_number.clone(),
             override_build_id: self.override_build_id.clone(),
+            override_commit_time: self.override_commit_time.clone(),
             tag: self.tag.clone(),
             quiet: self.quiet,
             project: self.project.clone(),
             ..Default::default()
         }
-    }
-
-    fn validate_plan(&self, plan: &Plan) -> Result<()> {
-        validate_metadata(&plan.metadata)
     }
 
     fn print_complete_success(&self, elapsed_seconds: f32, url: &Option<String>) {

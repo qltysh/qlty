@@ -1,0 +1,115 @@
+name: Installer Tests
+on:
+  workflow_dispatch:
+  workflow_call:
+  pull_request:
+    paths:
+      - installer/install.*
+      - .github/workflows/installer_test.yml
+
+permissions:
+  actions: write
+  contents: read
+  id-token: write
+
+jobs:
+  test:
+    name: Test ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    env:
+      INSTALL_SH: installer/install.sh
+      INSTALL_PS1: installer/install.ps1
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: Linux
+            name: Linux / sh
+            runner: ubuntu-latest
+            file: $INSTALL_SH
+            command: sh
+
+          - os: Linux
+            name: Linux / dash
+            runner: ubuntu-latest
+            file: $INSTALL_SH
+            command: dash
+
+          - os: Linux
+            name: Linux / sh (specific version)
+            runner: ubuntu-latest
+            file: $INSTALL_SH
+            command: sh
+            version: 0.447.0
+
+          - os: Linux
+            name: Linux / bash
+            runner: ubuntu-latest
+            file: $INSTALL_SH
+            command: bash
+
+          - os: Linux
+            name: Linux / debian (sh / wget)
+            runner: ubuntu-latest
+            container: debian:trixie-slim
+            package_install: apt-get update && apt-get install -y xz-utils wget
+            file: $INSTALL_SH
+            command: sh
+
+          - os: Linux
+            name: Linux / alpine (sh)
+            runner: ubuntu-latest
+            container: alpine:3
+            package_install: apk add -U xz
+            file: $INSTALL_SH
+            command: sh
+
+          - os: macOS
+            name: macOS / sh
+            runner: macos-15
+            file: $INSTALL_SH
+            command: sh
+
+          - os: macOS
+            name: macOS / bash
+            runner: macos-15
+            file: $INSTALL_SH
+            command: bash
+
+          - os: Windows
+            name: Windows / powershell
+            runner: windows-latest
+            file: $Env:INSTALL_PS1
+            command: powershell -Command -
+
+          - os: Windows
+            name: Windows / powershell (specific version)
+            runner: windows-latest
+            file: $Env:INSTALL_PS1
+            command: powershell -Command -
+            version: 0.447.0
+
+    container:
+      image: ${{ matrix.container }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Install dependencies
+        if: matrix.package_install
+        run: ${{ matrix.package_install }}
+
+      - name: Install qlty
+        env:
+          QLTY_VERSION: ${{ matrix.version }}
+        run: cat ${{ matrix.file }} | ${{ matrix.command }}
+
+      - name: Validate qlty install
+        run: ~/.qlty/bin/qlty version --no-upgrade-check
+        shell: sh
+
+      - name: Validate qlty version
+        if: matrix.version
+        run: V="$(~/.qlty/bin/qlty version --no-upgrade-check | cut -d' ' -f2)"; test "$V" = "${{ matrix.version }}"
+        shell: sh

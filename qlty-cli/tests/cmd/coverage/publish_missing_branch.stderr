@@ -1,4 +1,5 @@
-qlty [..] [..]-[..] ([..] debug [..])
+qlty [..] [..]-[..] ([..])
+[..]
 https://qlty.sh/d/coverage
 
  SETTINGS 
@@ -8,7 +9,6 @@ https://qlty.sh/d/coverage
     override-build-id: 123
     override-commit-sha: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
 
-WARNING: The `[[ignore]]` field in qlty.toml is deprecated. Please use `[[exclude]]` or `exclude_patterns` instead.
 
    ERROR   
 

@@ -1,0 +1,28 @@
+qlty [..] [..]-[..] ([..])
+[..]
+https://qlty.sh/d/coverage
+
+ SETTINGS 
+
+    cwd: [CWD]
+    override-build-id: 123
+    override-commit-sha: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
+    override-commit-time: 2025-05-30T05:00:00+00:00
+
+ METADATA 
+
+    CI: Buildkite
+    Commit: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
+    Branch: main
+    Build ID: 123
+    Commit Time: 2025-05-30 05:00:00 UTC
+
+ AUTHENTICATION 
+
+    Auth Method: Unknown
+    Token: 123
+
+ COMPLETING... 
+
+    Coverage marked as complete in [..]s!
+

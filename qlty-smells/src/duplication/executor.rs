@@ -2,6 +2,7 @@ use super::Node;
 use super::NodeVisitor;
 use super::NodeWithFile;
 use super::Plan;
+use qlty_analysis::snippet::truncate_snippet;
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_analysis::{
     code::{File, NodeFilterBuilder, Visitor},
@@ -220,8 +221,8 @@ impl Executor {
                     category: Category::Duplication.into(),
                     language: language_enum_from_name(node.source_file.language().name()).into(),
                     location,
-                    snippet: node.snippet(),
-                    snippet_with_context: node.snippet_with_context(),
+                    snippet: truncate_snippet(&node.snippet()),
+                    snippet_with_context: truncate_snippet(&node.snippet_with_context()),
                     level: Level::Medium.into(),
                     message: message.to_string(),
                     value: lines_count,

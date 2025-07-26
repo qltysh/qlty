@@ -1,6 +1,49 @@
 # Changelog
 
-## Unreleased
+## v0.546.0 (2025-06-24)
+
+### New
+
+- Add timestamps to coverage output (#2170)
+
+## v0.545.0 (2025-06-24)
+
+### New
+
+- Make strip prefix coverage transformer optional (#2172)
+
+## v0.544.0 (2025-06-24)
+
+### New
+
+- Support `coverage complete` command without Git (#2168)
+- Allow `coverage publish` to run without Git when using `--override-commit-time` (#2167)
+
+## v0.543.0 (2025-06-23)
+
+### New
+
+- Batch build messages and stats into smaller files (#2165)
+- Batch build issues records into multiple JSONL files (#2157)
+- Add `--override-commit-time` flag to `coverage publish` command (#2155)
+
+## v0.542.0 (2025-06-19)
+
+### New
+
+- Batch build invocation records into multiple JSONL files (#2149)
+
+## v0.541.0 (2025-06-11)
+
+### New
+
+- Add dotCover format support for coverage reports (#2143)
+
+### Fixed
+
+- Add eslint.config.ts as a known ESLint config file (#2137)
+
+Thank you @kolarski for your contribution!
 
 ## v0.540.0 (2025-06-05)
 

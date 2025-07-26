@@ -7,6 +7,8 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 use zip::{write::FileOptions, ZipWriter};
 
+const FILE_COVERAGES_BATCH_SIZE: usize = 5000;
+
 fn compress_files(files: HashMap<String, PathBuf>, output_file: &Path) -> Result<()> {
     // Create the output ZIP file
     let zip_file = File::create(output_file)?;
@@ -54,13 +56,25 @@ impl CoverageExport {
         JsonEachRowFormatter::new(self.report_files.clone())
             .write_to_file(&directory.join("report_files.jsonl"))?;
 
-        JsonEachRowFormatter::new(self.file_coverages.clone())
-            .write_to_file(&directory.join("file_coverages.jsonl"))?;
+        // Write file_coverages using JsonEachRowFormatter after breaking into chunks
+        // to avoid memory issues with large reports, particularly during ingestion
+        let mut file_coverage_filenames = Vec::new();
+        for (i, chunk) in self
+            .file_coverages
+            .chunks(FILE_COVERAGES_BATCH_SIZE)
+            .enumerate()
+        {
+            let filename = format!("file_coverages-{i:03}.jsonl");
+            file_coverage_filenames.push(filename.clone());
+            let file_coverages_formatter = JsonEachRowFormatter::new(chunk.to_vec());
+            file_coverages_formatter.write_to_file(&directory.join(filename))?;
+        }
 
         JsonFormatter::new(self.metadata.clone())
             .write_to_file(&directory.join("metadata.json"))?;
 
-        let zip_file_contents = self.compute_zip_file_contents(directory)?;
+        let zip_file_contents =
+            self.compute_zip_file_contents(directory, &file_coverage_filenames)?;
 
         compress_files(zip_file_contents, &directory.join("coverage.zip"))
     }
@@ -69,17 +83,22 @@ impl CoverageExport {
         Ok(self.read_file("coverage.zip")?.len() as u64)
     }
 
-    fn compute_zip_file_contents(&self, directory: &Path) -> Result<HashMap<String, PathBuf>> {
+    fn compute_zip_file_contents(
+        &self,
+        directory: &Path,
+        file_coverage_filenames: &[String],
+    ) -> Result<HashMap<String, PathBuf>> {
         let mut files_to_zip = HashMap::new();
 
         files_to_zip.insert(
             "report_files.jsonl".to_string(),
             directory.join("report_files.jsonl"),
         );
-        files_to_zip.insert(
-            "file_coverages.jsonl".to_string(),
-            directory.join("file_coverages.jsonl"),
-        );
+
+        // Add all batched file_coverages files
+        for filename in file_coverage_filenames {
+            files_to_zip.insert(filename.clone(), directory.join(filename));
+        }
         files_to_zip.insert("metadata.json".to_string(), directory.join("metadata.json"));
 
         for report_file in &self.report_files {
@@ -159,7 +178,7 @@ mod tests {
         let mut zip = ZipArchive::new(zip_file).unwrap();
 
         assert!(zip.by_name("report_files.jsonl").is_ok());
-        assert!(zip.by_name("file_coverages.jsonl").is_ok());
+        assert!(zip.by_name("file_coverages-000.jsonl").is_ok());
         assert!(zip.by_name("metadata.json").is_ok());
         let raw_file_path = PathBuf::from("raw_files")
             .join(raw_files_dir.file_name().unwrap())

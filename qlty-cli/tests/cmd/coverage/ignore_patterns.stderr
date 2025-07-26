@@ -1,4 +1,5 @@
-qlty [..] [..]-[..] ([..] debug [..])
+qlty [..] [..]-[..] ([..])
+[..]
 https://qlty.sh/d/coverage
 
  SETTINGS 
@@ -15,6 +16,7 @@ https://qlty.sh/d/coverage
     Commit: 822641a8a442eab5981096a0d734ac180aa40106
     Branch: main
     Build ID: 123
+    Commit Time: 2024-01-01 00:00:00 UTC
 
  COVERAGE FILES: 1 
 

@@ -64,6 +64,16 @@ impl FileIndex {
         path: &Path,
         line_numbers: RangeInclusive<LineNumber>,
     ) -> bool {
+        let (start, end) = (*line_numbers.start(), *line_numbers.end());
+
+        // if end < start it is an empty range, so we treat it as a single line range
+        // that starts and ends at start.
+        let line_numbers = if end < start {
+            start..=start
+        } else {
+            line_numbers
+        };
+
         if let Some(file_info) = self.inner.get(path) {
             if file_info.new_file {
                 return true;
@@ -79,5 +89,30 @@ impl FileIndex {
         } else {
             false
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_matches_line_range_existing_file() {
+        use std::path::Path;
+
+        let mut index = FileIndex::new();
+        let path = Path::new("foo.txt");
+
+        // Insert line 3 for foo.txt (not a new file)
+        index.insert_line(path, 3);
+
+        // Should return true for a range that includes 3
+        assert!(index.matches_line_range(path, 3..=0));
+
+        // Should return false for a range that does not include 3
+        assert!(!index.matches_line_range(path, 4..=6));
+
+        // Should return false for a range that does not include 3
+        assert!(!index.matches_line_range(path, 4..=0));
     }
 }

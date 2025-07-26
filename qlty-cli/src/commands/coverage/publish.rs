@@ -157,7 +157,7 @@ impl Publish {
         self.validate_plan(&plan)?;
 
         self.print_section_header(" METADATA ");
-        print_metadata(&plan, self.quiet);
+        print_metadata(&plan.metadata, self.quiet);
         self.print_coverage_files(&plan);
 
         let results = Reader::new(&plan).read()?;

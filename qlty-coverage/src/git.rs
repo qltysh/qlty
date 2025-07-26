@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use git2::Repository;
 
 #[derive(Debug, Clone)]
@@ -12,9 +12,16 @@ pub struct CommitMetadata {
     pub commit_message: String,
 }
 
-pub fn retrieve_commit_metadata() -> Result<CommitMetadata> {
-    let repo = Repository::discover(".")
-        .with_context(|| "Error opening git repository for retrieving commit metadata")?;
+pub fn retrieve_commit_metadata() -> Result<Option<CommitMetadata>> {
+    if std::env::var("QLTY_COVERAGE_TESTING_WITHOUT_GIT").is_ok() {
+        // If we're in testing for scenario without git, return None
+        return Ok(None);
+    }
+
+    let repo = match Repository::discover(".") {
+        Ok(repo) => repo,
+        Err(_) => return Ok(None),
+    };
 
     let head = repo.head()?;
     let oid = head.peel_to_commit()?.id();
@@ -33,7 +40,7 @@ pub fn retrieve_commit_metadata() -> Result<CommitMetadata> {
 
     let commit_message = commit.message().unwrap_or("").to_string();
 
-    Ok(CommitMetadata {
+    Ok(Some(CommitMetadata {
         commit_time,
         author_time,
         committer_name,
@@ -41,5 +48,5 @@ pub fn retrieve_commit_metadata() -> Result<CommitMetadata> {
         author_name,
         author_email,
         commit_message,
-    })
+    }))
 }

@@ -1,0 +1,50 @@
+name: Promote a Release to Latest
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "The version to promote as latest (e.g. v1.0.0)"
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+permissions:
+  contents: read
+  "id-token": "write"
+jobs:
+  test:
+    name: ${{ matrix.runner }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            command: curl https://qlty.sh | sh
+          - runner: macos-15
+            command: curl https://qlty.sh | sh
+          - runner: windows-latest
+            command: powershell -c "iwr https://qlty.sh | iex"
+    steps:
+      - name: Install qlty and validate
+        env:
+          QLTY_VERSION: ${{ inputs.version }}
+        run: ${{ matrix.command }} && ~/.qlty/bin/qlty version --no-upgrade-check
+        shell: sh
+  promote:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup AWS CLI
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
+        with:
+          role-to-assume: ${{ secrets.QLTY_RELEASE_AWS_ROLE_ARN }}
+          role-session-name: ${{ vars.QLTY_RELEASE_AWS_ROLE_SESSION_NAME }}
+          aws-region: ${{ vars.QLTY_RELEASE_AWS_REGION }}
+      - name: Upload to S3
+        run: |
+          VERSION="${{ inputs.version }}"
+          aws s3 cp --recursive ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/v${VERSION#v}/ ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/latest/
