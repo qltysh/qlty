@@ -252,7 +252,7 @@ fish)
 zsh)
 	# Install completions, but we don't care if it fails
 	SHELL=zsh $exe completions --install >/dev/null 2>&1 || :
-	zsh_config=$HOME/.zshrc
+	zsh_config="${ZDOTDIR%/:-"$HOME"}/.zshrc"
 	tilde_zsh_config=$(tildify "$zsh_config")
 	{
 		printf '\n# qlty\n'
