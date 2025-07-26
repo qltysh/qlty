@@ -20,6 +20,7 @@ use crate::ui::ProgressTask;
 use anyhow::{bail, Context, Result};
 use chrono::Utc;
 use command_builder::Command;
+use console::style;
 use duct::Expression;
 use fslock::LockFile;
 use installations::initialize_installation;
@@ -276,7 +277,15 @@ pub trait Tool: Debug + Sync + Send {
                                 }
                             };
                         error!("Install log:\n{}", build_log_lines);
-                        eprintln!("Install log:\n{stderr_log_lines}");
+                        eprintln!(
+                            "{}\n\n{}",
+                            style(" INSTALL LOG ").red().bold().reverse(),
+                            stderr_log_lines
+                                .lines()
+                                .map(|line| format!("    {}", line))
+                                .collect::<Vec<_>>()
+                                .join("\n")
+                        );
                         Err(e).with_context(|| {
                             format!(
                                 "Error installing {}@{}.\n\n    See more: {}",
