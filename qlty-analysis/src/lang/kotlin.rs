@@ -306,10 +306,9 @@ impl Language for Kotlin {
             let parameter_name = crate::code::node_source(&parameter_node, source_file);
 
             let sanitized_parameter_name = self.sanitize_parameter_name(parameter_name);
-            match sanitized_parameter_name {
-                Some(sanitized_parameter_name) => parameter_names.push(sanitized_parameter_name),
-                _ => {}
-            };
+            if let Some(sanitized_parameter_name) = sanitized_parameter_name {
+                parameter_names.push(sanitized_parameter_name);
+            }
         }
         parameter_names
     }
@@ -425,69 +424,81 @@ mod test {
 
     mod parameters {
         use super::*;
-        use qlty_smells::structure::checks::parameters;
+
+        fn get_function_parameters(source_code: &str) -> Vec<String> {
+            let source_file = Arc::new(File::from_string("kotlin", source_code));
+            let tree = source_file.parse();
+            let language = Kotlin::default();
+            let query = language.function_declaration_query();
+            let mut query_cursor = tree_sitter::QueryCursor::new();
+
+            let all_matches =
+                query_cursor.matches(query, tree.root_node(), source_file.contents.as_bytes());
+
+            for function_match in all_matches {
+                if let Some(parameters_capture) = function_match
+                    .captures
+                    .iter()
+                    .find(|c| query.capture_names()[c.index as usize] == "parameters")
+                {
+                    return language.get_parameter_names(parameters_capture.node, &source_file);
+                }
+            }
+            vec![]
+        }
 
         #[test]
         fn parameters_with_annotations_issue_2144() {
-            let source_file = Arc::new(File::from_string(
-                "kotlin",
-                r#"fun failsSmellsScan(@NonNull a: String, @NonNull b: String, @NonNull c: String) {}"#
-                    .trim(),
-            ));
-            let result = parameters::check(4, source_file.clone(), &source_file.parse());
-            // Should be empty because there are only 3 parameters
-            assert_eq!(
-                0,
-                result.len(),
-                "Expected no issues for function with 3 parameters, but got: {:?}",
-                result
+            let parameters = get_function_parameters(
+                r#"fun failsSmellsScan(@NonNull a: String, @NonNull b: String, @NonNull c: String) {}"#,
             );
+            // Should be exactly 3 parameters, not 6 (annotations should be filtered out)
+            assert_eq!(3, parameters.len());
+            assert_eq!(vec!["a", "b", "c"], parameters);
         }
 
         #[test]
         fn parameters_without_annotations() {
-            let source_file = Arc::new(File::from_string(
-                "kotlin",
-                r#"fun normalFunction(a: String, b: String, c: String) {}"#.trim(),
-            ));
-            let result = parameters::check(4, source_file.clone(), &source_file.parse());
-            assert_eq!(0, result.len());
+            let parameters = get_function_parameters(
+                r#"fun normalFunction(a: String, b: String, c: String) {}"#,
+            );
+            assert_eq!(3, parameters.len());
+            assert_eq!(vec!["a", "b", "c"], parameters);
         }
 
         #[test]
-        fn parameters_with_threshold_exceeded() {
-            let source_file = Arc::new(File::from_string(
-                "kotlin",
-                r#"fun manyParams(a: String, b: String, c: String, d: String, e: String, f: String) {}"#
-                    .trim(),
-            ));
-            let result = parameters::check(5, source_file.clone(), &source_file.parse());
-            assert_eq!(1, result.len());
-            assert_eq!(result[0].value, 6);
+        fn parameters_with_many_params() {
+            let parameters = get_function_parameters(
+                r#"fun manyParams(a: String, b: String, c: String, d: String, e: String, f: String) {}"#,
+            );
+            assert_eq!(6, parameters.len());
+            assert_eq!(vec!["a", "b", "c", "d", "e", "f"], parameters);
         }
 
         #[test]
         fn parameters_mixed_annotations_and_without() {
-            let source_file = Arc::new(File::from_string(
-                "kotlin",
-                r#"fun mixedParams(@NonNull a: String, b: Int, @Nullable c: String, d: Boolean) {}"#
-                    .trim(),
-            ));
-            let result = parameters::check(5, source_file.clone(), &source_file.parse());
-            // Should be empty because there are only 4 parameters
-            assert_eq!(0, result.len());
+            let parameters = get_function_parameters(
+                r#"fun mixedParams(@NonNull a: String, b: Int, @Nullable c: String, d: Boolean) {}"#,
+            );
+            // Should be exactly 4 parameters (annotations filtered out)
+            assert_eq!(4, parameters.len());
+            assert_eq!(vec!["a", "b", "c", "d"], parameters);
         }
 
         #[test]
         fn parameters_multiple_annotations_per_parameter() {
-            let source_file = Arc::new(File::from_string(
-                "kotlin",
-                r#"fun multiAnnotations(@NonNull @NotEmpty a: String, @Nullable @Size(max = 100) b: String) {}"#
-                    .trim(),
-            ));
-            let result = parameters::check(3, source_file.clone(), &source_file.parse());
-            // Should be empty because there are only 2 parameters
-            assert_eq!(0, result.len());
+            let parameters = get_function_parameters(
+                r#"fun multiAnnotations(@NonNull @NotEmpty a: String, @Nullable @Size(max = 100) b: String) {}"#,
+            );
+            // Should be exactly 2 parameters (all annotations filtered out)
+            assert_eq!(2, parameters.len());
+            assert_eq!(vec!["a", "b"], parameters);
+        }
+
+        #[test]
+        fn parameters_empty() {
+            let parameters = get_function_parameters(r#"fun noParams() {}"#);
+            assert_eq!(0, parameters.len());
         }
     }
 }
