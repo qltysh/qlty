@@ -302,7 +302,7 @@ impl Language for Kotlin {
             if parameter_node.kind() == "parameter_modifiers" {
                 continue;
             }
-            
+
             let parameter_name = crate::code::node_source(&parameter_node, source_file);
 
             let sanitized_parameter_name = self.sanitize_parameter_name(parameter_name);
@@ -421,5 +421,73 @@ mod test {
     fn call_node(tree: &Tree) -> Node {
         let root_node = tree.root_node();
         root_node.named_child(0).unwrap()
+    }
+
+    mod parameters {
+        use super::*;
+        use qlty_smells::structure::checks::parameters;
+
+        #[test]
+        fn parameters_with_annotations_issue_2144() {
+            let source_file = Arc::new(File::from_string(
+                "kotlin",
+                r#"fun failsSmellsScan(@NonNull a: String, @NonNull b: String, @NonNull c: String) {}"#
+                    .trim(),
+            ));
+            let result = parameters::check(4, source_file.clone(), &source_file.parse());
+            // Should be empty because there are only 3 parameters
+            assert_eq!(
+                0,
+                result.len(),
+                "Expected no issues for function with 3 parameters, but got: {:?}",
+                result
+            );
+        }
+
+        #[test]
+        fn parameters_without_annotations() {
+            let source_file = Arc::new(File::from_string(
+                "kotlin",
+                r#"fun normalFunction(a: String, b: String, c: String) {}"#.trim(),
+            ));
+            let result = parameters::check(4, source_file.clone(), &source_file.parse());
+            assert_eq!(0, result.len());
+        }
+
+        #[test]
+        fn parameters_with_threshold_exceeded() {
+            let source_file = Arc::new(File::from_string(
+                "kotlin",
+                r#"fun manyParams(a: String, b: String, c: String, d: String, e: String, f: String) {}"#
+                    .trim(),
+            ));
+            let result = parameters::check(5, source_file.clone(), &source_file.parse());
+            assert_eq!(1, result.len());
+            assert_eq!(result[0].value, 6);
+        }
+
+        #[test]
+        fn parameters_mixed_annotations_and_without() {
+            let source_file = Arc::new(File::from_string(
+                "kotlin",
+                r#"fun mixedParams(@NonNull a: String, b: Int, @Nullable c: String, d: Boolean) {}"#
+                    .trim(),
+            ));
+            let result = parameters::check(5, source_file.clone(), &source_file.parse());
+            // Should be empty because there are only 4 parameters
+            assert_eq!(0, result.len());
+        }
+
+        #[test]
+        fn parameters_multiple_annotations_per_parameter() {
+            let source_file = Arc::new(File::from_string(
+                "kotlin",
+                r#"fun multiAnnotations(@NonNull @NotEmpty a: String, @Nullable @Size(max = 100) b: String) {}"#
+                    .trim(),
+            ));
+            let result = parameters::check(3, source_file.clone(), &source_file.parse());
+            // Should be empty because there are only 2 parameters
+            assert_eq!(0, result.len());
+        }
     }
 }
