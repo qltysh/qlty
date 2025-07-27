@@ -1,6 +1,7 @@
 use crate::code::node_source;
 use crate::code::File;
 use crate::lang::Language;
+use std::sync::Arc;
 use tree_sitter::Node;
 
 const CLASS_QUERY: &str = r#"
@@ -287,6 +288,30 @@ impl Language for Kotlin {
     fn function_name_node<'a>(&'a self, node: &'a Node) -> Node<'a> {
         node.child(0).unwrap()
     }
+
+    fn get_parameter_names(
+        &self,
+        parameters_node: tree_sitter::Node,
+        source_file: &Arc<File>,
+    ) -> Vec<String> {
+        let mut parameter_names = vec![];
+        let cursor = &mut parameters_node.walk();
+
+        for parameter_node in parameters_node.named_children(cursor) {
+            // Skip parameter_modifiers nodes which contain annotations
+            if parameter_node.kind() == "parameter_modifiers" {
+                continue;
+            }
+
+            let parameter_name = crate::code::node_source(&parameter_node, source_file);
+
+            let sanitized_parameter_name = self.sanitize_parameter_name(parameter_name);
+            if let Some(sanitized_parameter_name) = sanitized_parameter_name {
+                parameter_names.push(sanitized_parameter_name);
+            }
+        }
+        parameter_names
+    }
 }
 
 #[cfg(test)]
@@ -395,5 +420,85 @@ mod test {
     fn call_node(tree: &Tree) -> Node {
         let root_node = tree.root_node();
         root_node.named_child(0).unwrap()
+    }
+
+    mod parameters {
+        use super::*;
+
+        fn get_function_parameters(source_code: &str) -> Vec<String> {
+            let source_file = Arc::new(File::from_string("kotlin", source_code));
+            let tree = source_file.parse();
+            let language = Kotlin::default();
+            let query = language.function_declaration_query();
+            let mut query_cursor = tree_sitter::QueryCursor::new();
+
+            let all_matches =
+                query_cursor.matches(query, tree.root_node(), source_file.contents.as_bytes());
+
+            for function_match in all_matches {
+                if let Some(parameters_capture) = function_match
+                    .captures
+                    .iter()
+                    .find(|c| query.capture_names()[c.index as usize] == "parameters")
+                {
+                    return language.get_parameter_names(parameters_capture.node, &source_file);
+                }
+            }
+            vec![]
+        }
+
+        #[test]
+        fn parameters_with_annotations_issue_2144() {
+            let parameters = get_function_parameters(
+                r#"fun failsSmellsScan(@NonNull a: String, @NonNull b: String, @NonNull c: String) {}"#,
+            );
+            // Should be exactly 3 parameters, not 6 (annotations should be filtered out)
+            assert_eq!(3, parameters.len());
+            assert_eq!(vec!["a", "b", "c"], parameters);
+        }
+
+        #[test]
+        fn parameters_without_annotations() {
+            let parameters = get_function_parameters(
+                r#"fun normalFunction(a: String, b: String, c: String) {}"#,
+            );
+            assert_eq!(3, parameters.len());
+            assert_eq!(vec!["a", "b", "c"], parameters);
+        }
+
+        #[test]
+        fn parameters_with_many_params() {
+            let parameters = get_function_parameters(
+                r#"fun manyParams(a: String, b: String, c: String, d: String, e: String, f: String) {}"#,
+            );
+            assert_eq!(6, parameters.len());
+            assert_eq!(vec!["a", "b", "c", "d", "e", "f"], parameters);
+        }
+
+        #[test]
+        fn parameters_mixed_annotations_and_without() {
+            let parameters = get_function_parameters(
+                r#"fun mixedParams(@NonNull a: String, b: Int, @Nullable c: String, d: Boolean) {}"#,
+            );
+            // Should be exactly 4 parameters (annotations filtered out)
+            assert_eq!(4, parameters.len());
+            assert_eq!(vec!["a", "b", "c", "d"], parameters);
+        }
+
+        #[test]
+        fn parameters_multiple_annotations_per_parameter() {
+            let parameters = get_function_parameters(
+                r#"fun multiAnnotations(@NonNull @NotEmpty a: String, @Nullable @Size(max = 100) b: String) {}"#,
+            );
+            // Should be exactly 2 parameters (all annotations filtered out)
+            assert_eq!(2, parameters.len());
+            assert_eq!(vec!["a", "b"], parameters);
+        }
+
+        #[test]
+        fn parameters_empty() {
+            let parameters = get_function_parameters(r#"fun noParams() {}"#);
+            assert_eq!(0, parameters.len());
+        }
     }
 }
