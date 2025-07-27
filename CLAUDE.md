@@ -32,7 +32,7 @@
 - Do not use control flow like if statements or loops in tests
 - `.unwrap()` is OK to use in tests
 
-## Important!
+## Important
 
 - Never commit to `main` branch. Always work on a new branch from `main` with a descriptive name
 - IMPORTANT: Before every commit, typecheck, run auto-formatting and linting, and run all the tests

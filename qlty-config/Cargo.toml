@@ -50,5 +50,8 @@ ureq.workspace = true
 url.workspace = true
 walkdir.workspace = true
 
+[dev-dependencies]
+tempfile.workspace = true
+
 [package.metadata.dist]
 dist = false

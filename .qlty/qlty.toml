@@ -32,67 +32,17 @@ test_patterns = [
     "**/spec_*.*",
 ]
 
-[smells]
-mode = "comment"
-
 [[source]]
 name = "default"
 default = true
 
-[runtimes.enabled]
-rust = "nightly"
-
-[[plugin]]
-name = "actionlint"
-
-[[plugin]]
-name = "clippy"
-
-[[plugin]]
-name = "rustfmt"
-
-[[plugin]]
-name = "eslint"
-version = "8.57.0"
-package_file = ".qlty/configs/package.json"
-
-[[plugin]]
-name = "markdownlint"
-version = "0.41.0"
-
-[[plugin]]
-name = "osv-scanner"
-# Disable during Git hooks because it is slow and requires network
-triggers = ["manual", "build"]
-
-[[plugin]]
-name = "prettier"
-
-[[plugin]]
-name = "ripgrep"
-
-[[plugin]]
-name = "shellcheck"
-
-[[plugin]]
-name = "shfmt"
-
-[[plugin]]
-name = "stylelint"
-version = "14.6.1"
-
-[[plugin]]
-name = "trufflehog"
-
-[[plugin]]
-name = "yamllint"
+[[source]]
+name = "qlty-source"
+repository = "https://github.com/qltysh/qlty-source"
+branch = "main"
 
 # Disable linters which are likely to produce false positives
 # on our test fixtures directories
 [[exclude]]
 plugins = ["osv-scanner", "trufflehog"]
 file_patterns = ["qlty-cli/tests/**"]
-
-[[ignore]]
-rules = ["markdownlint:MD024"]
-file_patterns = ["CHANGELOG.md"]

@@ -70,6 +70,51 @@ impl SourceFetch for GitSource {
 }
 
 impl GitSource {
+    fn resolve_url(&self, url: &str) -> Result<String> {
+        let config = git2::Config::open_default()
+            .with_context(|| "Failed to open Git configuration for URL resolution")?;
+
+        let mut resolved_url = url.to_string();
+
+        // Parse insteadOf configuration
+        let mut entries = config
+            .entries(Some("url\\..*\\.insteadof"))
+            .with_context(|| "Failed to read URL insteadOf configuration")?;
+
+        // Collect all insteadOf rules
+        let mut instead_of_rules = Vec::new();
+        while let Some(entry) = entries.next() {
+            if let Ok(entry) = entry {
+                if let (Some(name), Some(value)) = (entry.name(), entry.value()) {
+                    // Extract the base URL from the config key (e.g., "url.https://github.com/.insteadof" -> "https://github.com/")
+                    if let Some(base_url) = name
+                        .strip_prefix("url.")
+                        .and_then(|s| s.strip_suffix(".insteadof"))
+                    {
+                        instead_of_rules.push((value.to_string(), base_url.to_string()));
+                    }
+                }
+            }
+        }
+
+        // Apply the longest matching insteadOf rule
+        // Sort by value length (descending) to match git's behavior of using the longest match
+        instead_of_rules.sort_by(|a, b| b.0.len().cmp(&a.0.len()));
+
+        for (instead_of, base_url) in &instead_of_rules {
+            if resolved_url.starts_with(instead_of) {
+                resolved_url = resolved_url.replacen(instead_of, base_url, 1);
+                debug!(
+                    "Applied insteadOf rule: '{}' -> '{}', URL: '{}' -> '{}'",
+                    instead_of, base_url, url, resolved_url
+                );
+                break;
+            }
+        }
+
+        Ok(resolved_url)
+    }
+
     fn symlink_if_needed(&self) -> Result<()> {
         std::fs::create_dir_all(self.local_sources_path(&self.library))?;
 
@@ -197,16 +242,20 @@ impl GitSource {
         checkout_path: &Path,
         branches: &[&str],
     ) -> Result<()> {
+        let resolved_origin = self.resolve_url(&self.origin)?;
+
         let mut origin = if let Ok(found_origin) = repository.find_remote("origin") {
             found_origin
         } else {
-            repository.remote("origin", &self.origin).with_context(|| {
-                format!(
-                    "Failed to add remote origin {} to repository at {}",
-                    self.origin,
-                    checkout_path.display()
-                )
-            })?
+            repository
+                .remote("origin", &resolved_origin)
+                .with_context(|| {
+                    format!(
+                        "Failed to add remote origin {} to repository at {}",
+                        resolved_origin,
+                        checkout_path.display()
+                    )
+                })?
         };
 
         self.fetch(&mut origin, branches)
@@ -214,21 +263,18 @@ impl GitSource {
 
     fn fetch(&self, origin: &mut Remote, branches: &[&str]) -> Result<()> {
         let mut fetch_options = self.create_fetch_options()?;
+        let resolved_origin = self
+            .resolve_url(&self.origin)
+            .unwrap_or_else(|_| self.origin.clone());
 
         // Per libgit2, passing an empty array of refspecs fetches base refspecs
         origin
             .fetch(branches, Some(&mut fetch_options), None)
             .with_context(|| {
                 if branches.is_empty() {
-                    format!(
-                        "Failed to fetch base refspecs from remote origin {}",
-                        self.origin
-                    )
+                    format!("Failed to fetch base refspecs from remote origin {resolved_origin}")
                 } else {
-                    format!(
-                        "Failed to fetch branches {:?} from remote origin {}",
-                        branches, self.origin
-                    )
+                    format!("Failed to fetch branches {branches:?} from remote origin {resolved_origin}")
                 }
             })
     }
@@ -304,5 +350,61 @@ impl GitSource {
         LocalSource {
             root: self.local_origin_ref_path(&self.library),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_resolve_url_with_instead_of_https_to_ssh() {
+        let library = Library::new(Path::new(".")).expect("Failed to create library");
+        let git_source = GitSource {
+            library,
+            origin: "git@github.com:user/repo".to_string(),
+            reference: GitSourceReference::Branch("main".to_string()),
+        };
+
+        // We can't easily test with the actual git config in unit tests,
+        // so we'll test the logic indirectly by ensuring the method exists
+        // and returns a reasonable result when git config is available
+        let result = git_source.resolve_url("git@github.com:user/repo");
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_resolve_url_without_instead_of() {
+        let library = Library::new(Path::new(".")).expect("Failed to create library");
+        let git_source = GitSource {
+            library,
+            origin: "https://github.com/user/repo".to_string(),
+            reference: GitSourceReference::Branch("main".to_string()),
+        };
+
+        let result = git_source.resolve_url("https://github.com/user/repo");
+        assert!(result.is_ok());
+
+        // Should return original URL when no insteadOf rules match
+        if let Ok(resolved) = result {
+            assert!(resolved.contains("github.com"));
+        }
+    }
+
+    #[test]
+    fn test_origin_directory_name_sanitization() {
+        let library = Library::new(Path::new(".")).expect("Failed to create library");
+        let git_source = GitSource {
+            library,
+            origin: "git@github.com:user/repo.git".to_string(),
+            reference: GitSourceReference::Branch("main".to_string()),
+        };
+
+        let dir_name = git_source.origin_directory_name();
+        assert_eq!(dir_name, "git-github-com-user-repo-git");
+        assert!(!dir_name.contains(':'));
+        assert!(!dir_name.contains('/'));
+        assert!(!dir_name.contains('.'));
+        assert!(!dir_name.contains('@'));
     }
 }

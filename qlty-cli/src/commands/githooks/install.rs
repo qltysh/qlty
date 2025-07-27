@@ -106,5 +106,11 @@ fn install_hook(hook_name: &str, contents: &str) -> Result<()> {
         })?;
     }
 
+    println!(
+        "Installed git hook '{}' at {}",
+        hook_name,
+        hook_script_path.display()
+    );
+
     Ok(())
 }
