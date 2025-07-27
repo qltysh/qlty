@@ -1,5 +1,63 @@
 # Changelog
 
+## Unreleased
+
+### Improved
+
+- Add installation error to stderr during tool installation error (#2231)
+- Add output after installing githooks (#2217)
+
+### Fixed
+
+- Incorrect parameter counting for Kotlin functions with annotations (#2160)
+- Honor ZDOTDIR environment variable in install.sh (#2240)
+
+Thank you @voltechs for your contribution!
+
+## v0.557.0 (2025-07-22)
+
+### Fixed
+
+- Respect Git `insteadOf` when fetching sources (#2235)
+
+## v0.556.0 (2025-07-17)
+
+### New
+
+- Bubble installation log into build logs on error (#2215)
+- Point to debug logs when lint errors occur (#2222)
+- Add Coverprofile parser (#2225)
+
+## v0.555.0 (2025-07-10)
+
+No changes. (Release was triggered by CI workflow upgrades.)
+
+## v0.552.0 (2025-07-09)
+
+### New
+
+- Batch file_coverages data in JSONL files (#2182)
+
+## v0.548.0 (2025-06-27)
+
+### Fixed
+
+- Treat exceeding 50,000 total issues as a fatal error (#2178)
+
+### Improved
+
+- Lower issue JSONL file batch size (#2179)
+
+## v0.547.0 (2025-06-27)
+
+### Fixed
+
+- Show issues for plugins with no end lines in diff mode (#2176)
+
+### Improved
+
+- Truncate issue snippets for maintainability issues (#2180)
+
 ## v0.546.0 (2025-06-24)
 
 ### New
