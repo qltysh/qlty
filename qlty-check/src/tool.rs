@@ -259,21 +259,27 @@ pub trait Tool: Debug + Sync + Send {
 
                     let log_path = self.install_log_path();
                     if Path::new(&log_path).exists() {
+                        const BUILD_LOG_LINES_LIMIT: usize = 50;
+                        const STDERR_LOG_LINES_LIMIT: usize = 20;
+
+                        fn extract_last_lines(lines: &[&str], limit: usize) -> String {
+                            lines[lines.len().saturating_sub(limit)..].join("\n")
+                        }
+
                         let (build_log_lines, stderr_log_lines) =
                             match std::fs::read_to_string(&log_path) {
                                 Ok(contents) => {
                                     let lines: Vec<&str> = contents.lines().collect();
-                                    (
-                                        lines[lines.len().saturating_sub(50)..].join("\n"),
-                                        lines[lines.len().saturating_sub(20)..].join("\n"),
-                                    )
+                                    let build_log =
+                                        extract_last_lines(&lines, BUILD_LOG_LINES_LIMIT);
+                                    let stderr_log =
+                                        extract_last_lines(&lines, STDERR_LOG_LINES_LIMIT);
+                                    (build_log, stderr_log)
                                 }
                                 Err(err) => {
                                     error!("Failed to read log file {}: {:?}", log_path, err);
-                                    (
-                                        String::from("<failed to read log file>"),
-                                        String::from("<failed to read log file>"),
-                                    )
+                                    let fallback_msg = String::from("<failed to read log file>");
+                                    (fallback_msg.clone(), fallback_msg)
                                 }
                             };
                         error!("Install log:\n{}", build_log_lines);
