@@ -115,6 +115,10 @@ pub struct Publish {
     /// (The total parts count is per coverage tag e.g. if you have 2 tags each with 3 parts, you should set this to 3)
     pub total_parts_count: Option<u32>,
 
+    // Deprecated
+    #[arg(long, hide = true, conflicts_with = "no_validate")]
+    pub validate: bool,
+
     #[arg(long)]
     /// Disable validation of the coverage report before uploading it.
     /// By default, validation checks if the report is valid and minimum number of files are present.
