@@ -116,11 +116,6 @@ pub struct Publish {
     pub total_parts_count: Option<u32>,
 
     #[arg(long)]
-    /// [DEPRECATED] Validate the coverage report before uploading it.
-    /// Validation is now enabled by default. Use --no-validate to disable.
-    pub validate: bool,
-
-    #[arg(long)]
     /// Disable validation of the coverage report before uploading it.
     /// By default, validation checks if the report is valid and minimum number of files are present.
     pub no_validate: bool,
