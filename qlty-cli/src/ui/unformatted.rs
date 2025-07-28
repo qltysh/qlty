@@ -98,7 +98,23 @@ fn apply_fmt(writer: &mut dyn std::io::Write, settings: &Settings) -> Result<boo
     let workspace = Workspace::require_initialized()?;
     workspace.fetch_sources()?;
 
-    let plan = Planner::new(ExecutionVerb::Fmt, settings)?.compute()?;
+    let mut settings = settings.clone();
+
+    // pass absolute paths to the formatter
+    // so cwd does not affect targeting
+    settings.paths = settings
+        .paths
+        .iter()
+        .map(|p| {
+            if p.is_absolute() {
+                p.clone()
+            } else {
+                settings.root.join(p)
+            }
+        })
+        .collect::<Vec<_>>();
+
+    let plan = Planner::new(ExecutionVerb::Fmt, &settings)?.compute()?;
     let executor = Executor::new(&plan);
     let results = executor.install_and_invoke()?;
 
@@ -106,7 +122,7 @@ fn apply_fmt(writer: &mut dyn std::io::Write, settings: &Settings) -> Result<boo
     let report = processor.compute()?;
 
     let mut formatter =
-        TextFormatter::new(&report, &plan.workspace, settings, false, ApplyMode::None);
+        TextFormatter::new(&report, &plan.workspace, &settings, false, ApplyMode::None);
     formatter.write_to(writer)?;
 
     Ok(true)
