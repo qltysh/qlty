@@ -23,7 +23,7 @@ jobs:
           cache-dependency-path: qlty-plugins/plugins/package-lock.json
 
       - name: Install Ruby
-        uses: ruby/setup-ruby@a9bfc2ecf3dd40734a9418f89a7e9d484c32b990
+        uses: ruby/setup-ruby@bb6434c747fa7022e12fa1cae2a0951fcffcff26
         with:
           ruby-version: 3.3
 
