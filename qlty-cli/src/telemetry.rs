@@ -96,6 +96,13 @@ impl Telemetry {
         }
 
         let message = message_from_panic_info(panic_info);
+        
+        // Filter out broken pipe errors from Sentry reporting
+        if message.contains("Broken pipe (os error 32)") {
+            debug!("Filtered out broken pipe panic from Sentry: {}", message);
+            return Ok(());
+        }
+        
         let mut event = ::sentry::protocol::Event {
             exception: vec![::sentry::protocol::Exception {
                 ty: "panic".into(),
