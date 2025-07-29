@@ -58,6 +58,7 @@ jobs:
           title: "chore: Update linter versions"
           body: "This pull request was automatically created by GitHub Actions to update linter versions."
           branch: update-linter-versions
+          base: main
           signoff: true
           sign-commits: true
           delete-branch: true
