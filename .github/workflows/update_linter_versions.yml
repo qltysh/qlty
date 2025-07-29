@@ -98,10 +98,12 @@ jobs:
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          debug: true
           script: |
-            await github.rest.actions.createWorkflowDispatch({
+            const result = await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'plugins.yml',   // file name of the second workflow
               ref: '${{ steps.cpr.outputs.pull-request-branch }}' // run it on the PR branch
             });
+            console.log("Workflow Dispatch Result: ", result);
