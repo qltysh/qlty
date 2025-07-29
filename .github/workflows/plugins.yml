@@ -15,6 +15,9 @@ on:
       - "qlty-config/**"
       - "qlty-check/src/tool/**"
       - ".github/workflows/plugins.yml"
+  workflow_run:
+    workflows: ["Update linter versions"]
+    types: [completed]
 
 permissions:
   actions: write
