@@ -4,6 +4,9 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 12 * * 2" # every Tuesday at 12:00
+  pull_request:
+    paths:
+      - ".github/workflows/plugins.yml"
 
 permissions:
   contents: write
@@ -47,6 +50,7 @@ jobs:
         run: npm run update-linter-versions
 
       - name: Create Pull Request
+        id: cpr
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -86,3 +90,16 @@ jobs:
             //     assignees: assignees
             //   });
             }
+
+      - name: Kick off Plugin Tests on PR branch
+        if: steps.cpr.outputs.pull-request-number != '' # only if a PR was created/updated
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'plugins.yml',   // file name of the second workflow
+              ref: 'update-linter-versions' // run it on the PR branch
+            });
