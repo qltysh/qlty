@@ -6,7 +6,7 @@ on:
     - cron: "0 12 * * 2" # every Tuesday at 12:00
   pull_request:
     paths:
-      - ".github/workflows/plugins.yml"
+      - ".github/workflows/update_linter_versions.yml"
 
 permissions:
   contents: write
