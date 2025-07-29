@@ -12,6 +12,7 @@ permissions:
   contents: write
   pull-requests: write
   issues: write
+  actions: write
 
 jobs:
   update-linter-versions:
@@ -102,5 +103,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'plugins.yml',   // file name of the second workflow
-              ref: 'update-linter-versions' // run it on the PR branch
+              ref: '${{ steps.cpr.outputs.pull-request-branch }}' // run it on the PR branch
             });
