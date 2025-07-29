@@ -2,8 +2,8 @@
 runtime = "ruby"
 package = "syntax_tree"
 file_types = ["ruby"]
-latest_version = "6.2.0"
-known_good_version = "6.2.0"
+latest_version = "6.3.0"
+known_good_version = "6.3.0"
 version_command = "stree version"
 config_files = [".streerc"]
 description = "Ruby auto-formatter"
