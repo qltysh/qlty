@@ -379,11 +379,11 @@ impl ExecutionVerb {
     /// (if the ProtoBuf definition does not change) and safe for programmatic use.
     pub fn as_str_name(&self) -> &'static str {
         match self {
-            ExecutionVerb::Unspecified => "EXECUTION_VERB_UNSPECIFIED",
-            ExecutionVerb::Check => "EXECUTION_VERB_CHECK",
-            ExecutionVerb::Fmt => "EXECUTION_VERB_FMT",
-            ExecutionVerb::Validate => "EXECUTION_VERB_VALIDATE",
-            ExecutionVerb::Install => "EXECUTION_VERB_INSTALL",
+            Self::Unspecified => "EXECUTION_VERB_UNSPECIFIED",
+            Self::Check => "EXECUTION_VERB_CHECK",
+            Self::Fmt => "EXECUTION_VERB_FMT",
+            Self::Validate => "EXECUTION_VERB_VALIDATE",
+            Self::Install => "EXECUTION_VERB_INSTALL",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.
