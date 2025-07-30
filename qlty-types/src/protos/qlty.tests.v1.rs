@@ -78,6 +78,8 @@ pub struct CoverageMetadata {
     pub incomplete: bool,
     #[prost(uint32, tag="38")]
     pub excluded_files_count: u32,
+    #[prost(enumeration="ReferenceType", tag="39")]
+    pub reference_type: i32,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ReportFile {
@@ -147,6 +149,41 @@ pub struct CoverageSummary {
     pub omit: i64,
     #[prost(int64, tag="4")]
     pub total: i64,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+#[repr(i32)]
+pub enum ReferenceType {
+    Unspecified = 0,
+    Branch = 1,
+    Tag = 2,
+    PullRequest = 3,
+    MergeGroup = 4,
+}
+impl ReferenceType {
+    /// String value of the enum field names used in the ProtoBuf definition.
+    ///
+    /// The values are not transformed in any way and thus are considered stable
+    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
+    pub fn as_str_name(&self) -> &'static str {
+        match self {
+            Self::Unspecified => "REFERENCE_TYPE_UNSPECIFIED",
+            Self::Branch => "REFERENCE_TYPE_BRANCH",
+            Self::Tag => "REFERENCE_TYPE_TAG",
+            Self::PullRequest => "REFERENCE_TYPE_PULL_REQUEST",
+            Self::MergeGroup => "REFERENCE_TYPE_MERGE_GROUP",
+        }
+    }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "REFERENCE_TYPE_UNSPECIFIED" => Some(Self::Unspecified),
+            "REFERENCE_TYPE_BRANCH" => Some(Self::Branch),
+            "REFERENCE_TYPE_TAG" => Some(Self::Tag),
+            "REFERENCE_TYPE_PULL_REQUEST" => Some(Self::PullRequest),
+            "REFERENCE_TYPE_MERGE_GROUP" => Some(Self::MergeGroup),
+            _ => None,
+        }
+    }
 }
 include!("qlty.tests.v1.serde.rs");
 // @@protoc_insertion_point(module)
