@@ -25,6 +25,50 @@ stuff:
     key 1: val",
       "tool": "yamllint",
     },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://yamllint.readthedocs.io/en/stable/rules.html#module-yamllint.rules.truthy",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.yaml",
+        "range": {
+          "startColumn": 10,
+          "startLine": 1,
+        },
+      },
+      "message": "truthy value should be one of [false, true]",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "truthy",
+      "snippet": "object: {True: 1, 1: True}",
+      "snippetWithContext": "object: {True: 1, 1: True}
+foo: 'bar'
+stuff:
+  - key 2: v
+    key 1: val",
+      "tool": "yamllint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://yamllint.readthedocs.io/en/stable/rules.html#module-yamllint.rules.truthy",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.yaml",
+        "range": {
+          "startColumn": 22,
+          "startLine": 1,
+        },
+      },
+      "message": "truthy value should be one of [false, true]",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "truthy",
+      "snippet": "object: {True: 1, 1: True}",
+      "snippetWithContext": "object: {True: 1, 1: True}
+foo: 'bar'
+stuff:
+  - key 2: v
+    key 1: val",
+      "tool": "yamllint",
+    },
   ],
 }
 `;
