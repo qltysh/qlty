@@ -121,6 +121,9 @@ impl serde::Serialize for CoverageMetadata {
         if self.excluded_files_count != 0 {
             len += 1;
         }
+        if self.reference_type != 0 {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("qlty.tests.v1.CoverageMetadata", len)?;
         if !self.upload_id.is_empty() {
             struct_ser.serialize_field("uploadId", &self.upload_id)?;
@@ -236,6 +239,11 @@ impl serde::Serialize for CoverageMetadata {
         if self.excluded_files_count != 0 {
             struct_ser.serialize_field("excludedFilesCount", &self.excluded_files_count)?;
         }
+        if self.reference_type != 0 {
+            let v = ReferenceType::try_from(self.reference_type)
+                .map_err(|_| serde::ser::Error::custom(format!("Invalid variant {}", self.reference_type)))?;
+            struct_ser.serialize_field("referenceType", &v)?;
+        }
         struct_ser.end()
     }
 }
@@ -313,6 +321,8 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             "incomplete",
             "excluded_files_count",
             "excludedFilesCount",
+            "reference_type",
+            "referenceType",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -355,6 +365,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             Name,
             Incomplete,
             ExcludedFilesCount,
+            ReferenceType,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -414,6 +425,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                             "name" => Ok(GeneratedField::Name),
                             "incomplete" => Ok(GeneratedField::Incomplete),
                             "excludedFilesCount" | "excluded_files_count" => Ok(GeneratedField::ExcludedFilesCount),
+                            "referenceType" | "reference_type" => Ok(GeneratedField::ReferenceType),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -471,6 +483,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                 let mut name__ = None;
                 let mut incomplete__ = None;
                 let mut excluded_files_count__ = None;
+                let mut reference_type__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::UploadId => {
@@ -705,6 +718,12 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
+                        GeneratedField::ReferenceType => {
+                            if reference_type__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("referenceType"));
+                            }
+                            reference_type__ = Some(map_.next_value::<ReferenceType>()? as i32);
+                        }
                     }
                 }
                 Ok(CoverageMetadata {
@@ -746,6 +765,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                     name: name__,
                     incomplete: incomplete__.unwrap_or_default(),
                     excluded_files_count: excluded_files_count__.unwrap_or_default(),
+                    reference_type: reference_type__.unwrap_or_default(),
                 })
             }
         }
@@ -1232,6 +1252,86 @@ impl<'de> serde::Deserialize<'de> for FileCoverage {
             }
         }
         deserializer.deserialize_struct("qlty.tests.v1.FileCoverage", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for ReferenceType {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let variant = match self {
+            Self::Unspecified => "REFERENCE_TYPE_UNSPECIFIED",
+            Self::Branch => "REFERENCE_TYPE_BRANCH",
+            Self::Tag => "REFERENCE_TYPE_TAG",
+            Self::PullRequest => "REFERENCE_TYPE_PULL_REQUEST",
+            Self::MergeGroup => "REFERENCE_TYPE_MERGE_GROUP",
+        };
+        serializer.serialize_str(variant)
+    }
+}
+impl<'de> serde::Deserialize<'de> for ReferenceType {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "REFERENCE_TYPE_UNSPECIFIED",
+            "REFERENCE_TYPE_BRANCH",
+            "REFERENCE_TYPE_TAG",
+            "REFERENCE_TYPE_PULL_REQUEST",
+            "REFERENCE_TYPE_MERGE_GROUP",
+        ];
+
+        struct GeneratedVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = ReferenceType;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(formatter, "expected one of: {:?}", &FIELDS)
+            }
+
+            fn visit_i64<E>(self, v: i64) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                i32::try_from(v)
+                    .ok()
+                    .and_then(|x| x.try_into().ok())
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
+            }
+
+            fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                i32::try_from(v)
+                    .ok()
+                    .and_then(|x| x.try_into().ok())
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
+            }
+
+            fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                match value {
+                    "REFERENCE_TYPE_UNSPECIFIED" => Ok(ReferenceType::Unspecified),
+                    "REFERENCE_TYPE_BRANCH" => Ok(ReferenceType::Branch),
+                    "REFERENCE_TYPE_TAG" => Ok(ReferenceType::Tag),
+                    "REFERENCE_TYPE_PULL_REQUEST" => Ok(ReferenceType::PullRequest),
+                    "REFERENCE_TYPE_MERGE_GROUP" => Ok(ReferenceType::MergeGroup),
+                    _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
+                }
+            }
+        }
+        deserializer.deserialize_any(GeneratedVisitor)
     }
 }
 impl serde::Serialize for ReportFile {
