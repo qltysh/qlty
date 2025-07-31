@@ -4,7 +4,7 @@ exports[`linter=zizmor fixture=basic version=1.11.0 1`] = `
 {
   "issues": [
     {
-      "category": "CATEGORY_LINT",
+      "category": "CATEGORY_VULNERABILITY",
       "documentationUrl": "https://docs.zizmor.sh/audits/#excessive-permissions",
       "level": "LEVEL_MEDIUM",
       "location": {

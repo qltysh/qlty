@@ -16,6 +16,7 @@ script = "zizmor --format=sarif ${target}"
 success_codes = [0, 10, 11, 12, 13, 14]
 output = "stdout"
 output_format = "sarif"
+output_category = "vulnerability"
 cache_results = true
 batch = true
 suggested = "config"
