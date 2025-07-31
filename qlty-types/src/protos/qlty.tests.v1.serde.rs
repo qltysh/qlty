@@ -124,6 +124,9 @@ impl serde::Serialize for CoverageMetadata {
         if self.reference_type != 0 {
             len += 1;
         }
+        if self.git_tag.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("qlty.tests.v1.CoverageMetadata", len)?;
         if !self.upload_id.is_empty() {
             struct_ser.serialize_field("uploadId", &self.upload_id)?;
@@ -244,6 +247,9 @@ impl serde::Serialize for CoverageMetadata {
                 .map_err(|_| serde::ser::Error::custom(format!("Invalid variant {}", self.reference_type)))?;
             struct_ser.serialize_field("referenceType", &v)?;
         }
+        if let Some(v) = self.git_tag.as_ref() {
+            struct_ser.serialize_field("gitTag", v)?;
+        }
         struct_ser.end()
     }
 }
@@ -323,6 +329,8 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             "excludedFilesCount",
             "reference_type",
             "referenceType",
+            "git_tag",
+            "gitTag",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -366,6 +374,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             Incomplete,
             ExcludedFilesCount,
             ReferenceType,
+            GitTag,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -426,6 +435,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                             "incomplete" => Ok(GeneratedField::Incomplete),
                             "excludedFilesCount" | "excluded_files_count" => Ok(GeneratedField::ExcludedFilesCount),
                             "referenceType" | "reference_type" => Ok(GeneratedField::ReferenceType),
+                            "gitTag" | "git_tag" => Ok(GeneratedField::GitTag),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -484,6 +494,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                 let mut incomplete__ = None;
                 let mut excluded_files_count__ = None;
                 let mut reference_type__ = None;
+                let mut git_tag__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::UploadId => {
@@ -724,6 +735,12 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                             }
                             reference_type__ = Some(map_.next_value::<ReferenceType>()? as i32);
                         }
+                        GeneratedField::GitTag => {
+                            if git_tag__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("gitTag"));
+                            }
+                            git_tag__ = map_.next_value()?;
+                        }
                     }
                 }
                 Ok(CoverageMetadata {
@@ -766,6 +783,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                     incomplete: incomplete__.unwrap_or_default(),
                     excluded_files_count: excluded_files_count__.unwrap_or_default(),
                     reference_type: reference_type__.unwrap_or_default(),
+                    git_tag: git_tag__,
                 })
             }
         }

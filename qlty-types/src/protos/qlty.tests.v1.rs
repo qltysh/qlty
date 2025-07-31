@@ -80,6 +80,8 @@ pub struct CoverageMetadata {
     pub excluded_files_count: u32,
     #[prost(enumeration="ReferenceType", tag="39")]
     pub reference_type: i32,
+    #[prost(string, optional, tag="40")]
+    pub git_tag: ::core::option::Option<::prost::alloc::string::String>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ReportFile {
