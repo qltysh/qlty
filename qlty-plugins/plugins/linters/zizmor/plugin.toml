@@ -20,3 +20,9 @@ cache_results = true
 batch = true
 suggested = "config"
 output_missing = "parse"
+
+# Always run in offline mode by default
+# https://docs.zizmor.sh/usage/#operating-modes
+[[plugins.definitions.zizmor.environment]]
+name = "ZIZMOR_OFFLINE"
+value = "true"
