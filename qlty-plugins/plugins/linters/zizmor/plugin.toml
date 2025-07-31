@@ -1,0 +1,22 @@
+config_version = "0"
+
+[plugins.definitions.zizmor]
+runtime = "python"
+package = "zizmor"
+file_types = ["github-workflow"]
+latest_version = "1.11.0"
+known_good_version = "1.11.0"
+version_command = "zizmor --version"
+config_files = ["zizmor.yml"]
+description = "Static analysis tool for GitHub Actions"
+security = true
+
+[plugins.definitions.zizmor.drivers.lint]
+script = "zizmor --format=sarif ${target}"
+success_codes = [0, 10, 11, 12, 13, 14]
+output = "stdout"
+output_format = "sarif"
+cache_results = true
+batch = true
+suggested = "config"
+output_missing = "parse"

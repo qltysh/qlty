@@ -1,0 +1,42 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=zizmor fixture=basic version=1.11.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://docs.zizmor.sh/audits/#excessive-permissions",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": ".github/workflows/bad.yaml",
+        "range": {
+          "endColumn": 1,
+          "endLine": 13,
+          "startColumn": 3,
+          "startLine": 9,
+        },
+      },
+      "message": "overly broad permissions",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "zizmor/excessive-permissions",
+      "snippet": "  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ...",
+      "snippetWithContext": "on:
+  schedule:
+    # Cron syntax is not correct
+    - cron: '0 */3 * *'
+    # Interval of scheduled job is too small (job runs too frequently)
+    - cron: '* */3 * * *'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ...",
+      "tool": "zizmor",
+    },
+  ],
+}
+`;
