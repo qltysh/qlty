@@ -1,5 +1,5 @@
 use super::utils::{
-    load_config, print_authentication_info, print_initial_messages, print_metadata, print_settings,
+    print_authentication_info, print_initial_messages, print_metadata, print_settings,
     validate_metadata,
 };
 use crate::{CommandError, CommandSuccess};
@@ -7,10 +7,7 @@ use anyhow::{Context, Result};
 use clap::Args;
 use console::style;
 use qlty_cloud::{get_legacy_api_url, Client as QltyClient};
-use qlty_coverage::{
-    publish::{Planner, Settings},
-    token::load_auth_token,
-};
+use qlty_coverage::{publish::Settings, token::load_auth_token};
 use std::time::Instant;
 
 #[derive(Debug, Default, Clone)]
@@ -75,7 +72,9 @@ impl Complete {
         print_settings(&settings);
 
         let token = load_auth_token(&self.token, self.project.as_deref())?;
-        let metadata = Planner::new(&load_config(), &settings).compute_metadata()?;
+        let metadata_planner =
+            qlty_coverage::publish::MetadataPlanner::new(&settings, qlty_coverage::ci::current());
+        let metadata = metadata_planner.compute()?;
 
         validate_metadata(&metadata)?;
 
