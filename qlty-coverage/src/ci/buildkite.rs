@@ -68,6 +68,10 @@ impl CI for Buildkite {
     fn workflow(&self) -> String {
         String::from("")
     }
+
+    fn git_tag(&self) -> Option<String> {
+        self.env.var("BUILDKITE_TAG").filter(|tag| !tag.is_empty())
+    }
 }
 
 #[cfg(test)]

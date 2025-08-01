@@ -110,6 +110,14 @@ impl CI for GitHub {
     fn commit_sha(&self) -> String {
         self.env.var("GITHUB_SHA").unwrap_or_default()
     }
+
+    fn git_tag(&self) -> Option<String> {
+        if self.env.var("GITHUB_REF_TYPE")? == "tag" {
+            self.env.var("GITHUB_REF_NAME")
+        } else {
+            None
+        }
+    }
 }
 
 #[cfg(test)]
@@ -250,5 +258,36 @@ mod test {
             &ci.build_url(),
             "https://github.com/qltysh/qlty/actions/runs/42:3"
         );
+    }
+
+    #[test]
+    fn tag_build() {
+        let mut env: HashMap<String, String> = HashMap::default();
+        env.insert("GITHUB_REF_TYPE".to_string(), "tag".to_string());
+        env.insert("GITHUB_REF_NAME".to_string(), "v1.2.3".to_string());
+        env.insert(
+            "GITHUB_SHA".to_string(),
+            "77948d72a8b5ea21bb335e8e674bad99413da7a2".to_string(),
+        );
+
+        let ci = GitHub {
+            env: Box::new(HashMapEnv::new(env)),
+        };
+        assert_eq!(&ci.branch(), "");
+        assert_eq!(ci.git_tag(), Some("v1.2.3".to_string()));
+        assert_eq!(&ci.commit_sha(), "77948d72a8b5ea21bb335e8e674bad99413da7a2");
+    }
+
+    #[test]
+    fn branch_build_no_tag() {
+        let mut env: HashMap<String, String> = HashMap::default();
+        env.insert("GITHUB_REF_TYPE".to_string(), "branch".to_string());
+        env.insert("GITHUB_REF_NAME".to_string(), "main".to_string());
+
+        let ci = GitHub {
+            env: Box::new(HashMapEnv::new(env)),
+        };
+        assert_eq!(&ci.branch(), "main");
+        assert_eq!(ci.git_tag(), None);
     }
 }
