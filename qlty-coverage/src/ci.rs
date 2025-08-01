@@ -34,6 +34,9 @@ pub trait CI {
     fn pull_number(&self) -> String;
     fn pull_url(&self) -> String;
     fn commit_sha(&self) -> String;
+    fn git_tag(&self) -> Option<String> {
+        None
+    }
 
     // Information about the commit
     // TODO: Message
@@ -56,6 +59,7 @@ pub trait CI {
             commit_sha: self.commit_sha(),
             branch: self.branch(),
             pull_request_number: self.pull_number(),
+            git_tag: self.git_tag(),
             uploader_tool: std::env::var(QLTY_CI_UPLOADER_TOOL).ok(),
             uploader_tool_version: std::env::var(QLTY_CI_UPLOADER_TOOL_VERSION).ok(),
             publish_command: std::env::args().collect::<Vec<String>>().join(" "),

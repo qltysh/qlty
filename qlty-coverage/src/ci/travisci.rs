@@ -82,6 +82,10 @@ impl CI for TravisCI {
     fn commit_sha(&self) -> String {
         self.env.var("TRAVIS_COMMIT").unwrap_or_default()
     }
+
+    fn git_tag(&self) -> Option<String> {
+        self.env.var("TRAVIS_TAG").filter(|tag| !tag.is_empty())
+    }
 }
 
 #[cfg(test)]
@@ -250,5 +254,37 @@ mod test {
             env: Box::new(HashMapEnv::new(env)),
         };
         assert_eq!(&ci.commit_sha(), "abc123");
+    }
+
+    #[test]
+    fn git_tag() {
+        let mut env: HashMap<String, String> = HashMap::default();
+        env.insert("TRAVIS_TAG".to_string(), "v1.2.3".to_string());
+
+        let ci = TravisCI {
+            env: Box::new(HashMapEnv::new(env)),
+        };
+        assert_eq!(ci.git_tag(), Some("v1.2.3".to_string()));
+    }
+
+    #[test]
+    fn git_tag_empty() {
+        let mut env: HashMap<String, String> = HashMap::default();
+        env.insert("TRAVIS_TAG".to_string(), "".to_string());
+
+        let ci = TravisCI {
+            env: Box::new(HashMapEnv::new(env)),
+        };
+        assert_eq!(ci.git_tag(), None);
+    }
+
+    #[test]
+    fn git_tag_not_set() {
+        let env: HashMap<String, String> = HashMap::default();
+
+        let ci = TravisCI {
+            env: Box::new(HashMapEnv::new(env)),
+        };
+        assert_eq!(ci.git_tag(), None);
     }
 }
