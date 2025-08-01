@@ -43,11 +43,7 @@ pub struct Complete {
     /// Override the commit time from git metadata. Accepts a Unix timestamp (seconds since epoch) or RFC3339/ISO8601 format
     pub override_commit_time: Option<String>,
 
-    #[arg(
-        long,
-        conflicts_with = "override_branch",
-        conflicts_with = "override_pr_number"
-    )]
+    #[arg(long)]
     /// Override the git tag from the CI environment
     pub override_git_tag: Option<String>,
 
