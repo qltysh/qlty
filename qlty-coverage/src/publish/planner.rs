@@ -345,31 +345,6 @@ mod tests {
     }
 
     #[test]
-    fn test_reference_type_tag() {
-        let config = QltyConfig::default();
-        let settings = Settings {
-            override_commit_time: Some("1729100000".to_string()),
-            override_branch: Some("main".to_string()),
-            ..Default::default()
-        };
-        let planner = Planner::new(&config, &settings);
-        let mut metadata = planner.compute_metadata().unwrap();
-        // Simulate git_tag being set by CI
-        metadata.git_tag = Some("v1.0.0".to_string());
-        // Re-apply reference type logic
-        metadata.reference_type = if !metadata.pull_request_number.is_empty() {
-            ReferenceType::PullRequest as i32
-        } else if metadata.git_tag.is_some() && metadata.git_tag.as_ref().unwrap() != "" {
-            ReferenceType::Tag as i32
-        } else if !metadata.branch.is_empty() {
-            ReferenceType::Branch as i32
-        } else {
-            ReferenceType::Unspecified as i32
-        };
-        assert_eq!(metadata.reference_type, ReferenceType::Tag as i32);
-    }
-
-    #[test]
     fn test_reference_type_branch() {
         let config = QltyConfig::default();
         let settings = Settings {
