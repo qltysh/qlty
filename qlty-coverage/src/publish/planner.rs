@@ -83,8 +83,8 @@ impl Planner {
             metadata.pull_request_number = pull_request_number;
         }
 
-        if let Some(git_tag) = self.settings.override_git_tag.clone() {
-            metadata.git_tag = Some(git_tag);
+        if let Some(git_tag) = self.settings.override_git_tag.as_ref() {
+            metadata.git_tag = Some(git_tag.to_string());
         }
 
         let commit_metadata = retrieve_commit_metadata()?;
