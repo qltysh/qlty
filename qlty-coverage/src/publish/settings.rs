@@ -14,6 +14,7 @@ pub struct Settings {
     pub override_build_id: Option<String>,
     pub override_commit_sha: Option<String>,
     pub override_commit_time: Option<String>,
+    pub override_git_tag: Option<String>,
     pub override_pull_request_number: Option<String>,
     pub project: Option<String>,
     pub quiet: bool,

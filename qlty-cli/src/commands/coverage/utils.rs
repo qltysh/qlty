@@ -68,6 +68,9 @@ pub fn print_settings(settings: &Settings) {
     if let Some(override_commit_time) = &settings.override_commit_time {
         eprintln!("    override-commit-time: {override_commit_time}");
     }
+    if let Some(override_git_tag) = &settings.override_git_tag {
+        eprintln!("    override-git-tag: {override_git_tag}");
+    }
     if let Some(add_prefix) = &settings.add_prefix {
         eprintln!("    add-prefix: {add_prefix}");
     }
@@ -125,6 +128,10 @@ pub fn print_metadata(metadata: &CoverageMetadata, quiet: bool) {
         let date_time =
             DateTime::from_timestamp(commit_time.seconds, commit_time.nanos as u32).unwrap();
         eprintln!("    Commit Time: {}", date_time);
+    }
+
+    if let Some(git_tag) = &metadata.git_tag {
+        eprintln!("    Git Tag: {}", git_tag);
     }
 
     eprintln!();
