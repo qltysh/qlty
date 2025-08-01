@@ -83,6 +83,10 @@ impl Planner {
             metadata.pull_request_number = pull_request_number;
         }
 
+        if let Some(git_tag) = self.settings.override_git_tag.clone() {
+            metadata.git_tag = Some(git_tag);
+        }
+
         let commit_metadata = retrieve_commit_metadata()?;
 
         if let Some(commit_data) = commit_metadata {
@@ -276,6 +280,7 @@ mod tests {
             override_branch: Some("main".to_string()),
             override_pull_request_number: Some("42".to_string()),
             override_commit_time: Some("2023-01-01T12:00:00Z".to_string()),
+            override_git_tag: Some("v1.2.3".to_string()),
             tag: Some("tag".to_string()),
             name: Some("test-report".to_string()),
             total_parts_count: Some(2),
@@ -288,6 +293,7 @@ mod tests {
         assert_eq!(metadata.commit_sha, "sha-abc");
         assert_eq!(metadata.branch, "main");
         assert_eq!(metadata.pull_request_number, "42");
+        assert_eq!(metadata.git_tag, Some("v1.2.3".to_string()));
         assert_eq!(metadata.tag, Some("tag".to_string()));
         assert_eq!(metadata.name, Some("test-report".to_string()));
         assert_eq!(metadata.total_parts_count, Some(2));
@@ -317,5 +323,17 @@ mod tests {
                 nanos: 0
             })
         );
+    }
+
+    #[test]
+    fn test_metadata_with_git_tag_override() {
+        let config = QltyConfig::default();
+        let settings = Settings {
+            override_git_tag: Some("v2.0.0".to_string()),
+            ..Default::default()
+        };
+        let planner = Planner::new(&config, &settings);
+        let metadata = planner.compute_metadata().unwrap();
+        assert_eq!(metadata.git_tag, Some("v2.0.0".to_string()));
     }
 }

@@ -43,6 +43,10 @@ pub struct Complete {
     /// Override the commit time from git metadata. Accepts a Unix timestamp (seconds since epoch) or RFC3339/ISO8601 format
     pub override_commit_time: Option<String>,
 
+    #[arg(long)]
+    /// Override the git tag from the CI environment
+    pub override_git_tag: Option<String>,
+
     #[arg(long, short)]
     /// The token to use for authentication when uploading the report.
     /// By default, it retrieves the token from the QLTY_COVERAGE_TOKEN environment variable.
@@ -111,6 +115,7 @@ impl Complete {
             override_pull_request_number: self.override_pr_number.clone(),
             override_build_id: self.override_build_id.clone(),
             override_commit_time: self.override_commit_time.clone(),
+            override_git_tag: self.override_git_tag.clone(),
             tag: self.tag.clone(),
             quiet: self.quiet,
             project: self.project.clone(),
