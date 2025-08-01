@@ -10,7 +10,7 @@ mod upload;
 
 pub use metrics::CoverageMetrics;
 pub use plan::Plan;
-pub use planner::Planner;
+pub use planner::{MetadataPlanner, Planner};
 pub use processor::Processor;
 pub use reader::Reader;
 pub use report::Report;
