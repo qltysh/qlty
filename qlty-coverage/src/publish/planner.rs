@@ -376,6 +376,19 @@ mod tests {
     }
 
     #[test]
+    fn test_reference_type_tag() {
+        let config = QltyConfig::default();
+        let settings = Settings {
+            override_git_tag: Some("1729100000".to_string()),
+            override_branch: Some("main".to_string()),
+            ..Default::default()
+        };
+        let planner = Planner::new(&config, &settings);
+        let metadata = planner.compute_metadata().unwrap();
+        assert_eq!(metadata.reference_type, ReferenceType::Tag as i32);
+    }
+
+    #[test]
     fn test_reference_type_unspecified() {
         let config = QltyConfig::default();
         let settings = Settings {
