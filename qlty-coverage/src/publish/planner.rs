@@ -1,3 +1,4 @@
+use crate::ci::CI;
 use crate::git::retrieve_commit_metadata;
 use crate::publish::Plan;
 use crate::publish::Settings;
@@ -25,6 +26,20 @@ pub struct Planner {
     settings: Settings,
 }
 
+pub struct MetadataPlanner {
+    settings: Settings,
+    ci: Option<Box<dyn CI>>,
+}
+
+impl std::fmt::Debug for MetadataPlanner {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("MetadataPlanner")
+            .field("settings", &self.settings)
+            .field("ci", &self.ci.as_ref().map(|c| c.ci_name()))
+            .finish()
+    }
+}
+
 impl Planner {
     pub fn new(config: &QltyConfig, settings: &Settings) -> Self {
         Self {
@@ -34,7 +49,8 @@ impl Planner {
     }
 
     pub fn compute(&self) -> Result<Plan> {
-        let metadata = self.compute_metadata()?;
+        let metadata_planner = MetadataPlanner::new(&self.settings, crate::ci::current());
+        let metadata = metadata_planner.compute()?;
 
         Ok(Plan {
             metadata: metadata.clone(),
@@ -44,10 +60,71 @@ impl Planner {
         })
     }
 
-    pub fn compute_metadata(&self) -> Result<CoverageMetadata> {
+    fn compute_report_files(&self) -> Result<Vec<ReportFile>> {
+        let paths = if self.settings.paths.is_empty() {
+            self.config.coverage.paths.clone().unwrap_or_default()
+        } else {
+            self.settings.paths.clone()
+        };
+
+        let mut report_files: Vec<ReportFile> = vec![];
+
+        for path in paths {
+            let (path, format) = extract_path_and_format(&path, self.settings.report_format)?;
+
+            report_files.push(ReportFile {
+                path: path.to_string_lossy().into_owned(),
+                format: format.to_string(),
+                ..Default::default()
+            })
+        }
+
+        Ok(report_files)
+    }
+
+    fn compute_transformers(
+        &self,
+        metadata: &CoverageMetadata,
+    ) -> Result<Vec<Box<dyn Transformer>>> {
+        let mut transformers: Vec<Box<dyn Transformer>> = vec![];
+
+        transformers.push(Box::new(ComputeSummary::new()));
+
+        if let Some(prefix) = self.settings.strip_prefix.clone() {
+            transformers.push(Box::new(StripPrefix::new(prefix)));
+        } else if let Ok(strip_prefix) = StripPrefix::new_from_git_root() {
+            transformers.push(Box::new(strip_prefix));
+        }
+
+        transformers.push(Box::new(StripDotSlashPrefix));
+
+        if self.config.coverage.ignores.is_some() {
+            transformers.push(Box::new(IgnorePaths::new(
+                self.config.coverage.ignores.as_ref().unwrap(),
+            )?));
+        }
+
+        if let Some(prefix) = self.settings.add_prefix.clone() {
+            transformers.push(Box::new(AddPrefix::new(&prefix)));
+        }
+
+        transformers.push(Box::new(AppendMetadata::new(metadata)));
+        Ok(transformers)
+    }
+}
+
+impl MetadataPlanner {
+    pub fn new(settings: &Settings, ci: Option<Box<dyn CI>>) -> Self {
+        Self {
+            settings: settings.clone(),
+            ci,
+        }
+    }
+
+    pub fn compute(&self) -> Result<CoverageMetadata> {
         let now = OffsetDateTime::now_utc();
 
-        let mut metadata = if let Some(ci) = crate::ci::current() {
+        let mut metadata = if let Some(ref ci) = self.ci {
             ci.metadata()
         } else {
             CoverageMetadata {
@@ -178,58 +255,6 @@ impl Planner {
             timestamp_str
         )
     }
-
-    fn compute_report_files(&self) -> Result<Vec<ReportFile>> {
-        let paths = if self.settings.paths.is_empty() {
-            self.config.coverage.paths.clone().unwrap_or_default()
-        } else {
-            self.settings.paths.clone()
-        };
-
-        let mut report_files: Vec<ReportFile> = vec![];
-
-        for path in paths {
-            let (path, format) = extract_path_and_format(&path, self.settings.report_format)?;
-
-            report_files.push(ReportFile {
-                path: path.to_string_lossy().into_owned(),
-                format: format.to_string(),
-                ..Default::default()
-            })
-        }
-
-        Ok(report_files)
-    }
-
-    fn compute_transformers(
-        &self,
-        metadata: &CoverageMetadata,
-    ) -> Result<Vec<Box<dyn Transformer>>> {
-        let mut transformers: Vec<Box<dyn Transformer>> = vec![];
-
-        transformers.push(Box::new(ComputeSummary::new()));
-
-        if let Some(prefix) = self.settings.strip_prefix.clone() {
-            transformers.push(Box::new(StripPrefix::new(prefix)));
-        } else if let Ok(strip_prefix) = StripPrefix::new_from_git_root() {
-            transformers.push(Box::new(strip_prefix));
-        }
-
-        transformers.push(Box::new(StripDotSlashPrefix));
-
-        if self.config.coverage.ignores.is_some() {
-            transformers.push(Box::new(IgnorePaths::new(
-                self.config.coverage.ignores.as_ref().unwrap(),
-            )?));
-        }
-
-        if let Some(prefix) = self.settings.add_prefix.clone() {
-            transformers.push(Box::new(AddPrefix::new(&prefix)));
-        }
-
-        transformers.push(Box::new(AppendMetadata::new(metadata)));
-        Ok(transformers)
-    }
 }
 
 #[cfg(test)]
@@ -238,13 +263,12 @@ mod tests {
 
     #[test]
     fn planner_override_commit_time_tests() {
-        let config = QltyConfig::default();
         let settings = Settings {
             override_commit_time: Some("2025-05-30T05:00:00+00:00".to_string()),
             ..Default::default()
         };
-        let planner = Planner::new(&config, &settings);
-        let metadata = planner.compute_metadata().unwrap();
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute().unwrap();
         assert_eq!(
             metadata.commit_time,
             Some(Timestamp {
@@ -257,34 +281,33 @@ mod tests {
     #[test]
     fn test_parse_unix_timestamp() {
         let input = "1729100000";
-        let parsed = Planner::parse_timestamp(input).unwrap();
+        let parsed = MetadataPlanner::parse_timestamp(input).unwrap();
         assert_eq!(parsed, 1729100000);
     }
 
     #[test]
     fn test_parse_rfc3339() {
         let input = "2023-01-01T12:00:00Z";
-        let parsed = Planner::parse_timestamp(input).unwrap();
+        let parsed = MetadataPlanner::parse_timestamp(input).unwrap();
         assert_eq!(parsed, 1672574400);
     }
 
     #[test]
     fn test_parse_iso8601_basic() {
         let input = "2023-01-01T12:00:00+00:00"; // valid ISO8601::DEFAULT format
-        let parsed = Planner::parse_timestamp(input).unwrap();
+        let parsed = MetadataPlanner::parse_timestamp(input).unwrap();
         assert_eq!(parsed, 1672574400);
     }
 
     #[test]
     fn test_parse_invalid_format() {
         let input = "not-a-valid-timestamp";
-        let result = Planner::parse_timestamp(input);
+        let result = MetadataPlanner::parse_timestamp(input);
         assert!(result.is_err());
     }
 
     #[test]
     fn test_metadata_with_all_overrides() {
-        let config = QltyConfig::default();
         let settings = Settings {
             override_build_id: Some("build-123".to_string()),
             override_commit_sha: Some("sha-abc".to_string()),
@@ -298,8 +321,8 @@ mod tests {
             incomplete: true,
             ..Default::default()
         };
-        let planner = Planner::new(&config, &settings);
-        let metadata = planner.compute_metadata().unwrap();
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute().unwrap();
         assert_eq!(metadata.build_id, "build-123");
         assert_eq!(metadata.commit_sha, "sha-abc");
         assert_eq!(metadata.branch, "main");
@@ -320,13 +343,12 @@ mod tests {
 
     #[test]
     fn test_metadata_with_only_commit_time_override() {
-        let config = QltyConfig::default();
         let settings = Settings {
             override_commit_time: Some("1729100000".to_string()),
             ..Default::default()
         };
-        let planner = Planner::new(&config, &settings);
-        let metadata = planner.compute_metadata().unwrap();
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute().unwrap();
         assert_eq!(
             metadata.commit_time,
             Some(Timestamp {
@@ -338,13 +360,12 @@ mod tests {
 
     #[test]
     fn test_metadata_with_git_tag_override() {
-        let config = QltyConfig::default();
         let settings = Settings {
             override_git_tag: Some("v2.0.0".to_string()),
             ..Default::default()
         };
-        let planner = Planner::new(&config, &settings);
-        let metadata = planner.compute_metadata().unwrap();
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute().unwrap();
         assert_eq!(metadata.git_tag, Some("v2.0.0".to_string()));
     }
 
