@@ -134,7 +134,6 @@ impl Planner {
             }
         }
 
-        // Set reference_type based on the rules
         metadata.reference_type = if !metadata.pull_request_number.is_empty() {
             ReferenceType::PullRequest as i32
         } else if metadata.git_tag.is_some() && metadata.git_tag.as_ref().unwrap() != "" {
