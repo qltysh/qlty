@@ -13,6 +13,7 @@ https://qlty.sh/d/coverage
  METADATA 
 
     CI: unknown
+    Reference Type: Branch
     Commit: 822641a8a442eab5981096a0d734ac180aa40106
     Branch: main
     Build ID: 123

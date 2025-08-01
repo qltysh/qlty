@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use console::style;
 use qlty_config::{version::LONG_VERSION, QltyConfig, Workspace};
 use qlty_coverage::publish::Settings;
-use qlty_types::tests::v1::CoverageMetadata;
+use qlty_types::tests::v1::{CoverageMetadata, ReferenceType};
 use regex::Regex;
 use std::path::PathBuf;
 
@@ -101,6 +101,11 @@ pub fn print_metadata(metadata: &CoverageMetadata, quiet: bool) {
     if !metadata.ci.is_empty() {
         eprintln!("    CI: {}", metadata.ci);
     }
+
+    let reference_type = ReferenceType::try_from(metadata.reference_type)
+        .map(|rt| format!("{rt:?}"))
+        .unwrap_or_else(|_| "Unknown".to_string());
+    eprintln!("    Reference Type: {}", reference_type);
 
     eprintln!("    Commit: {}", metadata.commit_sha);
     if !metadata.pull_request_number.is_empty() {
