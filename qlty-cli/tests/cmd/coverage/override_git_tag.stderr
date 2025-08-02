@@ -7,7 +7,6 @@ https://qlty.sh/d/coverage
     cwd: [CWD]
     dry-run: true
     override-build-id: 123
-    override-branch: main
     override-commit-sha: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
     override-commit-time: 2025-05-30T05:00:00+00:00
     override-git-tag: v2.0.0-override
@@ -17,7 +16,6 @@ https://qlty.sh/d/coverage
     CI: unknown
     Reference Type: Tag
     Commit: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
-    Branch: main
     Build ID: 123
     Commit Time: 2025-05-30 05:00:00 UTC
     Git Tag: v2.0.0-override

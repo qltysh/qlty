@@ -167,9 +167,9 @@ pub fn validate_metadata(metadata: &CoverageMetadata) -> Result<()> {
         )
     }
 
-    if metadata.branch.is_empty() {
+    if metadata.reference_type == ReferenceType::Unspecified as i32 {
         bail!(
-            "Unable to determine branch name from the environment.\nPlease provide it using --override-branch"
+            "A branch, tag, or pull request must be specified.\nPlease provide it using a supported CI provider or with one of --override-branch, --override-git-tag, or --override-pr-number"
         )
     }
 

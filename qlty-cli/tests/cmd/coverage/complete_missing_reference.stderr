@@ -11,5 +11,5 @@ https://qlty.sh/d/coverage
 
    ERROR   
 
- > Unable to determine branch name from the environment.
- > Please provide it using --override-branch
+ > A branch, tag, or pull request must be specified.
+ > Please provide it using a supported CI provider or with one of --override-branch, --override-git-tag, or --override-pr-number
