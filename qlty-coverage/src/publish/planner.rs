@@ -500,53 +500,49 @@ mod tests {
 
     #[test]
     fn test_reference_type_pull_request() {
-        let config = QltyConfig::default();
         let settings = Settings {
             override_commit_time: Some("1729100000".to_string()),
             override_pull_request_number: Some("123".to_string()),
             override_branch: Some("feature-branch".to_string()),
             ..Default::default()
         };
-        let planner = Planner::new(&config, &settings);
-        let metadata = planner.compute_metadata().unwrap();
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute().unwrap();
         assert_eq!(metadata.reference_type, ReferenceType::PullRequest as i32);
     }
 
     #[test]
     fn test_reference_type_branch() {
-        let config = QltyConfig::default();
         let settings = Settings {
             override_commit_time: Some("1729100000".to_string()),
             override_branch: Some("main".to_string()),
             ..Default::default()
         };
-        let planner = Planner::new(&config, &settings);
-        let metadata = planner.compute_metadata().unwrap();
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute().unwrap();
         assert_eq!(metadata.reference_type, ReferenceType::Branch as i32);
     }
 
     #[test]
     fn test_reference_type_tag() {
-        let config = QltyConfig::default();
         let settings = Settings {
             override_git_tag: Some("1729100000".to_string()),
             override_branch: Some("main".to_string()),
             ..Default::default()
         };
-        let planner = Planner::new(&config, &settings);
-        let metadata = planner.compute_metadata().unwrap();
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute().unwrap();
         assert_eq!(metadata.reference_type, ReferenceType::Tag as i32);
     }
 
     #[test]
     fn test_reference_type_unspecified() {
-        let config = QltyConfig::default();
         let settings = Settings {
             override_commit_time: Some("1729100000".to_string()),
             ..Default::default()
         };
-        let planner = Planner::new(&config, &settings);
-        let metadata = planner.compute_metadata().unwrap();
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute().unwrap();
         assert_eq!(metadata.reference_type, ReferenceType::Unspecified as i32);
     }
 }
