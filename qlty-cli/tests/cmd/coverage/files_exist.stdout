@@ -14,7 +14,8 @@
     "uploadedAt": "[..]",
     "cliVersion": "[..]",
     "publishCommand": "[..]qlty[..] coverage publish --dry-run --override-commit-sha 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67 --override-build-id 123 --override-branch main lcov.info --print --json --skip-missing-files --incomplete",
-    "incomplete": true
+    "incomplete": true,
+    "referenceType": "REFERENCE_TYPE_BRANCH"
   },
   "report_files": [
     {

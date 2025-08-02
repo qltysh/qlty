@@ -15,6 +15,7 @@ use pbjson_types::Timestamp;
 use qlty_config::version::LONG_VERSION;
 use qlty_config::QltyConfig;
 use qlty_types::tests::v1::CoverageMetadata;
+use qlty_types::tests::v1::ReferenceType;
 use qlty_types::tests::v1::ReportFile;
 use std::vec;
 use time::OffsetDateTime;
@@ -214,6 +215,16 @@ impl MetadataPlanner {
             }
         }
 
+        metadata.reference_type = if !metadata.pull_request_number.is_empty() {
+            ReferenceType::PullRequest as i32
+        } else if metadata.git_tag.is_some() && metadata.git_tag.as_ref().unwrap() != "" {
+            ReferenceType::Tag as i32
+        } else if !metadata.branch.is_empty() {
+            ReferenceType::Branch as i32
+        } else {
+            ReferenceType::Unspecified as i32
+        };
+
         Ok(metadata)
     }
 
@@ -249,6 +260,88 @@ impl MetadataPlanner {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[derive(Debug)]
+    struct TestCI {
+        build_id: String,
+        commit_sha: String,
+        branch: String,
+        pull_request_number: String,
+        git_tag: Option<String>,
+    }
+
+    impl TestCI {
+        fn new() -> Self {
+            Self {
+                build_id: "test-build-456".to_string(),
+                commit_sha: "test-sha-789".to_string(),
+                branch: "test-branch".to_string(),
+                pull_request_number: "99".to_string(),
+                git_tag: Some("v0.1.0".to_string()),
+            }
+        }
+    }
+
+    impl CI for TestCI {
+        fn detect(&self) -> bool {
+            true
+        }
+
+        fn ci_name(&self) -> String {
+            "TestCI".to_string()
+        }
+
+        fn ci_url(&self) -> String {
+            "https://test-ci.example.com".to_string()
+        }
+
+        fn repository_name(&self) -> String {
+            "test-org/test-repo".to_string()
+        }
+
+        fn repository_url(&self) -> String {
+            "https://github.com/test-org/test-repo".to_string()
+        }
+
+        fn branch(&self) -> String {
+            self.branch.clone()
+        }
+
+        fn pull_number(&self) -> String {
+            self.pull_request_number.clone()
+        }
+
+        fn pull_url(&self) -> String {
+            format!(
+                "https://github.com/test-org/test-repo/pull/{}",
+                self.pull_request_number
+            )
+        }
+
+        fn commit_sha(&self) -> String {
+            self.commit_sha.clone()
+        }
+
+        fn git_tag(&self) -> Option<String> {
+            self.git_tag.clone()
+        }
+
+        fn workflow(&self) -> String {
+            "test-workflow".to_string()
+        }
+
+        fn job(&self) -> String {
+            "test-job".to_string()
+        }
+
+        fn build_id(&self) -> String {
+            self.build_id.clone()
+        }
+
+        fn build_url(&self) -> String {
+            format!("https://test-ci.example.com/builds/{}", self.build_id)
+        }
+    }
 
     #[test]
     fn planner_override_commit_time_tests() {
@@ -296,42 +389,87 @@ mod tests {
     }
 
     #[test]
-    fn test_metadata_with_all_overrides() {
+    fn test_metadata_with_ci_without_overrides() {
         let settings = Settings {
-            override_build_id: Some("build-123".to_string()),
-            override_commit_sha: Some("sha-abc".to_string()),
-            override_branch: Some("main".to_string()),
-            override_pull_request_number: Some("42".to_string()),
-            override_commit_time: Some("2023-01-01T12:00:00Z".to_string()),
-            override_git_tag: Some("v1.2.3".to_string()),
             tag: Some("tag".to_string()),
             name: Some("test-report".to_string()),
-            total_parts_count: Some(2),
-            incomplete: true,
+            total_parts_count: Some(1),
+            incomplete: false,
             ..Default::default()
         };
-        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let test_ci = Box::new(TestCI::new());
+        let metadata_planner = MetadataPlanner::new(&settings, Some(test_ci));
         let metadata = metadata_planner.compute().unwrap();
-        assert_eq!(metadata.build_id, "build-123");
-        assert_eq!(metadata.commit_sha, "sha-abc");
-        assert_eq!(metadata.branch, "main");
-        assert_eq!(metadata.pull_request_number, "42");
-        assert_eq!(metadata.git_tag, Some("v1.2.3".to_string()));
+
+        // Verify that CI values are used when no overrides are present
+        assert_eq!(metadata.ci, "TestCI");
+        assert_eq!(metadata.build_id, "test-build-456"); // From CI
+        assert_eq!(metadata.commit_sha, "test-sha-789"); // From CI
+        assert_eq!(metadata.branch, "test-branch"); // From CI
+        assert_eq!(metadata.pull_request_number, "99"); // From CI
+        assert_eq!(metadata.git_tag, Some("v0.1.0".to_string())); // From CI
+
+        // Verify settings-based fields
         assert_eq!(metadata.tag, Some("tag".to_string()));
         assert_eq!(metadata.name, Some("test-report".to_string()));
-        assert_eq!(metadata.total_parts_count, Some(2));
-        assert_eq!(metadata.incomplete, true);
-        assert_eq!(
-            metadata.commit_time,
-            Some(Timestamp {
-                seconds: 1672574400,
-                nanos: 0
-            })
-        );
+        assert_eq!(metadata.total_parts_count, Some(1));
+        assert_eq!(metadata.incomplete, false);
     }
 
     #[test]
-    fn test_metadata_with_only_commit_time_override() {
+    fn test_metadata_with_build_id_override() {
+        let settings = Settings {
+            override_build_id: Some("build-123".to_string()),
+            ..Default::default()
+        };
+        let test_ci = Box::new(TestCI::new());
+        let metadata_planner = MetadataPlanner::new(&settings, Some(test_ci));
+        let metadata = metadata_planner.compute().unwrap();
+
+        assert_eq!(metadata.build_id, "build-123"); // Override wins over CI's "test-build-456"
+    }
+
+    #[test]
+    fn test_metadata_with_commit_sha_override() {
+        let settings = Settings {
+            override_commit_sha: Some("sha-abc".to_string()),
+            ..Default::default()
+        };
+        let test_ci = Box::new(TestCI::new());
+        let metadata_planner = MetadataPlanner::new(&settings, Some(test_ci));
+        let metadata = metadata_planner.compute().unwrap();
+
+        assert_eq!(metadata.commit_sha, "sha-abc"); // Override wins over CI's "test-sha-789"
+    }
+
+    #[test]
+    fn test_metadata_with_branch_override() {
+        let settings = Settings {
+            override_branch: Some("main".to_string()),
+            ..Default::default()
+        };
+        let test_ci = Box::new(TestCI::new());
+        let metadata_planner = MetadataPlanner::new(&settings, Some(test_ci));
+        let metadata = metadata_planner.compute().unwrap();
+
+        assert_eq!(metadata.branch, "main"); // Override wins over CI's "test-branch"
+    }
+
+    #[test]
+    fn test_metadata_with_pull_request_number_override() {
+        let settings = Settings {
+            override_pull_request_number: Some("42".to_string()),
+            ..Default::default()
+        };
+        let test_ci = Box::new(TestCI::new());
+        let metadata_planner = MetadataPlanner::new(&settings, Some(test_ci));
+        let metadata = metadata_planner.compute().unwrap();
+
+        assert_eq!(metadata.pull_request_number, "42"); // Override wins over CI's "99"
+    }
+
+    #[test]
+    fn test_metadata_with_commit_time_override() {
         let settings = Settings {
             override_commit_time: Some("1729100000".to_string()),
             ..Default::default()
@@ -353,8 +491,58 @@ mod tests {
             override_git_tag: Some("v2.0.0".to_string()),
             ..Default::default()
         };
+        let test_ci = Box::new(TestCI::new());
+        let metadata_planner = MetadataPlanner::new(&settings, Some(test_ci));
+        let metadata = metadata_planner.compute().unwrap();
+
+        assert_eq!(metadata.git_tag, Some("v2.0.0".to_string())); // Override wins over CI's "v0.1.0"
+    }
+
+    #[test]
+    fn test_reference_type_pull_request() {
+        let settings = Settings {
+            override_commit_time: Some("1729100000".to_string()),
+            override_pull_request_number: Some("123".to_string()),
+            override_branch: Some("feature-branch".to_string()),
+            ..Default::default()
+        };
         let metadata_planner = MetadataPlanner::new(&settings, None);
         let metadata = metadata_planner.compute().unwrap();
-        assert_eq!(metadata.git_tag, Some("v2.0.0".to_string()));
+        assert_eq!(metadata.reference_type, ReferenceType::PullRequest as i32);
+    }
+
+    #[test]
+    fn test_reference_type_branch() {
+        let settings = Settings {
+            override_commit_time: Some("1729100000".to_string()),
+            override_branch: Some("main".to_string()),
+            ..Default::default()
+        };
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute().unwrap();
+        assert_eq!(metadata.reference_type, ReferenceType::Branch as i32);
+    }
+
+    #[test]
+    fn test_reference_type_tag() {
+        let settings = Settings {
+            override_git_tag: Some("1729100000".to_string()),
+            override_branch: Some("main".to_string()),
+            ..Default::default()
+        };
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute().unwrap();
+        assert_eq!(metadata.reference_type, ReferenceType::Tag as i32);
+    }
+
+    #[test]
+    fn test_reference_type_unspecified() {
+        let settings = Settings {
+            override_commit_time: Some("1729100000".to_string()),
+            ..Default::default()
+        };
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute().unwrap();
+        assert_eq!(metadata.reference_type, ReferenceType::Unspecified as i32);
     }
 }
