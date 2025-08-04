@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Improved
+
+- Enable validation by default for `qlty coverage publish` (#2220)
+
 ## v0.559.0 (2025-08-04)
 
 ### New
