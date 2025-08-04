@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.559.0 (2025-08-04)
+
+### New
+
+- Add zizmor plugin (#2265)
+
+### Fixed
+
+- Remove branch requirement for coverage: instead, require branch, tag OR pull request (#2273)
+- Filter broken pipe errors from Sentry reporting (#2255)
+- Fix fmt prompt path targeting (#2230)
+
 ## v0.558.0 (2025-07-27)
 
 ### Improved
