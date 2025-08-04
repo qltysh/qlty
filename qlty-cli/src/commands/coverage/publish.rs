@@ -123,17 +123,13 @@ pub struct Publish {
     /// (The total parts count is per coverage tag e.g. if you have 2 tags each with 3 parts, you should set this to 3)
     pub total_parts_count: Option<u32>,
 
-    // Deprecated
-    #[arg(long, hide = true, conflicts_with = "no_validate")]
+    #[arg(long)]
+    /// Validate the coverage report before uploading it.
+    /// This will check if the report is valid and minimum number of files are present.
     pub validate: bool,
 
     #[arg(long)]
-    /// Disable validation of the coverage report before uploading it.
-    /// By default, validation checks if the report is valid and minimum number of files are present.
-    pub no_validate: bool,
-
-    #[arg(long)]
-    /// Custom threshold percentage for validation (0-100). Only applies when validation is enabled.
+    /// Custom threshold percentage for validation (0-100). Only applies when --validate is used.
     /// Default is 90.
     pub validate_file_threshold: Option<f64>,
 
@@ -147,12 +143,6 @@ pub struct Publish {
 }
 
 impl Publish {
-    /// Determines if validation should be performed based on the flags.
-    /// Validation is enabled by default and can be disabled with --no-validate.
-    fn should_validate(&self) -> bool {
-        !self.no_validate
-    }
-
     // TODO: Use CommandSuccess and CommandError, which is not straight forward since those types aren't available here.
     pub fn execute(&self, _args: &crate::Arguments) -> Result<CommandSuccess, CommandError> {
         print_initial_messages(self.quiet);
@@ -187,7 +177,7 @@ impl Publish {
             self.show_report(&report)?;
         }
 
-        if self.should_validate() {
+        if self.validate {
             let validator = Validator::new(self.validate_file_threshold);
             let validation_result = validator.validate(&report)?;
 
@@ -283,9 +273,6 @@ impl Publish {
             eprintln!(
                 "WARNING: --transform-strip-prefix is deprecated, use --strip-prefix instead\n"
             );
-        }
-        if self.validate {
-            eprintln!("WARNING: --validate is deprecated, validation is now enabled by default. Use --no-validate to disable validation\n");
         }
     }
 
