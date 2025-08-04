@@ -12,7 +12,6 @@ args = [
   "2025-05-30T05:00:00+00:00",
   "--strip-prefix",
   "/",
-  "--no-validate",
   "lcov.info"
 ]
 bin.name = "qlty"

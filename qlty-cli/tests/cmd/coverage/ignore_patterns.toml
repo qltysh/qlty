@@ -8,7 +8,6 @@ args = [
   "123",
   "--override-branch",
   "main",
-  "--no-validate",
   "lcov.info"
 ]
 bin.name = "qlty"
