@@ -1,10 +1,10 @@
 # Changelog
 
-## Unreleased
+## v0.560.0 (2025-08-04)
 
-### Improved
+### New
 
-- Enable validation by default for `qlty coverage publish` (#2220)
+- Add no-op option '--no-validate' to support GitHub Action
 
 ## v0.559.0 (2025-08-04)
 
