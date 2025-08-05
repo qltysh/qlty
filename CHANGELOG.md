@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.562.0 (2025-08-05)
+
+### Fixed
+
+- Fix installation of libssl on Linux when installing Ruby (#2288)
+
 ## v0.561.0 (2025-08-04)
 
 This release contains a breaking change for the `coverage publish` command.
