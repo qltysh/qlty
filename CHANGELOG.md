@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.561.0 (2025-08-04)
+
+This release contains a breaking change for the `coverage publish` command.
+
+Now the --validate flag will be enabled by default. This means the Qlty CLI will automatically validate your coverage reports before attempting to upload them. This allows you to identify and fix issues path matching issues much earlier in your dev process.
+
+What This Means for You:
+
+- Potential CI Build Failures: Once this change is implemented, if your current CI/CD pipeline uploads a report with mismatched paths, your builds will begin to fail when executing qlty coverage publish. To avoid disruption, you can begin validating your reports now (by using --validate ) to address any issues before this change takes effect.
+- Quick Fix for Build Failures: If your builds start failing on Monday and you need to get them passing immediately, you can temporarily add the new --no-validate flag to your qlty coverage publish command. This will disable validation and allow your CI build to pass (though your coverage data will remain broken until you've uploaded a valid report).
+
+We believe this change will significantly improve the accuracy and usability of your coverage data within Qlty. If you have any questions or require assistance, please don't hesitate to contact our support team.
+
+See our [path fixing docs](https://docs.qlty.sh/coverage/path-fixing) for more information.
+
 ## v0.560.0 (2025-08-04)
 
 ### New
