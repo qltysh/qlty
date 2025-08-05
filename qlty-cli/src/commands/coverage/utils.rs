@@ -181,3 +181,27 @@ pub fn validate_metadata(metadata: &CoverageMetadata) -> Result<()> {
 
     Ok(())
 }
+
+pub fn validate_minimal_metadata(metadata: &CoverageMetadata) -> Result<()> {
+    if metadata.commit_sha.is_empty() {
+        bail!(
+            "Unable to determine commit SHA from the environment.\nPlease provide it using --override-commit-sha"
+        )
+    }
+
+    Ok(())
+}
+
+pub fn print_minimal_metadata(metadata: &CoverageMetadata, quiet: bool) {
+    if quiet {
+        return;
+    }
+
+    eprintln!("    Commit: {}", metadata.commit_sha);
+
+    if let Some(tag) = &metadata.tag {
+        eprintln!("    Tag: {}", tag);
+    }
+
+    eprintln!();
+}

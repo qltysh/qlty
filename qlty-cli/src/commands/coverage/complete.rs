@@ -1,6 +1,6 @@
 use super::utils::{
-    print_authentication_info, print_initial_messages, print_metadata, print_settings,
-    validate_metadata,
+    print_authentication_info, print_initial_messages, print_minimal_metadata, print_settings,
+    validate_minimal_metadata,
 };
 use crate::{CommandError, CommandSuccess};
 use anyhow::{Context, Result};
@@ -21,28 +21,8 @@ pub struct Complete {
     pub tag: Option<String>,
 
     #[arg(long)]
-    /// Override the branch from the CI environment
-    pub override_branch: Option<String>,
-
-    #[arg(long)]
     /// Override the commit SHA from the CI environment
     pub override_commit_sha: Option<String>,
-
-    #[arg(long)]
-    /// Override the pull request number from the CI environment
-    pub override_pr_number: Option<String>,
-
-    #[arg(long)]
-    /// Override the build identifier from the CI environment
-    pub override_build_id: Option<String>,
-
-    #[arg(long)]
-    /// Override the commit time from git metadata. Accepts a Unix timestamp (seconds since epoch) or RFC3339/ISO8601 format
-    pub override_commit_time: Option<String>,
-
-    #[arg(long)]
-    /// Override the git tag from the CI environment
-    pub override_git_tag: Option<String>,
 
     #[arg(long, short)]
     /// The token to use for authentication when uploading the report.
@@ -74,12 +54,12 @@ impl Complete {
         let token = load_auth_token(&self.token, self.project.as_deref())?;
         let metadata_planner =
             qlty_coverage::publish::MetadataPlanner::new(&settings, qlty_coverage::ci::current());
-        let metadata = metadata_planner.compute()?;
+        let metadata = metadata_planner.compute_minimal()?;
 
-        validate_metadata(&metadata)?;
+        validate_minimal_metadata(&metadata)?;
 
         self.print_section_header(" METADATA ");
-        print_metadata(&metadata, self.quiet);
+        print_minimal_metadata(&metadata, self.quiet);
 
         self.print_section_header(" AUTHENTICATION ");
         print_authentication_info(&token, self.quiet);
@@ -110,11 +90,6 @@ impl Complete {
     fn build_settings(&self) -> Settings {
         Settings {
             override_commit_sha: self.override_commit_sha.clone(),
-            override_branch: self.override_branch.clone(),
-            override_pull_request_number: self.override_pr_number.clone(),
-            override_build_id: self.override_build_id.clone(),
-            override_commit_time: self.override_commit_time.clone(),
-            override_git_tag: self.override_git_tag.clone(),
             tag: self.tag.clone(),
             quiet: self.quiet,
             project: self.project.clone(),
