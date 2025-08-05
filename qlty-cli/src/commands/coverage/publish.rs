@@ -128,7 +128,7 @@ pub struct Publish {
     /// This will check if the report is valid and minimum number of files are present.
     pub validate: bool,
 
-    #[arg(long, hide = true)]
+    #[arg(long, conflicts_with = "validate", hide = true)]
     pub no_validate: bool,
 
     #[arg(long)]
