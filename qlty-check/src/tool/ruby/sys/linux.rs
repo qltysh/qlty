@@ -47,7 +47,7 @@ impl PlatformRuby for RubyLinux {
         self.rewrite_binstubs(tool)?;
         self.install_dependency_deb(
             tool,
-            "o/openssl/libssl1.1_1.1.1n-0+deb10u3",
+            "o/openssl/libssl1.1_1.1.1w-0+deb11u1",
             vec![
                 DependencyFile::both("libssl.so.1.1"),
                 DependencyFile::both("libcrypto.so.1.1"),
