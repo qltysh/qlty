@@ -128,6 +128,9 @@ pub struct Publish {
     /// This will check if the report is valid and minimum number of files are present.
     pub validate: bool,
 
+    #[arg(long, conflicts_with = "validate", hide = true)]
+    pub no_validate: bool,
+
     #[arg(long)]
     /// Custom threshold percentage for validation (0-100). Only applies when --validate is used.
     /// Default is 90.
