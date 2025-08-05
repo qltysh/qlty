@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.560.0 (2025-08-04)
+
+### New
+
+- Add no-op option '--no-validate' to support GitHub Action
+
 ## v0.559.0 (2025-08-04)
 
 ### New
