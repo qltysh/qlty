@@ -20,9 +20,29 @@ pub struct Complete {
     #[arg(long)]
     pub tag: Option<String>,
 
+    #[arg(long, hide = true)]
+    /// [DEPRECATED] This option is deprecated and will be ignored
+    pub override_branch: Option<String>,
+
     #[arg(long)]
     /// Override the commit SHA from the CI environment
     pub override_commit_sha: Option<String>,
+
+    #[arg(long, hide = true)]
+    /// [DEPRECATED] This option is deprecated and will be ignored
+    pub override_pr_number: Option<String>,
+
+    #[arg(long, hide = true)]
+    /// [DEPRECATED] This option is deprecated and will be ignored
+    pub override_build_id: Option<String>,
+
+    #[arg(long, hide = true)]
+    /// [DEPRECATED] This option is deprecated and will be ignored
+    pub override_commit_time: Option<String>,
+
+    #[arg(long, hide = true)]
+    /// [DEPRECATED] This option is deprecated and will be ignored
+    pub override_git_tag: Option<String>,
 
     #[arg(long, short)]
     /// The token to use for authentication when uploading the report.
@@ -45,6 +65,7 @@ pub struct Complete {
 impl Complete {
     pub fn execute(&self, _args: &crate::Arguments) -> Result<CommandSuccess, CommandError> {
         print_initial_messages(self.quiet);
+        self.print_deprecation_warnings();
 
         let settings = self.build_settings();
 
@@ -76,6 +97,28 @@ impl Complete {
         }
 
         CommandSuccess::ok()
+    }
+
+    fn print_deprecation_warnings(&self) {
+        if self.quiet {
+            return;
+        }
+
+        if self.override_branch.is_some() {
+            eprintln!("WARNING: --override-branch is deprecated and will be ignored\n");
+        }
+        if self.override_pr_number.is_some() {
+            eprintln!("WARNING: --override-pr-number is deprecated and will be ignored\n");
+        }
+        if self.override_build_id.is_some() {
+            eprintln!("WARNING: --override-build-id is deprecated and will be ignored\n");
+        }
+        if self.override_commit_time.is_some() {
+            eprintln!("WARNING: --override-commit-time is deprecated and will be ignored\n");
+        }
+        if self.override_git_tag.is_some() {
+            eprintln!("WARNING: --override-git-tag is deprecated and will be ignored\n");
+        }
     }
 
     fn print_section_header(&self, title: &str) {
