@@ -19,6 +19,53 @@ impl Default for GitHub {
     }
 }
 
+impl GitHub {
+    /// Attempts to extract the pull request head SHA from the GitHub event file.
+    /// Returns None if not a PR event, or if the file cannot be read/parsed.
+    fn get_pr_head_sha(&self) -> Option<String> {
+        let event_name = self.env.var("GITHUB_EVENT_NAME")?;
+
+        // Only process pull request events
+        if event_name != "pull_request" && event_name != "pull_request_target" {
+            return None;
+        }
+
+        let event_path = self.env.var("GITHUB_EVENT_PATH")?;
+
+        // Read the event file
+        let event_data = match fs::read_to_string(&event_path) {
+            Ok(data) => data,
+            Err(e) => {
+                eprintln!(
+                    "Warning: Failed to read GitHub event file '{}': {}. Falling back to GITHUB_SHA.",
+                    event_path, e
+                );
+                return None;
+            }
+        };
+
+        // Parse the JSON
+        let event_json = match serde_json::from_str::<Value>(&event_data) {
+            Ok(json) => json,
+            Err(e) => {
+                eprintln!(
+                    "Warning: Failed to parse GitHub event file '{}': {}. Falling back to GITHUB_SHA.",
+                    event_path, e
+                );
+                return None;
+            }
+        };
+
+        // Extract the head SHA from the pull request data
+        event_json
+            .get("pull_request")
+            .and_then(|pr| pr.get("head"))
+            .and_then(|head| head.get("sha"))
+            .and_then(|sha| sha.as_str())
+            .map(|s| s.to_string())
+    }
+}
+
 impl CI for GitHub {
     fn detect(&self) -> bool {
         self.env.var("GITHUB_ACTIONS").unwrap_or_default() == "true"
@@ -110,44 +157,14 @@ impl CI for GitHub {
     }
 
     fn commit_sha(&self) -> String {
-        // Github doesn't provide the head's sha for PRs, so we need to extract it from the event's payload
-        // https://github.com/orgs/community/discussions/26325
-        // https://www.kenmuse.com/blog/the-many-shas-of-a-github-pull-request/
-        if let Some(event_name) = self.env.var("GITHUB_EVENT_NAME") {
-            if event_name == "pull_request" || event_name == "pull_request_target" {
-                if let Some(event_path) = self.env.var("GITHUB_EVENT_PATH") {
-                    match fs::read_to_string(&event_path) {
-                        Ok(event_data) => match serde_json::from_str::<Value>(&event_data) {
-                            Ok(event_json) => {
-                                if let Some(head_sha) = event_json
-                                    .get("pull_request")
-                                    .and_then(|pr| pr.get("head"))
-                                    .and_then(|head| head.get("sha"))
-                                    .and_then(|sha| sha.as_str())
-                                {
-                                    return head_sha.to_string();
-                                }
-                            }
-                            Err(e) => {
-                                eprintln!(
-                                        "Warning: Failed to parse GitHub event file '{}': {}. Falling back to GITHUB_SHA.",
-                                        event_path, e
-                                    );
-                            }
-                        },
-                        Err(e) => {
-                            eprintln!(
-                                "Warning: Failed to read GitHub event file '{}': {}. Falling back to GITHUB_SHA.",
-                                event_path, e
-                            );
-                        }
-                    }
-                }
-            }
-        }
+        // For pull request events, GitHub's GITHUB_SHA is a merge commit.
+        // We need to get the actual head SHA from the event data.
+        // References:
+        // - https://github.com/orgs/community/discussions/26325
+        // - https://www.kenmuse.com/blog/the-many-shas-of-a-github-pull-request/
 
-        // Fallback to GITHUB_SHA for non-PR events or if we couldn't get the head SHA
-        self.env.var("GITHUB_SHA").unwrap_or_default()
+        self.get_pr_head_sha()
+            .unwrap_or_else(|| self.env.var("GITHUB_SHA").unwrap_or_default())
     }
 
     fn git_tag(&self) -> Option<String> {
