@@ -2,6 +2,16 @@ qlty [..] [..]-[..] ([..])
 [..]
 https://qlty.sh/d/coverage
 
+WARNING: --override-branch is deprecated and will be ignored
+
+WARNING: --override-pr-number is deprecated and will be ignored
+
+WARNING: --override-build-id is deprecated and will be ignored
+
+WARNING: --override-commit-time is deprecated and will be ignored
+
+WARNING: --override-git-tag is deprecated and will be ignored
+
  SETTINGS 
 
     cwd: [CWD]

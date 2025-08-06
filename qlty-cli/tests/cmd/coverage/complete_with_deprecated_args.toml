@@ -1,0 +1,25 @@
+args = [
+  "coverage",
+  "complete",
+  "--dry-run",
+  "--override-commit-sha",
+  "2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67",
+  "--override-branch",
+  "feature-branch",
+  "--override-pr-number",
+  "123",
+  "--override-build-id",
+  "build-789",
+  "--override-commit-time",
+  "2024-01-01T00:00:00Z",
+  "--override-git-tag",
+  "v1.0.0"
+]
+bin.name = "qlty"
+status.code = 0
+
+[env.add]
+BUILDKITE_BUILD_NUMBER = "123"
+BUILDKITE_BRANCH = "main"
+BUILDKITE_BUILD_ID = "build-456"
+QLTY_COVERAGE_TOKEN = "123"

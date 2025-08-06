@@ -121,6 +121,33 @@ impl MetadataPlanner {
         }
     }
 
+    pub fn compute_minimal(&self) -> Result<CoverageMetadata> {
+        let now = OffsetDateTime::now_utc();
+
+        let mut metadata = CoverageMetadata::default();
+
+        // Try to get commit SHA from CI first, then override
+        if let Some(ref ci) = self.ci {
+            let ci_metadata = ci.metadata();
+            metadata.commit_sha = ci_metadata.commit_sha;
+        }
+
+        // Override with explicit value if provided
+        if let Some(ref commit_sha) = self.settings.override_commit_sha {
+            metadata.commit_sha = commit_sha.clone();
+        }
+
+        // Set minimal required fields
+        metadata.cli_version = LONG_VERSION.to_string();
+        metadata.uploaded_at = Some(Timestamp {
+            seconds: now.unix_timestamp(),
+            nanos: now.nanosecond() as i32,
+        });
+        metadata.tag = self.settings.tag.clone();
+
+        Ok(metadata)
+    }
+
     pub fn compute(&self) -> Result<CoverageMetadata> {
         let now = OffsetDateTime::now_utc();
 
