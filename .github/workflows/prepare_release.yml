@@ -13,7 +13,7 @@ on:
           - patch
           - version
       version:
-        description: "The version to release (specify `version` increment value)"
+        description: "The full version to release (first choose 'version' from the 'increment' dropdown)"
         required: false
         type: string
 permissions:
