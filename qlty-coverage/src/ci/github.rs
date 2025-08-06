@@ -3,6 +3,8 @@ use crate::{
     env::{EnvSource, SystemEnv},
 };
 use regex::Regex;
+use serde_json::Value;
+use std::fs;
 
 #[derive(Debug)]
 pub struct GitHub {
@@ -108,6 +110,29 @@ impl CI for GitHub {
     }
 
     fn commit_sha(&self) -> String {
+        // Github doesn't provide the head's sha for PRs, so we need to extract it from the event's payload
+        // https://github.com/orgs/community/discussions/26325
+        // https://www.kenmuse.com/blog/the-many-shas-of-a-github-pull-request/
+        if let Some(event_name) = self.env.var("GITHUB_EVENT_NAME") {
+            if event_name == "pull_request" || event_name == "pull_request_target" {
+                if let Some(event_path) = self.env.var("GITHUB_EVENT_PATH") {
+                    if let Ok(event_data) = fs::read_to_string(&event_path) {
+                        if let Ok(event_json) = serde_json::from_str::<Value>(&event_data) {
+                            if let Some(head_sha) = event_json
+                                .get("pull_request")
+                                .and_then(|pr| pr.get("head"))
+                                .and_then(|head| head.get("sha"))
+                                .and_then(|sha| sha.as_str())
+                            {
+                                return head_sha.to_string();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Fallback to GITHUB_SHA for non-PR events or if we couldn't get the head SHA
         self.env.var("GITHUB_SHA").unwrap_or_default()
     }
 
@@ -124,6 +149,8 @@ impl CI for GitHub {
 mod test {
     use super::*;
     use std::collections::HashMap;
+    use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[derive(Debug, Clone, Default)]
     pub struct HashMapEnv {
@@ -199,7 +226,7 @@ mod test {
     }
 
     #[test]
-    fn pull_request_build() {
+    fn pull_request_build_without_event_file() {
         let mut env: HashMap<String, String> = HashMap::default();
         env.insert(
             "GITHUB_SERVER_URL".to_string(),
@@ -224,6 +251,140 @@ mod test {
         assert_eq!(&ci.pull_number(), "42");
         assert_eq!(&ci.pull_url(), "https://github.com/qltysh/qlty/pull/42");
         assert_eq!(&ci.commit_sha(), "77948d72a8b5ea21bb335e8e674bad99413da7a2");
+    }
+
+    #[test]
+    fn pull_request_build_with_event_file() {
+        // Create a temporary file with PR event data
+        let mut event_file = NamedTempFile::new().unwrap();
+        let event_json = r#"{
+            "pull_request": {
+                "head": {
+                    "sha": "abc123def456actual_head_sha"
+                },
+                "base": {
+                    "sha": "base_sha_here"
+                }
+            }
+        }"#;
+        writeln!(event_file, "{}", event_json).unwrap();
+        let event_path = event_file.path().to_str().unwrap().to_string();
+
+        let mut env: HashMap<String, String> = HashMap::default();
+        env.insert(
+            "GITHUB_SERVER_URL".to_string(),
+            "https://github.com".to_string(),
+        );
+        env.insert("GITHUB_REPOSITORY".to_string(), "qltysh/qlty".to_string());
+        env.insert("GITHUB_REF_TYPE".to_string(), "branch".to_string());
+        env.insert(
+            "GITHUB_HEAD_REF".to_string(),
+            "feature-branch-1".to_string(),
+        );
+        env.insert("GITHUB_REF".to_string(), "refs/pull/42/merge".to_string());
+        env.insert(
+            "GITHUB_SHA".to_string(),
+            "77948d72a8b5ea21bb335e8e674bad99413da7a2".to_string(),
+        );
+        env.insert("GITHUB_EVENT_NAME".to_string(), "pull_request".to_string());
+        env.insert("GITHUB_EVENT_PATH".to_string(), event_path);
+
+        let ci = GitHub {
+            env: Box::new(HashMapEnv::new(env)),
+        };
+        assert_eq!(&ci.branch(), "feature-branch-1");
+        assert_eq!(&ci.pull_number(), "42");
+        assert_eq!(&ci.pull_url(), "https://github.com/qltysh/qlty/pull/42");
+        assert_eq!(&ci.commit_sha(), "abc123def456actual_head_sha");
+    }
+
+    #[test]
+    fn pull_request_target_build_with_event_file() {
+        let mut event_file = NamedTempFile::new().unwrap();
+        let event_json = r#"{
+            "pull_request": {
+                "head": {
+                    "sha": "pr_target_head_sha_123"
+                },
+                "base": {
+                    "sha": "base_sha_here"
+                }
+            }
+        }"#;
+        writeln!(event_file, "{}", event_json).unwrap();
+        let event_path = event_file.path().to_str().unwrap().to_string();
+
+        let mut env: HashMap<String, String> = HashMap::default();
+        env.insert(
+            "GITHUB_SERVER_URL".to_string(),
+            "https://github.com".to_string(),
+        );
+        env.insert("GITHUB_REPOSITORY".to_string(), "qltysh/qlty".to_string());
+        env.insert("GITHUB_REF_TYPE".to_string(), "branch".to_string());
+        env.insert(
+            "GITHUB_HEAD_REF".to_string(),
+            "feature-branch-1".to_string(),
+        );
+        env.insert("GITHUB_REF".to_string(), "refs/pull/42/merge".to_string());
+        env.insert("GITHUB_SHA".to_string(), "merge_commit_sha_789".to_string());
+        env.insert(
+            "GITHUB_EVENT_NAME".to_string(),
+            "pull_request_target".to_string(),
+        );
+        env.insert("GITHUB_EVENT_PATH".to_string(), event_path);
+
+        let ci = GitHub {
+            env: Box::new(HashMapEnv::new(env)),
+        };
+        assert_eq!(&ci.commit_sha(), "pr_target_head_sha_123");
+    }
+
+    #[test]
+    fn pull_request_build_with_invalid_event_file() {
+        // Create a temporary file with invalid JSON
+        let mut event_file = NamedTempFile::new().unwrap();
+        writeln!(event_file, "invalid json data").unwrap();
+        let event_path = event_file.path().to_str().unwrap().to_string();
+
+        let mut env: HashMap<String, String> = HashMap::default();
+        env.insert("GITHUB_SHA".to_string(), "fallback_sha_value".to_string());
+        env.insert("GITHUB_EVENT_NAME".to_string(), "pull_request".to_string());
+        env.insert("GITHUB_EVENT_PATH".to_string(), event_path);
+
+        let ci = GitHub {
+            env: Box::new(HashMapEnv::new(env)),
+        };
+        // Should fallback to GITHUB_SHA when event file is invalid
+        assert_eq!(&ci.commit_sha(), "fallback_sha_value");
+    }
+
+    #[test]
+    fn pull_request_build_with_missing_head_sha() {
+        // Create a temporary file with PR event data but no head SHA
+        let mut event_file = NamedTempFile::new().unwrap();
+        let event_json = r#"{
+            "pull_request": {
+                "base": {
+                    "sha": "base_sha_here"
+                }
+            }
+        }"#;
+        writeln!(event_file, "{}", event_json).unwrap();
+        let event_path = event_file.path().to_str().unwrap().to_string();
+
+        let mut env: HashMap<String, String> = HashMap::default();
+        env.insert(
+            "GITHUB_SHA".to_string(),
+            "fallback_sha_when_missing_head".to_string(),
+        );
+        env.insert("GITHUB_EVENT_NAME".to_string(), "pull_request".to_string());
+        env.insert("GITHUB_EVENT_PATH".to_string(), event_path);
+
+        let ci = GitHub {
+            env: Box::new(HashMapEnv::new(env)),
+        };
+        // Should fallback to GITHUB_SHA when head SHA is missing
+        assert_eq!(&ci.commit_sha(), "fallback_sha_when_missing_head");
     }
 
     #[test]
