@@ -133,8 +133,8 @@ impl MetadataPlanner {
         }
 
         // Override with explicit value if provided
-        if let Some(commit_sha) = self.settings.override_commit_sha.clone() {
-            metadata.commit_sha = commit_sha;
+        if let Some(ref commit_sha) = self.settings.override_commit_sha {
+            metadata.commit_sha = commit_sha.clone();
         }
 
         // Set minimal required fields
