@@ -46,3 +46,7 @@ branch = "main"
 [[exclude]]
 plugins = ["osv-scanner", "trufflehog"]
 file_patterns = ["qlty-cli/tests/**"]
+
+[[exclude]]
+plugins = ["markdownlint"]
+file_patterns = [".claude/**"]
