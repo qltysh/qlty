@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.563.0 (2025-08-06)
+
+### New
+
+- Implement GitHub SHA resolution for pull requests in coverage publish instead of relying on the sha being supplied via --override-commit-sha (#2293)
+
+### Fixed
+
+- Do not require a reference (branch, tag or pr) or commit time for the `coverage complete` subcommand (#2291)
+
 ## v0.562.0 (2025-08-05)
 
 ### Fixed
