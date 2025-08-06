@@ -117,8 +117,8 @@ impl CI for GitHub {
             if event_name == "pull_request" || event_name == "pull_request_target" {
                 if let Some(event_path) = self.env.var("GITHUB_EVENT_PATH") {
                     match fs::read_to_string(&event_path) {
-                        Ok(event_data) => {
-                            if let Ok(event_json) = serde_json::from_str::<Value>(&event_data) {
+                        Ok(event_data) => match serde_json::from_str::<Value>(&event_data) {
+                            Ok(event_json) => {
                                 if let Some(head_sha) = event_json
                                     .get("pull_request")
                                     .and_then(|pr| pr.get("head"))
@@ -128,7 +128,13 @@ impl CI for GitHub {
                                     return head_sha.to_string();
                                 }
                             }
-                        }
+                            Err(e) => {
+                                eprintln!(
+                                        "Warning: Failed to parse GitHub event file '{}': {}. Falling back to GITHUB_SHA.",
+                                        event_path, e
+                                    );
+                            }
+                        },
                         Err(e) => {
                             eprintln!(
                                 "Warning: Failed to read GitHub event file '{}': {}. Falling back to GITHUB_SHA.",
