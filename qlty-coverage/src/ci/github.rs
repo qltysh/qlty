@@ -116,16 +116,24 @@ impl CI for GitHub {
         if let Some(event_name) = self.env.var("GITHUB_EVENT_NAME") {
             if event_name == "pull_request" || event_name == "pull_request_target" {
                 if let Some(event_path) = self.env.var("GITHUB_EVENT_PATH") {
-                    if let Ok(event_data) = fs::read_to_string(&event_path) {
-                        if let Ok(event_json) = serde_json::from_str::<Value>(&event_data) {
-                            if let Some(head_sha) = event_json
-                                .get("pull_request")
-                                .and_then(|pr| pr.get("head"))
-                                .and_then(|head| head.get("sha"))
-                                .and_then(|sha| sha.as_str())
-                            {
-                                return head_sha.to_string();
+                    match fs::read_to_string(&event_path) {
+                        Ok(event_data) => {
+                            if let Ok(event_json) = serde_json::from_str::<Value>(&event_data) {
+                                if let Some(head_sha) = event_json
+                                    .get("pull_request")
+                                    .and_then(|pr| pr.get("head"))
+                                    .and_then(|head| head.get("sha"))
+                                    .and_then(|sha| sha.as_str())
+                                {
+                                    return head_sha.to_string();
+                                }
                             }
+                        }
+                        Err(e) => {
+                            eprintln!(
+                                "Warning: Failed to read GitHub event file '{}': {}. Falling back to GITHUB_SHA.",
+                                event_path, e
+                            );
                         }
                     }
                 }
