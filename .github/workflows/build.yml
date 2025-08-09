@@ -87,6 +87,8 @@ jobs:
           ${{ matrix.packages_install }}
 
       - name: Build
+        env:
+          SEGMENT_WRITE_KEY: ${{ secrets.SEGMENT_WRITE_KEY }}
         run: |
           cargo build --target ${{ matrix.target }} --all-features --release
           cargo test --target ${{ matrix.target }} --all-features --release

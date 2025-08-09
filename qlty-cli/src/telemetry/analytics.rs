@@ -11,8 +11,8 @@ use serde_json::{Map, Value};
 use time::OffsetDateTime;
 use tracing::debug;
 
-const WRITE_KEY: Option<&str> = option_env!("CIO_WRITE_KEY");
-const TRACK_URL: &str = "https://cdp.customer.io/v1/track";
+const WRITE_KEY: Option<&str> = option_env!("SEGMENT_WRITE_KEY");
+const TRACK_URL: &str = "https://api.segment.io/v1/track";
 
 #[derive(Clone)]
 pub struct AnalyticsClient;
