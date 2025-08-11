@@ -1,4 +1,5 @@
 use super::exclude::Exclude;
+use super::EnabledPlugin;
 use crate::config::{Match, Set, Triage};
 use crate::sources::SourcesList;
 use crate::{warn_once, Library, QltyConfig};
@@ -7,9 +8,10 @@ use anyhow::{anyhow, bail, Context as _, Result};
 use config::{Config, File, FileFormat};
 use console::style;
 use qlty_types::level_from_str;
+use std::collections::HashMap;
 use std::path::Path;
 use toml::Value;
-use tracing::{debug, trace};
+use tracing::{debug, trace, warn};
 
 const EXPECTED_CONFIG_VERSION: &str = "0";
 
@@ -273,6 +275,7 @@ impl Builder {
 
     fn post_process_config(config: QltyConfig) -> Result<QltyConfig> {
         let mut config = config.clone();
+        config.plugin = compute_unique_merged_enabled_plugins(&config.plugin);
 
         for enabled_plugin in &mut config.plugin {
             enabled_plugin.validate().with_context(|| {
@@ -355,9 +358,95 @@ impl Builder {
     }
 }
 
+fn merge_enabled_plugins(existing: &EnabledPlugin, new: &EnabledPlugin) -> EnabledPlugin {
+    debug!(
+        "Merging enabled plugins: existing: {:?}, new: {:?}",
+        existing, new
+    );
+
+    if existing.version != new.version {
+        warn!(
+            "Merging enabled plugins with different versions: {} and {}, using {}.",
+            existing.version, new.version, new.version
+        );
+    }
+
+    EnabledPlugin {
+        name: existing.name.clone(),
+        prefix: existing.prefix.clone(),
+        mode: Some(existing.mode.unwrap_or(new.mode.unwrap_or_default())),
+        version: new.version.clone(),
+        triggers: existing
+            .triggers
+            .iter()
+            .chain(new.triggers.iter())
+            .cloned()
+            .collect(),
+        skip_upstream: existing.skip_upstream.or(new.skip_upstream),
+        package_file: existing.package_file.clone().or(new.package_file.clone()),
+        fetch: existing
+            .fetch
+            .iter()
+            .chain(new.fetch.iter())
+            .cloned()
+            .collect(),
+        package_filters: existing
+            .package_filters
+            .iter()
+            .chain(new.package_filters.iter())
+            .cloned()
+            .collect(),
+        affects_cache: existing
+            .affects_cache
+            .iter()
+            .chain(new.affects_cache.iter())
+            .cloned()
+            .collect(),
+        extra_packages: existing
+            .extra_packages
+            .iter()
+            .chain(new.extra_packages.iter())
+            .cloned()
+            .collect(),
+        drivers: existing
+            .drivers
+            .iter()
+            .chain(new.drivers.iter())
+            .cloned()
+            .collect(),
+        config_files: existing
+            .config_files
+            .iter()
+            .chain(new.config_files.iter())
+            .cloned()
+            .collect(),
+    }
+}
+
+fn compute_unique_merged_enabled_plugins(plugins: &[EnabledPlugin]) -> Vec<EnabledPlugin> {
+    let mut merged_unique_enabled_plugins: HashMap<(String, String), EnabledPlugin> =
+        HashMap::new();
+
+    for plugin in plugins.iter() {
+        let key = (
+            plugin.name.clone(),
+            plugin.prefix.clone().unwrap_or_default(),
+        );
+        if let Some(existing_enabled_plugin) = merged_unique_enabled_plugins.get(&key) {
+            let merged_plugin = merge_enabled_plugins(existing_enabled_plugin, plugin);
+            merged_unique_enabled_plugins.insert(key, merged_plugin);
+        } else {
+            merged_unique_enabled_plugins.insert(key, plugin.clone());
+        }
+    }
+    merged_unique_enabled_plugins.values().cloned().collect()
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::config::{CheckTrigger, ExtraPackage, IssueMode, PluginFetch};
+    use std::path::PathBuf;
     use toml::{toml, Value::Table};
 
     #[test]
@@ -504,5 +593,324 @@ mod test {
 
         let result = Builder::toml_to_config(Table(valid_config));
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_merge_enabled_plugins() {
+        let existing = EnabledPlugin {
+            name: "test".to_string(),
+            prefix: Some("prefix1".to_string()),
+            mode: Some(IssueMode::Block),
+            version: "1.0.0".to_string(),
+            triggers: vec![CheckTrigger::Manual],
+            skip_upstream: Some(true),
+            package_file: Some("package1".to_string()),
+            fetch: vec![PluginFetch {
+                url: "url1".to_string(),
+                path: "path1".to_string(),
+            }],
+            package_filters: vec!["filter1".to_string()],
+            affects_cache: vec!["cache1".to_string()],
+            extra_packages: vec![ExtraPackage {
+                name: "pkg1".to_string(),
+                version: "1.0.0".to_string(),
+            }],
+            drivers: vec!["driver1".to_string()],
+            config_files: vec![PathBuf::from("config1")],
+        };
+
+        let new = EnabledPlugin {
+            name: "test".to_string(),
+            prefix: Some("prefix2".to_string()),
+            mode: Some(IssueMode::Disabled),
+            version: "2.0.0".to_string(),
+            triggers: vec![CheckTrigger::PreCommit],
+            skip_upstream: Some(false),
+            package_file: Some("package2".to_string()),
+            fetch: vec![PluginFetch {
+                url: "url2".to_string(),
+                path: "path2".to_string(),
+            }],
+            package_filters: vec!["filter2".to_string()],
+            affects_cache: vec!["cache2".to_string()],
+            extra_packages: vec![ExtraPackage {
+                name: "pkg2".to_string(),
+                version: "2.0.0".to_string(),
+            }],
+            drivers: vec!["driver2".to_string()],
+            config_files: vec![PathBuf::from("config2")],
+        };
+
+        let merged = merge_enabled_plugins(&existing, &new);
+
+        assert_eq!(merged.name, "test");
+        assert_eq!(merged.prefix, Some("prefix1".to_string()));
+        assert_eq!(merged.mode, Some(IssueMode::Block));
+        assert_eq!(merged.version, "2.0.0");
+        assert_eq!(
+            merged.triggers,
+            vec![CheckTrigger::Manual, CheckTrigger::PreCommit]
+        );
+        assert_eq!(merged.skip_upstream, Some(true));
+        assert_eq!(merged.package_file, Some("package1".to_string()));
+        assert_eq!(merged.fetch.len(), 2);
+        assert_eq!(merged.package_filters, vec!["filter1", "filter2"]);
+        assert_eq!(merged.affects_cache.len(), 2);
+        assert_eq!(merged.extra_packages.len(), 2);
+        assert_eq!(merged.drivers, vec!["driver1", "driver2"]);
+        assert_eq!(merged.config_files.len(), 2);
+    }
+
+    #[test]
+    fn test_merge_enabled_plugins_with_default_mode() {
+        let existing = EnabledPlugin {
+            name: "test".to_string(),
+            mode: None,
+            version: "1.0.0".to_string(),
+            ..Default::default()
+        };
+
+        let new = EnabledPlugin {
+            name: "test".to_string(),
+            mode: Some(IssueMode::Disabled),
+            version: "2.0.0".to_string(),
+            ..Default::default()
+        };
+
+        let merged = merge_enabled_plugins(&existing, &new);
+
+        assert_eq!(merged.mode, Some(IssueMode::Disabled));
+    }
+
+    #[test]
+    fn test_merge_enabled_plugins_existing_none_new_none() {
+        let existing = EnabledPlugin {
+            name: "test".to_string(),
+            mode: None,
+            version: "1.0.0".to_string(),
+            ..Default::default()
+        };
+
+        let new = EnabledPlugin {
+            name: "test".to_string(),
+            mode: None,
+            version: "2.0.0".to_string(),
+            ..Default::default()
+        };
+
+        let merged = merge_enabled_plugins(&existing, &new);
+
+        assert_eq!(merged.mode, Some(IssueMode::default()));
+    }
+
+    #[test]
+    fn test_merge_enabled_plugins_package_file_fallback() {
+        let existing = EnabledPlugin {
+            name: "test".to_string(),
+            package_file: None,
+            version: "1.0.0".to_string(),
+            ..Default::default()
+        };
+
+        let new = EnabledPlugin {
+            name: "test".to_string(),
+            package_file: Some("package2".to_string()),
+            version: "2.0.0".to_string(),
+            ..Default::default()
+        };
+
+        let merged = merge_enabled_plugins(&existing, &new);
+
+        assert_eq!(merged.package_file, Some("package2".to_string()));
+    }
+
+    #[test]
+    fn test_compute_unique_merged_enabled_plugins_no_duplicates() {
+        let plugins = vec![
+            EnabledPlugin {
+                name: "plugin1".to_string(),
+                prefix: None,
+                version: "1.0.0".to_string(),
+                drivers: vec!["driver1".to_string()],
+                ..Default::default()
+            },
+            EnabledPlugin {
+                name: "plugin2".to_string(),
+                prefix: Some("prefix1".to_string()),
+                version: "2.0.0".to_string(),
+                drivers: vec!["driver2".to_string()],
+                ..Default::default()
+            },
+        ];
+
+        let result = compute_unique_merged_enabled_plugins(&plugins);
+
+        assert_eq!(result.len(), 2);
+    }
+
+    #[test]
+    fn test_compute_unique_merged_enabled_plugins_with_duplicates() {
+        let plugins = vec![
+            EnabledPlugin {
+                name: "plugin1".to_string(),
+                prefix: None,
+                version: "1.0.0".to_string(),
+                triggers: vec![CheckTrigger::Manual],
+                drivers: vec!["driver1".to_string()],
+                ..Default::default()
+            },
+            EnabledPlugin {
+                name: "plugin1".to_string(),
+                prefix: None,
+                version: "2.0.0".to_string(),
+                triggers: vec![CheckTrigger::PreCommit],
+                drivers: vec!["driver2".to_string()],
+                ..Default::default()
+            },
+        ];
+
+        let result = compute_unique_merged_enabled_plugins(&plugins);
+
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].name, "plugin1");
+        assert_eq!(result[0].version, "2.0.0");
+        assert_eq!(
+            result[0].triggers,
+            vec![CheckTrigger::Manual, CheckTrigger::PreCommit]
+        );
+        assert_eq!(result[0].drivers, vec!["driver1", "driver2"]);
+    }
+
+    #[test]
+    fn test_compute_unique_merged_enabled_plugins_different_prefixes() {
+        let plugins = vec![
+            EnabledPlugin {
+                name: "plugin1".to_string(),
+                prefix: Some("prefix1".to_string()),
+                version: "1.0.0".to_string(),
+                drivers: vec!["driver1".to_string()],
+                ..Default::default()
+            },
+            EnabledPlugin {
+                name: "plugin1".to_string(),
+                prefix: Some("prefix2".to_string()),
+                version: "2.0.0".to_string(),
+                drivers: vec!["driver2".to_string()],
+                ..Default::default()
+            },
+        ];
+
+        let result = compute_unique_merged_enabled_plugins(&plugins);
+
+        assert_eq!(result.len(), 2);
+        assert!(result
+            .iter()
+            .any(|p| p.prefix == Some("prefix1".to_string())));
+        assert!(result
+            .iter()
+            .any(|p| p.prefix == Some("prefix2".to_string())));
+    }
+
+    #[test]
+    fn test_compute_unique_merged_enabled_plugins_empty_prefix_treated_as_default() {
+        let plugins = vec![
+            EnabledPlugin {
+                name: "plugin1".to_string(),
+                prefix: None,
+                version: "1.0.0".to_string(),
+                drivers: vec!["driver1".to_string()],
+                ..Default::default()
+            },
+            EnabledPlugin {
+                name: "plugin1".to_string(),
+                prefix: Some("".to_string()),
+                version: "2.0.0".to_string(),
+                drivers: vec!["driver2".to_string()],
+                ..Default::default()
+            },
+        ];
+
+        let result = compute_unique_merged_enabled_plugins(&plugins);
+
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].name, "plugin1");
+        assert_eq!(result[0].version, "2.0.0");
+        assert_eq!(result[0].drivers, vec!["driver1", "driver2"]);
+    }
+
+    #[test]
+    fn test_compute_unique_merged_enabled_plugins_empty_input() {
+        let plugins = vec![];
+        let result = compute_unique_merged_enabled_plugins(&plugins);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_compute_unique_merged_enabled_plugins_complex_merge() {
+        let plugins = vec![
+            EnabledPlugin {
+                name: "plugin1".to_string(),
+                prefix: Some("shared".to_string()),
+                mode: Some(IssueMode::Block),
+                version: "1.0.0".to_string(),
+                triggers: vec![CheckTrigger::Manual],
+                skip_upstream: Some(true),
+                package_file: Some("package1".to_string()),
+                fetch: vec![PluginFetch {
+                    url: "url1".to_string(),
+                    path: "path1".to_string(),
+                }],
+                package_filters: vec!["filter1".to_string()],
+                affects_cache: vec!["cache1".to_string()],
+                extra_packages: vec![ExtraPackage {
+                    name: "pkg1".to_string(),
+                    version: "1.0.0".to_string(),
+                }],
+                drivers: vec!["driver1".to_string()],
+                config_files: vec![PathBuf::from("config1")],
+            },
+            EnabledPlugin {
+                name: "plugin1".to_string(),
+                prefix: Some("shared".to_string()),
+                mode: Some(IssueMode::Disabled),
+                version: "2.0.0".to_string(),
+                triggers: vec![CheckTrigger::PreCommit],
+                skip_upstream: Some(false),
+                package_file: Some("package2".to_string()),
+                fetch: vec![PluginFetch {
+                    url: "url2".to_string(),
+                    path: "path2".to_string(),
+                }],
+                package_filters: vec!["filter2".to_string()],
+                affects_cache: vec!["cache2".to_string()],
+                extra_packages: vec![ExtraPackage {
+                    name: "pkg2".to_string(),
+                    version: "2.0.0".to_string(),
+                }],
+                drivers: vec!["driver2".to_string()],
+                config_files: vec![PathBuf::from("config2")],
+            },
+        ];
+
+        let result = compute_unique_merged_enabled_plugins(&plugins);
+
+        assert_eq!(result.len(), 1);
+        let merged = &result[0];
+        assert_eq!(merged.name, "plugin1");
+        assert_eq!(merged.prefix, Some("shared".to_string()));
+        assert_eq!(merged.mode, Some(IssueMode::Block));
+        assert_eq!(merged.version, "2.0.0");
+        assert_eq!(
+            merged.triggers,
+            vec![CheckTrigger::Manual, CheckTrigger::PreCommit]
+        );
+        assert_eq!(merged.skip_upstream, Some(true));
+        assert_eq!(merged.package_file, Some("package1".to_string()));
+        assert_eq!(merged.fetch.len(), 2);
+        assert_eq!(merged.package_filters, vec!["filter1", "filter2"]);
+        assert_eq!(merged.affects_cache.len(), 2);
+        assert_eq!(merged.extra_packages.len(), 2);
+        assert_eq!(merged.drivers, vec!["driver1", "driver2"]);
+        assert_eq!(merged.config_files.len(), 2);
     }
 }
