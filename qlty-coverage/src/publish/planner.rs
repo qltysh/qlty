@@ -151,6 +151,8 @@ impl MetadataPlanner {
     pub fn compute(&self) -> Result<CoverageMetadata> {
         let now = OffsetDateTime::now_utc();
 
+        let is_merge_group = self.ci.as_ref().is_some_and(|ci| ci.is_merge_group_event());
+
         let mut metadata = if let Some(ref ci) = self.ci {
             ci.metadata()
         } else {
@@ -242,7 +244,9 @@ impl MetadataPlanner {
             }
         }
 
-        metadata.reference_type = if !metadata.pull_request_number.is_empty() {
+        metadata.reference_type = if is_merge_group {
+            ReferenceType::MergeGroup as i32
+        } else if !metadata.pull_request_number.is_empty() {
             ReferenceType::PullRequest as i32
         } else if metadata.git_tag.is_some() && metadata.git_tag.as_ref().unwrap() != "" {
             ReferenceType::Tag as i32
@@ -571,5 +575,81 @@ mod tests {
         let metadata_planner = MetadataPlanner::new(&settings, None);
         let metadata = metadata_planner.compute().unwrap();
         assert_eq!(metadata.reference_type, ReferenceType::Unspecified as i32);
+    }
+
+    #[test]
+    fn test_reference_type_merge_group() {
+        #[derive(Debug)]
+        struct MergeGroupTestCI;
+
+        impl CI for MergeGroupTestCI {
+            fn detect(&self) -> bool {
+                true
+            }
+
+            fn ci_name(&self) -> String {
+                "TestCI".to_string()
+            }
+
+            fn ci_url(&self) -> String {
+                "https://test-ci.example.com".to_string()
+            }
+
+            fn repository_name(&self) -> String {
+                "test-org/test-repo".to_string()
+            }
+
+            fn repository_url(&self) -> String {
+                "https://github.com/test-org/test-repo".to_string()
+            }
+
+            fn branch(&self) -> String {
+                "gh-readonly-queue/main/pr-123".to_string()
+            }
+
+            fn pull_number(&self) -> String {
+                String::new()
+            }
+
+            fn pull_url(&self) -> String {
+                String::new()
+            }
+
+            fn commit_sha(&self) -> String {
+                "test-sha-789".to_string()
+            }
+
+            fn workflow(&self) -> String {
+                "test-workflow".to_string()
+            }
+
+            fn job(&self) -> String {
+                "test-job".to_string()
+            }
+
+            fn build_id(&self) -> String {
+                "test-build-456".to_string()
+            }
+
+            fn build_url(&self) -> String {
+                "https://test-ci.example.com/builds/test-build-456".to_string()
+            }
+
+            fn is_merge_group_event(&self) -> bool {
+                true
+            }
+        }
+
+        let settings = Settings {
+            override_commit_time: Some("1729100000".to_string()),
+            override_branch: Some("gh-readonly-queue/main/pr-123".to_string()),
+            ..Default::default()
+        };
+
+        let test_ci = Box::new(MergeGroupTestCI);
+        let metadata_planner = MetadataPlanner::new(&settings, Some(test_ci));
+        let metadata = metadata_planner.compute().unwrap();
+
+        assert_eq!(metadata.reference_type, ReferenceType::MergeGroup as i32);
     }
 }
