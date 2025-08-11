@@ -1,0 +1,6 @@
+ JOBS: 1 
+
+Plugin            Result   Targets   Time   Debug File
+multiple_enables  Success  1 target  [..]  .qlty/out/invoke-[..].yaml
+
+Checked 1 file

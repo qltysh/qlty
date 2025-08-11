@@ -11,7 +11,7 @@ impl PluginModeTransformer {}
 impl IssueTransformer for PluginModeTransformer {
     fn transform(&self, mut issue: Issue) -> Option<Issue> {
         if let Some(plugin) = self.plugins.iter().find(|p| p.name == issue.tool) {
-            issue.mode = plugin.mode as i32;
+            issue.mode = plugin.mode.unwrap_or_default() as i32;
         }
 
         Some(issue)

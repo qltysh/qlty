@@ -680,7 +680,7 @@ pub struct EnabledPlugin {
     pub drivers: Vec<String>,
 
     #[serde(default)]
-    pub mode: IssueMode,
+    pub mode: Option<IssueMode>,
 
     #[serde(default)]
     pub skip_upstream: Option<bool>,
