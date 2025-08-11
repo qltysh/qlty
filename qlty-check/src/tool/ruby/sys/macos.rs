@@ -15,21 +15,16 @@ use rayon::prelude::*;
 use std::{collections::HashMap, fs::read_dir};
 use tracing::debug;
 
-#[allow(dead_code)]
 #[cfg(target_arch = "x86_64")]
 const ARCH: &str = "x64";
-#[allow(dead_code)]
 #[cfg(target_arch = "aarch64")]
 const ARCH: &str = "arm64";
 
-#[allow(dead_code)]
 #[cfg(target_arch = "x86_64")]
 const HOMEBREW_PATH: &str = "/usr/local/bin";
-#[allow(dead_code)]
 #[cfg(target_arch = "aarch64")]
 const HOMEBREW_PATH: &str = "/opt/homebrew/bin";
 
-#[allow(dead_code)]
 #[derive(Debug, Clone, Default)]
 pub struct RubyMacos {
     cmd_builder: Box<dyn CommandBuilder>,
