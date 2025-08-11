@@ -14,6 +14,7 @@ use std::{collections::HashMap, env::split_paths};
 use tracing::debug;
 
 #[derive(Debug, Clone, Default)]
+#[allow(dead_code)]
 pub struct RubyWindows {}
 
 impl PlatformRuby for RubyWindows {
@@ -61,6 +62,7 @@ impl PlatformRuby for RubyWindows {
 }
 
 impl RubyWindows {
+    #[allow(dead_code)]
     fn verify_system_installation(tool: &dyn Tool) -> Result<()> {
         let cmd = Command::new(None, tool.version_command().unwrap_or_default())
             .cmd
