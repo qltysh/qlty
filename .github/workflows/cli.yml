@@ -43,7 +43,7 @@ jobs:
       - name: Install Rust toolchain
         uses: actions-rust-lang/setup-rust-toolchain@fb51252c7ba57d633bc668f941da052e410add48
         with:
-          toolchain: stable
+          toolchain: 1.88.0
 
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@16edcff251c6bb06f6878981359f84b77b28e7e2

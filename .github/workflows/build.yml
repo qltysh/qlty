@@ -72,7 +72,7 @@ jobs:
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af
         with:
-          toolchain: stable
+          toolchain: 1.88.0
           target: ${{ matrix.target }}
 
       - name: Cache Rust
