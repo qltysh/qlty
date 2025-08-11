@@ -15,7 +15,7 @@ pub struct Login {
 impl Login {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
         if let Some(mut token) = self.token.clone() {
-            if token == "" || token == "-" {
+            if token.is_empty() || token == "-" {
                 eprintln!(
                     "Generate a token from {} and paste it here.",
                     style("https://qlty.sh/user/settings/cli")

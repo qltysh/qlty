@@ -122,7 +122,7 @@ impl Planner {
     fn compute_staging_area(&mut self) -> Result<()> {
         for active_plugin in &self.active_plugins {
             let plugin = &active_plugin.plugin;
-            for (_, driver) in &plugin.drivers {
+            for driver in plugin.drivers.values() {
                 if driver.driver_type == DriverType::Formatter {
                     self.staging_area = StagingArea::generate(
                         Mode::ReadWrite,

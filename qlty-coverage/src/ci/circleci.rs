@@ -54,7 +54,7 @@ impl CI for CircleCI {
         if self.pull_url() != "" {
             self.pull_url()
                 .split('/')
-                .last()
+                .next_back()
                 .unwrap_or_default()
                 .to_string()
         } else {

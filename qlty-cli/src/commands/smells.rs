@@ -279,7 +279,7 @@ impl Smells {
 
         for path in issues_by_path.keys().sorted() {
             let mut path_buf = workspace.root.clone();
-            path_buf.push(&path.clone().unwrap());
+            path_buf.push(path.clone().unwrap());
 
             let path_relative_to_cwd = path_buf
                 .strip_prefix(&cwd)

@@ -149,7 +149,7 @@ impl Workspace {
                 return Some(current);
             }
 
-            if let Ok(_) = std::env::var("QLTY_COVERAGE_TESTING_WITHOUT_GIT") {
+            if std::env::var("QLTY_COVERAGE_TESTING_WITHOUT_GIT").is_ok() {
                 // If we're in testing mode, we might not have a .git directory.
                 return None;
             }

@@ -34,12 +34,12 @@ pub fn current_locale() -> String {
                 // First index of `.` as in `en_US.UTF_8`
                 // A space which separates generic code from char set.
                 // Terminate at an `@` which specifies a locale at a specific location
-                if let Some(pos) = raw.find(|c| c == ' ' || c == '.') {
+                if let Some(pos) = raw.find([' ', '.']) {
                     let (raw_lang_code, _) = raw.split_at(pos);
                     let result = raw_lang_code.replace('_', "-");
 
                     // Finally replace underscores with `-` and drop everything after an `@`
-                    return result.split('@').next().unwrap().to_string();
+                    result.split('@').next().unwrap().to_string()
                 } else {
                     // LANG is not IETF compliant
                     "".to_owned()

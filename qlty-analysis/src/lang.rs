@@ -188,9 +188,8 @@ pub trait Language {
             let parameter_name = node_source(&parameter_node, source_file);
 
             let sanitized_parameter_name = self.sanitize_parameter_name(parameter_name);
-            match sanitized_parameter_name {
-                Some(sanitized_parameter_name) => parameter_names.push(sanitized_parameter_name),
-                _ => {}
+            if let Some(sanitized_parameter_name) = sanitized_parameter_name {
+                parameter_names.push(sanitized_parameter_name)
             };
         }
         parameter_names

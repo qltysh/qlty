@@ -49,11 +49,7 @@ impl NodeWithFile {
         let start_line = self.node.start_line;
         let end_line = self.node.end_line;
 
-        let start_context_index = if start_line > CONTEXT_LINES {
-            start_line - CONTEXT_LINES
-        } else {
-            0
-        };
+        let start_context_index = start_line.saturating_sub(CONTEXT_LINES);
         let end_context_index = if end_line + CONTEXT_LINES < lines.len() {
             end_line + CONTEXT_LINES
         } else {
