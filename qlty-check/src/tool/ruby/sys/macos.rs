@@ -29,6 +29,7 @@ const HOMEBREW_PATH: &str = "/usr/local/bin";
 #[cfg(target_arch = "aarch64")]
 const HOMEBREW_PATH: &str = "/opt/homebrew/bin";
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Default)]
 pub struct RubyMacos {
     cmd_builder: Box<dyn CommandBuilder>,
