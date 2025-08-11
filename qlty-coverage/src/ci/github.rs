@@ -174,6 +174,10 @@ impl CI for GitHub {
             None
         }
     }
+
+    fn is_merge_group_event(&self) -> bool {
+        self.env.var("GITHUB_EVENT_NAME").unwrap_or_default() == "merge_group"
+    }
 }
 
 #[cfg(test)]
@@ -481,5 +485,37 @@ mod test {
         };
         assert_eq!(&ci.branch(), "main");
         assert_eq!(ci.git_tag(), None);
+    }
+
+    #[test]
+    fn test_merge_group_event() {
+        let mut env: HashMap<String, String> = HashMap::default();
+        env.insert("GITHUB_EVENT_NAME".to_string(), "merge_group".to_string());
+
+        let ci = GitHub {
+            env: Box::new(HashMapEnv::new(env)),
+        };
+        assert_eq!(ci.is_merge_group_event(), true);
+    }
+
+    #[test]
+    fn test_not_merge_group_event() {
+        let mut env: HashMap<String, String> = HashMap::default();
+        env.insert("GITHUB_EVENT_NAME".to_string(), "push".to_string());
+
+        let ci = GitHub {
+            env: Box::new(HashMapEnv::new(env)),
+        };
+        assert_eq!(ci.is_merge_group_event(), false);
+    }
+
+    #[test]
+    fn test_merge_group_event_missing_env() {
+        let env: HashMap<String, String> = HashMap::default();
+
+        let ci = GitHub {
+            env: Box::new(HashMapEnv::new(env)),
+        };
+        assert_eq!(ci.is_merge_group_event(), false);
     }
 }

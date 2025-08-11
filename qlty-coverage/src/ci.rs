@@ -38,6 +38,10 @@ pub trait CI {
         None
     }
 
+    fn is_merge_group_event(&self) -> bool {
+        false
+    }
+
     // Information about the commit
     // TODO: Message
     // TODO: Author and committer
