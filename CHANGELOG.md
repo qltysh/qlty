@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.564.0 (2025-08-11)
+
+### New
+
+- Initial support for GitHub Merge Queues
+- Updates for Rust 1.89
+
 ## v0.563.0 (2025-08-06)
 
 ### New
