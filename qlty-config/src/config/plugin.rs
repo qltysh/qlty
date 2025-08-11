@@ -229,9 +229,9 @@ pub enum OutputLevel {
     Fmt,
 }
 
-impl Into<Level> for OutputLevel {
-    fn into(self) -> Level {
-        match self {
+impl From<OutputLevel> for Level {
+    fn from(val: OutputLevel) -> Self {
+        match val {
             OutputLevel::High => Level::High,
             OutputLevel::Medium => Level::Medium,
             OutputLevel::Low => Level::Low,
@@ -289,9 +289,9 @@ pub enum OutputCategory {
     DependencyAlert,
 }
 
-impl Into<Category> for OutputCategory {
-    fn into(self) -> Category {
-        match self {
+impl From<OutputCategory> for Category {
+    fn from(val: OutputCategory) -> Self {
+        match val {
             OutputCategory::Bug => Category::Bug,
             OutputCategory::Vulnerability => Category::Vulnerability,
             OutputCategory::SecurityHotspot => Category::SecurityHotspot,
@@ -799,13 +799,13 @@ impl IssueMode {
     ) -> IssueMode {
         if let Some(smells) = &language.smells {
             if let Some(mode) = &smells.mode {
-                return mode.clone();
+                return *mode;
             }
         }
 
         if let Some(smells) = &qlty_config.smells {
             if let Some(mode) = &smells.mode {
-                return mode.clone();
+                return *mode;
             }
         }
 

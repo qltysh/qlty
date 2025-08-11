@@ -146,7 +146,7 @@ pub trait PlatformRuby {
             .flatten()
             .filter(|entry| entry.path().is_file() && entry.file_name() != "ruby")
         {
-            let contents = std::fs::read_to_string(&entry.path())?;
+            let contents = std::fs::read_to_string(entry.path())?;
             let mut lines = contents.lines().map(String::from).collect_vec();
             if lines[0].starts_with("#!") {
                 let new_line = format!("#!{}", join_path_string!(&bin_dir, "ruby"));

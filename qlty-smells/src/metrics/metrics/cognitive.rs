@@ -201,7 +201,7 @@ impl<'a> CognitiveComplexity<'a> {
 
         if self.language().boolean_operator_nodes().contains(&operator) {
             if let Some(last_operator) = self.last_operator.as_ref() {
-                if last_operator != &operator {
+                if last_operator != operator {
                     self.on_incrementor(cursor);
                 }
             } else {

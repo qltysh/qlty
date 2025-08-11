@@ -6,7 +6,7 @@ use qlty_types::analysis::v1::Issue;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-pub const ALL_WILDCARD: &'static str = "ALL";
+pub const ALL_WILDCARD: &str = "ALL";
 
 #[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
 pub struct Ignore {

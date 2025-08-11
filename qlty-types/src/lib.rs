@@ -194,7 +194,7 @@ impl analysis::v1::Location {
     }
 
     pub fn range(&self) -> Option<analysis::v1::Range> {
-        self.range.clone()
+        self.range
     }
 
     pub fn relative_path(&self, base: &Path) -> String {

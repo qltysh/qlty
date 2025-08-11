@@ -38,11 +38,16 @@ impl ClippyIssue {
         if let Some(package_id) = &self.package_id {
             let package_id = package_id
                 .split(' ')
-                .last()
+                .next_back()
                 .unwrap()
                 .replace(['(', ')'], "");
             if let Ok(url) = Url::parse(&package_id) {
-                self.package_name = url.path_segments().unwrap().last().unwrap().to_string();
+                self.package_name = url
+                    .path_segments()
+                    .unwrap()
+                    .next_back()
+                    .unwrap()
+                    .to_string();
             }
         }
 

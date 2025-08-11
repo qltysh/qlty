@@ -46,7 +46,7 @@ impl Parser for Mypy {
                     let issue_range: Range;
                     let issue_path = if let Some(location) = issue.location.as_ref() {
                         issue_range = if let Some(range) = location.range.as_ref() {
-                            range.clone()
+                            *range
                         } else {
                             return false;
                         };

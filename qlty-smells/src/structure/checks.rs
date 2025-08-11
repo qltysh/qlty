@@ -54,11 +54,7 @@ fn snippet_with_context(source_file: &Arc<File>, node: &Node, context_lines: usi
     let start_line = node.start_position().row;
     let end_line = node.end_position().row;
 
-    let start_context_index = if start_line > context_lines {
-        start_line - context_lines
-    } else {
-        0
-    };
+    let start_context_index = start_line.saturating_sub(context_lines);
     let end_context_index = if end_line + context_lines < lines.len() {
         end_line + context_lines
     } else {

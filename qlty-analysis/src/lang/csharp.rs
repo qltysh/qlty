@@ -5,9 +5,9 @@ use tree_sitter::Node;
 
 const CLASS_QUERY: &str = r#"
 [
-  (class_declaration 
+  (class_declaration
     name: (identifier) @name)
-  (interface_declaration 
+  (interface_declaration
     name: (identifier) @name)
 ] @definition.class
 "#;
@@ -28,7 +28,7 @@ const FUNCTION_DECLARATION_QUERY: &str = r#"
 
 const FIELD_QUERY: &str = r#"
     [(field_declaration
-        (variable_declaration 
+        (variable_declaration
         (variable_declarator name: (identifier) @name)
         )
     ) @field
@@ -397,7 +397,7 @@ mod test {
     }
 
     // navigates down from "(compilation_unit (global statement ...))"
-    fn root_node(tree: &Tree) -> Node {
+    fn root_node(tree: &Tree) -> Node<'_> {
         let root_node = tree.root_node();
         let expression = root_node.named_child(0).unwrap();
         expression.named_child(0).unwrap()

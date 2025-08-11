@@ -36,7 +36,7 @@ pub fn get_language_from_shebang<R: std::io::BufRead>(
 
     let language = shebang_line
         .split('/')
-        .last()
+        .next_back()
         .and_then(|interpreter_line| {
             let mut splits = interpreter_line.split_whitespace();
             match splits.next() {
