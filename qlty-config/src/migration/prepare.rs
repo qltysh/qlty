@@ -116,6 +116,6 @@ fn check_plugins_by_url(
 
 fn extract_file_name_from_url(url: &str) -> Option<String> {
     let parsed_url = Url::parse(url).ok()?;
-    let segments = parsed_url.path_segments()?;
-    segments.last().map(|s| s.to_string())
+    let mut segments = parsed_url.path_segments()?;
+    segments.next_back().map(|s| s.to_string())
 }

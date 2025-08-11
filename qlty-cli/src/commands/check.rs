@@ -291,7 +291,7 @@ impl Check {
         settings.progress = !self.no_progress;
         settings.formatters = !self.no_formatters;
         settings.filters = CheckFilter::from_optional_list(self.filter.clone());
-        settings.upstream = self.compute_upstream(&workspace)?;
+        settings.upstream = self.compute_upstream(workspace)?;
         settings.level = self.level;
         settings.fail_level = if self.no_fail {
             None

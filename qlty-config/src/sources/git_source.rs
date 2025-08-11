@@ -321,7 +321,7 @@ impl GitSource {
         }
     }
 
-    fn create_fetch_options(&self) -> Result<FetchOptions> {
+    fn create_fetch_options(&self) -> Result<FetchOptions<'_>> {
         let mut fetch_options = FetchOptions::new();
 
         let mut proxy_options = git2::ProxyOptions::new();

@@ -214,8 +214,8 @@ impl Scanner {
             }
 
             let unique_drivers = drivers_to_activate
-                .iter()
-                .map(|(_, driver)| driver.driver_name())
+                .values()
+                .map(|driver| driver.driver_name())
                 .unique()
                 .collect::<Vec<String>>();
 
@@ -223,14 +223,14 @@ impl Scanner {
                 vec![]
             } else {
                 drivers_to_activate
-                    .iter()
-                    .map(|(_, driver)| driver.driver_name())
+                    .values()
+                    .map(|driver| driver.driver_name())
                     .collect()
             };
 
             let mut driver_versions = drivers_to_activate
-                .iter()
-                .map(|(_, driver)| (driver.version()))
+                .values()
+                .map(|driver| (driver.version()))
                 .unique()
                 .collect::<Vec<String>>();
 

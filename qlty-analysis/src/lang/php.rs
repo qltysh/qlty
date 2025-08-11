@@ -413,7 +413,7 @@ mod test {
         );
     }
 
-    fn call_node(tree: &Tree) -> Node {
+    fn call_node(tree: &Tree) -> Node<'_> {
         let root_node = tree.root_node();
         root_node.named_child(1).unwrap()
     }
