@@ -113,10 +113,5 @@ impl Upgrade {
             style("https://qlty.sh/discord".to_string()).cyan().bold()
         );
         println!();
-        println!(
-            "{}",
-            style("Please update the versions of your sources in qlty.toml to the latest.").bold()
-        );
-        println!();
     }
 }
