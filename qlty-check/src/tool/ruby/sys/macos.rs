@@ -15,14 +15,18 @@ use rayon::prelude::*;
 use std::{collections::HashMap, fs::read_dir};
 use tracing::debug;
 
-#[cfg(all(target_os = "macos", target_arch = "x86_64"))]
+#[allow(dead_code)]
+#[cfg(target_arch = "x86_64")]
 const ARCH: &str = "x64";
-#[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+#[allow(dead_code)]
+#[cfg(target_arch = "aarch64")]
 const ARCH: &str = "arm64";
 
-#[cfg(all(target_os = "macos", target_arch = "x86_64"))]
+#[allow(dead_code)]
+#[cfg(target_arch = "x86_64")]
 const HOMEBREW_PATH: &str = "/usr/local/bin";
-#[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+#[allow(dead_code)]
+#[cfg(target_arch = "aarch64")]
 const HOMEBREW_PATH: &str = "/opt/homebrew/bin";
 
 #[derive(Debug, Clone, Default)]
