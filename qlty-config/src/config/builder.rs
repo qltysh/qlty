@@ -371,10 +371,12 @@ fn merge_enabled_plugins(existing: &EnabledPlugin, new: &EnabledPlugin) -> Enabl
         );
     }
 
+    let merged_mode = existing.mode.unwrap_or(new.mode.unwrap_or_default());
+
     EnabledPlugin {
         name: existing.name.clone(),
         prefix: existing.prefix.clone(),
-        mode: Some(existing.mode.unwrap_or(new.mode.unwrap_or_default())),
+        mode: Some(merged_mode),
         version: new.version.clone(),
         triggers: existing
             .triggers
@@ -439,7 +441,7 @@ fn compute_unique_merged_enabled_plugins(plugins: &[EnabledPlugin]) -> Vec<Enabl
             merged_unique_enabled_plugins.insert(key, plugin.clone());
         }
     }
-    merged_unique_enabled_plugins.values().cloned().collect()
+    merged_unique_enabled_plugins.into_values().collect()
 }
 
 #[cfg(test)]
