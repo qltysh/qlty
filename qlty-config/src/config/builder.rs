@@ -428,7 +428,7 @@ fn compute_unique_merged_enabled_plugins(plugins: &[EnabledPlugin]) -> Vec<Enabl
 }
 
 // sort the plugins by name, prefix, and version for consistency
-fn sort_enabled_plugins(plugins: &mut Vec<EnabledPlugin>) {
+fn sort_enabled_plugins(plugins: &mut [EnabledPlugin]) {
     plugins.sort_by(|a, b| {
         let name_cmp = a.name.cmp(&b.name);
         if name_cmp != std::cmp::Ordering::Equal {
