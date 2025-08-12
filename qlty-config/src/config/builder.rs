@@ -372,12 +372,30 @@ fn merge_enabled_plugins(existing: &EnabledPlugin, new: &EnabledPlugin) -> Enabl
         existing, new
     );
 
-    if existing.version != new.version {
-        warn!(
-            "Merging enabled plugins with different versions: {} and {}, using {}.",
-            existing.version, new.version, new.version
-        );
-    }
+    let version = if existing.version != new.version {
+        if existing.version == "known_good" {
+            warn!(
+                "The existing plugin version is 'known_good', using the new plugin version: {}",
+                new.version
+            );
+            new.version.clone()
+        } else if new.version == "known_good" {
+            warn!(
+                "The new plugin version is 'known_good', using the existing plugin version: {}",
+                existing.version
+            );
+            existing.version.clone()
+        } else {
+            warn!(
+                "Merging enabled plugins with different versions: {} and {}, using {}.",
+                existing.version, new.version, new.version
+            );
+
+            new.version.clone()
+        }
+    } else {
+        new.version.clone()
+    };
 
     if existing.mode.is_some() && new.mode.is_some() && existing.mode != new.mode {
         warn!(
@@ -393,7 +411,7 @@ fn merge_enabled_plugins(existing: &EnabledPlugin, new: &EnabledPlugin) -> Enabl
         name: existing.name.clone(),
         prefix: existing.prefix.clone(),
         mode: Some(merged_mode),
-        version: new.version.clone(),
+        version,
         skip_upstream: new.skip_upstream.or(existing.skip_upstream),
         package_file: new.package_file.clone().or(existing.package_file.clone()),
         triggers: prioritize_new_array(&existing.triggers, &new.triggers),
@@ -833,6 +851,33 @@ mod test {
     }
 
     #[test]
+    fn test_prioritize_explicitly_stated_version() {
+        let plugins = vec![
+            EnabledPlugin {
+                name: "plugin1".to_string(),
+                prefix: None,
+                version: "2.0.1".to_string(),
+                drivers: vec!["driver1".to_string()],
+                ..Default::default()
+            },
+            EnabledPlugin {
+                name: "plugin1".to_string(),
+                prefix: None,
+                version: "known_good".to_string(),
+                drivers: vec!["driver2".to_string()],
+                ..Default::default()
+            },
+        ];
+
+        let result = compute_unique_merged_enabled_plugins(&plugins);
+
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].name, "plugin1");
+        assert_eq!(result[0].version, "2.0.1");
+        assert_eq!(result[0].drivers, vec!["driver2"]);
+    }
+
+    #[test]
     fn test_compute_unique_merged_enabled_plugins_empty_input() {
         let plugins = vec![];
         let result = compute_unique_merged_enabled_plugins(&plugins);
@@ -976,20 +1021,19 @@ mod test {
 
             [[plugin]]
             name = "b"
-            version = "1.0.0"
+            version = "2.0.0"
             mode = "disabled"
+
+            [[plugin]]
+            name = "a"
+            version = "2.0.0"
         };
         let qlty_config = toml! {
             config_version = "0"
 
             [[plugin]]
             name = "b"
-            version = "2.0.0"
             mode = "block"
-
-            [[plugin]]
-            name = "a"
-            version = "2.0.0"
 
             [[plugin]]
             name = "a"
