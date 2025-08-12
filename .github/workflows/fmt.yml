@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: ${{ github.head_ref }}
-      - uses: qltysh/qlty-action/fmt@b9133a486505563742d768da29f7951271678c87
+      - uses: qltysh/qlty-action/fmt@a19242102d17e497f437d7466aa01b528537e899
       - name: Commit changes
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
         with:

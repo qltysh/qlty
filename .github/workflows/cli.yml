@@ -54,7 +54,7 @@ jobs:
       - name: Run Test
         run: cargo llvm-cov --lcov --output-path target/lcov.info -- --include-ignored
 
-      - uses: qltysh/qlty-action/coverage@b9133a486505563742d768da29f7951271678c87
+      - uses: qltysh/qlty-action/coverage@a19242102d17e497f437d7466aa01b528537e899
         if: ${{ matrix.os != 'windows-latest' }}
         with:
           oidc: true

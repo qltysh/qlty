@@ -25,7 +25,7 @@ jobs:
           fetch-depth: 500
 
       - name: Install Qlty CLI
-        uses: qltysh/qlty-action/install@b9133a486505563742d768da29f7951271678c87
+        uses: qltysh/qlty-action/install@a19242102d17e497f437d7466aa01b528537e899
 
       - name: Update CHANGELOG.md
         id: claude
