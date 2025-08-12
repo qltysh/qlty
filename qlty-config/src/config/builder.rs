@@ -862,7 +862,7 @@ mod test {
             },
             EnabledPlugin {
                 name: "plugin1".to_string(),
-                prefix: Some("".to_string()),
+                prefix: None,
                 version: "known_good".to_string(),
                 drivers: vec!["driver2".to_string()],
                 ..Default::default()
