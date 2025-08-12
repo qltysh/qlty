@@ -43,8 +43,8 @@ fn configure_plugins(planner: &Planner) -> Result<Vec<ActivePlugin>> {
     trace!("Configuring plugins...");
     let mut enabled_plugins = vec![];
 
-    for enabled_plugin in planner.config.plugin.iter() {
-        if enabled_plugin.mode == IssueMode::Disabled {
+    for enabled_plugin in &planner.config.plugin {
+        if enabled_plugin.mode == Some(IssueMode::Disabled) {
             continue;
         }
 
