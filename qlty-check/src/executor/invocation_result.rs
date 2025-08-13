@@ -2,6 +2,7 @@ use crate::{
     cache::{IssueCache, IssuesCacheKey},
     command::ExecResult,
     planner::InvocationPlan,
+    results::FormattedFile,
 };
 use anyhow::{Context, Result};
 use chrono::prelude::*;
@@ -24,7 +25,7 @@ pub struct InvocationResult {
     pub messages: Vec<Message>,
     pub invocation: Invocation,
     pub file_results: Option<Vec<FileResult>>,
-    pub formatted: Option<Vec<PathBuf>>,
+    pub formatted: Option<Vec<FormattedFile>>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -311,7 +312,10 @@ impl InvocationResult {
                 info!("Rewriting file {:?}", &workspace_path);
                 std::fs::copy(&staged_path, &workspace_path)?;
                 self.invocation.rewrites_count += 1;
-                formatted.push(prefixed_target_path.to_owned())
+                formatted.push(FormattedFile {
+                    path: prefixed_target_path.to_owned(),
+                    plugin_name: self.invocation.plugin_name.clone(),
+                })
             }
         }
 
