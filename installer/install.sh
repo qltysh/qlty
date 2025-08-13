@@ -252,6 +252,8 @@ fish)
 zsh)
 	# Install completions, but we don't care if it fails
 	SHELL=zsh $exe completions --install >/dev/null 2>&1 || :
+   	# Set ZDOTDIR to HOME if it is not already set
+  	: "${ZDOTDIR:="$HOME"}"
 	zsh_config="${ZDOTDIR%/:-"$HOME"}/.zshrc"
 	tilde_zsh_config=$(tildify "$zsh_config")
 	{
