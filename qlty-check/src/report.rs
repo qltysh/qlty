@@ -1,4 +1,7 @@
-use crate::{results::FixedResult, InvocationResult};
+use crate::{
+    results::{FixedResult, FormattedFile},
+    InvocationResult,
+};
 use itertools::Itertools;
 use qlty_analysis::{workspace_entries::TargetMode, IssueCount};
 use qlty_types::analysis::v1::{ExecutionVerb, Issue, Level, Message};
@@ -14,7 +17,7 @@ pub struct Report {
     pub messages: Vec<Message>,
     pub invocations: Vec<InvocationResult>,
     pub issues: Vec<Issue>,
-    pub formatted: Vec<PathBuf>,
+    pub formatted: Vec<FormattedFile>,
     pub fixed: HashSet<FixedResult>,
     pub fixable: HashSet<FixedResult>,
     pub counts: IssueCount,

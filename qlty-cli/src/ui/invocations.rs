@@ -12,12 +12,13 @@ pub fn print_invocations(
     report: &Report,
     verbose: usize,
 ) -> Result<()> {
-    for formatted_path in &report.formatted {
+    for formatted_file in &report.formatted {
         writeln!(
             writer,
-            "{} Formatted {}",
+            "{} Formatted {} {}",
             style("✔").green().bold(),
-            style(path_to_string(formatted_path)).underlined()
+            style(path_to_string(&formatted_file.path)).underlined(),
+            style(format!("({})", formatted_file.plugin_name)).dim()
         )?;
     }
 

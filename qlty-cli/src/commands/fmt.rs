@@ -72,7 +72,8 @@ impl Fmt {
         let report = processor.compute()?;
 
         if self.index || self.index_file.is_some() {
-            self.git_add(&report.formatted)?;
+            let paths: Vec<PathBuf> = report.formatted.iter().map(|f| f.path.clone()).collect();
+            self.git_add(&paths)?;
         }
 
         let mut formatter =

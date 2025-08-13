@@ -3,11 +3,17 @@ use qlty_types::analysis::v1::{Issue, Location, Message};
 use std::path::PathBuf;
 
 #[derive(Clone, Debug)]
+pub struct FormattedFile {
+    pub path: PathBuf,
+    pub plugin_name: String,
+}
+
+#[derive(Clone, Debug)]
 pub struct Results {
     pub messages: Vec<Message>,
     pub invocations: Vec<InvocationResult>,
     pub issues: Vec<Issue>,
-    pub formatted: Vec<PathBuf>,
+    pub formatted: Vec<FormattedFile>,
 }
 
 #[derive(Hash, Eq, PartialEq, Debug, Clone)]
@@ -21,7 +27,7 @@ impl Results {
         messages: Vec<Message>,
         invocations: Vec<InvocationResult>,
         issues: Vec<Issue>,
-        formatted: Vec<PathBuf>,
+        formatted: Vec<FormattedFile>,
     ) -> Self {
         Self {
             messages,

@@ -14,7 +14,7 @@ use crate::{
     planner::InvocationPlan,
     ui::{Progress, ProgressBar},
 };
-use crate::{cache::IssuesCacheHit, planner::Plan, Results};
+use crate::{cache::IssuesCacheHit, planner::Plan, results::FormattedFile, Results};
 use anyhow::{bail, Context, Result};
 use chrono::Utc;
 pub use driver::Driver;
@@ -587,7 +587,7 @@ impl Executor {
         Ok(invocations)
     }
 
-    pub fn build_formatted(invocations: &[InvocationResult]) -> Vec<PathBuf> {
+    pub fn build_formatted(invocations: &[InvocationResult]) -> Vec<FormattedFile> {
         let mut results = vec![];
 
         for invocation in invocations {
@@ -595,7 +595,7 @@ impl Executor {
                 results.extend(formatted.clone());
             }
         }
-        results.sort();
+        results.sort_by(|a, b| a.path.cmp(&b.path));
         results
     }
 
