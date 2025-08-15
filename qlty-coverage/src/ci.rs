@@ -38,7 +38,7 @@ pub trait CI {
         None
     }
 
-    fn is_merge_group_event(&self) -> bool {
+    fn is_merge_group_branch(&self) -> bool {
         let branch = self.branch();
         branch.starts_with("gh-readonly-queue/")
     }
@@ -157,7 +157,7 @@ mod tests {
             branch: "gh-readonly-queue/main/pr-30-e6afd52a678226e8c732f2012aabb2fbfd97e5ac"
                 .to_string(),
         };
-        assert_eq!(ci.is_merge_group_event(), true);
+        assert_eq!(ci.is_merge_group_branch(), true);
     }
 
     #[test]
@@ -165,6 +165,6 @@ mod tests {
         let ci = MockCI {
             branch: "main".to_string(),
         };
-        assert_eq!(ci.is_merge_group_event(), false);
+        assert_eq!(ci.is_merge_group_branch(), false);
     }
 }
