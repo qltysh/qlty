@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.566.0 (2025-08-15)
+
+### New
+
+- Support merge group detection on any CI provider listening to GitHub push events (#2320)
+
+## v0.565.0 (2025-08-13)
+
+### New
+
+- Print formatter name when formatting (#2313)
+
+### Fixed
+
+- Prioritize explicitly stated version during merge (#2312)
+- Merge enabled plugins by name and prefix (#2310)
+
 ## v0.564.0 (2025-08-11)
 
 ### New
