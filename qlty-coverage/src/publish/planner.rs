@@ -151,7 +151,10 @@ impl MetadataPlanner {
     pub fn compute(&self) -> Result<CoverageMetadata> {
         let now = OffsetDateTime::now_utc();
 
-        let is_merge_group = self.ci.as_ref().is_some_and(|ci| ci.is_merge_group_event());
+        let is_merge_group = self
+            .ci
+            .as_ref()
+            .is_some_and(|ci| ci.is_merge_group_branch());
 
         let mut metadata = if let Some(ref ci) = self.ci {
             ci.metadata()
@@ -635,7 +638,7 @@ mod tests {
                 "https://test-ci.example.com/builds/test-build-456".to_string()
             }
 
-            fn is_merge_group_event(&self) -> bool {
+            fn is_merge_group_branch(&self) -> bool {
                 true
             }
         }
