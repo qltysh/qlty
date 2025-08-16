@@ -23,5 +23,5 @@ output_category = "vulnerability"
 output_level = "medium"
 batch = false
 cache_results = true
-suggested = "targets"
+suggested = "config"
 output_missing = "parse"
