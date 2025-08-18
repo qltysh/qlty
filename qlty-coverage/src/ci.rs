@@ -38,8 +38,9 @@ pub trait CI {
         None
     }
 
-    fn is_merge_group_event(&self) -> bool {
-        false
+    fn is_merge_group_branch(&self) -> bool {
+        let branch = self.branch();
+        branch.starts_with("gh-readonly-queue/")
     }
 
     // Information about the commit
@@ -86,4 +87,84 @@ pub fn all() -> Vec<Box<dyn CI>> {
         Box::<Semaphore>::default(),
         Box::<TravisCI>::default(),
     ]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct MockCI {
+        branch: String,
+    }
+
+    impl CI for MockCI {
+        fn detect(&self) -> bool {
+            true
+        }
+
+        fn ci_name(&self) -> String {
+            "MockCI".to_string()
+        }
+
+        fn ci_url(&self) -> String {
+            "https://mock.ci".to_string()
+        }
+
+        fn repository_name(&self) -> String {
+            "mock/repo".to_string()
+        }
+
+        fn repository_url(&self) -> String {
+            "https://github.com/mock/repo".to_string()
+        }
+
+        fn branch(&self) -> String {
+            self.branch.clone()
+        }
+
+        fn pull_number(&self) -> String {
+            "".to_string()
+        }
+
+        fn pull_url(&self) -> String {
+            "".to_string()
+        }
+
+        fn commit_sha(&self) -> String {
+            "abc123".to_string()
+        }
+
+        fn workflow(&self) -> String {
+            "workflow".to_string()
+        }
+
+        fn job(&self) -> String {
+            "job".to_string()
+        }
+
+        fn build_id(&self) -> String {
+            "123".to_string()
+        }
+
+        fn build_url(&self) -> String {
+            "https://mock.ci/builds/123".to_string()
+        }
+    }
+
+    #[test]
+    fn test_is_merge_group_event_with_merge_queue_branch() {
+        let ci = MockCI {
+            branch: "gh-readonly-queue/main/pr-30-e6afd52a678226e8c732f2012aabb2fbfd97e5ac"
+                .to_string(),
+        };
+        assert_eq!(ci.is_merge_group_branch(), true);
+    }
+
+    #[test]
+    fn test_is_merge_group_event_with_regular_branch() {
+        let ci = MockCI {
+            branch: "main".to_string(),
+        };
+        assert_eq!(ci.is_merge_group_branch(), false);
+    }
 }
