@@ -1,14 +1,12 @@
 use crate::{
-    initializer::Settings, Arguments, CommandError, CommandSuccess, Initializer, QltyRelease,
+    initializer::{PluginEnabler, Settings},
+    Arguments, CommandError, CommandSuccess, Initializer, QltyRelease,
 };
 use anyhow::{Context, Result};
 use clap::Args;
 use console::style;
-use qlty_config::{
-    config::{IssueMode, PluginDef},
-    Workspace,
-};
-use std::fs::{self, create_dir_all};
+use qlty_config::{config::IssueMode, Workspace};
+use std::fs;
 use toml_edit::{array, table, value, DocumentMut};
 
 #[derive(Args, Debug)]
@@ -69,11 +67,43 @@ impl ConfigDocument {
             }
         }
 
+        // Use the unified enabler to check for package files and filters
+        let enabler = PluginEnabler::new(self.workspace.clone());
+        let enable_result = enabler.enable_plugin(name, &plugin_def)?;
+
         let mut plugin_table = table();
         plugin_table["name"] = value(name);
 
-        if version != "latest" {
-            plugin_table["version"] = value(version);
+        // Use the provided version if it's not "latest", otherwise check if enabler found a specific version
+        let final_version = if version != "latest" {
+            Some(version.to_string())
+        } else if !enable_result.version.is_empty() && enable_result.version != "latest" {
+            // Only use the enabler version if it's different from latest (e.g., found in lockfile)
+            Some(enable_result.version)
+        } else {
+            None
+        };
+
+        if let Some(version_str) = final_version {
+            plugin_table["version"] = value(&version_str);
+        }
+
+        // Add package file information if found
+        if let Some(package_file) = &enable_result.package_file {
+            plugin_table["package_file"] = value(package_file);
+        }
+
+        if !enable_result.package_filters.is_empty() {
+            let mut filters_array = array();
+            let filters_as_array = filters_array.as_array_mut().unwrap();
+            for filter in &enable_result.package_filters {
+                filters_as_array.push(filter);
+            }
+            plugin_table["package_filters"] = filters_array;
+        }
+
+        if let Some(prefix) = &enable_result.prefix {
+            plugin_table["prefix"] = value(prefix);
         }
 
         self.document["plugin"]
@@ -81,42 +111,14 @@ impl ConfigDocument {
             .unwrap()
             .push(plugin_table.as_table().unwrap().clone());
 
-        self.copy_configs(name, plugin_def)?;
+        // Copy configs using the enabler
+        enabler.copy_configs(name, &plugin_def)?;
 
         Ok(())
     }
 
     pub fn write(&self) -> Result<()> {
         fs::write(self.workspace.config_path()?, self.document.to_string())?;
-        Ok(())
-    }
-
-    fn copy_configs(&self, plugin_name: &str, plugin_def: PluginDef) -> Result<()> {
-        let mut config_files = plugin_def.config_files.clone();
-
-        plugin_def.drivers.iter().for_each(|(_, driver)| {
-            config_files.extend(driver.config_files.clone());
-        });
-
-        for config_file in &config_files {
-            if self.workspace.root.join(config_file).exists() {
-                return Ok(()); // If any config file for the plugin already exists, skip copying
-            }
-        }
-
-        for config_file in &config_files {
-            for source in self.workspace.sources_list()?.sources.iter() {
-                if let Some(source_file) = source.get_config_file(plugin_name, config_file)? {
-                    let file_name = source_file.path.file_name().unwrap();
-                    let library_configs_dir = self.workspace.library()?.configs_dir();
-
-                    create_dir_all(&library_configs_dir)?; // Ensure the directory exists
-                    let destination = library_configs_dir.join(file_name);
-                    source_file.write_to(&destination)?;
-                }
-            }
-        }
-
         Ok(())
     }
 }
