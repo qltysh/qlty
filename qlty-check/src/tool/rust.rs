@@ -9,7 +9,6 @@ use qlty_config::config::OperatingSystem;
 use qlty_config::config::PluginDef;
 use qlty_config::config::{Cpu, DownloadDef, System};
 use std::fmt::Debug;
-use tracing::info;
 
 #[derive(Debug, Clone)]
 pub struct Rust {
