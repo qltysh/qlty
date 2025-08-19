@@ -1,9 +1,9 @@
+use crate::env::{EnvSource, SystemEnv};
 use crate::Parser;
 use anyhow::{Context, Result};
 use qlty_types::tests::v1::FileCoverage;
 use serde::Deserialize;
 use serde_xml_rs;
-use std::env;
 use std::path::Path;
 
 #[derive(Debug, Deserialize)]
@@ -30,7 +30,9 @@ struct Line {
     ci: i64,
 }
 
-pub struct Jacoco {}
+pub struct Jacoco {
+    env: Box<dyn EnvSource>,
+}
 
 impl Default for Jacoco {
     fn default() -> Self {
@@ -40,11 +42,18 @@ impl Default for Jacoco {
 
 impl Jacoco {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            env: Box::new(SystemEnv::default()),
+        }
+    }
+
+    pub fn with_env(env: Box<dyn EnvSource>) -> Self {
+        Self { env }
     }
 
     fn get_source_paths(&self) -> Vec<String> {
-        env::var("JACOCO_SOURCE_PATH")
+        self.env
+            .var("JACOCO_SOURCE_PATH")
             .unwrap_or_default()
             .split_whitespace()
             .map(|s| s.to_string())
@@ -115,8 +124,26 @@ impl Parser for Jacoco {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashMap;
     use std::fs;
     use tempfile::TempDir;
+
+    #[derive(Debug)]
+    struct HashMapEnv {
+        inner: HashMap<String, String>,
+    }
+
+    impl HashMapEnv {
+        fn new(inner: HashMap<String, String>) -> Self {
+            Self { inner }
+        }
+    }
+
+    impl EnvSource for HashMapEnv {
+        fn var(&self, name: &str) -> Option<String> {
+            self.inner.get(name).cloned()
+        }
+    }
 
     #[test]
     fn jacoco_results() {
@@ -189,16 +216,18 @@ mod tests {
         fs::create_dir_all(&java_path).unwrap();
         fs::write(java_path.join("Application.java"), "// test file").unwrap();
 
-        // Set the JACOCO_SOURCE_PATH environment variable
-        env::set_var("JACOCO_SOURCE_PATH", source_path.to_str().unwrap());
+        // Create a mock environment with JACOCO_SOURCE_PATH
+        let mut env = HashMap::new();
+        env.insert(
+            "JACOCO_SOURCE_PATH".to_string(),
+            source_path.to_str().unwrap().to_string(),
+        );
 
-        let parsed_results = Jacoco::new().parse_text(input).unwrap();
+        let jacoco = Jacoco::with_env(Box::new(HashMapEnv::new(env)));
+        let parsed_results = jacoco.parse_text(input).unwrap();
 
         // The path should still be the relative path, but it should have been validated
         assert_eq!(parsed_results[0].path, "be/apo/basic/Application.java");
-
-        // Clean up
-        env::remove_var("JACOCO_SOURCE_PATH");
     }
 
     #[test]
@@ -218,31 +247,30 @@ mod tests {
         fs::create_dir_all(&java_path).unwrap();
         fs::write(java_path.join("Application.java"), "// test file").unwrap();
 
-        // Set multiple paths in JACOCO_SOURCE_PATH
+        // Create a mock environment with multiple paths in JACOCO_SOURCE_PATH
+        let mut env = HashMap::new();
         let paths = format!(
             "{} {}",
             source_path1.to_str().unwrap(),
             source_path2.to_str().unwrap()
         );
-        env::set_var("JACOCO_SOURCE_PATH", paths);
+        env.insert("JACOCO_SOURCE_PATH".to_string(), paths);
 
-        let parsed_results = Jacoco::new().parse_text(input).unwrap();
+        let jacoco = Jacoco::with_env(Box::new(HashMapEnv::new(env)));
+        let parsed_results = jacoco.parse_text(input).unwrap();
 
         // The path should still be the relative path
         assert_eq!(parsed_results[0].path, "be/apo/basic/Application.java");
-
-        // Clean up
-        env::remove_var("JACOCO_SOURCE_PATH");
     }
 
     #[test]
     fn jacoco_without_source_path() {
         let input = include_str!("../../tests/fixtures/jacoco/sample.xml");
 
-        // Ensure JACOCO_SOURCE_PATH is not set
-        env::remove_var("JACOCO_SOURCE_PATH");
-
-        let parsed_results = Jacoco::new().parse_text(input).unwrap();
+        // Create a mock environment without JACOCO_SOURCE_PATH
+        let env = HashMap::new();
+        let jacoco = Jacoco::with_env(Box::new(HashMapEnv::new(env)));
+        let parsed_results = jacoco.parse_text(input).unwrap();
 
         // Should use the default behavior
         assert_eq!(parsed_results[0].path, "be/apo/basic/Application.java");
