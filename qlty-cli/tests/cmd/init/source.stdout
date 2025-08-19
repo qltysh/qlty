@@ -81,9 +81,6 @@ mode = "comment"
 name = "shellcheck"
 
 [[plugin]]
-name = "shfmt"
-
-[[plugin]]
 name = "single_driver"
 mode = "comment"
 
