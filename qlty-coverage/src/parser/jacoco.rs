@@ -127,6 +127,7 @@ mod tests {
     use super::*;
     use std::collections::HashMap;
     use std::fs;
+    use std::path::Path;
     use tempfile::TempDir;
 
     #[derive(Debug)]
@@ -215,17 +216,27 @@ mod tests {
         let parsed_results = jacoco.parse_text(input).unwrap();
 
         // When the file doesn't exist, it should still prepend the source path
+        // Use Path::join to create platform-appropriate expected paths
         assert_eq!(
             parsed_results[0].path,
-            "/app/src/be/apo/basic/Application.java"
+            Path::new("/app/src")
+                .join("be/apo/basic/Application.java")
+                .to_string_lossy()
+                .to_string()
         );
         assert_eq!(
             parsed_results[1].path,
-            "/app/src/be/apo/basic/rest/EchoService.java"
+            Path::new("/app/src")
+                .join("be/apo/basic/rest/EchoService.java")
+                .to_string_lossy()
+                .to_string()
         );
         assert_eq!(
             parsed_results[2].path,
-            "/app/src/be/apo/basic/rest/model/Poney.java"
+            Path::new("/app/src")
+                .join("be/apo/basic/rest/model/Poney.java")
+                .to_string_lossy()
+                .to_string()
         );
     }
 
@@ -244,13 +255,20 @@ mod tests {
         let parsed_results = jacoco.parse_text(input).unwrap();
 
         // When files don't exist, should use the first source path
+        // Use Path::join to create platform-appropriate expected paths
         assert_eq!(
             parsed_results[0].path,
-            "/project/src/be/apo/basic/Application.java"
+            Path::new("/project/src")
+                .join("be/apo/basic/Application.java")
+                .to_string_lossy()
+                .to_string()
         );
         assert_eq!(
             parsed_results[1].path,
-            "/project/src/be/apo/basic/rest/EchoService.java"
+            Path::new("/project/src")
+                .join("be/apo/basic/rest/EchoService.java")
+                .to_string_lossy()
+                .to_string()
         );
     }
 
