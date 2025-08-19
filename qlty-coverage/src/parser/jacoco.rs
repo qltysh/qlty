@@ -70,17 +70,18 @@ impl Jacoco {
 
         // Try each source path to find the file
         for source_path in &source_paths {
-            let absolute_path = Path::new(source_path).join(relative_path);
-            if absolute_path.exists() {
-                // Return the relative path that was found
-                // We still return the relative path, not the absolute one,
-                // to maintain consistency with the original behavior
-                return relative_path.to_string();
+            let full_path = Path::new(source_path).join(relative_path);
+            if full_path.exists() {
+                // Return the full path with source path prepended
+                return full_path.to_string_lossy().to_string();
             }
         }
 
-        // If file not found in any source path, return the relative path
-        relative_path.to_string()
+        // If file not found in any source path, use the first source path
+        Path::new(&source_paths[0])
+            .join(relative_path)
+            .to_string_lossy()
+            .to_string()
     }
 }
 
@@ -203,15 +204,79 @@ mod tests {
     }
 
     #[test]
-    fn jacoco_with_source_path() {
+    fn jacoco_with_single_source_path_no_file_exists() {
         let input = include_str!("../../tests/fixtures/jacoco/sample.xml");
 
-        // Create a temporary directory structure
-        let temp_dir = TempDir::new().unwrap();
-        let source_path = temp_dir.path().join("src");
-        fs::create_dir_all(&source_path).unwrap();
+        // Create a mock environment with JACOCO_SOURCE_PATH set to /app/src
+        let mut env = HashMap::new();
+        env.insert("JACOCO_SOURCE_PATH".to_string(), "/app/src".to_string());
 
-        // Create the expected file structure
+        let jacoco = Jacoco::with_env(Box::new(HashMapEnv::new(env)));
+        let parsed_results = jacoco.parse_text(input).unwrap();
+
+        // When the file doesn't exist, it should still prepend the source path
+        assert_eq!(
+            parsed_results[0].path,
+            "/app/src/be/apo/basic/Application.java"
+        );
+        assert_eq!(
+            parsed_results[1].path,
+            "/app/src/be/apo/basic/rest/EchoService.java"
+        );
+        assert_eq!(
+            parsed_results[2].path,
+            "/app/src/be/apo/basic/rest/model/Poney.java"
+        );
+    }
+
+    #[test]
+    fn jacoco_with_multiple_source_paths_no_files_exist() {
+        let input = include_str!("../../tests/fixtures/jacoco/sample.xml");
+
+        // Create a mock environment with multiple source paths
+        let mut env = HashMap::new();
+        env.insert(
+            "JACOCO_SOURCE_PATH".to_string(),
+            "/project/src /workspace/src /app/src".to_string(),
+        );
+
+        let jacoco = Jacoco::with_env(Box::new(HashMapEnv::new(env)));
+        let parsed_results = jacoco.parse_text(input).unwrap();
+
+        // When files don't exist, should use the first source path
+        assert_eq!(
+            parsed_results[0].path,
+            "/project/src/be/apo/basic/Application.java"
+        );
+        assert_eq!(
+            parsed_results[1].path,
+            "/project/src/be/apo/basic/rest/EchoService.java"
+        );
+    }
+
+    #[test]
+    fn jacoco_without_source_path() {
+        let input = include_str!("../../tests/fixtures/jacoco/sample.xml");
+
+        // Create a mock environment without JACOCO_SOURCE_PATH
+        let env = HashMap::new();
+        let jacoco = Jacoco::with_env(Box::new(HashMapEnv::new(env)));
+        let parsed_results = jacoco.parse_text(input).unwrap();
+
+        // Should use the relative path as-is when no source path is set
+        assert_eq!(parsed_results[0].path, "be/apo/basic/Application.java");
+        assert_eq!(parsed_results[1].path, "be/apo/basic/rest/EchoService.java");
+    }
+
+    #[test]
+    fn jacoco_with_source_path_and_existing_file() {
+        let input = include_str!("../../tests/fixtures/jacoco/sample.xml");
+
+        // Create a temporary directory with actual files
+        let temp_dir = TempDir::new().unwrap();
+        let source_path = temp_dir.path();
+
+        // Create the expected file structure - only create the first file
         let java_path = source_path.join("be/apo/basic");
         fs::create_dir_all(&java_path).unwrap();
         fs::write(java_path.join("Application.java"), "// test file").unwrap();
@@ -226,28 +291,39 @@ mod tests {
         let jacoco = Jacoco::with_env(Box::new(HashMapEnv::new(env)));
         let parsed_results = jacoco.parse_text(input).unwrap();
 
-        // The path should still be the relative path, but it should have been validated
-        assert_eq!(parsed_results[0].path, "be/apo/basic/Application.java");
+        // The first file exists, so it should have the full path
+        assert_eq!(
+            parsed_results[0].path,
+            source_path
+                .join("be/apo/basic/Application.java")
+                .to_string_lossy()
+        );
+
+        // The second file doesn't exist, so it should still get the source path prepended
+        assert_eq!(
+            parsed_results[1].path,
+            source_path
+                .join("be/apo/basic/rest/EchoService.java")
+                .to_string_lossy()
+        );
     }
 
     #[test]
-    fn jacoco_with_multiple_source_paths() {
+    fn jacoco_with_multiple_source_paths_file_in_second_path() {
         let input = include_str!("../../tests/fixtures/jacoco/sample.xml");
 
-        // Create multiple temporary directories
+        // Create two temporary directories
         let temp_dir1 = TempDir::new().unwrap();
         let temp_dir2 = TempDir::new().unwrap();
-        let source_path1 = temp_dir1.path().join("src1");
-        let source_path2 = temp_dir2.path().join("src2");
-        fs::create_dir_all(&source_path1).unwrap();
-        fs::create_dir_all(&source_path2).unwrap();
+        let source_path1 = temp_dir1.path();
+        let source_path2 = temp_dir2.path();
 
-        // Create file in the second source path
+        // Create file only in the second source path
         let java_path = source_path2.join("be/apo/basic");
         fs::create_dir_all(&java_path).unwrap();
         fs::write(java_path.join("Application.java"), "// test file").unwrap();
 
-        // Create a mock environment with multiple paths in JACOCO_SOURCE_PATH
+        // Create a mock environment with multiple paths
         let mut env = HashMap::new();
         let paths = format!(
             "{} {}",
@@ -259,20 +335,20 @@ mod tests {
         let jacoco = Jacoco::with_env(Box::new(HashMapEnv::new(env)));
         let parsed_results = jacoco.parse_text(input).unwrap();
 
-        // The path should still be the relative path
-        assert_eq!(parsed_results[0].path, "be/apo/basic/Application.java");
-    }
+        // File exists in second path, so should use that path
+        assert_eq!(
+            parsed_results[0].path,
+            source_path2
+                .join("be/apo/basic/Application.java")
+                .to_string_lossy()
+        );
 
-    #[test]
-    fn jacoco_without_source_path() {
-        let input = include_str!("../../tests/fixtures/jacoco/sample.xml");
-
-        // Create a mock environment without JACOCO_SOURCE_PATH
-        let env = HashMap::new();
-        let jacoco = Jacoco::with_env(Box::new(HashMapEnv::new(env)));
-        let parsed_results = jacoco.parse_text(input).unwrap();
-
-        // Should use the default behavior
-        assert_eq!(parsed_results[0].path, "be/apo/basic/Application.java");
+        // Other files don't exist, so should use first source path
+        assert_eq!(
+            parsed_results[1].path,
+            source_path1
+                .join("be/apo/basic/rest/EchoService.java")
+                .to_string_lossy()
+        );
     }
 }
