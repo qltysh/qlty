@@ -69,8 +69,5 @@ mode = "comment"
 name = "shellcheck"
 
 [[plugin]]
-name = "shfmt"
-
-[[plugin]]
 name = "trufflehog"
 

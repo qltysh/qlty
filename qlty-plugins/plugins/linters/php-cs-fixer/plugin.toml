@@ -16,7 +16,7 @@ success_codes = [0]
 output = "rewrite"
 cache_results = true
 driver_type = "formatter"
-suggested = "targets"
+suggested = "config"
 # Batching with php-cs-fixer requires a config file to be present
 batch = false
 
