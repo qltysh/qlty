@@ -27,4 +27,4 @@ success_codes = [0, 1]
 output = "rewrite"
 cache_results = true
 driver_type = "formatter"
-suggested = "targets"
+suggested = "config"

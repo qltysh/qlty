@@ -44,4 +44,4 @@ cache_results = true
 output = "rewrite"
 batch = true
 driver_type = "formatter"
-suggested = "targets"
+suggested = "config"
