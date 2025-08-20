@@ -303,7 +303,6 @@ config_version = "0"
 [plugins.definitions.to_enable]
 file_types = ["ALL"]
 latest_version = "1.1.0"
-suggested_mode = "comment"
 
 [plugins.definitions.to_enable.drivers.lint]
 script = "ls -l ${target}"
