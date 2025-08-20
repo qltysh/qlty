@@ -58,6 +58,30 @@ impl Initializer {
         let mut plugin_activations = vec![];
 
         for installed_plugin in &self.plugins {
+            let mut config_files = Vec::new();
+
+            // If this is RuboCop, detect custom cop files
+            // Hard coding the string doesn't seem right though
+            if installed_plugin.name == "rubocop" {
+                // Get the plugin definition from scanner's sources_only_config
+                if let Some(plugin_def) = self
+                    .scanner
+                    .sources_only_config
+                    .plugins
+                    .definitions
+                    .get("rubocop")
+                {
+                    if let Ok(custom_cops) =
+                        super::scanner::rubocop_config::extract_custom_cop_files(
+                            &self.settings.workspace.root,
+                            &plugin_def.config_files,
+                        )
+                    {
+                        config_files = custom_cops;
+                    }
+                }
+            }
+
             plugin_activations.push(PluginActivation {
                 name: installed_plugin.name.clone(),
                 drivers: installed_plugin.enabled_drivers.clone(),
@@ -66,6 +90,7 @@ impl Initializer {
                 package_filters: installed_plugin.package_filters.clone(),
                 prefix: installed_plugin.prefix.clone(),
                 mode: installed_plugin.mode,
+                config_files,
             });
         }
 

@@ -14,6 +14,7 @@ pub struct PluginActivation {
     pub package_filters: Vec<String>,
     pub prefix: Option<String>,
     pub mode: IssueMode,
+    pub config_files: Vec<String>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -147,6 +148,14 @@ impl Renderer {
 
         if plugin.mode != IssueMode::Block {
             toml.push_str(&format!("mode = \"{}\"\n", plugin.mode.to_str()));
+        }
+
+        if !plugin.config_files.is_empty() {
+            toml.push_str("config_files = [\n");
+            for config_file in plugin.config_files.iter().sorted() {
+                toml.push_str(&format!("  \"{config_file}\",\n"));
+            }
+            toml.push_str("]\n");
         }
 
         Ok(toml)
