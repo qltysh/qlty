@@ -2,6 +2,7 @@ use anyhow::Result;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use qlty_config::Workspace;
 use qlty_types::tests::v1::{CoverageMetadata, CoverageSummary, FileCoverage};
+use regex::Regex;
 use std::{fmt::Debug, path::PathBuf};
 
 pub trait Transformer: Debug + Send + Sync + 'static {
@@ -200,9 +201,305 @@ impl Transformer for StripDotSlashPrefix {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct DefaultPathFixer {
+    patterns: Vec<Regex>,
+}
+
+impl DefaultPathFixer {
+    pub fn new() -> Result<Self> {
+        let pattern_strings = vec![
+            r"^/?home/circleci/project/",
+            r"^/?(home|Users)/runner/work/[^/]+/[^/]+/",
+            r"^/?(home|Users)/travis/build/[^/]+/[^/]+/",
+            r"^/?(home|Users)/jenkins/jobs/[^/]+/workspace/",
+            r"^/?home/[^/]+/src/([^/]+/){3}",
+            r"^/?Users/distiller/[^/]+/",
+            r"^/?(home|Users)/[^/]+/workspace/[^/]+/[^/]+/",
+        ];
+
+        let mut patterns = Vec::new();
+        for pattern in pattern_strings {
+            patterns.push(Regex::new(pattern)?);
+        }
+
+        Ok(Self { patterns })
+    }
+
+    fn normalize_path(&self, path: &str) -> String {
+        // Convert Windows backslashes to forward slashes
+        if cfg!(windows) || path.contains('\\') {
+            path.replace('\\', "/")
+        } else {
+            path.to_string()
+        }
+    }
+
+    fn clean_windows_prefix(&self, path: &str) -> String {
+        // Remove common Windows drive prefixes like C:/, D:/, etc.
+        if let Some(stripped) = path.strip_prefix("C:/") {
+            return stripped.to_string();
+        }
+        if let Some(stripped) = path.strip_prefix("D:/") {
+            return stripped.to_string();
+        }
+        // Handle any single letter drive
+        if path.len() >= 3 && path.chars().nth(1) == Some(':') && path.chars().nth(2) == Some('/') {
+            return path[3..].to_string();
+        }
+        path.to_string()
+    }
+}
+
+impl Transformer for DefaultPathFixer {
+    fn transform(&self, file_coverage: FileCoverage) -> Option<FileCoverage> {
+        let mut file_coverage = file_coverage;
+
+        // First normalize the path (convert backslashes to forward slashes)
+        let normalized_path = self.normalize_path(&file_coverage.path);
+
+        // Remove Windows drive prefix if present
+        let path_without_drive = self.clean_windows_prefix(&normalized_path);
+
+        // Try to match and remove any of the CI/CD patterns
+        let mut cleaned_path = path_without_drive.clone();
+        for pattern in &self.patterns {
+            if let Some(captures) = pattern.find(&path_without_drive) {
+                cleaned_path = path_without_drive[captures.end()..].to_string();
+                break; // Apply only the first matching pattern
+            }
+        }
+
+        file_coverage.path = cleaned_path;
+        Some(file_coverage)
+    }
+
+    fn clone_box(&self) -> Box<dyn Transformer> {
+        Box::new(self.clone())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_default_path_fixer_circleci() {
+        let transformer = DefaultPathFixer::new().unwrap();
+
+        // Test with leading slash
+        let file_coverage = FileCoverage {
+            path: "/home/circleci/project/src/main.rs".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "src/main.rs");
+
+        // Test without leading slash
+        let file_coverage = FileCoverage {
+            path: "home/circleci/project/lib/test.js".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "lib/test.js");
+    }
+
+    #[test]
+    fn test_default_path_fixer_github_actions() {
+        let transformer = DefaultPathFixer::new().unwrap();
+
+        // Test with Users prefix
+        let file_coverage = FileCoverage {
+            path: "/Users/runner/work/repo/repo/lib/test.js".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "lib/test.js");
+
+        // Test with home prefix
+        let file_coverage = FileCoverage {
+            path: "/home/runner/work/myproject/myproject/src/app.py".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "src/app.py");
+    }
+
+    #[test]
+    fn test_default_path_fixer_travis() {
+        let transformer = DefaultPathFixer::new().unwrap();
+
+        // Test Travis with home
+        let file_coverage = FileCoverage {
+            path: "/home/travis/build/org/repo/app.py".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "app.py");
+
+        // Test Travis with Users
+        let file_coverage = FileCoverage {
+            path: "Users/travis/build/myorg/myrepo/index.html".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "index.html");
+    }
+
+    #[test]
+    fn test_default_path_fixer_jenkins() {
+        let transformer = DefaultPathFixer::new().unwrap();
+
+        let file_coverage = FileCoverage {
+            path: "/home/jenkins/jobs/job1/workspace/src/main.java".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "src/main.java");
+
+        // Test with Users prefix
+        let file_coverage = FileCoverage {
+            path: "Users/jenkins/jobs/build-job/workspace/test.go".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "test.go");
+    }
+
+    #[test]
+    fn test_default_path_fixer_generic_src() {
+        let transformer = DefaultPathFixer::new().unwrap();
+
+        let file_coverage = FileCoverage {
+            path: "/home/user123/src/github/org/project/file.rs".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "file.rs");
+    }
+
+    #[test]
+    fn test_default_path_fixer_distiller() {
+        let transformer = DefaultPathFixer::new().unwrap();
+
+        let file_coverage = FileCoverage {
+            path: "/Users/distiller/project/src/component.tsx".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "src/component.tsx");
+    }
+
+    #[test]
+    fn test_default_path_fixer_generic_workspace() {
+        let transformer = DefaultPathFixer::new().unwrap();
+
+        // Test with home prefix
+        let file_coverage = FileCoverage {
+            path: "/home/builder/workspace/frontend/app/main.js".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "main.js");
+
+        // Test with Users prefix
+        let file_coverage = FileCoverage {
+            path: "Users/dev/workspace/backend/api/server.py".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "server.py");
+    }
+
+    #[test]
+    fn test_default_path_fixer_windows_paths() {
+        let transformer = DefaultPathFixer::new().unwrap();
+
+        // Test Windows path with backslashes and GitHub Actions pattern
+        let file_coverage = FileCoverage {
+            path: r"C:\Users\runner\work\repo\repo\src\main.cs".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "src/main.cs");
+
+        // Test Windows path with D: drive
+        let file_coverage = FileCoverage {
+            path: r"D:\home\jenkins\jobs\test\workspace\app.rb".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "app.rb");
+
+        // Test Windows path with mixed slashes
+        let file_coverage = FileCoverage {
+            path: r"C:/Users/travis\build/org\repo\test.py".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "test.py");
+    }
+
+    #[test]
+    fn test_default_path_fixer_non_matching() {
+        let transformer = DefaultPathFixer::new().unwrap();
+
+        // Test path that doesn't match any pattern
+        let file_coverage = FileCoverage {
+            path: "src/components/Header.tsx".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "src/components/Header.tsx");
+
+        // Test absolute path that doesn't match
+        let file_coverage = FileCoverage {
+            path: "/opt/app/src/main.go".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "/opt/app/src/main.go");
+
+        // Test relative path
+        let file_coverage = FileCoverage {
+            path: "./lib/utils.js".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "./lib/utils.js");
+    }
+
+    #[test]
+    fn test_default_path_fixer_edge_cases() {
+        let transformer = DefaultPathFixer::new().unwrap();
+
+        // Test empty path
+        let file_coverage = FileCoverage {
+            path: "".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "");
+
+        // Test path that exactly matches pattern (no file after)
+        let file_coverage = FileCoverage {
+            path: "/home/circleci/project/".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "");
+
+        // Test very long path
+        let file_coverage = FileCoverage {
+            path: "/home/runner/work/repo/repo/very/deep/nested/directory/structure/with/many/levels/file.txt".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(
+            result.path,
+            "very/deep/nested/directory/structure/with/many/levels/file.txt"
+        );
+    }
 
     #[test]
     fn test_strip_prefix_transformer_no_trailing_slash() {
