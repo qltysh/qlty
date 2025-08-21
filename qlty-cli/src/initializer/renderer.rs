@@ -433,6 +433,36 @@ package_filters = ["filter1", "filter2"]
         );
     }
 
+    #[test]
+    fn test_plugin_with_config_files() {
+        let renderer = Renderer::new(
+            &vec![],
+            &vec![PluginActivation {
+                name: "rubocop".to_string(),
+                version: Some("1.50.0".to_string()),
+                drivers: vec!["lint".to_string()],
+                config_files: vec!["custom_cop.rb".to_string()],
+                ..Default::default()
+            }],
+        );
+
+        assert_eq!(
+            strip_default_toml(renderer.render().unwrap()),
+            r#"
+[[plugin]]
+name = "rubocop"
+drivers = [
+  "lint",
+]
+version = "1.50.0"
+config_files = [
+  "custom_cop.rb",
+]
+"#
+            .trim()
+        );
+    }
+
     fn strip_default_toml(toml_string: String) -> String {
         let default_toml_string = Renderer::default().render().unwrap();
         toml_string
