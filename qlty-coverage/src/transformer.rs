@@ -213,7 +213,6 @@ impl DefaultPathFixer {
             r"^/?(home|Users)/runner/work/[^/]+/[^/]+/",
             r"^/?(home|Users)/travis/build/[^/]+/[^/]+/",
             r"^/?(home|Users)/jenkins/jobs/[^/]+/workspace/",
-            r"^/?home/[^/]+/src/([^/]+/){3}",
             r"^/?Users/distiller/[^/]+/",
             r"^/?(home|Users)/[^/]+/workspace/[^/]+/[^/]+/",
         ];
@@ -364,18 +363,6 @@ mod tests {
         };
         let result = transformer.transform(file_coverage).unwrap();
         assert_eq!(result.path, "test.go");
-    }
-
-    #[test]
-    fn test_default_path_fixer_generic_src() {
-        let transformer = DefaultPathFixer::new().unwrap();
-
-        let file_coverage = FileCoverage {
-            path: "/home/user123/src/github/org/project/file.rs".to_string(),
-            ..Default::default()
-        };
-        let result = transformer.transform(file_coverage).unwrap();
-        assert_eq!(result.path, "file.rs");
     }
 
     #[test]
