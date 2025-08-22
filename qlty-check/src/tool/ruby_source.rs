@@ -15,6 +15,7 @@ use qlty_config::config::{Cpu, DownloadDef, OperatingSystem, PluginDef, System};
 #[derive(Debug, Clone)]
 pub struct RubySource {
     pub version: String,
+    pub timeout: std::time::Duration,
 }
 
 impl Tool for RubySource {
@@ -37,7 +38,7 @@ impl Tool for RubySource {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message("Installing ruby-build");
-        self.download().install(self)?;
+        self.download().install(self, self.timeout)?;
         Ok(())
     }
 

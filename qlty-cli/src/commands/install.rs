@@ -1,3 +1,4 @@
+use crate::duration::parse_duration;
 use crate::{Arguments, CommandError, CommandSuccess};
 use anyhow::{Context, Result};
 use clap::Args;
@@ -22,6 +23,10 @@ pub struct Install {
     /// Filter by plugin or check
     #[arg(long)]
     filter: Option<String>,
+
+    /// Timeout for operations that rely on external resources (e.g., "5m", "300s")
+    #[arg(long, value_name = "DURATION")]
+    pub action_timeout: Option<String>,
     // /// Print verbose output
     // #[arg(short, long, action = clap::ArgAction::Count)]
     // pub verbose: u8,
@@ -46,6 +51,18 @@ impl Install {
             }];
         }
 
+        // Parse action timeout if provided
+        if let Some(timeout_str) = &self.action_timeout {
+            match parse_duration(timeout_str) {
+                Ok(duration) => settings.action_timeout = duration,
+                Err(err) => {
+                    return Err(CommandError::InvalidOptions {
+                        message: format!("Invalid action timeout: {}", err),
+                    });
+                }
+            }
+        }
+
         let mut planner = Planner::new(ExecutionVerb::Install, &settings)?;
 
         planner.set_target_mode(TargetMode::All);
@@ -55,22 +72,27 @@ impl Install {
         for active_plugin in active_plugins {
             debug!("Building tool for plugin: {}", active_plugin.name);
             let tool = ToolBuilder::new(&config, &active_plugin.name, &active_plugin.plugin)
+                .with_timeout(settings.action_timeout)
                 .build_tool()
                 .with_context(|| format!("Failed to build tool for {}", active_plugin.name))?;
             tools.push(tool);
         }
 
         let tools = Plan::all_unique_sorted_tools(tools);
-        self.install(tools)?;
+        self.install(tools, settings.action_timeout)?;
 
         CommandSuccess::ok()
     }
 
-    fn install(&self, tools: Vec<(String, Box<dyn Tool>)>) -> Result<()> {
+    fn install(
+        &self,
+        tools: Vec<(String, Box<dyn Tool>)>,
+        timeout: std::time::Duration,
+    ) -> Result<()> {
         let progress = Progress::new(!self.no_progress, tools.len() as u64);
         let jobs = Planner::jobs_count(self.jobs);
 
-        let results = Executor::install_tools(tools, jobs, progress);
+        let results = Executor::install_tools(tools, jobs, progress, timeout);
         for (name, result) in results {
             result.with_context(|| format!("Failed to install {}", name))?;
         }

@@ -43,6 +43,10 @@ pub struct Init {
     #[arg(long, value_parser = SourceSpec::new)]
     pub source: Option<SourceSpec>,
 
+    /// Timeout for operations that rely on external resources (e.g., "5m", "300s")
+    #[arg(long, value_name = "DURATION")]
+    pub action_timeout: Option<String>,
+
     /// Warning: this option has been deprecated!
     /// Enable plugin prefix detection.
     #[arg(hide = true, long)]
@@ -258,7 +262,12 @@ impl Init {
         );
         println!();
 
-        cmd!(self.current_exe()?, "install").run()?;
+        let mut args = vec!["install"];
+        if let Some(timeout_str) = &self.action_timeout {
+            args.push("--action-timeout");
+            args.push(timeout_str);
+        }
+        cmd(self.current_exe()?, &args).run()?;
         Ok(())
     }
 

@@ -92,17 +92,19 @@ impl Download {
         Ok(())
     }
 
-    pub fn install(&self, tool: &dyn Tool) -> Result<()> {
+    pub fn install(&self, tool: &dyn Tool, timeout: std::time::Duration) -> Result<()> {
         let directory = PathBuf::from(tool.directory());
         let tool_name = tool.name();
         let mut installation = initialize_installation(tool)?;
 
         let result = match self.file_type() {
-            DownloadFileType::Executable => self.install_executable(&directory, &tool_name),
-            DownloadFileType::Targz => self.install_targz(&directory),
-            DownloadFileType::Tarxz => self.install_tarxz(&directory),
-            DownloadFileType::Gz => self.install_gz(&directory, &tool_name),
-            DownloadFileType::Zip => self.install_zip(&directory),
+            DownloadFileType::Executable => {
+                self.install_executable(&directory, &tool_name, timeout)
+            }
+            DownloadFileType::Targz => self.install_targz(&directory, timeout),
+            DownloadFileType::Tarxz => self.install_tarxz(&directory, timeout),
+            DownloadFileType::Gz => self.install_gz(&directory, &tool_name, timeout),
+            DownloadFileType::Zip => self.install_zip(&directory, timeout),
         };
 
         finalize_installation_from_download_result(self, &mut installation, &result)?;
@@ -110,7 +112,12 @@ impl Download {
         result
     }
 
-    fn install_executable(&self, directory: &Path, tool_name: &str) -> Result<()> {
+    fn install_executable(
+        &self,
+        directory: &Path,
+        tool_name: &str,
+        timeout: std::time::Duration,
+    ) -> Result<()> {
         let mut binary_name = self.binary_name().unwrap_or(tool_name.to_string());
 
         if cfg!(windows) && self.url()?.ends_with(".exe") {
@@ -129,7 +136,7 @@ impl Download {
 
         let url = self.url().with_context(|| "Failed to get download URL")?;
 
-        let response = http::get(&url)
+        let response = http::get_with_timeout(&url, timeout)
             .call()
             .with_context(|| format!("Error downloading file from {url}"))?;
 
@@ -159,7 +166,12 @@ impl Download {
         Ok(())
     }
 
-    fn install_gz(&self, directory: &Path, tool_name: &str) -> Result<()> {
+    fn install_gz(
+        &self,
+        directory: &Path,
+        tool_name: &str,
+        timeout: std::time::Duration,
+    ) -> Result<()> {
         let binary_name = self.binary_name().unwrap_or(tool_name.to_string());
         let binary_path = directory.join(binary_name);
 
@@ -171,7 +183,7 @@ impl Download {
 
         let url = self.url().with_context(|| "Failed to get download URL")?;
 
-        let response = http::get(&url)
+        let response = http::get_with_timeout(&url, timeout)
             .call()
             .with_context(|| format!("Error downloading file from {url}"))?;
 
@@ -204,10 +216,10 @@ impl Download {
         Ok(())
     }
 
-    fn install_targz(&self, directory: &Path) -> Result<()> {
+    fn install_targz(&self, directory: &Path, timeout: std::time::Duration) -> Result<()> {
         info!("Downloading (tar.gz) {}", self.url()?);
         let url = self.url()?;
-        let response = http::get(&url)
+        let response = http::get_with_timeout(&url, timeout)
             .call()
             .with_context(|| format!("Error downloading file from {url}"))?;
         let reader = response.into_reader();
@@ -218,10 +230,10 @@ impl Download {
         Ok(())
     }
 
-    fn install_tarxz(&self, directory: &Path) -> Result<()> {
+    fn install_tarxz(&self, directory: &Path, timeout: std::time::Duration) -> Result<()> {
         info!("Downloading (tar.xz) {}", self.url()?);
         let url = self.url()?;
-        let response = http::get(&url)
+        let response = http::get_with_timeout(&url, timeout)
             .call()
             .with_context(|| format!("Error downloading file from {url}"))?;
 
@@ -277,10 +289,11 @@ impl Download {
         Ok(())
     }
 
-    fn install_zip(&self, directory: &Path) -> Result<()> {
-        let response = http::get(&self.url()?)
+    fn install_zip(&self, directory: &Path, timeout: std::time::Duration) -> Result<()> {
+        let url = self.url()?;
+        let response = http::get_with_timeout(&url, timeout)
             .call()
-            .with_context(|| format!("Error downloading file from {}", self.url().unwrap()))?;
+            .with_context(|| format!("Error downloading file from {}", url))?;
 
         let mut reader = response.into_reader();
         let mut file = tempfile().with_context(|| "Failed to create a temporary file")?;
@@ -370,6 +383,7 @@ pub struct DownloadTool {
     pub plugin_name: String,
     pub download: Download,
     pub plugin: PluginDef,
+    pub timeout: std::time::Duration,
 }
 
 impl Tool for DownloadTool {
@@ -403,7 +417,7 @@ impl Tool for DownloadTool {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing {}", self.name()));
-        self.download.install(self)?;
+        self.download.install(self, self.timeout)?;
 
         Ok(())
     }

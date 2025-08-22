@@ -2,6 +2,7 @@ pub mod allocator;
 mod arguments;
 pub mod auth;
 mod commands;
+mod duration;
 mod errors;
 pub mod exe_name;
 pub mod export;

@@ -16,6 +16,7 @@ use std::fmt::Debug;
 #[derive(Debug, Clone)]
 pub struct Go {
     pub version: String,
+    pub timeout: std::time::Duration,
 }
 
 impl Tool for Go {
@@ -38,7 +39,7 @@ impl Tool for Go {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing go v{}", self.version));
-        self.download().install(self)?;
+        self.download().install(self, self.timeout)?;
         Ok(())
     }
 

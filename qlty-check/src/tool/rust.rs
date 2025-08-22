@@ -13,6 +13,7 @@ use std::fmt::Debug;
 #[derive(Debug, Clone)]
 pub struct Rust {
     pub version: String,
+    pub timeout: std::time::Duration,
 }
 
 impl Tool for Rust {
@@ -40,7 +41,7 @@ impl Tool for Rust {
             self.version.clone() // e.g. "nightly"
         };
         task.set_message(&format!("Installing Rust {}", version));
-        self.download().install(self)?;
+        self.download().install(self, self.timeout)?;
         Ok(())
     }
 

@@ -25,6 +25,7 @@ const BIN_DIRECTORY: &str = "Scripts";
 #[derive(Debug, Clone)]
 pub struct Python {
     pub version: String,
+    pub timeout: std::time::Duration,
 }
 
 impl Tool for Python {
@@ -47,7 +48,7 @@ impl Tool for Python {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing Python v{}", self.version().unwrap()));
-        self.download().install(self)?;
+        self.download().install(self, self.timeout)?;
         Ok(())
     }
 
@@ -272,6 +273,7 @@ mod test {
             },
             runtime: super::Python {
                 version: "1.0.0".to_string(),
+                timeout: crate::settings::Settings::default().action_timeout,
             },
         };
         reroute_tools_root(&temp_path, &pkg);

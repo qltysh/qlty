@@ -31,7 +31,13 @@ impl PlatformRuby for RubyWindows {
         Ok(())
     }
 
-    fn install(&self, tool: &dyn Tool, task: &ProgressTask, _download: Download) -> Result<()> {
+    fn install(
+        &self,
+        tool: &dyn Tool,
+        task: &ProgressTask,
+        _download: Download,
+        _timeout: std::time::Duration,
+    ) -> Result<()> {
         task.set_message("Using system Ruby");
         Self::verify_system_installation(tool)
     }

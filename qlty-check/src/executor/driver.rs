@@ -127,7 +127,8 @@ impl Driver {
         let timer = Instant::now();
         let handle = cmd.start()?;
         let pids = handle.pids();
-        let timeout = plan.driver.timeout;
+        // Use the minimum of action_timeout and driver timeout
+        let timeout = std::cmp::min(plan.settings.action_timeout.as_secs(), plan.driver.timeout);
         let invocation_label = plan.invocation_label();
         let running = Arc::new(AtomicBool::new(true));
         let running_clone = Arc::clone(&running);
@@ -519,12 +520,42 @@ impl Driver {
         let timer = Instant::now();
         let invocation_label = plan.invocation_label();
 
-        let output = cmd.run().with_context(|| {
+        // Use action_timeout from settings
+        let timeout = plan.settings.action_timeout;
+
+        // Start the command
+        let handle = cmd.start().with_context(|| {
+            format!(
+                "Failed to start prepare_script for {}: {}",
+                invocation_label, &rerun
+            )
+        })?;
+        let pids = handle.pids();
+        let running = Arc::new(AtomicBool::new(true));
+        let running_clone = Arc::clone(&running);
+        let invocation_label_clone = invocation_label.clone();
+
+        // Set up timeout thread
+        thread::spawn(move || {
+            thread::sleep(timeout);
+            if running_clone.load(Ordering::SeqCst) {
+                error!(
+                    "Killing {} prepare_script after {}s",
+                    invocation_label_clone,
+                    timeout.as_secs()
+                );
+                Self::terminate_processes(pids);
+            }
+        });
+
+        // Wait for the process to complete
+        let output = handle.into_output().with_context(|| {
             format!(
                 "Failed to run prepare_script for {}: {}",
                 invocation_label, &rerun
             )
         })?;
+        running.store(false, Ordering::SeqCst);
 
         info!(
             "{}: prepare_script ran {} in {:.3}s (exit {}): stdout: {}",
@@ -703,7 +734,7 @@ pub mod test {
                 runtime_version: None,
                 plugin_name: "test".to_string(),
                 plugin: PluginDef::default(),
-                tool: Ruby::new_tool(""),
+                tool: Ruby::new_tool("", crate::settings::Settings::default().action_timeout),
                 driver_name: "test".to_string(),
                 driver: build_driver(vec![], vec![]),
                 plugin_configs: vec![],
@@ -765,7 +796,7 @@ pub mod test {
                 prefix: Some(prefix.to_string()),
                 ..Default::default()
             },
-            tool: Ruby::new_tool(""),
+            tool: Ruby::new_tool("", crate::settings::Settings::default().action_timeout),
             driver_name: "test".to_string(),
             driver: build_driver(vec![], vec![]),
             plugin_configs: vec![],
@@ -790,7 +821,7 @@ pub mod test {
         let workspace_dir = PathBuf::from("/var/root");
         let target_path = PathBuf::from("basic.py");
         let driver = build_driver(vec![], vec![]);
-        let tool = Ruby::new_tool("");
+        let tool = Ruby::new_tool("", crate::settings::Settings::default().action_timeout);
 
         let plan = InvocationPlan {
             target_root: PathBuf::from(workspace_dir.clone()),
@@ -841,7 +872,7 @@ pub mod test {
         let staging_dir = PathBuf::from("/tmp/staging");
         let target_path = PathBuf::from("basic.py");
         let driver = build_driver(vec![], vec![]);
-        let tool = Ruby::new_tool("");
+        let tool = Ruby::new_tool("", crate::settings::Settings::default().action_timeout);
 
         let plan = InvocationPlan {
             target_root: PathBuf::from(staging_dir.clone()),
