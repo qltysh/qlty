@@ -98,9 +98,9 @@ impl ToolBuilder<'_> {
             release: GitHubRelease::new(plugin_version.to_string(), release_def.clone()),
             plugin: self.plugin.clone(),
             runtime,
-            timeout: self.timeout.unwrap_or_else(|| {
-                crate::settings::Settings::default().action_timeout
-            }),
+            timeout: self
+                .timeout
+                .unwrap_or_else(|| crate::settings::Settings::default().action_timeout),
             ..Default::default()
         }))
     }
@@ -126,9 +126,9 @@ impl ToolBuilder<'_> {
             plugin_name: self.plugin_name.to_string(),
             download: Download::new(download_def, download_name, plugin_version),
             plugin: self.plugin.clone(),
-            timeout: self.timeout.unwrap_or_else(|| {
-                crate::settings::Settings::default().action_timeout
-            }),
+            timeout: self
+                .timeout
+                .unwrap_or_else(|| crate::settings::Settings::default().action_timeout),
         }))
     }
     pub fn build_tool(&self) -> Result<Box<dyn Tool>> {
@@ -166,9 +166,9 @@ impl ToolBuilder<'_> {
     }
 
     fn runtime_tool(&self, runtime: Runtime, version: &str) -> Box<dyn RuntimeTool> {
-        let timeout = self.timeout.unwrap_or_else(|| {
-            crate::settings::Settings::default().action_timeout
-        });
+        let timeout = self
+            .timeout
+            .unwrap_or_else(|| crate::settings::Settings::default().action_timeout);
         match runtime {
             Runtime::Node => Box::new(node::NodeJS {
                 version: version.to_string(),
@@ -200,9 +200,9 @@ impl ToolBuilder<'_> {
 
     // Since can't cast Box<dyn RuntimeTool> into Box<dyn Tool> directly, we need to
     fn release_runtime_tool(&self, runtime: Runtime, version: &str) -> Box<dyn Tool> {
-        let timeout = self.timeout.unwrap_or_else(|| {
-            crate::settings::Settings::default().action_timeout
-        });
+        let timeout = self
+            .timeout
+            .unwrap_or_else(|| crate::settings::Settings::default().action_timeout);
         match runtime {
             Runtime::Node => Box::new(node::NodeJS {
                 version: version.to_string(),

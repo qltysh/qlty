@@ -467,7 +467,10 @@ pub mod test {
                 version: Some("1.0.0".to_string()),
                 ..Default::default()
             },
-            runtime: super::Ruby::new_tool("1.0.0", crate::settings::Settings::default().action_timeout),
+            runtime: super::Ruby::new_tool(
+                "1.0.0",
+                crate::settings::Settings::default().action_timeout,
+            ),
         };
         reroute_tools_root(&temp_path, &pkg);
         callback(&mut pkg, &temp_path, &list).unwrap();
@@ -512,11 +515,25 @@ pub mod test {
         ];
         for (flag, expected) in tests.iter() {
             std::env::set_var("QLTY_FEATURE_RUBY_BINARY_INSTALL", flag);
-            assert_eq!(Ruby::new_tool(&version, crate::settings::Settings::default().action_timeout).fingerprint(), **expected);
+            assert_eq!(
+                Ruby::new_tool(
+                    &version,
+                    crate::settings::Settings::default().action_timeout
+                )
+                .fingerprint(),
+                **expected
+            );
         }
 
         std::env::remove_var("QLTY_FEATURE_RUBY_BINARY_INSTALL");
-        assert_eq!(Ruby::new_tool(&version, crate::settings::Settings::default().action_timeout).fingerprint(), ruby_fingerprint);
+        assert_eq!(
+            Ruby::new_tool(
+                &version,
+                crate::settings::Settings::default().action_timeout
+            )
+            .fingerprint(),
+            ruby_fingerprint
+        );
     }
 
     #[test]
