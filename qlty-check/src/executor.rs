@@ -75,7 +75,7 @@ impl Executor {
             self.plan.tools(),
             self.plan.jobs,
             self.progress.clone(),
-            self.plan.settings.action_timeout,
+            Some(self.plan.settings.action_timeout),
         );
 
         for installation_result in installation_results {

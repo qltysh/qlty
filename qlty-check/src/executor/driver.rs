@@ -128,11 +128,7 @@ impl Driver {
         let handle = cmd.start()?;
         let pids = handle.pids();
         // Use the minimum of action_timeout and driver timeout
-        let timeout = if let Some(action_timeout) = plan.settings.action_timeout {
-            std::cmp::min(action_timeout.as_secs(), plan.driver.timeout)
-        } else {
-            plan.driver.timeout
-        };
+        let timeout = std::cmp::min(plan.settings.action_timeout.as_secs(), plan.driver.timeout);
         let invocation_label = plan.invocation_label();
         let running = Arc::new(AtomicBool::new(true));
         let running_clone = Arc::clone(&running);
@@ -524,11 +520,8 @@ impl Driver {
         let timer = Instant::now();
         let invocation_label = plan.invocation_label();
 
-        // Use action_timeout if provided, otherwise use the default from Settings
-        let timeout = plan
-            .settings
-            .action_timeout
-            .unwrap_or_else(|| crate::settings::Settings::default().action_timeout.unwrap());
+        // Use action_timeout from settings
+        let timeout = plan.settings.action_timeout;
 
         // Start the command
         let handle = cmd.start().with_context(|| {
@@ -741,7 +734,7 @@ pub mod test {
                 runtime_version: None,
                 plugin_name: "test".to_string(),
                 plugin: PluginDef::default(),
-                tool: Ruby::new_tool("", crate::settings::Settings::default().action_timeout.unwrap()),
+                tool: Ruby::new_tool("", crate::settings::Settings::default().action_timeout),
                 driver_name: "test".to_string(),
                 driver: build_driver(vec![], vec![]),
                 plugin_configs: vec![],
@@ -803,7 +796,7 @@ pub mod test {
                 prefix: Some(prefix.to_string()),
                 ..Default::default()
             },
-            tool: Ruby::new_tool("", crate::settings::Settings::default().action_timeout.unwrap()),
+            tool: Ruby::new_tool("", crate::settings::Settings::default().action_timeout),
             driver_name: "test".to_string(),
             driver: build_driver(vec![], vec![]),
             plugin_configs: vec![],
@@ -828,7 +821,7 @@ pub mod test {
         let workspace_dir = PathBuf::from("/var/root");
         let target_path = PathBuf::from("basic.py");
         let driver = build_driver(vec![], vec![]);
-        let tool = Ruby::new_tool("", crate::settings::Settings::default().action_timeout.unwrap());
+        let tool = Ruby::new_tool("", crate::settings::Settings::default().action_timeout);
 
         let plan = InvocationPlan {
             target_root: PathBuf::from(workspace_dir.clone()),
@@ -879,7 +872,7 @@ pub mod test {
         let staging_dir = PathBuf::from("/tmp/staging");
         let target_path = PathBuf::from("basic.py");
         let driver = build_driver(vec![], vec![]);
-        let tool = Ruby::new_tool("", crate::settings::Settings::default().action_timeout.unwrap());
+        let tool = Ruby::new_tool("", crate::settings::Settings::default().action_timeout);
 
         let plan = InvocationPlan {
             target_root: PathBuf::from(staging_dir.clone()),

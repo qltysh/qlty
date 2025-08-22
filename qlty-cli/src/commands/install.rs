@@ -54,7 +54,7 @@ impl Install {
         // Parse action timeout if provided
         if let Some(timeout_str) = &self.action_timeout {
             match parse_duration(timeout_str) {
-                Ok(duration) => settings.action_timeout = Some(duration),
+                Ok(duration) => settings.action_timeout = duration,
                 Err(err) => {
                     return Err(CommandError::InvalidOptions {
                         message: format!("Invalid action timeout: {}", err),
@@ -72,14 +72,14 @@ impl Install {
         for active_plugin in active_plugins {
             debug!("Building tool for plugin: {}", active_plugin.name);
             let tool = ToolBuilder::new(&config, &active_plugin.name, &active_plugin.plugin)
-                .with_timeout(settings.action_timeout)
+                .with_timeout(Some(settings.action_timeout))
                 .build_tool()
                 .with_context(|| format!("Failed to build tool for {}", active_plugin.name))?;
             tools.push(tool);
         }
 
         let tools = Plan::all_unique_sorted_tools(tools);
-        self.install(tools, settings.action_timeout)?;
+        self.install(tools, Some(settings.action_timeout))?;
 
         CommandSuccess::ok()
     }

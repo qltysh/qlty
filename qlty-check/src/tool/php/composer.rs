@@ -260,7 +260,7 @@ pub mod test {
             },
             runtime: Php {
                 version: "1.0.0".to_string(),
-                timeout: crate::settings::Settings::default().action_timeout.unwrap(),
+                timeout: crate::settings::Settings::default().action_timeout,
             },
         };
 
@@ -317,7 +317,7 @@ pub mod test {
             },
             runtime: Php {
                 version: "1.0.0".to_string(),
-                timeout: crate::settings::Settings::default().action_timeout.unwrap(),
+                timeout: crate::settings::Settings::default().action_timeout,
             },
         };
 

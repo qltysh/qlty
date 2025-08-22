@@ -144,10 +144,8 @@ impl Fmt {
 
         // Parse action timeout if provided
         if let Some(timeout_str) = &self.action_timeout {
-            settings.action_timeout = Some(
-                parse_duration(timeout_str)
-                    .map_err(|err| anyhow::anyhow!("Invalid action timeout: {}", err))?,
-            );
+            settings.action_timeout = parse_duration(timeout_str)
+                .map_err(|err| anyhow::anyhow!("Invalid action timeout: {}", err))?;
         }
 
         Ok(settings)

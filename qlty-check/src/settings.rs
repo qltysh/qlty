@@ -26,7 +26,7 @@ pub struct Settings {
     pub skip_errored_plugins: bool,
     pub emit_existing_issues: bool,
     pub auth_token: Option<String>,
-    pub action_timeout: Option<Duration>,
+    pub action_timeout: Duration,
 }
 
 impl Default for Settings {
@@ -54,7 +54,7 @@ impl Default for Settings {
             skip_errored_plugins: false,
             emit_existing_issues: false,
             auth_token: None,
-            action_timeout: Some(Duration::from_secs(600)), // Default 10 minutes
+            action_timeout: Duration::from_secs(600), // Default 10 minutes
         }
     }
 }

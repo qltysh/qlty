@@ -99,7 +99,7 @@ impl ToolBuilder<'_> {
             plugin: self.plugin.clone(),
             runtime,
             timeout: self.timeout.unwrap_or_else(|| {
-                crate::settings::Settings::default().action_timeout.unwrap()
+                crate::settings::Settings::default().action_timeout
             }),
             ..Default::default()
         }))
@@ -127,7 +127,7 @@ impl ToolBuilder<'_> {
             download: Download::new(download_def, download_name, plugin_version),
             plugin: self.plugin.clone(),
             timeout: self.timeout.unwrap_or_else(|| {
-                crate::settings::Settings::default().action_timeout.unwrap()
+                crate::settings::Settings::default().action_timeout
             }),
         }))
     }
@@ -167,7 +167,7 @@ impl ToolBuilder<'_> {
 
     fn runtime_tool(&self, runtime: Runtime, version: &str) -> Box<dyn RuntimeTool> {
         let timeout = self.timeout.unwrap_or_else(|| {
-            crate::settings::Settings::default().action_timeout.unwrap()
+            crate::settings::Settings::default().action_timeout
         });
         match runtime {
             Runtime::Node => Box::new(node::NodeJS {
@@ -201,7 +201,7 @@ impl ToolBuilder<'_> {
     // Since can't cast Box<dyn RuntimeTool> into Box<dyn Tool> directly, we need to
     fn release_runtime_tool(&self, runtime: Runtime, version: &str) -> Box<dyn Tool> {
         let timeout = self.timeout.unwrap_or_else(|| {
-            crate::settings::Settings::default().action_timeout.unwrap()
+            crate::settings::Settings::default().action_timeout
         });
         match runtime {
             Runtime::Node => Box::new(node::NodeJS {

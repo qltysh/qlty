@@ -48,7 +48,7 @@ impl PluginPlanner {
         };
 
         let tool = ToolBuilder::new(&planner.config, plugin_name, &plugin)
-            .with_timeout(planner.settings.action_timeout)
+            .with_timeout(Some(planner.settings.action_timeout))
             .build_tool()
             .context("Failed to build tool")?;
 

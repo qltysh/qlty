@@ -271,7 +271,7 @@ pub mod test {
             },
             runtime: super::NodeJS {
                 version: "1.0.0".to_string(),
-                timeout: crate::settings::Settings::default().action_timeout.unwrap(),
+                timeout: crate::settings::Settings::default().action_timeout,
             },
         };
         reroute_tools_root(&temp_path, &pkg);

@@ -297,7 +297,7 @@ impl Default for GitHubReleaseTool {
             plugin: PluginDef::default(),
             download: OnceCell::default(),
             runtime: None,
-            timeout: crate::settings::Settings::default().action_timeout.unwrap(),
+            timeout: crate::settings::Settings::default().action_timeout,
         }
     }
 }
