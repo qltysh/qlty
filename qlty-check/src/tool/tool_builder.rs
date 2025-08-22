@@ -53,7 +53,7 @@ impl ToolBuilder<'_> {
                     .with_context(|| format!("Runtime not found: {}", runtime))?,
             );
 
-        let runtime = Self::runtime_tool(runtime.to_owned(), &runtime_version);
+        let runtime = self.runtime_tool(runtime.to_owned(), &runtime_version);
         let package = runtime.package_tool(self.plugin_name, self.plugin);
 
         Ok(package)
@@ -88,10 +88,7 @@ impl ToolBuilder<'_> {
                         .with_context(|| format!("Runtime not found: {}", runtime))?,
                 );
 
-            Some(Self::release_runtime_tool(
-                runtime.to_owned(),
-                &runtime_version,
-            ))
+            Some(self.release_runtime_tool(runtime.to_owned(), &runtime_version))
         } else {
             None
         };
@@ -164,51 +161,65 @@ impl ToolBuilder<'_> {
         }
     }
 
-    fn runtime_tool(runtime: Runtime, version: &str) -> Box<dyn RuntimeTool> {
+    fn runtime_tool(&self, runtime: Runtime, version: &str) -> Box<dyn RuntimeTool> {
+        let timeout = self.timeout.unwrap_or(std::time::Duration::from_secs(600));
         match runtime {
             Runtime::Node => Box::new(node::NodeJS {
                 version: version.to_string(),
+                timeout,
             }),
             Runtime::Python => Box::new(python::Python {
                 version: version.to_string(),
+                timeout,
             }),
-            Runtime::Ruby => ruby::Ruby::new_runtime(version),
+            Runtime::Ruby => ruby::Ruby::new_runtime(version, timeout),
             Runtime::Go => Box::new(go::Go {
                 version: version.to_string(),
+                timeout,
             }),
             Runtime::Rust => Box::new(rust::Rust {
                 version: version.to_string(),
+                timeout,
             }),
             Runtime::Java => Box::new(java::Java {
                 version: version.to_string(),
+                timeout,
             }),
             Runtime::Php => Box::new(php::Php {
                 version: version.to_string(),
+                timeout,
             }),
         }
     }
 
     // Since can't cast Box<dyn RuntimeTool> into Box<dyn Tool> directly, we need to
-    fn release_runtime_tool(runtime: Runtime, version: &str) -> Box<dyn Tool> {
+    fn release_runtime_tool(&self, runtime: Runtime, version: &str) -> Box<dyn Tool> {
+        let timeout = self.timeout.unwrap_or(std::time::Duration::from_secs(600));
         match runtime {
             Runtime::Node => Box::new(node::NodeJS {
                 version: version.to_string(),
+                timeout,
             }),
             Runtime::Python => Box::new(python::Python {
                 version: version.to_string(),
+                timeout,
             }),
-            Runtime::Ruby => ruby::Ruby::new_tool(version),
+            Runtime::Ruby => ruby::Ruby::new_tool(version, timeout),
             Runtime::Go => Box::new(go::Go {
                 version: version.to_string(),
+                timeout,
             }),
             Runtime::Rust => Box::new(rust::Rust {
                 version: version.to_string(),
+                timeout,
             }),
             Runtime::Java => Box::new(java::Java {
                 version: version.to_string(),
+                timeout,
             }),
             Runtime::Php => Box::new(php::Php {
                 version: version.to_string(),
+                timeout,
             }),
         }
     }

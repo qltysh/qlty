@@ -16,6 +16,7 @@ use std::fmt::Debug;
 #[derive(Debug, Clone)]
 pub struct Java {
     pub version: String,
+    pub timeout: std::time::Duration,
 }
 
 impl Tool for Java {
@@ -38,9 +39,7 @@ impl Tool for Java {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing Java v{}", self.version().unwrap()));
-        // Use 10 minute timeout for runtime downloads
-        self.download()
-            .install(self, std::time::Duration::from_secs(600))?;
+        self.download().install(self, self.timeout)?;
         Ok(())
     }
 
@@ -155,9 +154,7 @@ impl Tool for JavaPackage {
     }
 
     fn install(&self, _task: &ProgressTask) -> Result<()> {
-        // Use 10 minute timeout for runtime downloads
-        self.download()
-            .install(self, std::time::Duration::from_secs(600))?;
+        self.download().install(self, self.runtime.timeout)?;
         Ok(())
     }
 

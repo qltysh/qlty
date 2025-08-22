@@ -260,6 +260,7 @@ pub mod test {
             },
             runtime: Php {
                 version: "1.0.0".to_string(),
+                timeout: std::time::Duration::from_secs(600),
             },
         };
 
@@ -316,6 +317,7 @@ pub mod test {
             },
             runtime: Php {
                 version: "1.0.0".to_string(),
+                timeout: std::time::Duration::from_secs(600),
             },
         };
 

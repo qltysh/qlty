@@ -22,6 +22,7 @@ use tracing::debug;
 #[derive(Debug, Clone)]
 pub struct Php {
     pub version: String,
+    pub timeout: std::time::Duration,
 }
 
 impl Tool for Php {
@@ -245,6 +246,7 @@ pub mod test {
             },
             runtime: super::Php {
                 version: "1.0.0".to_string(),
+                timeout: std::time::Duration::from_secs(600),
             },
         };
         reroute_tools_root(&temp_path, &pkg);

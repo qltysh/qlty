@@ -24,6 +24,7 @@ const NPM_COMMAND: &str = "npm.cmd";
 #[derive(Debug, Clone)]
 pub struct NodeJS {
     pub version: String,
+    pub timeout: std::time::Duration,
 }
 
 impl Tool for NodeJS {
@@ -46,9 +47,7 @@ impl Tool for NodeJS {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing NodeJS v{}", self.version().unwrap()));
-        // Use 10 minute timeout for runtime downloads
-        self.download()
-            .install(self, std::time::Duration::from_secs(600))?;
+        self.download().install(self, self.timeout)?;
         Ok(())
     }
 
@@ -272,6 +271,7 @@ pub mod test {
             },
             runtime: super::NodeJS {
                 version: "1.0.0".to_string(),
+                timeout: std::time::Duration::from_secs(600),
             },
         };
         reroute_tools_root(&temp_path, &pkg);

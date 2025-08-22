@@ -23,6 +23,7 @@ use tracing::debug;
 #[derive(Debug, Clone)]
 pub struct Ruby {
     pub version: String,
+    pub timeout: std::time::Duration,
     platform_tool: sys::platform::Ruby,
 }
 
@@ -44,11 +45,16 @@ pub trait PlatformRuby {
         Some(version.to_string())
     }
 
-    fn install(&self, tool: &dyn Tool, task: &ProgressTask, download: Download) -> Result<()> {
+    fn install(
+        &self,
+        tool: &dyn Tool,
+        task: &ProgressTask,
+        download: Download,
+        timeout: std::time::Duration,
+    ) -> Result<()> {
         task.set_message("Installing Ruby");
         self.pre_install(tool, task)?;
-        // Use 10 minute timeout for runtime downloads
-        download.install(tool, std::time::Duration::from_secs(600))?;
+        download.install(tool, timeout)?;
         self.install_load_path_script(tool)
     }
 
@@ -184,7 +190,8 @@ impl Tool for Ruby {
     }
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
-        self.platform_tool.install(self, task, self.download())
+        self.platform_tool
+            .install(self, task, self.download(), self.timeout)
     }
 
     fn post_install(&self, task: &ProgressTask) -> Result<()> {
@@ -211,31 +218,35 @@ impl Tool for Ruby {
 }
 
 impl Ruby {
-    pub fn new_tool(version: &str) -> Box<dyn Tool> {
+    pub fn new_tool(version: &str, timeout: std::time::Duration) -> Box<dyn Tool> {
         let platform_tool = sys::platform::Ruby::default();
         if Self::binary_install_enabled(&platform_tool) {
             Box::new(Self {
                 version: version.to_string(),
+                timeout,
                 platform_tool,
             })
         } else {
             Box::new(RubySource {
                 version: version.to_string(),
+                timeout,
             })
         }
     }
 
     // because Rust doesn't support trait upcasting in stable releases
-    pub fn new_runtime(version: &str) -> Box<dyn RuntimeTool> {
+    pub fn new_runtime(version: &str, timeout: std::time::Duration) -> Box<dyn RuntimeTool> {
         let platform_tool = sys::platform::Ruby::default();
         if Self::binary_install_enabled(&platform_tool) {
             Box::new(Self {
                 version: version.to_string(),
+                timeout,
                 platform_tool,
             })
         } else {
             Box::new(RubySource {
                 version: version.to_string(),
+                timeout,
             })
         }
     }
@@ -456,7 +467,7 @@ pub mod test {
                 version: Some("1.0.0".to_string()),
                 ..Default::default()
             },
-            runtime: super::Ruby::new_tool("1.0.0"),
+            runtime: super::Ruby::new_tool("1.0.0", std::time::Duration::from_secs(600)),
         };
         reroute_tools_root(&temp_path, &pkg);
         callback(&mut pkg, &temp_path, &list).unwrap();
@@ -474,6 +485,7 @@ pub mod test {
         let ruby_fingerprint = Ruby {
             platform_tool: platform::Ruby::default(),
             version: version.clone(),
+            timeout: std::time::Duration::from_secs(600),
         }
         .fingerprint();
         let ruby_source_fingerprint = if cfg!(windows) {
@@ -481,6 +493,7 @@ pub mod test {
         } else {
             RubySource {
                 version: version.clone(),
+                timeout: std::time::Duration::from_secs(600),
             }
             .fingerprint()
         };
@@ -499,11 +512,11 @@ pub mod test {
         ];
         for (flag, expected) in tests.iter() {
             std::env::set_var("QLTY_FEATURE_RUBY_BINARY_INSTALL", flag);
-            assert_eq!(Ruby::new_tool(&version).fingerprint(), **expected);
+            assert_eq!(Ruby::new_tool(&version, std::time::Duration::from_secs(600)).fingerprint(), **expected);
         }
 
         std::env::remove_var("QLTY_FEATURE_RUBY_BINARY_INSTALL");
-        assert_eq!(Ruby::new_tool(&version).fingerprint(), ruby_fingerprint);
+        assert_eq!(Ruby::new_tool(&version, std::time::Duration::from_secs(600)).fingerprint(), ruby_fingerprint);
     }
 
     #[test]
