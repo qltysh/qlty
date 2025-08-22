@@ -40,7 +40,9 @@ impl Tool for Rust {
             self.version.clone() // e.g. "nightly"
         };
         task.set_message(&format!("Installing Rust {}", version));
-        self.download().install(self, None)?;
+        // Use 10 minute timeout for runtime downloads
+        self.download()
+            .install(self, std::time::Duration::from_secs(600))?;
         Ok(())
     }
 

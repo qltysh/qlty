@@ -318,7 +318,9 @@ impl Tool for GitHubReleaseTool {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing {}", self.name()));
-        self.download()?.install(self, self.timeout)?;
+        // Use the configured timeout or default to 10 minutes for downloads
+        let timeout = self.timeout.unwrap_or(std::time::Duration::from_secs(600));
+        self.download()?.install(self, timeout)?;
         Ok(())
     }
 

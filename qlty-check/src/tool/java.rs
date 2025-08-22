@@ -38,7 +38,9 @@ impl Tool for Java {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing Java v{}", self.version().unwrap()));
-        self.download().install(self, None)?;
+        // Use 10 minute timeout for runtime downloads
+        self.download()
+            .install(self, std::time::Duration::from_secs(600))?;
         Ok(())
     }
 
@@ -153,7 +155,9 @@ impl Tool for JavaPackage {
     }
 
     fn install(&self, _task: &ProgressTask) -> Result<()> {
-        self.download().install(self, None)?;
+        // Use 10 minute timeout for runtime downloads
+        self.download()
+            .install(self, std::time::Duration::from_secs(600))?;
         Ok(())
     }
 

@@ -92,13 +92,15 @@ impl Download {
         Ok(())
     }
 
-    pub fn install(&self, tool: &dyn Tool, timeout: Option<std::time::Duration>) -> Result<()> {
+    pub fn install(&self, tool: &dyn Tool, timeout: std::time::Duration) -> Result<()> {
         let directory = PathBuf::from(tool.directory());
         let tool_name = tool.name();
         let mut installation = initialize_installation(tool)?;
 
         let result = match self.file_type() {
-            DownloadFileType::Executable => self.install_executable(&directory, &tool_name, timeout),
+            DownloadFileType::Executable => {
+                self.install_executable(&directory, &tool_name, timeout)
+            }
             DownloadFileType::Targz => self.install_targz(&directory, timeout),
             DownloadFileType::Tarxz => self.install_tarxz(&directory, timeout),
             DownloadFileType::Gz => self.install_gz(&directory, &tool_name, timeout),
@@ -110,7 +112,12 @@ impl Download {
         result
     }
 
-    fn install_executable(&self, directory: &Path, tool_name: &str, timeout: Option<std::time::Duration>) -> Result<()> {
+    fn install_executable(
+        &self,
+        directory: &Path,
+        tool_name: &str,
+        timeout: std::time::Duration,
+    ) -> Result<()> {
         let mut binary_name = self.binary_name().unwrap_or(tool_name.to_string());
 
         if cfg!(windows) && self.url()?.ends_with(".exe") {
@@ -129,9 +136,7 @@ impl Download {
 
         let url = self.url().with_context(|| "Failed to get download URL")?;
 
-        // Use provided timeout, otherwise default to 10 minutes for downloads
-        let timeout_duration = timeout.unwrap_or_else(|| std::time::Duration::from_secs(600));
-        let response = http::get_with_timeout(&url, timeout_duration)
+        let response = http::get_with_timeout(&url, timeout)
             .call()
             .with_context(|| format!("Error downloading file from {url}"))?;
 
@@ -161,7 +166,12 @@ impl Download {
         Ok(())
     }
 
-    fn install_gz(&self, directory: &Path, tool_name: &str, timeout: Option<std::time::Duration>) -> Result<()> {
+    fn install_gz(
+        &self,
+        directory: &Path,
+        tool_name: &str,
+        timeout: std::time::Duration,
+    ) -> Result<()> {
         let binary_name = self.binary_name().unwrap_or(tool_name.to_string());
         let binary_path = directory.join(binary_name);
 
@@ -173,9 +183,7 @@ impl Download {
 
         let url = self.url().with_context(|| "Failed to get download URL")?;
 
-        // Use provided timeout, otherwise default to 10 minutes for downloads
-        let timeout_duration = timeout.unwrap_or_else(|| std::time::Duration::from_secs(600));
-        let response = http::get_with_timeout(&url, timeout_duration)
+        let response = http::get_with_timeout(&url, timeout)
             .call()
             .with_context(|| format!("Error downloading file from {url}"))?;
 
@@ -208,12 +216,10 @@ impl Download {
         Ok(())
     }
 
-    fn install_targz(&self, directory: &Path, timeout: Option<std::time::Duration>) -> Result<()> {
+    fn install_targz(&self, directory: &Path, timeout: std::time::Duration) -> Result<()> {
         info!("Downloading (tar.gz) {}", self.url()?);
         let url = self.url()?;
-        // Use provided timeout, otherwise default to 10 minutes for downloads
-        let timeout_duration = timeout.unwrap_or_else(|| std::time::Duration::from_secs(600));
-        let response = http::get_with_timeout(&url, timeout_duration)
+        let response = http::get_with_timeout(&url, timeout)
             .call()
             .with_context(|| format!("Error downloading file from {url}"))?;
         let reader = response.into_reader();
@@ -224,12 +230,10 @@ impl Download {
         Ok(())
     }
 
-    fn install_tarxz(&self, directory: &Path, timeout: Option<std::time::Duration>) -> Result<()> {
+    fn install_tarxz(&self, directory: &Path, timeout: std::time::Duration) -> Result<()> {
         info!("Downloading (tar.xz) {}", self.url()?);
         let url = self.url()?;
-        // Use provided timeout, otherwise default to 10 minutes for downloads
-        let timeout_duration = timeout.unwrap_or_else(|| std::time::Duration::from_secs(600));
-        let response = http::get_with_timeout(&url, timeout_duration)
+        let response = http::get_with_timeout(&url, timeout)
             .call()
             .with_context(|| format!("Error downloading file from {url}"))?;
 
@@ -285,11 +289,9 @@ impl Download {
         Ok(())
     }
 
-    fn install_zip(&self, directory: &Path, timeout: Option<std::time::Duration>) -> Result<()> {
+    fn install_zip(&self, directory: &Path, timeout: std::time::Duration) -> Result<()> {
         let url = self.url()?;
-        // Use provided timeout, otherwise default to 10 minutes for downloads
-        let timeout_duration = timeout.unwrap_or_else(|| std::time::Duration::from_secs(600));
-        let response = http::get_with_timeout(&url, timeout_duration)
+        let response = http::get_with_timeout(&url, timeout)
             .call()
             .with_context(|| format!("Error downloading file from {}", url))?;
 
@@ -415,7 +417,9 @@ impl Tool for DownloadTool {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing {}", self.name()));
-        self.download.install(self, self.timeout)?;
+        // Use the configured timeout or default to 10 minutes for downloads
+        let timeout = self.timeout.unwrap_or(std::time::Duration::from_secs(600));
+        self.download.install(self, timeout)?;
 
         Ok(())
     }

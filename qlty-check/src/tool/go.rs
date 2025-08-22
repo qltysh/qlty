@@ -38,7 +38,9 @@ impl Tool for Go {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing go v{}", self.version));
-        self.download().install(self, None)?;
+        // Use 10 minute timeout for runtime downloads
+        self.download()
+            .install(self, std::time::Duration::from_secs(600))?;
         Ok(())
     }
 

@@ -46,7 +46,9 @@ impl Tool for NodeJS {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing NodeJS v{}", self.version().unwrap()));
-        self.download().install(self, None)?;
+        // Use 10 minute timeout for runtime downloads
+        self.download()
+            .install(self, std::time::Duration::from_secs(600))?;
         Ok(())
     }
 

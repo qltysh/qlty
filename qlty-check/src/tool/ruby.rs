@@ -47,7 +47,8 @@ pub trait PlatformRuby {
     fn install(&self, tool: &dyn Tool, task: &ProgressTask, download: Download) -> Result<()> {
         task.set_message("Installing Ruby");
         self.pre_install(tool, task)?;
-        download.install(tool, None)?;
+        // Use 10 minute timeout for runtime downloads
+        download.install(tool, std::time::Duration::from_secs(600))?;
         self.install_load_path_script(tool)
     }
 
