@@ -1,6 +1,7 @@
 use once_cell::sync::Lazy;
 use rustls_platform_verifier::BuilderVerifierExt;
 use std::sync::Arc;
+use std::time::Duration;
 
 static AGENT: Lazy<ureq::Agent> = Lazy::new(|| {
     // Use platform-verifier to build a TLS config with native roots
@@ -15,6 +16,10 @@ static AGENT: Lazy<ureq::Agent> = Lazy::new(|| {
 
 pub fn get(url: &str) -> ureq::Request {
     AGENT.get(url)
+}
+
+pub fn get_with_timeout(url: &str, timeout: Duration) -> ureq::Request {
+    AGENT.get(url).timeout(timeout)
 }
 
 pub fn post(url: &str) -> ureq::Request {

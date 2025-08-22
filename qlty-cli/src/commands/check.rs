@@ -1,3 +1,4 @@
+use crate::duration::parse_duration;
 use crate::format::SarifFormatter;
 use crate::ui::ApplyMode;
 use crate::ui::ErrorsFormatter;
@@ -120,6 +121,10 @@ pub struct Check {
 
     #[arg(long, hide = true)]
     upstream_from_pre_push: bool,
+
+    /// Timeout for operations that rely on external resources (e.g., "5m", "300s")
+    #[arg(long, value_name = "DURATION")]
+    pub action_timeout: Option<String>,
 
     /// Files to analyze
     pub paths: Vec<PathBuf>,
@@ -302,6 +307,14 @@ impl Check {
         settings.paths = self.paths.clone();
         settings.trigger = self.trigger.into();
         settings.skip_errored_plugins = self.skip_errored_plugins;
+
+        // Parse action timeout if provided
+        if let Some(timeout_str) = &self.action_timeout {
+            settings.action_timeout = Some(
+                parse_duration(timeout_str)
+                    .map_err(|err| anyhow::anyhow!("Invalid action timeout: {}", err))?,
+            );
+        }
 
         // Get auth token if AI is enabled
         if settings.ai {

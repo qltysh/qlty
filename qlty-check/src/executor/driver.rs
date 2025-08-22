@@ -127,7 +127,12 @@ impl Driver {
         let timer = Instant::now();
         let handle = cmd.start()?;
         let pids = handle.pids();
-        let timeout = plan.driver.timeout;
+        // Use action_timeout if provided, otherwise fall back to driver timeout
+        let timeout = plan
+            .settings
+            .action_timeout
+            .map(|d| d.as_secs())
+            .unwrap_or(plan.driver.timeout);
         let invocation_label = plan.invocation_label();
         let running = Arc::new(AtomicBool::new(true));
         let running_clone = Arc::clone(&running);
@@ -519,12 +524,45 @@ impl Driver {
         let timer = Instant::now();
         let invocation_label = plan.invocation_label();
 
-        let output = cmd.run().with_context(|| {
+        // Use action_timeout if provided, otherwise use a default of 10 minutes for prepare scripts
+        let timeout = plan
+            .settings
+            .action_timeout
+            .unwrap_or(Duration::from_secs(600));
+
+        // Start the command
+        let handle = cmd.start().with_context(|| {
+            format!(
+                "Failed to start prepare_script for {}: {}",
+                invocation_label, &rerun
+            )
+        })?;
+        let pids = handle.pids();
+        let running = Arc::new(AtomicBool::new(true));
+        let running_clone = Arc::clone(&running);
+        let invocation_label_clone = invocation_label.clone();
+
+        // Set up timeout thread
+        thread::spawn(move || {
+            thread::sleep(timeout);
+            if running_clone.load(Ordering::SeqCst) {
+                error!(
+                    "Killing {} prepare_script after {}s",
+                    invocation_label_clone,
+                    timeout.as_secs()
+                );
+                Self::terminate_processes(pids);
+            }
+        });
+
+        // Wait for the process to complete
+        let output = handle.into_output().with_context(|| {
             format!(
                 "Failed to run prepare_script for {}: {}",
                 invocation_label, &rerun
             )
         })?;
+        running.store(false, Ordering::SeqCst);
 
         info!(
             "{}: prepare_script ran {} in {:.3}s (exit {}): stdout: {}",

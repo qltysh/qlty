@@ -71,8 +71,12 @@ impl Executor {
 
     pub fn install(&self) -> Result<Vec<Message>> {
         let mut install_messages = vec![];
-        let installation_results =
-            Self::install_tools(self.plan.tools(), self.plan.jobs, self.progress.clone());
+        let installation_results = Self::install_tools(
+            self.plan.tools(),
+            self.plan.jobs,
+            self.progress.clone(),
+            self.plan.settings.action_timeout,
+        );
 
         for installation_result in installation_results {
             let (name, result) = installation_result;
@@ -102,6 +106,7 @@ impl Executor {
         tools: Vec<(String, Box<dyn Tool>)>,
         jobs: usize,
         progress: Progress,
+        timeout: Option<std::time::Duration>,
     ) -> Vec<(String, Result<()>)> {
         let timer = Instant::now();
         let pool = rayon::ThreadPoolBuilder::new()
@@ -118,7 +123,7 @@ impl Executor {
                 .map(|(name, tool)| {
                     (
                         name.clone(),
-                        Self::install_tool(name, tool, progress.clone()),
+                        Self::install_tool(name, tool, progress.clone(), timeout),
                     )
                 })
                 .collect::<Vec<_>>();
@@ -216,7 +221,12 @@ impl Executor {
         Ok(Results::new(messages, invocations, issues, formatted))
     }
 
-    fn install_tool(name: String, tool: Box<dyn Tool>, progress: Progress) -> Result<()> {
+    fn install_tool(
+        name: String,
+        tool: Box<dyn Tool>,
+        progress: Progress,
+        _timeout: Option<std::time::Duration>,
+    ) -> Result<()> {
         let task = progress.task(&name, "Installing...");
         tool.pre_setup(&task)?;
         tool.setup(&task)?;

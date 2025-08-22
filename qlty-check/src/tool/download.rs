@@ -129,7 +129,8 @@ impl Download {
 
         let url = self.url().with_context(|| "Failed to get download URL")?;
 
-        let response = http::get(&url)
+        // Use a 10 minute timeout for downloads
+        let response = http::get_with_timeout(&url, std::time::Duration::from_secs(600))
             .call()
             .with_context(|| format!("Error downloading file from {url}"))?;
 
@@ -171,7 +172,8 @@ impl Download {
 
         let url = self.url().with_context(|| "Failed to get download URL")?;
 
-        let response = http::get(&url)
+        // Use a 10 minute timeout for downloads
+        let response = http::get_with_timeout(&url, std::time::Duration::from_secs(600))
             .call()
             .with_context(|| format!("Error downloading file from {url}"))?;
 
@@ -207,7 +209,8 @@ impl Download {
     fn install_targz(&self, directory: &Path) -> Result<()> {
         info!("Downloading (tar.gz) {}", self.url()?);
         let url = self.url()?;
-        let response = http::get(&url)
+        // Use a 10 minute timeout for downloads
+        let response = http::get_with_timeout(&url, std::time::Duration::from_secs(600))
             .call()
             .with_context(|| format!("Error downloading file from {url}"))?;
         let reader = response.into_reader();
@@ -221,7 +224,8 @@ impl Download {
     fn install_tarxz(&self, directory: &Path) -> Result<()> {
         info!("Downloading (tar.xz) {}", self.url()?);
         let url = self.url()?;
-        let response = http::get(&url)
+        // Use a 10 minute timeout for downloads
+        let response = http::get_with_timeout(&url, std::time::Duration::from_secs(600))
             .call()
             .with_context(|| format!("Error downloading file from {url}"))?;
 

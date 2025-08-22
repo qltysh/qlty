@@ -1,3 +1,4 @@
+use crate::duration::parse_duration;
 use crate::ui::{ApplyMode, TextFormatter};
 use crate::{Arguments, CommandError, CommandSuccess, Trigger};
 use anyhow::Result;
@@ -51,6 +52,10 @@ pub struct Fmt {
     /// Format files in the specified Git index file
     #[arg(long, conflicts_with = "index")]
     pub index_file: Option<PathBuf>,
+
+    /// Timeout for operations that rely on external resources (e.g., "5m", "300s")
+    #[arg(long, value_name = "DURATION")]
+    pub action_timeout: Option<String>,
 
     /// Files to analyze
     pub paths: Vec<PathBuf>,
@@ -136,6 +141,14 @@ impl Fmt {
         settings.index_file = self.index_file.clone();
         settings.paths = self.paths.clone();
         settings.trigger = self.trigger.into();
+
+        // Parse action timeout if provided
+        if let Some(timeout_str) = &self.action_timeout {
+            settings.action_timeout = Some(
+                parse_duration(timeout_str)
+                    .map_err(|err| anyhow::anyhow!("Invalid action timeout: {}", err))?,
+            );
+        }
 
         Ok(settings)
     }

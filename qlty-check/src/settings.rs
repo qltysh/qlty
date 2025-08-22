@@ -1,6 +1,6 @@
 use qlty_config::config::CheckTrigger;
 use qlty_types::analysis::v1::{Issue, Level};
-use std::{fmt::Formatter, path::PathBuf};
+use std::{fmt::Formatter, path::PathBuf, time::Duration};
 
 #[derive(Debug, Clone)]
 pub struct Settings {
@@ -26,6 +26,7 @@ pub struct Settings {
     pub skip_errored_plugins: bool,
     pub emit_existing_issues: bool,
     pub auth_token: Option<String>,
+    pub action_timeout: Option<Duration>,
 }
 
 impl Default for Settings {
@@ -53,6 +54,7 @@ impl Default for Settings {
             skip_errored_plugins: false,
             emit_existing_issues: false,
             auth_token: None,
+            action_timeout: Some(Duration::from_secs(300)), // Default 5 minutes
         }
     }
 }
