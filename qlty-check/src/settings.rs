@@ -2,6 +2,8 @@ use qlty_config::config::CheckTrigger;
 use qlty_types::analysis::v1::{Issue, Level};
 use std::{fmt::Formatter, path::PathBuf, time::Duration};
 
+const DEFAULT_ACTION_TIMEOUT_SECS: u64 = 600; // 10 minutes
+
 #[derive(Debug, Clone)]
 pub struct Settings {
     pub root: PathBuf,
@@ -54,7 +56,7 @@ impl Default for Settings {
             skip_errored_plugins: false,
             emit_existing_issues: false,
             auth_token: None,
-            action_timeout: Duration::from_secs(600), // Default 10 minutes
+            action_timeout: Duration::from_secs(DEFAULT_ACTION_TIMEOUT_SECS),
         }
     }
 }

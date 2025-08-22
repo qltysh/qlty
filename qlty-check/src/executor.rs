@@ -75,7 +75,7 @@ impl Executor {
             self.plan.tools(),
             self.plan.jobs,
             self.progress.clone(),
-            Some(self.plan.settings.action_timeout),
+            self.plan.settings.action_timeout,
         );
 
         for installation_result in installation_results {
@@ -106,7 +106,7 @@ impl Executor {
         tools: Vec<(String, Box<dyn Tool>)>,
         jobs: usize,
         progress: Progress,
-        timeout: Option<std::time::Duration>,
+        timeout: std::time::Duration,
     ) -> Vec<(String, Result<()>)> {
         let timer = Instant::now();
         let pool = rayon::ThreadPoolBuilder::new()
@@ -225,7 +225,7 @@ impl Executor {
         name: String,
         tool: Box<dyn Tool>,
         progress: Progress,
-        _timeout: Option<std::time::Duration>,
+        _timeout: std::time::Duration,
     ) -> Result<()> {
         // Timeout is now passed through ToolBuilder to the tools that need it
         let task = progress.task(&name, "Installing...");

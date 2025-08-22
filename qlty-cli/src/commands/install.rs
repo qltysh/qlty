@@ -72,14 +72,14 @@ impl Install {
         for active_plugin in active_plugins {
             debug!("Building tool for plugin: {}", active_plugin.name);
             let tool = ToolBuilder::new(&config, &active_plugin.name, &active_plugin.plugin)
-                .with_timeout(Some(settings.action_timeout))
+                .with_timeout(settings.action_timeout)
                 .build_tool()
                 .with_context(|| format!("Failed to build tool for {}", active_plugin.name))?;
             tools.push(tool);
         }
 
         let tools = Plan::all_unique_sorted_tools(tools);
-        self.install(tools, Some(settings.action_timeout))?;
+        self.install(tools, settings.action_timeout)?;
 
         CommandSuccess::ok()
     }
@@ -87,7 +87,7 @@ impl Install {
     fn install(
         &self,
         tools: Vec<(String, Box<dyn Tool>)>,
-        timeout: Option<std::time::Duration>,
+        timeout: std::time::Duration,
     ) -> Result<()> {
         let progress = Progress::new(!self.no_progress, tools.len() as u64);
         let jobs = Planner::jobs_count(self.jobs);
