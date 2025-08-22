@@ -46,7 +46,7 @@ impl Tool for NodeJS {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing NodeJS v{}", self.version().unwrap()));
-        self.download().install(self)?;
+        self.download().install(self, None)?;
         Ok(())
     }
 

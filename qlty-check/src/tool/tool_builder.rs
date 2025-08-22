@@ -19,6 +19,7 @@ pub struct ToolBuilder<'a> {
     config: &'a QltyConfig,
     plugin_name: &'a str,
     plugin: &'a PluginDef,
+    timeout: Option<std::time::Duration>,
 }
 
 impl ToolBuilder<'_> {
@@ -31,7 +32,13 @@ impl ToolBuilder<'_> {
             config,
             plugin_name,
             plugin,
+            timeout: None,
         }
+    }
+
+    pub fn with_timeout(mut self, timeout: Option<std::time::Duration>) -> Self {
+        self.timeout = timeout;
+        self
     }
 
     fn build_runtime_tool(&self, runtime: &Runtime) -> Result<Box<dyn Tool>> {
@@ -94,6 +101,7 @@ impl ToolBuilder<'_> {
             release: GitHubRelease::new(plugin_version.to_string(), release_def.clone()),
             plugin: self.plugin.clone(),
             runtime,
+            timeout: self.timeout,
             ..Default::default()
         }))
     }
@@ -119,6 +127,7 @@ impl ToolBuilder<'_> {
             plugin_name: self.plugin_name.to_string(),
             download: Download::new(download_def, download_name, plugin_version),
             plugin: self.plugin.clone(),
+            timeout: self.timeout,
         }))
     }
     pub fn build_tool(&self) -> Result<Box<dyn Tool>> {

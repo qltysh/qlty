@@ -47,7 +47,7 @@ pub trait PlatformRuby {
     fn install(&self, tool: &dyn Tool, task: &ProgressTask, download: Download) -> Result<()> {
         task.set_message("Installing Ruby");
         self.pre_install(tool, task)?;
-        download.install(tool)?;
+        download.install(tool, None)?;
         self.install_load_path_script(tool)
     }
 

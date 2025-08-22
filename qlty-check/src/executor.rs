@@ -227,6 +227,7 @@ impl Executor {
         progress: Progress,
         _timeout: Option<std::time::Duration>,
     ) -> Result<()> {
+        // Timeout is now passed through ToolBuilder to the tools that need it
         let task = progress.task(&name, "Installing...");
         tool.pre_setup(&task)?;
         tool.setup(&task)?;

@@ -40,7 +40,7 @@ impl Tool for Rust {
             self.version.clone() // e.g. "nightly"
         };
         task.set_message(&format!("Installing Rust {}", version));
-        self.download().install(self)?;
+        self.download().install(self, None)?;
         Ok(())
     }
 

@@ -72,6 +72,7 @@ impl Install {
         for active_plugin in active_plugins {
             debug!("Building tool for plugin: {}", active_plugin.name);
             let tool = ToolBuilder::new(&config, &active_plugin.name, &active_plugin.plugin)
+                .with_timeout(settings.action_timeout)
                 .build_tool()
                 .with_context(|| format!("Failed to build tool for {}", active_plugin.name))?;
             tools.push(tool);

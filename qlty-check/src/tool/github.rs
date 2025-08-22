@@ -286,6 +286,7 @@ pub struct GitHubReleaseTool {
     pub plugin: PluginDef,
     pub download: OnceCell<Download>,
     pub runtime: Option<Box<dyn Tool>>,
+    pub timeout: Option<std::time::Duration>,
 }
 
 impl Tool for GitHubReleaseTool {
@@ -317,7 +318,7 @@ impl Tool for GitHubReleaseTool {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing {}", self.name()));
-        self.download()?.install(self)?;
+        self.download()?.install(self, self.timeout)?;
         Ok(())
     }
 
