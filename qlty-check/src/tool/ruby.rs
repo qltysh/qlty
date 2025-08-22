@@ -467,7 +467,7 @@ pub mod test {
                 version: Some("1.0.0".to_string()),
                 ..Default::default()
             },
-            runtime: super::Ruby::new_tool("1.0.0", std::time::Duration::from_secs(600)),
+            runtime: super::Ruby::new_tool("1.0.0", crate::settings::Settings::default().action_timeout.unwrap()),
         };
         reroute_tools_root(&temp_path, &pkg);
         callback(&mut pkg, &temp_path, &list).unwrap();
@@ -485,7 +485,7 @@ pub mod test {
         let ruby_fingerprint = Ruby {
             platform_tool: platform::Ruby::default(),
             version: version.clone(),
-            timeout: std::time::Duration::from_secs(600),
+            timeout: crate::settings::Settings::default().action_timeout.unwrap(),
         }
         .fingerprint();
         let ruby_source_fingerprint = if cfg!(windows) {
@@ -493,7 +493,7 @@ pub mod test {
         } else {
             RubySource {
                 version: version.clone(),
-                timeout: std::time::Duration::from_secs(600),
+                timeout: crate::settings::Settings::default().action_timeout.unwrap(),
             }
             .fingerprint()
         };
@@ -512,11 +512,11 @@ pub mod test {
         ];
         for (flag, expected) in tests.iter() {
             std::env::set_var("QLTY_FEATURE_RUBY_BINARY_INSTALL", flag);
-            assert_eq!(Ruby::new_tool(&version, std::time::Duration::from_secs(600)).fingerprint(), **expected);
+            assert_eq!(Ruby::new_tool(&version, crate::settings::Settings::default().action_timeout.unwrap()).fingerprint(), **expected);
         }
 
         std::env::remove_var("QLTY_FEATURE_RUBY_BINARY_INSTALL");
-        assert_eq!(Ruby::new_tool(&version, std::time::Duration::from_secs(600)).fingerprint(), ruby_fingerprint);
+        assert_eq!(Ruby::new_tool(&version, crate::settings::Settings::default().action_timeout.unwrap()).fingerprint(), ruby_fingerprint);
     }
 
     #[test]

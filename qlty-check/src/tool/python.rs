@@ -273,7 +273,7 @@ mod test {
             },
             runtime: super::Python {
                 version: "1.0.0".to_string(),
-                timeout: std::time::Duration::from_secs(600),
+                timeout: crate::settings::Settings::default().action_timeout.unwrap(),
             },
         };
         reroute_tools_root(&temp_path, &pkg);

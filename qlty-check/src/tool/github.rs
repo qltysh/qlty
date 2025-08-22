@@ -279,14 +279,27 @@ impl GitHubRelease {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct GitHubReleaseTool {
     pub plugin_name: String,
     pub release: GitHubRelease,
     pub plugin: PluginDef,
     pub download: OnceCell<Download>,
     pub runtime: Option<Box<dyn Tool>>,
-    pub timeout: Option<std::time::Duration>,
+    pub timeout: std::time::Duration,
+}
+
+impl Default for GitHubReleaseTool {
+    fn default() -> Self {
+        Self {
+            plugin_name: String::default(),
+            release: GitHubRelease::default(),
+            plugin: PluginDef::default(),
+            download: OnceCell::default(),
+            runtime: None,
+            timeout: crate::settings::Settings::default().action_timeout.unwrap(),
+        }
+    }
 }
 
 impl Tool for GitHubReleaseTool {
@@ -318,9 +331,7 @@ impl Tool for GitHubReleaseTool {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing {}", self.name()));
-        // Use the configured timeout or default to 10 minutes for downloads
-        let timeout = self.timeout.unwrap_or(std::time::Duration::from_secs(600));
-        self.download()?.install(self, timeout)?;
+        self.download()?.install(self, self.timeout)?;
         Ok(())
     }
 

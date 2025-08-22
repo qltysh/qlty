@@ -524,11 +524,11 @@ impl Driver {
         let timer = Instant::now();
         let invocation_label = plan.invocation_label();
 
-        // Use action_timeout if provided, otherwise use a default of 10 minutes for prepare scripts
+        // Use action_timeout if provided, otherwise use the default from Settings
         let timeout = plan
             .settings
             .action_timeout
-            .unwrap_or(Duration::from_secs(600));
+            .unwrap_or_else(|| crate::settings::Settings::default().action_timeout.unwrap());
 
         // Start the command
         let handle = cmd.start().with_context(|| {
@@ -741,7 +741,7 @@ pub mod test {
                 runtime_version: None,
                 plugin_name: "test".to_string(),
                 plugin: PluginDef::default(),
-                tool: Ruby::new_tool("", std::time::Duration::from_secs(600)),
+                tool: Ruby::new_tool("", crate::settings::Settings::default().action_timeout.unwrap()),
                 driver_name: "test".to_string(),
                 driver: build_driver(vec![], vec![]),
                 plugin_configs: vec![],
@@ -803,7 +803,7 @@ pub mod test {
                 prefix: Some(prefix.to_string()),
                 ..Default::default()
             },
-            tool: Ruby::new_tool("", std::time::Duration::from_secs(600)),
+            tool: Ruby::new_tool("", crate::settings::Settings::default().action_timeout.unwrap()),
             driver_name: "test".to_string(),
             driver: build_driver(vec![], vec![]),
             plugin_configs: vec![],
@@ -828,7 +828,7 @@ pub mod test {
         let workspace_dir = PathBuf::from("/var/root");
         let target_path = PathBuf::from("basic.py");
         let driver = build_driver(vec![], vec![]);
-        let tool = Ruby::new_tool("", std::time::Duration::from_secs(600));
+        let tool = Ruby::new_tool("", crate::settings::Settings::default().action_timeout.unwrap());
 
         let plan = InvocationPlan {
             target_root: PathBuf::from(workspace_dir.clone()),
@@ -879,7 +879,7 @@ pub mod test {
         let staging_dir = PathBuf::from("/tmp/staging");
         let target_path = PathBuf::from("basic.py");
         let driver = build_driver(vec![], vec![]);
-        let tool = Ruby::new_tool("", std::time::Duration::from_secs(600));
+        let tool = Ruby::new_tool("", crate::settings::Settings::default().action_timeout.unwrap());
 
         let plan = InvocationPlan {
             target_root: PathBuf::from(staging_dir.clone()),

@@ -383,7 +383,7 @@ pub struct DownloadTool {
     pub plugin_name: String,
     pub download: Download,
     pub plugin: PluginDef,
-    pub timeout: Option<std::time::Duration>,
+    pub timeout: std::time::Duration,
 }
 
 impl Tool for DownloadTool {
@@ -417,9 +417,7 @@ impl Tool for DownloadTool {
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message(&format!("Installing {}", self.name()));
-        // Use the configured timeout or default to 10 minutes for downloads
-        let timeout = self.timeout.unwrap_or(std::time::Duration::from_secs(600));
-        self.download.install(self, timeout)?;
+        self.download.install(self, self.timeout)?;
 
         Ok(())
     }
