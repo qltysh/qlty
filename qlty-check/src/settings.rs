@@ -54,7 +54,7 @@ impl Default for Settings {
             skip_errored_plugins: false,
             emit_existing_issues: false,
             auth_token: None,
-            action_timeout: Some(Duration::from_secs(300)), // Default 5 minutes
+            action_timeout: Some(Duration::from_secs(600)), // Default 10 minutes
         }
     }
 }
