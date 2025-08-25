@@ -1,0 +1,169 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=ktlint fixture=basic version=1.7.1 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_STYLE",
+      "level": "LEVEL_FMT",
+      "location": {
+        "path": "basic.in.kt",
+      },
+      "message": "Incorrect formatting, autoformat by running \`qlty fmt\`.",
+      "mode": "MODE_BLOCK",
+      "onAddedLine": true,
+      "ruleKey": "fmt",
+      "tool": "ktlint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "basic.in.kt",
+        "range": {
+          "endColumn": 1,
+          "endLine": 1,
+          "startColumn": 1,
+          "startLine": 1,
+        },
+      },
+      "message": "File 'basic.kt' contains a single class, and possibly related top level declarations for that class. The file should be named after the class, 'MainActivity.kt'",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "standard:filename",
+      "snippet": "class MainActivity : AppCompatActivity() {",
+      "snippetWithContext": "class MainActivity : AppCompatActivity() {
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+      super.onCreate(savedInstanceState) // note the spacing
+            setContentView(R.layout.activity_main)
+  }
+}",
+      "tool": "ktlint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "basic.in.kt",
+        "range": {
+          "endColumn": 1,
+          "endLine": 5,
+          "startColumn": 1,
+          "startLine": 5,
+        },
+      },
+      "message": "Unexpected indentation (12) (should be 8)",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "standard:indent",
+      "snippet": "            setContentView(R.layout.activity_main)",
+      "snippetWithContext": "class MainActivity : AppCompatActivity() {
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+      super.onCreate(savedInstanceState) // note the spacing
+            setContentView(R.layout.activity_main)
+  }
+}",
+      "tool": "ktlint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "basic.in.kt",
+        "range": {
+          "endColumn": 1,
+          "endLine": 3,
+          "startColumn": 1,
+          "startLine": 3,
+        },
+      },
+      "message": "Unexpected indentation (2) (should be 4)",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "standard:indent",
+      "snippet": "  override fun onCreate(savedInstanceState: Bundle?) {",
+      "snippetWithContext": "class MainActivity : AppCompatActivity() {
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+      super.onCreate(savedInstanceState) // note the spacing
+            setContentView(R.layout.activity_main)
+  }
+}",
+      "tool": "ktlint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "basic.in.kt",
+        "range": {
+          "endColumn": 1,
+          "endLine": 6,
+          "startColumn": 1,
+          "startLine": 6,
+        },
+      },
+      "message": "Unexpected indentation (2) (should be 4)",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "standard:indent",
+      "snippet": "  }",
+      "snippetWithContext": "class MainActivity : AppCompatActivity() {
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+      super.onCreate(savedInstanceState) // note the spacing
+            setContentView(R.layout.activity_main)
+  }
+}",
+      "tool": "ktlint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "basic.in.kt",
+        "range": {
+          "endColumn": 1,
+          "endLine": 4,
+          "startColumn": 1,
+          "startLine": 4,
+        },
+      },
+      "message": "Unexpected indentation (6) (should be 8)",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "standard:indent",
+      "snippet": "      super.onCreate(savedInstanceState) // note the spacing",
+      "snippetWithContext": "class MainActivity : AppCompatActivity() {
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+      super.onCreate(savedInstanceState) // note the spacing
+            setContentView(R.layout.activity_main)
+  }
+}",
+      "tool": "ktlint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "basic.in.kt",
+        "range": {
+          "endColumn": 1,
+          "endLine": 2,
+          "startColumn": 1,
+          "startLine": 2,
+        },
+      },
+      "message": "Class body should not start with blank line",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "standard:no-empty-first-line-in-class-body",
+      "snippetWithContext": "class MainActivity : AppCompatActivity() {
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+      super.onCreate(savedInstanceState) // note the spacing
+            setContentView(R.layout.activity_main)
+  }
+}",
+      "tool": "ktlint",
+    },
+  ],
+}
+`;
