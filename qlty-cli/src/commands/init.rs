@@ -87,6 +87,7 @@ impl Init {
                 skip_plugins: self.skip_plugins,
                 skip_default_source: self.skip_default_source,
                 source: self.source.clone(),
+                ..Default::default()
             })?;
 
             initializer.prepare()?;

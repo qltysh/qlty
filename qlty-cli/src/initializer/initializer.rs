@@ -1,5 +1,5 @@
 use super::renderer::PluginActivation;
-use super::scanner::InstalledPlugin;
+use super::scanner::DetectedPlugin;
 use super::sources::{source_specs_from_settings, sources_list_from_settings};
 use super::{Renderer, Scanner, Settings, SourceSpec};
 use anyhow::Result;
@@ -10,7 +10,7 @@ pub struct Initializer {
     settings: Settings,
     source_specs: Vec<SourceSpec>,
     scanner: Scanner,
-    pub plugins: Vec<InstalledPlugin>,
+    pub plugins: Vec<DetectedPlugin>,
 }
 
 impl Initializer {
