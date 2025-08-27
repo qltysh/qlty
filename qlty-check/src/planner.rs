@@ -71,6 +71,7 @@ pub struct Planner {
     plugin_configs: HashMap<String, Vec<PluginConfigFile>>,
     invocations: Vec<InvocationPlan>,
     transformers: Vec<Box<dyn IssueTransformer>>,
+    total_targets_count: usize,
 }
 
 impl Planner {
@@ -93,6 +94,7 @@ impl Planner {
             plugin_configs: HashMap::new(),
             invocations: vec![],
             transformers: vec![],
+            total_targets_count: 0,
         })
     }
 
@@ -223,6 +225,11 @@ impl Planner {
             .flat_map(|driver_planner| driver_planner.invocations.clone())
             .collect();
 
+        self.total_targets_count = driver_planners
+            .iter()
+            .map(|driver_planner| driver_planner.targets.len())
+            .sum();
+
         debug!(
             "Planned {} enabled plugins in {:.2}s",
             self.active_plugins.len(),
@@ -350,6 +357,7 @@ impl Planner {
             transformers: self.transformers.clone(),
             staging_area: self.staging_area.clone(),
             fail_level: self.settings.fail_level,
+            total_targets_count: self.total_targets_count,
         })
     }
 
