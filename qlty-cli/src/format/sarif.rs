@@ -491,6 +491,7 @@ mod test {
             fixed: HashSet::new(),
             fixable: HashSet::new(),
             counts: IssueCount::default(),
+            total_targets_count: 0,
         };
 
         let formatter = SarifFormatter::boxed(report.messages.clone(), report.issues.clone());
