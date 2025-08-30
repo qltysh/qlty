@@ -2,6 +2,7 @@ use super::{gemfile::RubyPackageFile, package_json::NodePackageFile, PluginIniti
 use anyhow::Result;
 use qlty_config::config::PackageFileCandidate;
 use std::path::PathBuf;
+use tracing::error;
 
 const PACKAGE_LOCK_JSON: &str = "package-lock.json";
 const YARN_LOCK: &str = "yarn.lock";
@@ -34,6 +35,11 @@ impl PackageFileScanner {
                             );
                         }
                     }
+                } else {
+                    error!(
+                        "Failed to read package file contents: {:?}",
+                        package_file_contents
+                    );
                 }
             }
         }
