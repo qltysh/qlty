@@ -11,6 +11,7 @@ config_files = [".rubocop.yml", ".rubocop_*.yml", ".rubocop-*.yml"]
 description = "Ruby linter and code formatter"
 package_file_candidate = "Gemfile"
 package_file_candidate_filters = ["rubocop", "standard"]
+custom_enabler = "rubocop"
 
 [plugins.definitions.rubocop.drivers.lint]
 script = "rubocop --format json ${target}"
