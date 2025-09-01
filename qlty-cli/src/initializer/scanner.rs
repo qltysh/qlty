@@ -3,7 +3,6 @@ mod driver_initializer;
 mod gemfile;
 mod package_file;
 mod package_json;
-pub mod rubocop_config;
 
 use super::{Renderer, Settings, SourceSpec};
 use anyhow::Result;

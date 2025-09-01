@@ -1,9 +1,42 @@
+use super::CustomEnabler;
+use crate::initializer::renderer::PluginActivation;
+use crate::initializer::Settings;
 use anyhow::Result;
 use globset::{Glob, GlobSetBuilder};
+use qlty_config::config::PluginDef;
 use serde_yaml::Value;
 use std::collections::HashSet;
 use std::fs;
 use std::path::Path;
+
+#[derive(Debug, Clone)]
+pub struct RubocopEnabler {
+    settings: Settings,
+    plugin_def: PluginDef,
+}
+
+impl RubocopEnabler {
+    pub fn new(settings: Settings, plugin_def: PluginDef) -> Self {
+        Self {
+            settings,
+            plugin_def,
+        }
+    }
+}
+
+impl CustomEnabler for RubocopEnabler {
+    fn enable(&self, plugin_activation: &PluginActivation) -> Result<PluginActivation> {
+        let mut plugin_activation = plugin_activation.clone();
+
+        if let Ok(custom_cops) =
+            extract_custom_cop_files(&self.settings.workspace.root, &self.plugin_def.config_files)
+        {
+            plugin_activation.config_files = custom_cops;
+        }
+
+        Ok(plugin_activation)
+    }
+}
 
 /// Parse RuboCop configuration files to extract custom cop file paths
 pub fn extract_custom_cop_files(
