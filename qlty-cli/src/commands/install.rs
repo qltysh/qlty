@@ -22,6 +22,10 @@ pub struct Install {
     /// Filter by plugin or check
     #[arg(long)]
     filter: Option<String>,
+
+    /// Allow individual plugins to be skipped if they fail to install
+    #[arg(hide = true, long)]
+    skip_errored_plugins: bool,
     // /// Print verbose output
     // #[arg(short, long, action = clap::ArgAction::Count)]
     // pub verbose: u8,
@@ -35,6 +39,7 @@ impl Install {
 
         let mut settings = Settings {
             root: workspace.root.clone(),
+            skip_errored_plugins: self.skip_errored_plugins,
             ..Default::default()
         };
 
@@ -72,7 +77,13 @@ impl Install {
 
         let results = Executor::install_tools(tools, jobs, progress);
         for (name, result) in results {
-            result.with_context(|| format!("Failed to install {}", name))?;
+            if let Err(e) = result.with_context(|| format!("Failed to install {name}")) {
+                if self.skip_errored_plugins {
+                    warn!("Failed to install {}: {:#}", name, e);
+                } else {
+                    return Err(e);
+                }
+            }
         }
 
         Ok(())
