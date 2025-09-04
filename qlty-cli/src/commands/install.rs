@@ -80,7 +80,6 @@ impl Install {
             if let Err(e) = result.with_context(|| format!("Failed to install {name}")) {
                 if self.skip_errored_plugins {
                     warn!("Failed to install {}: {:#}", name, e);
-                    continue;
                 } else {
                     return Err(e);
                 }
