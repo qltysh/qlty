@@ -1,5 +1,6 @@
-use anyhow::Result;
+use anyhow::{Context as _, Result};
 use git2::Repository;
+use tracing::error;
 
 #[derive(Debug, Clone)]
 pub struct CommitMetadata {
@@ -20,7 +21,23 @@ pub fn retrieve_commit_metadata() -> Result<Option<CommitMetadata>> {
 
     let repo = match Repository::discover(".") {
         Ok(repo) => repo,
-        Err(_) => return Ok(None),
+        Err(err) => {
+            eprintln!(
+                "Failed to open Git repository to retrieve commit metadata: {:?}",
+                err
+            );
+            error!(
+                "Failed to open Git repository to retrieve commit metadata: {:?}",
+                err
+            );
+
+            if std::path::Path::new(".git").exists() {
+                return Err(err)
+                    .context("Failed to open Git repository to retrieve commit metadata");
+            } else {
+                return Ok(None);
+            }
+        }
     };
 
     let head = repo.head()?;
