@@ -30,7 +30,7 @@ chrono = "0.4.41"
 clap = { version = "4.5.45", features = ["derive", "wrap_help"] }
 clap_complete = "4.5.34"
 cli-table = "0.4.9"
-config = "0.15.14"
+config = "0.15.15"
 console = "0.15.11"
 dialoguer = "0.11.0"
 diffy = "0.4.2"
