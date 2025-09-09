@@ -123,7 +123,7 @@ toml = "0.8.23"
 toml_edit = "0.22.26"
 tracing = "0.1.41"
 tracing-appender = "0.2.3"
-tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
 tracing-test = "0.2.5"
 tree-sitter = "0.22.6"
 tree-sitter-c-sharp = "0.21.3"
