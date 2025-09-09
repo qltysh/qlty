@@ -72,7 +72,7 @@ jobs:
         if: contains(matrix.os, 'windows')
 
       - name: Install Rust toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@fb51252c7ba57d633bc668f941da052e410add48
+        uses: actions-rust-lang/setup-rust-toolchain@ac90e63697ac2784f4ecfe2964e1a285c304003a
         with:
           toolchain: stable
 
