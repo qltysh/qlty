@@ -62,7 +62,7 @@ jobs:
           key: ${{ runner.os }}-qlty-${{ env.CACHE_MONTH }}-v1
 
       - name: Setup PHP with PECL extension
-        uses: shivammathur/setup-php@0f7f1d08e3e32076e51cae65eb0b0c871405b16e
+        uses: shivammathur/setup-php@ec406be512d7077f68eed36e63f4d91bc006edc4
         if: contains(matrix.os, 'macos')
 
       - name: Setup Ruby
