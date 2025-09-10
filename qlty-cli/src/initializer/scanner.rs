@@ -11,6 +11,7 @@ use driver_initializer::{ConfigDriver, DriverInitializer, TargetDriver};
 use indicatif::ProgressBar;
 use itertools::Itertools;
 use package_file::PackageFileScanner;
+use qlty_analysis::utils::fs::path_to_string;
 use qlty_config::{
     config::{Builder, Exclude, IssueMode, PackageFileCandidate, PluginDef, SuggestionMode},
     sources::{SourceFetch, SourceFile},
@@ -30,7 +31,7 @@ pub struct Scanner {
     pub default_config: QltyConfig,
     pub source_specs: Vec<SourceSpec>,
     pub source_list: Box<dyn SourceFetch>,
-    pub plugins: Vec<InstalledPlugin>,
+    pub plugins: Vec<DetectedPlugin>,
     pub sources_only_config: QltyConfig,
 
     default_excludes: Vec<Exclude>,
@@ -48,8 +49,8 @@ struct PluginToActivate {
     mode: IssueMode,
 }
 
-#[derive(Debug, Clone)]
-pub struct InstalledPlugin {
+#[derive(Debug, Clone, Default)]
+pub struct DetectedPlugin {
     pub name: String,
     pub version: String,
     pub files_count: FilesCount,
@@ -119,12 +120,16 @@ impl Scanner {
             }
 
             for plugin_initializer in &self.plugin_initializers {
+                let absolute_path = path_to_string(self.settings.workspace.root.join(path_osstr));
+
                 let is_package_file =
-                    PackageFileScanner::is_package_file(plugin_initializer, path_osstr);
+                    PackageFileScanner::is_package_file(plugin_initializer, &absolute_path);
 
                 if is_package_file {
-                    let package_filters =
-                        PackageFileScanner::check_plugin_packages(plugin_initializer, path_osstr)?;
+                    let package_filters = PackageFileScanner::check_plugin_packages(
+                        plugin_initializer,
+                        &absolute_path,
+                    )?;
 
                     Self::insert_package_filters_and_package_file(
                         &mut self.plugins_to_activate,
@@ -135,7 +140,16 @@ impl Scanner {
                 }
 
                 for driver_initializer in &plugin_initializer.driver_initializers {
-                    if driver_initializer.is_enabler(path_osstr) {
+                    // If the plugin is part of the enable_plugins, just enable it and skip driver checks
+                    if let Some(enable_plugins) = &self.settings.plugins_to_enable {
+                        if enable_plugins.contains_key(&plugin_initializer.plugin_name) {
+                            self.plugins_to_activate
+                                .entry(plugin_initializer.plugin_name.to_owned())
+                                .or_default()
+                                .drivers
+                                .insert(driver_initializer.key(), driver_initializer.clone_box());
+                        }
+                    } else if driver_initializer.is_enabler(path_osstr) {
                         self.plugins_to_activate
                             .entry(plugin_initializer.plugin_name.to_owned())
                             .or_default()
@@ -260,21 +274,30 @@ impl Scanner {
             };
 
             for prefix in prefixes {
-                let version = if let Some(package_file) = &plugin_to_activate.package_file {
-                    let package_file_path = match prefix {
-                        Some(prefix) => PathBuf::from(prefix).join(package_file),
-                        None => PathBuf::from(package_file),
-                    };
-                    PackageFileScanner::extract_lockfile_package_version(
-                        &package_file_path,
-                        plugin_name,
-                    )
-                    .unwrap_or_else(|_| driver_versions.last().unwrap().clone())
-                } else {
-                    driver_versions.last().unwrap().clone()
-                };
+                let version = self
+                    .settings
+                    .plugins_to_enable
+                    .as_ref()
+                    .and_then(|enable_plugins| enable_plugins.get(plugin_name).cloned())
+                    .or_else(|| {
+                        plugin_to_activate
+                            .package_file
+                            .as_ref()
+                            .map(|package_file| {
+                                let package_file_path = prefix
+                                    .as_ref()
+                                    .map(|p| PathBuf::from(p).join(package_file))
+                                    .unwrap_or_else(|| PathBuf::from(package_file));
+                                PackageFileScanner::extract_lockfile_package_version(
+                                    &package_file_path,
+                                    plugin_name,
+                                )
+                                .unwrap_or_else(|_| driver_versions.last().unwrap().clone())
+                            })
+                    })
+                    .unwrap_or_else(|| driver_versions.last().unwrap().clone());
 
-                self.plugins.push(InstalledPlugin {
+                self.plugins.push(DetectedPlugin {
                     name: plugin_name.to_owned(),
                     version,
                     files_count: plugin_to_activate.file_count,
@@ -297,6 +320,13 @@ impl Scanner {
             .plugins
             .definitions
             .iter()
+            .filter(|(plugin_name, _)| {
+                if let Some(plugins_to_enable) = &self.settings.plugins_to_enable {
+                    plugins_to_enable.contains_key(*plugin_name)
+                } else {
+                    true
+                }
+            })
             .map(|(plugin_name, plugin_definition)| {
                 self.build_plugin_initializer(plugin_name, plugin_definition)
             })
@@ -520,6 +550,7 @@ config_files = ["config.toml", "second_config.toml"]
             skip_plugins: false,
             skip_default_source: true,
             source: Some(source_spec.clone()),
+            ..Default::default()
         };
 
         (
