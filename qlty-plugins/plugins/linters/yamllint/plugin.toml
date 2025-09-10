@@ -19,5 +19,5 @@ output_format = "regex"
 output_regex = "((?P<path>.*):(?P<line>\\d+):(?P<col>\\d+): \\[(?P<severity>.*)\\] (?P<message>.*) \\((?P<code>.*)\\))"
 cache_results = true
 batch = true
-suggested = "targets"
+suggested = "config"
 output_missing = "parse"

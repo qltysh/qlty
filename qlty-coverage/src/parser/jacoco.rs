@@ -5,6 +5,7 @@ use qlty_types::tests::v1::FileCoverage;
 use serde::Deserialize;
 use serde_xml_rs;
 use std::path::Path;
+use tracing::debug;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename = "report")]
@@ -60,28 +61,40 @@ impl Jacoco {
             .collect()
     }
 
-    fn resolve_file_path(&self, relative_path: &str) -> String {
-        let source_paths = self.get_source_paths();
-
+    fn resolve_file_path(&self, relative_path: &str, source_paths: &[String]) -> String {
         // If no source paths are provided, return the relative path as-is
         if source_paths.is_empty() {
+            debug!(
+                "No source paths provided, returning relative path: {}",
+                relative_path
+            );
             return relative_path.to_string();
         }
 
         // Try each source path to find the file
-        for source_path in &source_paths {
+        for source_path in source_paths {
             let full_path = Path::new(source_path).join(relative_path);
             if full_path.exists() {
+                debug!("Found file: {}", full_path.display());
                 // Return the full path with source path prepended
                 return full_path.to_string_lossy().to_string();
+            } else {
+                debug!("File not found: {}", full_path.display());
             }
         }
 
         // If file not found in any source path, use the first source path
-        Path::new(&source_paths[0])
+        let path = Path::new(&source_paths[0])
             .join(relative_path)
             .to_string_lossy()
-            .to_string()
+            .to_string();
+
+        debug!(
+            "File not found in any source path, using first source path: {}",
+            path
+        );
+
+        path
     }
 }
 
@@ -90,6 +103,7 @@ impl Parser for Jacoco {
         let source: JacocoSource =
             serde_xml_rs::from_str(text).with_context(|| "Failed to parse XML text")?;
         let mut file_coverages: Vec<FileCoverage> = vec![];
+        let source_paths = self.get_source_paths();
 
         for package in source.package.iter() {
             for sourcefile in package.sourcefile.iter() {
@@ -106,7 +120,7 @@ impl Parser for Jacoco {
                 }
 
                 let relative_path = format!("{}/{}", package.name, sourcefile.name);
-                let path = self.resolve_file_path(&relative_path);
+                let path = self.resolve_file_path(&relative_path, &source_paths);
 
                 let file_coverage = FileCoverage {
                     path,

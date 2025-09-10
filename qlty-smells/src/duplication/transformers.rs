@@ -1,5 +1,5 @@
 use anyhow::Result;
-use globset::{Glob, GlobSet, GlobSetBuilder};
+use globset::{escape, Glob, GlobSet, GlobSetBuilder};
 use qlty_config::config::issue_transformer::IssueTransformer;
 use qlty_types::analysis::v1::Issue;
 use std::path::PathBuf;
@@ -15,7 +15,7 @@ impl InclusionPathMatcher {
         for path in paths {
             if path.is_file() {
                 if let Some(file_path) = path.to_str() {
-                    builder.add(Glob::new(file_path)?);
+                    builder.add(Glob::new(&escape(file_path))?);
                 }
             } else if path.is_dir() {
                 if let Some(dir_path) = path.join("**").to_str() {

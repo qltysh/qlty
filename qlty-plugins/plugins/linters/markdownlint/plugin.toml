@@ -18,7 +18,7 @@ cache_results = true
 driver_type = "linter"
 output = "stderr"
 output_format = "markdownlint"
-suggested = "targets"
+suggested = "config"
 output_missing = "parse"
 
 [plugins.definitions.markdownlint.drivers.format]
