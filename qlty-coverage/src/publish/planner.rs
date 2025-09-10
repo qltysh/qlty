@@ -53,11 +53,17 @@ impl Planner {
         let metadata_planner = MetadataPlanner::new(&self.settings, crate::ci::current());
         let metadata = metadata_planner.compute()?;
 
+        let transformers = self.compute_transformers(&metadata)?;
+        let auto_path_fixing_enabled = transformers
+            .iter()
+            .any(|t| format!("{:?}", t).contains("DefaultPathFixer"));
+
         Ok(Plan {
             metadata: metadata.clone(),
             report_files: self.compute_report_files()?,
-            transformers: self.compute_transformers(&metadata)?,
+            transformers,
             skip_missing_files: self.settings.skip_missing_files,
+            auto_path_fixing_enabled,
         })
     }
 

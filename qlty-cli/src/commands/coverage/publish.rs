@@ -405,6 +405,10 @@ impl Publish {
             }
         );
 
+        if report.auto_path_fixing_enabled {
+            eprintln!("    Auto-path fixing: Enabled");
+        }
+
         if report.excluded_files_count > 0 {
             eprintln!(
                 "    WARNING: {} {} excluded",

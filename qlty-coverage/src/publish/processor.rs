@@ -75,6 +75,7 @@ impl Processor {
             missing_files,
             found_files,
             excluded_files_count: ignored_paths_count,
+            auto_path_fixing_enabled: self.plan.auto_path_fixing_enabled,
         })
     }
 
