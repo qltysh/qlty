@@ -392,7 +392,9 @@ impl Publish {
         }
 
         self.print_section_header(" COVERAGE DATA ");
-
+        if report.auto_path_fixing_enabled {
+            eprintln!("    Auto-path fixing: Enabled");
+        }
         let total_files_count = report.found_files.len() + report.missing_files.len();
 
         eprintln!(
@@ -404,10 +406,6 @@ impl Publish {
                 "paths"
             }
         );
-
-        if report.auto_path_fixing_enabled {
-            eprintln!("    Auto-path fixing: Enabled");
-        }
 
         if report.excluded_files_count > 0 {
             eprintln!(
