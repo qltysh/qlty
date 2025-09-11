@@ -211,6 +211,7 @@ impl DefaultPathFixer {
         let pattern_strings = vec![
             r"^/?home/circleci/project/",
             r"^/?(home|Users)/runner/work/[^/]+/[^/]+/",
+            r"^/?github.com/[^/]+/[^/]+/",
             r"^/?(home|Users)/travis/build/[^/]+/[^/]+/",
             r"^/?(home|Users)/jenkins/jobs/[^/]+/workspace/",
             r"^/?Users/distiller/[^/]+/",
@@ -318,6 +319,27 @@ mod tests {
         // Test with home prefix
         let file_coverage = FileCoverage {
             path: "/home/runner/work/myproject/myproject/src/app.py".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "src/app.py");
+    }
+
+    #[test]
+    fn test_default_path_fixer_github_dot_com() {
+        let transformer = DefaultPathFixer::new().unwrap();
+
+        // Test with Users prefix
+        let file_coverage = FileCoverage {
+            path: "github.com/repo/repo/lib/test.js".to_string(),
+            ..Default::default()
+        };
+        let result = transformer.transform(file_coverage).unwrap();
+        assert_eq!(result.path, "lib/test.js");
+
+        // Test with home prefix
+        let file_coverage = FileCoverage {
+            path: "/github.com/myproject/myproject/src/app.py".to_string(),
             ..Default::default()
         };
         let result = transformer.transform(file_coverage).unwrap();
