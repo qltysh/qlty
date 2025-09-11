@@ -124,6 +124,8 @@ impl Planner {
             transformers.push(Box::new(AddPrefix::new(&prefix)));
         }
 
+        transformers.push(Box::new(StripDotSlashPrefix));
+
         transformers.push(Box::new(AppendMetadata::new(metadata)));
         Ok(transformers)
     }
@@ -310,6 +312,7 @@ impl MetadataPlanner {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use qlty_types::tests::v1::FileCoverage;
 
     #[derive(Debug)]
     struct TestCI {
@@ -767,5 +770,32 @@ mod tests {
         let metadata = metadata_planner.compute().unwrap();
 
         assert_eq!(metadata.reference_type, ReferenceType::MergeGroup as i32);
+    }
+
+    #[test]
+    fn test_strip_dot_slash_from_added_prefix() {
+        let settings = Settings {
+            add_prefix: Some("./project/".to_string()),
+            ..Default::default()
+        };
+
+        let config = QltyConfig::default();
+        let planner = Planner::new(&config, &settings);
+        let plan = planner.compute().unwrap();
+
+        let file_coverage = FileCoverage {
+            path: "src/main.rs".to_string(),
+            ..Default::default()
+        };
+
+        let mut transformed = Some(file_coverage);
+        for transformer in &plan.transformers {
+            if let Some(fc) = transformed {
+                transformed = transformer.transform(fc);
+            }
+        }
+
+        let result = transformed.unwrap();
+        assert_eq!(result.path, "project/src/main.rs");
     }
 }

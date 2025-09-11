@@ -1,5 +1,58 @@
 # Changelog
 
+## v0.573.0 (2025-09-11)
+
+### Improved
+
+- Adjust plugin suggestions to prioritize commonly used tools (#2373)
+
+### Fixed
+
+- Remove `./` from beginning of `--add-prefix` in coverage command (#2376)
+
+## v0.572.0 (2025-09-08)
+
+### Fixed
+
+- Improve error handling when retrieving commit metadata (#2371)
+
+## v0.571.0 (2025-09-04)
+
+### New
+
+- Add `skip_errored_plugins` option to install command (#2366)
+
+## v0.570.0 (2025-08-29)
+
+### Fixed
+
+- Escape special characters in file paths for glob matching (#2337)
+
+## v0.569.0 (2025-08-27)
+
+### New
+
+- Add ktlint plugin (#2352)
+
+## v0.568.0 (2025-08-22)
+
+### Improved
+
+- Add debug statements to jacoco parser (#2339)
+
+## v0.567.0 (2025-08-20)
+
+### New
+
+- Support JACOCO_SOURCE_PATH environment variable for coverage resolution (#2332)
+
+### Fixed
+
+- Never check rustc version to avoid unneeded breakages (#2317)
+- Ensure ZDOTDIR environment variable is properly set (#2315)
+
+Thank you @mgnisia for your contribution!
+
 ## v0.566.0 (2025-08-15)
 
 ### New
