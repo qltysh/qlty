@@ -399,12 +399,12 @@ impl Publish {
 
         if report.excluded_files_count > 0 {
             eprintln!(
-                "    WARNING: {} code file {} were excluded by configuration rules",
+                "    WARNING: {} code file {} excluded by configuration rules",
                 report.excluded_files_count.to_formatted_string(&Locale::en),
                 if report.excluded_files_count == 1 {
-                    "path"
+                    "path was"
                 } else {
-                    "paths"
+                    "paths were"
                 }
             );
             eprintln!();
