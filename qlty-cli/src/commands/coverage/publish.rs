@@ -504,18 +504,8 @@ impl Publish {
             eprintln!(
                 "    {}",
                 style(format!(
-                    "All {} code {} in the coverage data {} found on disk.",
-                    total_files_count.to_formatted_string(&Locale::en),
-                    if total_files_count == 1 {
-                        "file"
-                    } else {
-                        "files"
-                    },
-                    if total_files_count == 1 {
-                        "was"
-                    } else {
-                        "were"
-                    }
+                    "All code files in the coverage data were found on disk (count: {}).",
+                    total_files_count.to_formatted_string(&Locale::en)
                 ))
                 .dim()
             );

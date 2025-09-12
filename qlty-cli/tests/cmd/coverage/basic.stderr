@@ -27,15 +27,7 @@ https://qlty.sh/d/coverage
  COVERAGE DATA 
 
     1 unique code file path
-    1 path is missing on disk (100.0%)
-
-    Missing code files:
-
-      formatter.js
-
-    TIP: Consider using add-prefix or strip-prefix to fix paths
-    https://qlty.sh/d/coverage-path-fixing
-
+    All code files in the coverage data were found on disk (count: 1).
 
     Covered Lines:      24
     Uncovered Lines:     2
