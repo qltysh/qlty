@@ -2543,7 +2543,6 @@ dependencies = [
  "clap_complete",
  "cli-table",
  "console",
- "csv",
  "dialoguer",
  "diffy",
  "duct",

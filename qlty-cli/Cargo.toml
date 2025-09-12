@@ -36,7 +36,6 @@ clap.workspace = true
 clap_complete.workspace = true
 cli-table.workspace = true
 console.workspace = true
-csv.workspace = true
 dialoguer.workspace = true
 duct.workspace = true
 glob.workspace = true

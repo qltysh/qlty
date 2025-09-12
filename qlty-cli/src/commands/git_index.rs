@@ -2,13 +2,12 @@ use crate::{Arguments, CommandError, CommandSuccess};
 use anyhow::{Context, Result};
 use chrono::{DateTime, Local, TimeZone};
 use clap::Args;
-use csv::Writer;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
+use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use std::sync::{Arc, Mutex};
 use tracing::{debug, info, warn};
 
 #[derive(Args, Debug)]
@@ -37,7 +36,7 @@ pub struct GitIndex {
     #[arg(long)]
     pub threads: Option<usize>,
 
-    /// Output directory for CSV files
+    /// Output directory for TSV files
     #[arg(long, default_value = ".")]
     pub output_dir: PathBuf,
 
@@ -48,6 +47,39 @@ pub struct GitIndex {
     /// Stop processing after this commit hash
     #[arg(long)]
     pub stop_after_commit: Option<String>,
+}
+
+/// Helper functions for TSV output (inspired by ClickHouse WriteHelpers.h)
+mod tsv_writer {
+    use std::io::Write;
+
+    /// Write a character to the output
+    pub fn write_char(out: &mut impl Write, c: char) -> std::io::Result<()> {
+        write!(out, "{}", c)
+    }
+
+    /// Write escaped string for TSV format
+    /// Escapes: \b, \f, \n, \r, \t, \0, \\
+    pub fn write_escaped_string(out: &mut impl Write, s: &str) -> std::io::Result<()> {
+        for ch in s.chars() {
+            match ch {
+                '\t' => write!(out, "\\t")?,
+                '\n' => write!(out, "\\n")?,
+                '\r' => write!(out, "\\r")?,
+                '\\' => write!(out, "\\\\")?,
+                '\0' => write!(out, "\\0")?,
+                '\u{0008}' => write!(out, "\\b")?, // backspace
+                '\u{000C}' => write!(out, "\\f")?, // form feed
+                _ => write!(out, "{}", ch)?,
+            }
+        }
+        Ok(())
+    }
+
+    /// Write text (for numbers and other non-string values)
+    pub fn write_text<T: std::fmt::Display>(out: &mut impl Write, value: T) -> std::io::Result<()> {
+        write!(out, "{}", value)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -65,6 +97,37 @@ struct Commit {
     hunks_added: u32,
     hunks_removed: u32,
     hunks_changed: u32,
+}
+
+impl Commit {
+    fn write_text_without_newline(&self, out: &mut impl Write) -> std::io::Result<()> {
+        tsv_writer::write_escaped_string(out, &self.hash)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_escaped_string(out, &self.author)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.time.timestamp())?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_escaped_string(out, &self.message)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.files_added)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.files_deleted)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.files_renamed)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.files_modified)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.lines_added)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.lines_deleted)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.hunks_added)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.hunks_removed)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.hunks_changed)?;
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -101,6 +164,29 @@ struct FileChange {
     hunks_added: u32,
     hunks_removed: u32,
     hunks_changed: u32,
+}
+
+impl FileChange {
+    fn write_text_without_newline(&self, out: &mut impl Write) -> std::io::Result<()> {
+        tsv_writer::write_text(out, self.change_type.as_str())?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_escaped_string(out, &self.path)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_escaped_string(out, &self.old_path)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_escaped_string(out, &self.file_extension)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.lines_added)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.lines_deleted)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.hunks_added)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.hunks_removed)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.hunks_changed)?;
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -179,6 +265,39 @@ impl LineChange {
 
         (line, indent, line_type)
     }
+
+    fn write_text_without_newline(&self, out: &mut impl Write) -> std::io::Result<()> {
+        tsv_writer::write_text(out, self.sign)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.line_number_old)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.line_number_new)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.hunk_num)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.hunk_start_line_number_old)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.hunk_start_line_number_new)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.hunk_lines_added)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.hunk_lines_deleted)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_escaped_string(out, &self.hunk_context)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_escaped_string(out, &self.line)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.indent)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.line_type.as_str())?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_escaped_string(out, &self.prev_commit_hash)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_escaped_string(out, &self.prev_author)?;
+        tsv_writer::write_char(out, '\t')?;
+        tsv_writer::write_text(out, self.prev_time.map_or(0, |t| t.timestamp()))?;
+        Ok(())
+    }
 }
 
 #[derive(Debug)]
@@ -242,6 +361,59 @@ impl FileBlame {
 }
 
 type Snapshot = HashMap<String, FileBlame>;
+
+/// Result writer for TSV files
+struct ResultWriter {
+    commits: BufWriter<File>,
+    file_changes: BufWriter<File>,
+    line_changes: BufWriter<File>,
+}
+
+impl ResultWriter {
+    fn new(output_dir: &Path) -> Result<Self> {
+        Ok(Self {
+            commits: BufWriter::new(File::create(output_dir.join("commits.tsv"))?),
+            file_changes: BufWriter::new(File::create(output_dir.join("file_changes.tsv"))?),
+            line_changes: BufWriter::new(File::create(output_dir.join("line_changes.tsv"))?),
+        })
+    }
+
+    fn append_commit(&mut self, commit: &Commit, file_changes: &CommitDiff) -> Result<()> {
+        // Write to commits table
+        commit.write_text_without_newline(&mut self.commits)?;
+        tsv_writer::write_char(&mut self.commits, '\n')?;
+
+        // Write to file_changes table
+        for file_diff in file_changes.values() {
+            file_diff
+                .file_change
+                .write_text_without_newline(&mut self.file_changes)?;
+            tsv_writer::write_char(&mut self.file_changes, '\t')?;
+            commit.write_text_without_newline(&mut self.file_changes)?;
+            tsv_writer::write_char(&mut self.file_changes, '\n')?;
+
+            // Write to line_changes table
+            for line_change in &file_diff.line_changes {
+                line_change.write_text_without_newline(&mut self.line_changes)?;
+                tsv_writer::write_char(&mut self.line_changes, '\t')?;
+                file_diff
+                    .file_change
+                    .write_text_without_newline(&mut self.line_changes)?;
+                tsv_writer::write_char(&mut self.line_changes, '\t')?;
+                commit.write_text_without_newline(&mut self.line_changes)?;
+                tsv_writer::write_char(&mut self.line_changes, '\n')?;
+            }
+        }
+        Ok(())
+    }
+
+    fn finalize(mut self) -> Result<()> {
+        self.commits.flush()?;
+        self.file_changes.flush()?;
+        self.line_changes.flush()?;
+        Ok(())
+    }
+}
 
 impl GitIndex {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
@@ -307,18 +479,9 @@ impl GitIndex {
         skip_commits: HashSet<String>,
     ) -> Result<()> {
         let total_commits = commits.len();
-        let snapshot = Arc::new(Mutex::new(Snapshot::new()));
-        let diff_hashes = Arc::new(Mutex::new(HashSet::new()));
-
-        let commits_writer = Arc::new(Mutex::new(Writer::from_path(
-            self.output_dir.join("commits.csv"),
-        )?));
-        let file_changes_writer = Arc::new(Mutex::new(Writer::from_path(
-            self.output_dir.join("file_changes.csv"),
-        )?));
-        let line_changes_writer = Arc::new(Mutex::new(Writer::from_path(
-            self.output_dir.join("line_changes.csv"),
-        )?));
+        let mut snapshot = Snapshot::new();
+        let mut diff_hashes = HashSet::new();
+        let mut result_writer = ResultWriter::new(&self.output_dir)?;
 
         for (commit_num, hash) in commits.iter().enumerate() {
             if skip_commits.contains(hash) {
@@ -335,13 +498,11 @@ impl GitIndex {
             match self.process_single_commit(
                 hash,
                 commit_num,
-                &snapshot,
-                &diff_hashes,
+                &mut snapshot,
+                &mut diff_hashes,
                 &skip_paths_regex,
                 &skip_messages_regex,
-                &commits_writer,
-                &file_changes_writer,
-                &line_changes_writer,
+                &mut result_writer,
             ) {
                 Ok(_) => {}
                 Err(e) => {
@@ -357,6 +518,7 @@ impl GitIndex {
             }
         }
 
+        result_writer.finalize()?;
         Ok(())
     }
 
@@ -364,13 +526,11 @@ impl GitIndex {
         &self,
         hash: &str,
         commit_num: usize,
-        snapshot: &Arc<Mutex<Snapshot>>,
-        diff_hashes: &Arc<Mutex<HashSet<u64>>>,
+        snapshot: &mut Snapshot,
+        diff_hashes: &mut HashSet<u64>,
         skip_paths_regex: &Option<Regex>,
         skip_messages_regex: &Option<Regex>,
-        commits_writer: &Arc<Mutex<Writer<File>>>,
-        file_changes_writer: &Arc<Mutex<Writer<File>>>,
-        line_changes_writer: &Arc<Mutex<Writer<File>>>,
+        result_writer: &mut ResultWriter,
     ) -> Result<()> {
         let output = Command::new("git")
             .args([
@@ -451,21 +611,14 @@ impl GitIndex {
 
         if self.skip_commits_with_duplicate_diffs {
             let hash = self.calculate_diff_hash(&commit_diff);
-            let mut hashes = diff_hashes.lock().unwrap();
-            if !hashes.insert(hash) {
+            if !diff_hashes.insert(hash) {
                 debug!("Skipping commit {} with duplicate diff", commit.hash);
                 return Ok(());
             }
         }
 
-        self.update_snapshot(snapshot.clone(), &commit, &mut commit_diff)?;
-        self.write_output(
-            &commit,
-            &commit_diff,
-            commits_writer,
-            file_changes_writer,
-            line_changes_writer,
-        )?;
+        self.update_snapshot(snapshot, &commit, &mut commit_diff)?;
+        result_writer.append_commit(&commit, &commit_diff)?;
 
         Ok(())
     }
@@ -684,21 +837,19 @@ impl GitIndex {
 
     fn update_snapshot(
         &self,
-        snapshot: Arc<Mutex<Snapshot>>,
+        snapshot: &mut Snapshot,
         commit: &Commit,
         file_changes: &mut CommitDiff,
     ) -> Result<()> {
-        let mut snap = snapshot.lock().unwrap();
-
         for (path, file_diff) in file_changes.iter_mut() {
             if !file_diff.file_change.old_path.is_empty() && file_diff.file_change.old_path != *path
             {
-                if let Some(old_blame) = snap.remove(&file_diff.file_change.old_path) {
-                    snap.insert(path.clone(), old_blame);
+                if let Some(old_blame) = snapshot.remove(&file_diff.file_change.old_path) {
+                    snapshot.insert(path.clone(), old_blame);
                 }
             }
 
-            let file_blame = snap.entry(path.clone()).or_insert_with(FileBlame::new);
+            let file_blame = snapshot.entry(path.clone()).or_insert_with(FileBlame::new);
             let mut deleted_lines: HashMap<u32, Commit> = HashMap::new();
 
             for line_change in &mut file_diff.line_changes {
@@ -762,114 +913,6 @@ impl GitIndex {
         }
 
         hasher.finish()
-    }
-
-    fn write_output(
-        &self,
-        commit: &Commit,
-        commit_diff: &CommitDiff,
-        commits_writer: &Arc<Mutex<Writer<File>>>,
-        file_changes_writer: &Arc<Mutex<Writer<File>>>,
-        line_changes_writer: &Arc<Mutex<Writer<File>>>,
-    ) -> Result<()> {
-        {
-            let mut writer = commits_writer.lock().unwrap();
-            writer.write_record([
-                &commit.hash,
-                &commit.author,
-                &commit.time.timestamp().to_string(),
-                &commit.message,
-                &commit.files_added.to_string(),
-                &commit.files_deleted.to_string(),
-                &commit.files_renamed.to_string(),
-                &commit.files_modified.to_string(),
-                &commit.lines_added.to_string(),
-                &commit.lines_deleted.to_string(),
-                &commit.hunks_added.to_string(),
-                &commit.hunks_removed.to_string(),
-                &commit.hunks_changed.to_string(),
-            ])?;
-            writer.flush()?;
-        }
-
-        for file_diff in commit_diff.values() {
-            {
-                let mut writer = file_changes_writer.lock().unwrap();
-                writer.write_record(&[
-                    file_diff.file_change.change_type.as_str(),
-                    &file_diff.file_change.path,
-                    &file_diff.file_change.old_path,
-                    &file_diff.file_change.file_extension,
-                    &file_diff.file_change.lines_added.to_string(),
-                    &file_diff.file_change.lines_deleted.to_string(),
-                    &file_diff.file_change.hunks_added.to_string(),
-                    &file_diff.file_change.hunks_removed.to_string(),
-                    &file_diff.file_change.hunks_changed.to_string(),
-                    &commit.hash,
-                    &commit.author,
-                    &commit.time.timestamp().to_string(),
-                    &commit.message,
-                    &commit.files_added.to_string(),
-                    &commit.files_deleted.to_string(),
-                    &commit.files_renamed.to_string(),
-                    &commit.files_modified.to_string(),
-                    &commit.lines_added.to_string(),
-                    &commit.lines_deleted.to_string(),
-                    &commit.hunks_added.to_string(),
-                    &commit.hunks_removed.to_string(),
-                    &commit.hunks_changed.to_string(),
-                ])?;
-                writer.flush()?;
-            }
-
-            for line_change in &file_diff.line_changes {
-                let mut writer = line_changes_writer.lock().unwrap();
-                writer.write_record([
-                    &line_change.sign.to_string(),
-                    &line_change.line_number_old.to_string(),
-                    &line_change.line_number_new.to_string(),
-                    &line_change.hunk_num.to_string(),
-                    &line_change.hunk_start_line_number_old.to_string(),
-                    &line_change.hunk_start_line_number_new.to_string(),
-                    &line_change.hunk_lines_added.to_string(),
-                    &line_change.hunk_lines_deleted.to_string(),
-                    &line_change.hunk_context,
-                    &line_change.line,
-                    &line_change.indent.to_string(),
-                    line_change.line_type.as_str(),
-                    &line_change.prev_commit_hash,
-                    &line_change.prev_author,
-                    &line_change
-                        .prev_time
-                        .map_or_else(|| "0".to_string(), |t| t.timestamp().to_string()),
-                    file_diff.file_change.change_type.as_str(),
-                    &file_diff.file_change.path,
-                    &file_diff.file_change.old_path,
-                    &file_diff.file_change.file_extension,
-                    &file_diff.file_change.lines_added.to_string(),
-                    &file_diff.file_change.lines_deleted.to_string(),
-                    &file_diff.file_change.hunks_added.to_string(),
-                    &file_diff.file_change.hunks_removed.to_string(),
-                    &file_diff.file_change.hunks_changed.to_string(),
-                    &commit.hash,
-                    &commit.author,
-                    &commit.time.timestamp().to_string(),
-                    &commit.message,
-                    &commit.files_added.to_string(),
-                    &commit.files_deleted.to_string(),
-                    &commit.files_renamed.to_string(),
-                    &commit.files_modified.to_string(),
-                    &commit.lines_added.to_string(),
-                    &commit.lines_deleted.to_string(),
-                    &commit.hunks_added.to_string(),
-                    &commit.hunks_removed.to_string(),
-                    &commit.hunks_changed.to_string(),
-                ])?;
-                writer.flush()?;
-            }
-        }
-
-        Ok(())
     }
 }
 
