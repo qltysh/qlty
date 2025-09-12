@@ -11,6 +11,9 @@ https://qlty.sh/d/coverage
     override-commit-sha: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
     skip-missing-files: true
     incomplete: true
+    JACOCO_SOURCE_PATH (from environment):
+      src/foo
+      src/bar
 
  METADATA 
 
@@ -28,8 +31,9 @@ https://qlty.sh/d/coverage
 
  COVERAGE DATA 
 
+    WARNING: 1 code file path was excluded by configuration rules
+
     2 unique code file paths
-    WARNING: 1 path excluded
     1 path is missing on disk (50.0%)
 
     Missing code files:

@@ -8,6 +8,7 @@ use clap::Args;
 use console::style;
 use indicatif::HumanBytes;
 use num_format::{Locale, ToFormattedString as _};
+use qlty_config::QltyConfig;
 use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
 use qlty_coverage::publish::{Plan, Planner, Processor, Reader, Report, Settings, Upload};
@@ -170,7 +171,8 @@ impl Publish {
             load_auth_token(&self.token, self.project.as_deref())?
         };
 
-        let plan = Planner::new(&load_config(), &settings).compute()?;
+        let config = load_config();
+        let plan = Planner::new(&config, &settings).compute()?;
 
         self.validate_plan(&plan)?;
 
@@ -181,7 +183,7 @@ impl Publish {
         let results = Reader::new(&plan).read()?;
         let mut report = Processor::new(&plan, results).compute()?;
 
-        self.print_coverage_data(&report);
+        self.print_coverage_data(&report, &config)?;
 
         if self.print {
             self.show_report(&report)?;
@@ -386,14 +388,39 @@ impl Publish {
         eprintln!();
     }
 
-    fn print_coverage_data(&self, report: &Report) {
+    fn print_coverage_data(&self, report: &Report, config: &QltyConfig) -> Result<()> {
         if self.quiet {
-            return;
+            return Ok(());
         }
 
         self.print_section_header(" COVERAGE DATA ");
 
         let total_files_count = report.found_files.len() + report.missing_files.len();
+
+        if report.excluded_files_count > 0 {
+            eprintln!(
+                "    WARNING: {} code file {} excluded by configuration rules",
+                report.excluded_files_count.to_formatted_string(&Locale::en),
+                if report.excluded_files_count == 1 {
+                    "path was"
+                } else {
+                    "paths were"
+                }
+            );
+            eprintln!();
+
+            if let Some(ignores) = &config.coverage.ignores {
+                eprintln!("    Configured ignore patterns:");
+                for pattern in ignores {
+                    eprintln!("      {}", pattern);
+                }
+                eprintln!();
+            }
+        }
+
+        if total_files_count == 0 {
+            bail!("    ERROR: No code file paths remain in the coverage data.");
+        }
 
         eprintln!(
             "    {} unique code file {}",
@@ -404,18 +431,6 @@ impl Publish {
                 "paths"
             }
         );
-
-        if report.excluded_files_count > 0 {
-            eprintln!(
-                "    WARNING: {} {} excluded",
-                report.excluded_files_count.to_formatted_string(&Locale::en),
-                if report.excluded_files_count == 1 {
-                    "path"
-                } else {
-                    "paths"
-                }
-            );
-        }
 
         let mut missing_files = report.missing_files.iter().collect::<Vec<_>>();
         missing_files.sort();
@@ -485,10 +500,14 @@ impl Publish {
             );
 
             eprintln!();
-        } else {
+        } else if total_files_count > 0 {
             eprintln!(
                 "    {}",
-                style("All code files in the coverage data were found on disk.").dim()
+                style(format!(
+                    "All code files in the coverage data were found on disk (count: {}).",
+                    total_files_count.to_formatted_string(&Locale::en)
+                ))
+                .dim()
             );
         }
 
@@ -522,6 +541,7 @@ impl Publish {
             .bold()
         );
         eprintln!();
+        Ok(())
     }
 
     fn print_export_status(&self, export_path: &Option<PathBuf>) {

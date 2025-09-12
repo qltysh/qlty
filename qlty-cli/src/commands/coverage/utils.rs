@@ -93,6 +93,19 @@ pub fn print_settings(settings: &Settings) {
         eprintln!("    incomplete: {}", settings.incomplete);
     }
 
+    // Print JACOCO_SOURCE_PATH if defined
+    if let Ok(jacoco_source_path) = std::env::var("JACOCO_SOURCE_PATH") {
+        if !jacoco_source_path.is_empty() {
+            let paths: Vec<&str> = jacoco_source_path.split_whitespace().collect();
+            if !paths.is_empty() {
+                eprintln!("    JACOCO_SOURCE_PATH (from environment):");
+                for path in paths {
+                    eprintln!("      {}", path);
+                }
+            }
+        }
+    }
+
     eprintln!();
 }
 

@@ -21,3 +21,4 @@ remove = ["GITHUB_ACTIONS"]
 
 [env.add]
 QLTY_COVERAGE_TOKEN = "123"
+JACOCO_SOURCE_PATH = "src/foo src/bar"
