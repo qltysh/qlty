@@ -2562,6 +2562,7 @@ dependencies = [
  "mac_address",
  "md5",
  "num-format",
+ "num_cpus",
  "pathdiff",
  "pbjson-types",
  "qlty-analysis",
@@ -2570,6 +2571,7 @@ dependencies = [
  "qlty-config",
  "qlty-coverage",
  "qlty-formats",
+ "qlty-history",
  "qlty-smells",
  "qlty-test-utilities",
  "qlty-types",
@@ -2787,6 +2789,19 @@ dependencies = [
  "qlty-types",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "qlty-history"
+version = "0.573.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "num_cpus",
+ "rayon",
+ "regex",
+ "tempfile",
+ "tracing",
 ]
 
 [[package]]
