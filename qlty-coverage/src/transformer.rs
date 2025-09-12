@@ -205,22 +205,47 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_strip_prefix_transformer() {
+    fn test_strip_prefix_transformer_no_trailing_slash() {
         let transformer = StripPrefix::new("/home/circleci/project".to_string());
         let file_coverage = FileCoverage {
-            build_id: "1234".to_string(),
             path: "/home/circleci/project/app/deep/nested/file.rb".to_string(),
-            summary: Some(CoverageSummary {
-                covered: 5,
-                missed: 5,
-                omit: 3,
-                total: 13,
-            }),
-            hits: vec![-1, -1, 1, 1, 1, 1, -1, 1, 1, -1, 1],
-            branch: "test-branch".to_string(),
             ..Default::default()
         };
         let file_coverage = transformer.transform(file_coverage).unwrap();
         assert_eq!(file_coverage.path, "app/deep/nested/file.rb".to_string());
+    }
+
+    #[test]
+    fn test_strip_prefix_transformer_trailing_slash() {
+        let transformer = StripPrefix::new("/home/circleci/project/".to_string());
+        let file_coverage = FileCoverage {
+            path: "/home/circleci/project/app/deep/nested/file.rb".to_string(),
+            ..Default::default()
+        };
+        let file_coverage = transformer.transform(file_coverage).unwrap();
+        assert_eq!(file_coverage.path, "app/deep/nested/file.rb".to_string());
+    }
+
+    #[test]
+    fn test_add_prefix_transformer_trailing_slash() {
+        let transformer = AddPrefix::new("project/");
+        let file_coverage = FileCoverage {
+            path: "src/main.rs".to_string(),
+            ..Default::default()
+        };
+        let transformed = transformer.transform(file_coverage).unwrap();
+        assert_eq!(transformed.path, "project/src/main.rs");
+    }
+
+    // Documenting current behavior, not necessarily desired behavior
+    #[test]
+    fn test_add_prefix_transformer_no_trailing_slash() {
+        let transformer = AddPrefix::new("project");
+        let file_coverage = FileCoverage {
+            path: "src/main.rs".to_string(),
+            ..Default::default()
+        };
+        let transformed = transformer.transform(file_coverage).unwrap();
+        assert_eq!(transformed.path, "projectsrc/main.rs");
     }
 }
