@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.574.0 (2025-09-12)
 
 ### Improved
 
