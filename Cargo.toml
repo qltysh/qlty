@@ -32,6 +32,7 @@ clap_complete = "4.5.34"
 cli-table = "0.4.9"
 config = "0.15.15"
 console = "0.15.11"
+csv = "1.3.1"
 dialoguer = "0.11.0"
 diffy = "0.4.2"
 duct = { git = "https://github.com/brynary/duct.rs.git" }

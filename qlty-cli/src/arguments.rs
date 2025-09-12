@@ -61,6 +61,10 @@ pub enum Commands {
     /// Auto-format files by rewriting them
     Fmt(Fmt),
 
+    /// Generate git repository analysis CSV files
+    #[command(name = "git-index")]
+    GitIndex(GitIndex),
+
     /// Manage Git hooks
     #[command(hide = true)]
     Githooks(githooks::Arguments),
@@ -127,6 +131,7 @@ impl Arguments {
             Commands::Discord(command) => command.execute(self),
             Commands::Docs(command) => command.execute(self),
             Commands::Fmt(command) => command.execute(self),
+            Commands::GitIndex(command) => command.execute(self),
             Commands::Githooks(command) => command.execute(self),
             Commands::Install(command) => command.execute(self),
             Commands::Init(command) => command.execute(self),

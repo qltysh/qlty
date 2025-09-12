@@ -10,6 +10,7 @@ mod deinit;
 mod discord;
 mod docs;
 mod fmt;
+mod git_index;
 pub mod githooks;
 mod init;
 mod install;
@@ -26,7 +27,7 @@ mod version;
 
 pub use {
     build::Build, check::Check, completions::Completions, dashboard::Dashboard, deinit::Deinit,
-    discord::Discord, docs::Docs, fmt::Fmt, init::Init, install::Install, metrics::Metrics,
-    panic::Panic, parse::Parse, patch::Patch, smells::Smells, telemetry::Telemetry,
-    upgrade::Upgrade, validate::Validate, version::Version,
+    discord::Discord, docs::Docs, fmt::Fmt, git_index::GitIndex, init::Init, install::Install,
+    metrics::Metrics, panic::Panic, parse::Parse, patch::Patch, smells::Smells,
+    telemetry::Telemetry, upgrade::Upgrade, validate::Validate, version::Version,
 };
