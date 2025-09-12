@@ -100,7 +100,7 @@ pub fn print_settings(settings: &Settings) {
             if !paths.is_empty() {
                 eprintln!("    JACOCO_SOURCE_PATH (from environment):");
                 for path in paths {
-                    eprintln!("      - {}", path);
+                    eprintln!("      {}", path);
                 }
             }
         }

@@ -12,8 +12,8 @@ https://qlty.sh/d/coverage
     skip-missing-files: true
     incomplete: true
     JACOCO_SOURCE_PATH (from environment):
-      - src/foo
-      - src/bar
+      src/foo
+      src/bar
 
  METADATA 
 
