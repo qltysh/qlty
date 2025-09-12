@@ -10,7 +10,7 @@ Ignore changes which are chores, docs only, CI changes, tests only, style/format
 
 Follow the existing format of the CHANGELOG.md file. Organize changes underneath headers for the version number and date.
 
-Check to see if there are any chnages in `main` which are not in the most recent release by inspecting the Git log since the most recent release tag versus the latest commit on main. If there are changes in main which aren't released yet, make an "Unreleased" header at the top of the CHANGELOG.md for those.
+Check to see if there are any chnages in `main` which are not in the most recent release by inspecting the Git log since the most recent release tag versus the latest commit on main. If there are changes in main which aren't released yet, check if you are working in a release branch. A release branch is named by convention release-${version}. If you are in a release branch, name the header for the version indicated by the branch. Otherwise, make an "Unreleased" header at the top of the CHANGELOG.md for those.
 
 Finally, if a PR author is not a member of the team, be sure to include a shout out. (Team members are @noahd1, @lsegal, @brynary, @marschattha, @davehenton, @laura-mlg. They don't need shout outs.)
 

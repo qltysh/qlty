@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Improved
+
+- Improve coverage publish output (#2378)
+
 ## v0.573.0 (2025-09-11)
 
 ### Improved
