@@ -61,6 +61,7 @@ qlty-cloud.workspace = true
 qlty-config.workspace = true
 qlty-coverage.workspace = true
 qlty-formats.workspace = true
+qlty-history.workspace = true
 qlty-smells.workspace = true
 qlty-types.workspace = true
 rayon.workspace = true
