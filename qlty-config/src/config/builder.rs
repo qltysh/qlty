@@ -292,7 +292,7 @@ impl Builder {
 
             for field in sorted_fields {
                 warn_once(&format!(
-                    "{} Unknown configuration field '{}' in {}. This field will be ignored.",
+                    "{} Unknown field '{}' in {}. This will be ignored.",
                     style("WARNING:").bold().yellow(),
                     style(field).bold(),
                     path.display()
