@@ -40,6 +40,7 @@ rayon.workspace = true
 schemars.workspace = true
 semver.workspace = true
 serde_with.workspace = true
+serde_ignored.workspace = true
 serde_json.workspace = true
 serde_yaml.workspace = true
 serde.workspace = true
