@@ -54,13 +54,14 @@ impl Builder {
     }
 
     pub fn validate_toml(path: &Path, toml: Value) -> Result<()> {
-        let (_, unused_fields) = Self::parse_toml_as_config_with_unused(toml).with_context(|| {
-            format!(
-                "This TOML configuration file is not valid to Qlty: {}",
-                path.display()
-            )
-        })?;
-        
+        let (_, unused_fields) =
+            Self::parse_toml_as_config_with_unused(toml).with_context(|| {
+                format!(
+                    "This TOML configuration file is not valid to Qlty: {}",
+                    path.display()
+                )
+            })?;
+
         Self::warn_unused_fields(&unused_fields, path);
         Ok(())
     }
@@ -273,13 +274,13 @@ impl Builder {
         let file = File::from_str(&yaml, FileFormat::Yaml);
         let builder = Config::builder().add_source(file);
         let config = builder.build()?;
-        
+
         let mut unused_fields = HashSet::new();
         let deserialized: QltyConfig = serde_ignored::deserialize(config, |path| {
             unused_fields.insert(path.to_string());
         })
         .context("Invalid TOML configuration")?;
-        
+
         Ok((deserialized, unused_fields))
     }
 
@@ -288,7 +289,7 @@ impl Builder {
             let fields_list = unused_fields.iter().collect::<Vec<_>>();
             let mut sorted_fields = fields_list.clone();
             sorted_fields.sort();
-            
+
             for field in sorted_fields {
                 warn_once(&format!(
                     "{} Unknown configuration field '{}' in {}. This field will be ignored.",
@@ -1089,28 +1090,35 @@ mod test {
         let toml_with_unused = toml! {
             config_version = "0"
             unknown_field = "should be ignored"
-            
+
             [[plugin]]
             name = "test_plugin"
             version = "1.0.0"
             unknown_plugin_field = "also ignored"
-            
+
             [plugins.definitions.test_plugin]
             runtime = "ruby"
         };
 
-        let (config, unused_fields) = Builder::parse_toml_as_config_with_unused(Table(toml_with_unused)).unwrap();
-        
+        let (config, unused_fields) =
+            Builder::parse_toml_as_config_with_unused(Table(toml_with_unused)).unwrap();
+
         // Config should still parse successfully
         assert_eq!(config.config_version, Some("0".to_string()));
         assert_eq!(config.plugin.len(), 1);
         assert_eq!(config.plugin[0].name, "test_plugin");
-        
+
         // Should detect unused fields
         assert!(unused_fields.contains("unknown_field"));
         // The exact path format may vary - check that plugin field is detected
-        let has_plugin_unused = unused_fields.iter().any(|f| f.contains("plugin") && f.contains("unknown_plugin_field"));
-        assert!(has_plugin_unused, "Should detect unused plugin field, but got: {:?}", unused_fields);
+        let has_plugin_unused = unused_fields
+            .iter()
+            .any(|f| f.contains("plugin") && f.contains("unknown_plugin_field"));
+        assert!(
+            has_plugin_unused,
+            "Should detect unused plugin field, but got: {:?}",
+            unused_fields
+        );
     }
 
     #[test]
@@ -1118,11 +1126,11 @@ mod test {
         let toml_with_unused = toml! {
             config_version = "0"
             typo_field = "this is a typo"
-            
+
             [plugins.definitions.test]
             runtime = "ruby"
         };
-        
+
         // Should not error, just warn
         let result = Builder::validate_toml(&Path::new("test.toml"), Table(toml_with_unused));
         assert!(result.is_ok());
@@ -1132,22 +1140,23 @@ mod test {
     fn test_no_unused_fields_for_valid_config() {
         let valid_toml = toml! {
             config_version = "0"
-            
+
             [[plugin]]
             name = "eslint"
             version = "1.0.0"
             mode = "block"
-            
+
             [plugins.definitions.eslint]
             runtime = "node"
         };
-        
-        let (config, unused_fields) = Builder::parse_toml_as_config_with_unused(Table(valid_toml)).unwrap();
-        
+
+        let (config, unused_fields) =
+            Builder::parse_toml_as_config_with_unused(Table(valid_toml)).unwrap();
+
         // Config should parse successfully
         assert_eq!(config.config_version, Some("0".to_string()));
         assert_eq!(config.plugin.len(), 1);
-        
+
         // Should have no unused fields
         assert!(unused_fields.is_empty());
     }
@@ -1156,21 +1165,22 @@ mod test {
     fn test_nested_unused_fields() {
         let toml_with_nested_unused = toml! {
             config_version = "0"
-            
+
             [coverage]
             paths = ["src"]
             unknown_coverage_field = "ignored"
-            
+
             [plugins.definitions.test]
             runtime = "ruby"
             unknown_plugin_def_field = "also ignored"
         };
-        
-        let (config, unused_fields) = Builder::parse_toml_as_config_with_unused(Table(toml_with_nested_unused)).unwrap();
-        
+
+        let (config, unused_fields) =
+            Builder::parse_toml_as_config_with_unused(Table(toml_with_nested_unused)).unwrap();
+
         // Config should still parse
         assert_eq!(config.coverage.paths, Some(vec!["src".to_string()]));
-        
+
         // Should detect nested unused fields
         assert!(unused_fields.contains("coverage.unknown_coverage_field"));
         assert!(unused_fields.contains("plugins.definitions.test.unknown_plugin_def_field"));
