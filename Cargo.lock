@@ -2733,6 +2733,7 @@ dependencies = [
  "schemars 1.0.4",
  "semver",
  "serde",
+ "serde_ignored",
  "serde_json",
  "serde_with",
  "serde_yaml",
@@ -3457,6 +3458,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.100",
+]
+
+[[package]]
+name = "serde_ignored"
+version = "0.1.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b516445dac1e3535b6d658a7b528d771153dfb272ed4180ca4617a20550365ff"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
