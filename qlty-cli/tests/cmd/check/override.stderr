@@ -1,2 +1,4 @@
+WARNING: Unknown field 'override.0.plugin' in [CWD]/.qlty/qlty.toml. This will be ignored.
+WARNING: Unknown field 'override.0.plugin' in qlty.toml. This will be ignored.
 WARNING: The `[[override]]` field in qlty.toml is deprecated. Please use `[[triage]]` instead.
 ✖ 1 issue

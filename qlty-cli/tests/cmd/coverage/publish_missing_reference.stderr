@@ -9,6 +9,14 @@ https://qlty.sh/d/coverage
     override-build-id: 123
     override-commit-sha: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
 
+WARNING: Unknown field 'plugins.definitions.dotenv-linter.output_missing' in linters/dotenv-linter/plugin.toml. This will be ignored.
+WARNING: Unknown field 'plugins.definitions.ktlint.drivers.lint.cache' in linters/ktlint/plugin.toml. This will be ignored.
+WARNING: Unknown field 'plugins.downloads.swiftlint.download_type' in linters/swiftlint/plugin.toml. This will be ignored.
+WARNING: Unknown field 'plugins.downloads.swiftlint.github' in linters/swiftlint/plugin.toml. This will be ignored.
+WARNING: Unknown field 'plugins.definitions.dotenv-linter.output_missing' in qlty.toml. This will be ignored.
+WARNING: Unknown field 'plugins.definitions.ktlint.drivers.lint.cache' in qlty.toml. This will be ignored.
+WARNING: Unknown field 'plugins.downloads.swiftlint.download_type' in qlty.toml. This will be ignored.
+WARNING: Unknown field 'plugins.downloads.swiftlint.github' in qlty.toml. This will be ignored.
 
    ERROR   
 

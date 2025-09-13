@@ -263,7 +263,7 @@ impl Builder {
         let config = Self::post_process_config(config);
 
         // Warn about unused fields but don't fail
-        Self::warn_unused_fields(&unused_fields, &Path::new("qlty.toml"));
+        Self::warn_unused_fields(&unused_fields, Path::new("qlty.toml"));
 
         trace!("Config: {:#?}", config);
         config
