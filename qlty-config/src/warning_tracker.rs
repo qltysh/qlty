@@ -4,6 +4,8 @@ use std::sync::{LazyLock, Mutex};
 #[cfg(test)]
 use std::sync::atomic::{AtomicU64, Ordering};
 
+use tracing::warn;
+
 static WARNING_TRACKER: LazyLock<Mutex<HashSet<String>>> =
     LazyLock::new(|| Mutex::new(HashSet::new()));
 
@@ -16,6 +18,7 @@ pub fn warn_once(warning_message: &str) {
     if !tracker.contains(warning_message) {
         tracker.insert(warning_message.to_string());
         eprintln!("{warning_message}");
+        warn!("{}", warning_message);
     }
 }
 
