@@ -72,11 +72,6 @@ impl ClippyIssue {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-struct WorkspaceEntry {
-    src_path: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
 struct Message {
     rendered: Option<String>,
     code: Option<Code>,
