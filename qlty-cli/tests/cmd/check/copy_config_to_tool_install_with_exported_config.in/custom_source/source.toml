@@ -7,7 +7,7 @@ file_types = ["ruby"]
 [plugins.definitions.exists.drivers.lint]
 prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd"
 copy_configs_into_tool_install = true
-script = "ls -l ${linter}/config.yml"
+script = "ls -l ${linter}\\config.yml || ls -l ${linter}/config.yml"
 success_codes = [0]
 output = "pass_fail"
 
