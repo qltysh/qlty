@@ -99,7 +99,7 @@ pub fn plugin_configs(planner: &Planner) -> Result<HashMap<String, Vec<PluginCon
                 exported_config_path
             ))?;
 
-            let exported_path = planner.staging_area.destination_directory.join(file_name);
+            let exported_path = planner.workspace.root.join(file_name);
 
             // Create an empty config file entry for exported config paths.
             let config_file = PluginConfigFile {
