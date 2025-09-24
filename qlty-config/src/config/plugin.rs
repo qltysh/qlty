@@ -817,6 +817,62 @@ impl IssueMode {
 pub struct ExtraPackage {
     pub name: String,
     pub version: String,
+    pub is_path: bool,
+}
+
+impl ExtraPackage {
+    pub fn package_spec(&self) -> String {
+        if self.is_path {
+            self.name.clone()
+        } else {
+            format!("{}@{}", self.name, self.version)
+        }
+    }
+
+    pub fn resolved_path(&self, base_dir: &std::path::Path) -> String {
+        if self.is_path {
+            // Resolve relative paths to absolute paths based on the provided base directory
+            let path = std::path::Path::new(&self.name);
+            if path.is_relative() {
+                let joined = base_dir.join(path);
+                // Try to canonicalize to resolve ".." and "." segments
+                // If canonicalization fails (e.g., path doesn't exist yet),
+                // use lexical normalization as a fallback
+                if let Ok(canonical) = joined.canonicalize() {
+                    canonical.to_string_lossy().to_string()
+                } else {
+                    // Fallback: use lexical normalization for paths that don't exist yet
+                    use std::path::Component;
+                    let mut components = Vec::new();
+                    for component in joined.components() {
+                        match component {
+                            Component::ParentDir => {
+                                // Pop the last component unless we're at root
+                                if !components.is_empty()
+                                    && !matches!(components.last(), Some(Component::RootDir))
+                                {
+                                    components.pop();
+                                }
+                            }
+                            Component::CurDir => {
+                                // Skip "." components
+                            }
+                            _ => {
+                                components.push(component);
+                            }
+                        }
+                    }
+                    let normalized: std::path::PathBuf = components.iter().collect();
+                    normalized.to_string_lossy().to_string()
+                }
+            } else {
+                self.name.clone()
+            }
+        } else {
+            // For non-path packages, return the package spec
+            self.package_spec()
+        }
+    }
 }
 
 impl<'de> Deserialize<'de> for ExtraPackage {
@@ -825,22 +881,35 @@ impl<'de> Deserialize<'de> for ExtraPackage {
         D: Deserializer<'de>,
     {
         let string = String::deserialize(deserializer)?;
-        let (name, version) = if let Some((name, version)) = string.rsplit_once('@') {
-            (name, version)
+
+        // Check if it's a path-based package
+        if let Some(path) = string.strip_prefix("path:") {
+            let path = path.trim();
+            Ok(ExtraPackage {
+                name: path.to_string(),
+                version: String::new(),
+                is_path: true,
+            })
         } else {
-            let error_message = format!(
-                "Invalid extra package format, expected \"<name>@<version>\" got \"{}\"",
-                string
-            );
-            error!(error_message);
+            // Handle regular package@version format
+            let (name, version) = if let Some((name, version)) = string.rsplit_once('@') {
+                (name, version)
+            } else {
+                let error_message = format!(
+                    "Invalid extra package format, expected \"<name>@<version>\" or \"path:<path>\" got \"{}\"",
+                    string
+                );
+                error!(error_message);
 
-            return Err(serde::de::Error::custom(error_message));
-        };
+                return Err(serde::de::Error::custom(error_message));
+            };
 
-        Ok(ExtraPackage {
-            name: name.to_string(),
-            version: version.to_string(),
-        })
+            Ok(ExtraPackage {
+                name: name.to_string(),
+                version: version.to_string(),
+                is_path: false,
+            })
+        }
     }
 }
 
@@ -931,6 +1000,7 @@ mod tests {
             extra_packages: vec![ExtraPackage {
                 name: "some-package".to_string(),
                 version: "1.0.0".to_string(),
+                is_path: false,
             }],
             ..Default::default()
         };
@@ -958,6 +1028,7 @@ mod tests {
             extra_packages: vec![ExtraPackage {
                 name: "some-package".to_string(),
                 version: "1.0.0".to_string(),
+                is_path: false,
             }],
             ..Default::default()
         };
@@ -1025,5 +1096,149 @@ mod tests {
         assert!(error_message.contains("package_filters"));
         assert!(error_message.contains("package_file"));
         assert!(error_message.contains("requires"));
+    }
+
+    #[test]
+    fn test_extra_package_deserialize_regular_package() {
+        let json = "\"eslint@8.0.0\"";
+        let package: ExtraPackage = serde_json::from_str(json).unwrap();
+        assert_eq!(package.name, "eslint");
+        assert_eq!(package.version, "8.0.0");
+        assert!(!package.is_path);
+        assert_eq!(package.package_spec(), "eslint@8.0.0");
+    }
+
+    #[test]
+    fn test_extra_package_deserialize_scoped_package() {
+        let json = "\"@typescript-eslint/parser@5.0.0\"";
+        let package: ExtraPackage = serde_json::from_str(json).unwrap();
+        assert_eq!(package.name, "@typescript-eslint/parser");
+        assert_eq!(package.version, "5.0.0");
+        assert!(!package.is_path);
+        assert_eq!(package.package_spec(), "@typescript-eslint/parser@5.0.0");
+    }
+
+    #[test]
+    fn test_extra_package_deserialize_path_package() {
+        let json = "\"path:./local/package\"";
+        let package: ExtraPackage = serde_json::from_str(json).unwrap();
+        assert_eq!(package.name, "./local/package");
+        assert_eq!(package.version, "");
+        assert!(package.is_path);
+        assert_eq!(package.package_spec(), "./local/package");
+    }
+
+    #[test]
+    fn test_extra_package_deserialize_absolute_path_package() {
+        let json = "\"path:/absolute/path/to/package\"";
+        let package: ExtraPackage = serde_json::from_str(json).unwrap();
+        assert_eq!(package.name, "/absolute/path/to/package");
+        assert_eq!(package.version, "");
+        assert!(package.is_path);
+        assert_eq!(package.package_spec(), "/absolute/path/to/package");
+    }
+
+    #[test]
+    fn test_extra_package_deserialize_path_with_spaces() {
+        let json = "\"path: ./local/package \"";
+        let package: ExtraPackage = serde_json::from_str(json).unwrap();
+        assert_eq!(package.name, "./local/package");
+        assert_eq!(package.version, "");
+        assert!(package.is_path);
+    }
+
+    #[test]
+    fn test_extra_package_deserialize_invalid_format() {
+        let json = "\"invalid-package-format\"";
+        let result: Result<ExtraPackage, _> = serde_json::from_str(json);
+        assert!(result.is_err());
+        let error_message = result.unwrap_err().to_string();
+        assert!(error_message.contains("Invalid extra package format"));
+    }
+
+    #[test]
+    fn test_extra_package_resolved_path() {
+        use std::path::Path;
+
+        // Test relative path resolution
+        let package = ExtraPackage {
+            name: "./local-package".to_string(),
+            version: String::new(),
+            is_path: true,
+        };
+        let base = Path::new("/home/user/project");
+        assert_eq!(
+            package.resolved_path(base),
+            "/home/user/project/local-package"
+        );
+
+        // Test absolute path (should not change)
+        let package = ExtraPackage {
+            name: "/absolute/path/package".to_string(),
+            version: String::new(),
+            is_path: true,
+        };
+        assert_eq!(package.resolved_path(base), "/absolute/path/package");
+
+        // Test regular package (should return package spec)
+        let package = ExtraPackage {
+            name: "eslint".to_string(),
+            version: "8.0.0".to_string(),
+            is_path: false,
+        };
+        assert_eq!(package.resolved_path(base), "eslint@8.0.0");
+    }
+
+    #[test]
+    fn test_extra_package_resolved_path_with_parent_dirs() {
+        use std::path::Path;
+
+        // Test path with .. segments
+        let package = ExtraPackage {
+            name: "../sibling-package".to_string(),
+            version: String::new(),
+            is_path: true,
+        };
+        let base = Path::new("/home/user/project/subdir");
+        assert_eq!(
+            package.resolved_path(base),
+            "/home/user/project/sibling-package"
+        );
+
+        // Test path with multiple .. segments
+        let package = ExtraPackage {
+            name: "../../parent-package".to_string(),
+            version: String::new(),
+            is_path: true,
+        };
+        let base = Path::new("/home/user/project/sub1/sub2");
+        assert_eq!(
+            package.resolved_path(base),
+            "/home/user/project/parent-package"
+        );
+
+        // Test complex path with . and .. segments
+        let package = ExtraPackage {
+            name: "./subdir/../another-package".to_string(),
+            version: String::new(),
+            is_path: true,
+        };
+        let base = Path::new("/home/user/project");
+        assert_eq!(
+            package.resolved_path(base),
+            "/home/user/project/another-package"
+        );
+
+        // Test path that goes beyond root (should stop at root)
+        let package = ExtraPackage {
+            name: "../../../../../../../package".to_string(),
+            version: String::new(),
+            is_path: true,
+        };
+        let base = Path::new("/home/user");
+        // Should normalize to /package (going beyond root)
+        let resolved = package.resolved_path(base);
+        assert!(resolved.starts_with('/'));
+        assert!(resolved.ends_with("package"));
     }
 }

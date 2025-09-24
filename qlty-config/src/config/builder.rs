@@ -632,6 +632,7 @@ mod test {
             extra_packages: vec![ExtraPackage {
                 name: "pkg1".to_string(),
                 version: "1.0.0".to_string(),
+                is_path: false,
             }],
             drivers: vec!["driver1".to_string()],
             config_files: vec![PathBuf::from("config1")],
@@ -654,6 +655,7 @@ mod test {
             extra_packages: vec![ExtraPackage {
                 name: "pkg2".to_string(),
                 version: "2.0.0".to_string(),
+                is_path: false,
             }],
             drivers: vec!["driver2".to_string()],
             config_files: vec![PathBuf::from("config2")],
@@ -904,6 +906,7 @@ mod test {
                 extra_packages: vec![ExtraPackage {
                     name: "pkg1".to_string(),
                     version: "1.0.0".to_string(),
+                    is_path: false,
                 }],
                 drivers: vec!["driver1".to_string()],
                 config_files: vec![PathBuf::from("config1")],
@@ -925,6 +928,7 @@ mod test {
                 extra_packages: vec![ExtraPackage {
                     name: "pkg2".to_string(),
                     version: "2.0.0".to_string(),
+                    is_path: false,
                 }],
                 drivers: vec!["driver2".to_string()],
                 config_files: vec![PathBuf::from("config2")],

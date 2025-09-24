@@ -350,21 +350,40 @@ impl Tool for RubygemsPackage {
             return Ok(()); // tool needs to be installed in Gemfile when bundler is used
         }
 
-        task.set_message(&format!("gem install {}@{}", name, version));
-        self.run_command(self.cmd.build(
-            "ruby",
-            vec![
-                "-S",
-                "gem",
-                "install",
-                name,
-                "--no-document",
-                "--version",
-                version,
-                "--install-dir",
-                &path_to_native_string(self.directory()),
-            ],
-        ))
+        // Check if this is a path-based package (when version is empty)
+        if version.is_empty() {
+            // It's a local path, use it directly without --version flag
+            task.set_message(&format!("gem install {}", name));
+            self.run_command(self.cmd.build(
+                "ruby",
+                vec![
+                    "-S",
+                    "gem",
+                    "install",
+                    name,
+                    "--no-document",
+                    "--install-dir",
+                    &path_to_native_string(self.directory()),
+                ],
+            ))
+        } else {
+            // It's a regular package with version
+            task.set_message(&format!("gem install {}@{}", name, version));
+            self.run_command(self.cmd.build(
+                "ruby",
+                vec![
+                    "-S",
+                    "gem",
+                    "install",
+                    name,
+                    "--no-document",
+                    "--version",
+                    version,
+                    "--install-dir",
+                    &path_to_native_string(self.directory()),
+                ],
+            ))
+        }
     }
 
     fn package_file_install(&self, task: &ProgressTask) -> Result<()> {

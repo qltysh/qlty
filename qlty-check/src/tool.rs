@@ -350,8 +350,17 @@ pub trait Tool: Debug + Sync + Send {
             if plugin.package_file.is_some() {
                 self.package_file_install(task)?;
             } else {
+                // Get the current working directory for resolving relative paths
+                let cwd = std::env::current_dir()?;
+
                 for package in &plugin.extra_packages {
-                    self.package_install(task, &package.name, &package.version)?;
+                    if package.is_path {
+                        // For path-based packages, resolve the path and pass empty version
+                        let resolved_path = package.resolved_path(&cwd);
+                        self.package_install(task, &resolved_path, "")?;
+                    } else {
+                        self.package_install(task, &package.name, &package.version)?;
+                    }
                 }
             }
 
@@ -1084,10 +1093,12 @@ mod test {
                     qlty_config::config::ExtraPackage {
                         name: "[extra_package1]".into(),
                         version: "V".into(),
+                        is_path: false,
                     },
                     qlty_config::config::ExtraPackage {
                         name: "[extra_package2]".into(),
                         version: "V".into(),
+                        is_path: false,
                     },
                 ],
                 package_file: Some(path_to_string(tempdir.path().join("test"))),

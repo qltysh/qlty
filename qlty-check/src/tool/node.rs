@@ -167,13 +167,18 @@ impl Tool for NodePackage {
         let node_modules_path = std::path::PathBuf::from(&self.directory()).join("node_modules");
         std::fs::create_dir_all(node_modules_path)?;
 
+        // Check if this is a path-based package (when version is empty)
+        let package_spec = if version.is_empty() {
+            // It's a local path, use it directly
+            name.to_string()
+        } else {
+            // It's a regular package with version
+            format!("{}@{}", name, version)
+        };
+
         self.run_command(self.cmd.build(
             NPM_COMMAND,
-            vec![
-                "install",
-                "--force",
-                format!("{}@{}", name, version).as_str(),
-            ],
+            vec!["install", "--force", package_spec.as_str()],
         ))
     }
 
@@ -334,10 +339,12 @@ pub mod test {
                 ExtraPackage {
                     name: "other".to_string(),
                     version: "1.0.0".to_string(),
+                    is_path: false,
                 },
                 ExtraPackage {
                     name: "another".to_string(),
                     version: "1.0.0".to_string(),
+                    is_path: false,
                 },
             ];
             reroute_tools_root(temp_path, pkg);
@@ -367,10 +374,12 @@ pub mod test {
                 ExtraPackage {
                     name: "other".to_string(),
                     version: "1.0.0".to_string(),
+                    is_path: false,
                 },
                 ExtraPackage {
                     name: "another".to_string(),
                     version: "1.0.0".to_string(),
+                    is_path: false,
                 },
             ];
             reroute_tools_root(&temp_path, pkg);
@@ -418,6 +427,58 @@ pub mod test {
             assert_json_eq!(
                 json_contents,
                 json!({"dependencies":{"tool_dep":"1.0.0","test":"1.0.0"}})
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_install_path_based_extra_packages() {
+        with_node_package(|pkg, temp_path, list| {
+            // Create a local package directory
+            let local_package_path = temp_path.path().join("local-package");
+            std::fs::create_dir_all(&local_package_path)?;
+            std::fs::write(
+                local_package_path.join("package.json"),
+                r#"{"name":"local-package","version":"1.0.0"}"#,
+            )?;
+
+            // Change current directory to temp_path to test relative path resolution
+            let original_dir = std::env::current_dir()?;
+            std::env::set_current_dir(temp_path.path())?;
+
+            pkg.plugin.extra_packages = vec![
+                ExtraPackage {
+                    name: "./local-package".to_string(),
+                    version: String::new(),
+                    is_path: true,
+                },
+                ExtraPackage {
+                    name: "regular-package".to_string(),
+                    version: "2.0.0".to_string(),
+                    is_path: false,
+                },
+            ];
+            stub_cmd(list.clone());
+            pkg.install(&new_task()).unwrap();
+
+            // Restore original directory
+            std::env::set_current_dir(original_dir)?;
+
+            // Verify that path-based packages are resolved to absolute paths
+            // and regular packages are installed with version
+            let commands = list.lock().unwrap().clone();
+            assert_eq!(commands.len(), 3);
+            assert_eq!(
+                commands[0],
+                vec![NPM_COMMAND, "install", "--force", "test@1.0.0"]
+            );
+            // Check that the path is absolute and points to the local-package directory
+            assert!(commands[1][3].starts_with('/') || commands[1][3].starts_with("C:\\"));
+            assert!(commands[1][3].ends_with("local-package"));
+            assert_eq!(
+                commands[2],
+                vec![NPM_COMMAND, "install", "--force", "regular-package@2.0.0"]
             );
             Ok(())
         });

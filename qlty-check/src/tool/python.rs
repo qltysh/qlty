@@ -157,7 +157,16 @@ impl Tool for PipVenvPackage {
     }
 
     fn package_install(&self, task: &ProgressTask, name: &str, version: &str) -> Result<()> {
-        task.set_dim_message(&format!("pip install {}@{}", name, version));
+        // Check if this is a path-based package (when version is empty)
+        let package_spec = if version.is_empty() {
+            // It's a local path, use it directly
+            task.set_dim_message(&format!("pip install {}", name));
+            name.to_string()
+        } else {
+            // It's a regular package with version
+            task.set_dim_message(&format!("pip install {}@{}", name, version));
+            format!("{}=={}", name, version)
+        };
 
         self.run_command(self.cmd.build(
             PYTHON_COMMAND,
@@ -167,7 +176,7 @@ impl Tool for PipVenvPackage {
                 "install",
                 "--prefix",
                 &self.directory(),
-                &format!("{}=={}", name, version),
+                &package_spec,
             ],
         ))
     }
