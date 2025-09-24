@@ -15,6 +15,7 @@ globs = [
   "**/go.mod",
 
   # Gradle (Android/Java/Kotlin)
+  "**/gradle/verification-metadata.xml",
   "**/buildscript-gradle.lockfile",
   "**/gradle.lockfile",
   "**/pom.xml",
