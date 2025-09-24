@@ -81,15 +81,39 @@ fn exclude_globset(exclude_patterns: &Vec<String>) -> Result<GlobSet> {
 pub fn plugin_configs(planner: &Planner) -> Result<HashMap<String, Vec<PluginConfigFile>>> {
     let plugins = enabled_plugins(planner)?;
     let mut plugins_configs = vec![];
+    let mut configs: HashMap<String, Vec<PluginConfigFile>> = HashMap::new();
 
     for active_plugin in &plugins {
         plugins_configs.push(PluginConfig {
             plugin_name: active_plugin.name.clone(),
             config_globset: config_globset(&active_plugin.plugin.config_files)?,
         });
+
+        for exported_config_path in &active_plugin.plugin.exported_config_paths {
+            debug!(
+                "Adding exported config path ({:?}) to plugin config {}",
+                exported_config_path, &active_plugin.name,
+            );
+            let file_name = exported_config_path.file_name().ok_or(anyhow::anyhow!(
+                "Invalid exported config path: {:?}",
+                exported_config_path
+            ))?;
+
+            let exported_path = planner.workspace.root.join(file_name);
+
+            // Create an empty config file entry for exported config paths.
+            let config_file = PluginConfigFile {
+                path: exported_path.clone(),
+                contents: String::new(),
+            };
+
+            configs
+                .entry(active_plugin.name.clone())
+                .or_default()
+                .push(config_file);
+        }
     }
 
-    let mut configs: HashMap<String, Vec<PluginConfigFile>> = HashMap::new();
     let exclude_globset = exclude_globset(&planner.config.exclude_patterns)?;
 
     for entry in planner.workspace.walker() {

@@ -310,6 +310,29 @@ impl Executor {
 
         let mut loaded_config_files = vec![];
 
+        // load exported config paths before anything else
+        for config_file in &exported_config_paths {
+            if self.plan.workspace.root != self.plan.staging_area.destination_directory {
+                // for formatters
+                let loaded_config_file = load_config_file_from_source(
+                    config_file,
+                    &self.plan.staging_area.destination_directory,
+                )?;
+
+                if !loaded_config_file.is_empty() {
+                    loaded_config_files.push(loaded_config_file);
+                }
+            }
+
+            // for linters
+            let loaded_config_file =
+                load_config_file_from_source(config_file, &self.plan.workspace.root)?;
+
+            if !loaded_config_file.is_empty() {
+                loaded_config_files.push(loaded_config_file);
+            }
+        }
+
         self.check_and_copy_configs_into_tool_install(&mut loaded_config_files)?;
         self.plan_plugins_fetch(&mut loaded_config_files)?;
 
@@ -343,28 +366,6 @@ impl Executor {
                 &self.plan.workspace,
                 &self.plan.workspace.root,
             )?;
-
-            if !loaded_config_file.is_empty() {
-                loaded_config_files.push(loaded_config_file);
-            }
-        }
-
-        for config_file in &exported_config_paths {
-            if self.plan.workspace.root != self.plan.staging_area.destination_directory {
-                // for formatters
-                let loaded_config_file = load_config_file_from_source(
-                    config_file,
-                    &self.plan.staging_area.destination_directory,
-                )?;
-
-                if !loaded_config_file.is_empty() {
-                    loaded_config_files.push(loaded_config_file);
-                }
-            }
-
-            // for linters
-            let loaded_config_file =
-                load_config_file_from_source(config_file, &self.plan.workspace.root)?;
 
             if !loaded_config_file.is_empty() {
                 loaded_config_files.push(loaded_config_file);

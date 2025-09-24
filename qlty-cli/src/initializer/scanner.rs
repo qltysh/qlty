@@ -230,7 +230,7 @@ impl Scanner {
 
             let mut driver_versions = drivers_to_activate
                 .values()
-                .map(|driver| (driver.version()))
+                .map(|driver| driver.version())
                 .unique()
                 .collect::<Vec<String>>();
 
