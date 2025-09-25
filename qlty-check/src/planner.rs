@@ -371,7 +371,7 @@ impl Planner {
         }
     }
 
-    fn build_cache(workspace: &Workspace, settings: &Settings) -> Result<Box<dyn Cache>> {
+    pub fn build_cache(workspace: &Workspace, settings: &Settings) -> Result<Box<dyn Cache>> {
         if settings.cache {
             let library = workspace.library()?;
             library.create()?;

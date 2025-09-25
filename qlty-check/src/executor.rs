@@ -225,8 +225,30 @@ impl Executor {
     }
 
     fn stage_workspace_entries(&self) -> Result<Vec<String>> {
-        let timer = Instant::now();
-        let sub_timer = Instant::now();
+        let total_timer = Instant::now();
+
+        self.stage_workspace_files(&total_timer)?;
+        let repository_config_files = self.collect_repository_config_files()?;
+        let exported_config_paths = self.collect_exported_config_paths();
+        let mut loaded_config_files = self.load_exported_config_files(&exported_config_paths)?;
+
+        self.plan_plugins_fetch(&mut loaded_config_files)?;
+        self.check_and_copy_configs_into_tool_install(&mut loaded_config_files)?;
+        self.load_repository_config_files(&repository_config_files);
+        self.load_qlty_config_files(&mut loaded_config_files)?;
+
+        info!(
+            "Staged {} workspace entries and {} config files in {:.2}s",
+            self.plan.workspace_entry_paths().len(),
+            repository_config_files.len(),
+            total_timer.elapsed().as_secs_f32()
+        );
+
+        Ok(loaded_config_files)
+    }
+
+    fn stage_workspace_files(&self, _total_timer: &Instant) -> Result<()> {
+        let staging_timer = Instant::now();
 
         let results = self
             .plan
@@ -242,101 +264,109 @@ impl Executor {
         debug!(
             "Staged {} workspace entries in {:.2}s",
             self.plan.workspace_entry_paths().len(),
-            sub_timer.elapsed().as_secs_f32()
+            staging_timer.elapsed().as_secs_f32()
         );
 
-        let sub_timer = Instant::now();
-        let config_file_names = self
-            .plan
-            .invocations
-            .iter()
-            .flat_map(|invocation| &invocation.plugin.config_files)
-            .map(path_to_string)
-            .collect::<std::collections::HashSet<_>>() // Unique
-            .into_iter()
-            .collect::<Vec<_>>();
+        Ok(())
+    }
 
-        let mut repository_config_files = vec![];
-        let walk_builder = self.plan.workspace.walk_builder();
+    fn collect_repository_config_files(&self) -> Result<Vec<PathBuf>> {
+        let config_timer = Instant::now();
 
-        let mut config_paths = self
-            .plan
-            .invocations
-            .iter()
-            .flat_map(|invocation| invocation.plugin.config_files.clone())
-            .collect::<Vec<PathBuf>>();
-
-        for invocation in self.plan.invocations.iter() {
-            for affects_cache in &invocation.plugin.affects_cache {
-                config_paths.push(PathBuf::from(affects_cache))
-            }
-        }
+        let mut config_paths = self.collect_config_paths();
+        config_paths.extend(self.collect_affects_cache_paths());
 
         let config_globset = config_globset(&config_paths)?;
+        let walk_builder = self.plan.workspace.walk_builder();
+        let configs_dir = self.plan.workspace.library()?.configs_dir();
+        let configs_dir_str = configs_dir.to_str().unwrap();
 
-        for entry in walk_collect_entries_parallel(&walk_builder) {
-            let file_name = entry.file_name().to_str().unwrap();
-            let path = entry.path().to_str().unwrap();
+        let repository_config_files: Vec<PathBuf> = walk_collect_entries_parallel(&walk_builder)
+            .into_iter()
+            .filter_map(|entry| {
+                let file_name = entry.file_name().to_str()?;
+                let path = entry.path().to_str()?;
 
-            if config_globset.is_match(file_name)
-                && !path.contains(
-                    self.plan
-                        .workspace
-                        .library()?
-                        .configs_dir()
-                        .to_str()
-                        .unwrap(),
-                )
-            {
-                repository_config_files.push(entry.path().to_owned());
-            }
-        }
-
-        let exported_config_paths = self
-            .plan
-            .invocations
-            .iter()
-            .flat_map(|invocation| invocation.plugin.exported_config_paths.clone())
-            .unique()
-            .collect_vec();
+                if config_globset.is_match(file_name) && !path.contains(configs_dir_str) {
+                    Some(entry.path().to_owned())
+                } else {
+                    None
+                }
+            })
+            .collect();
 
         debug!(
             "Walker found {} config and affects cache files in {:.2}s",
             repository_config_files.len(),
-            sub_timer.elapsed().as_secs_f32()
+            config_timer.elapsed().as_secs_f32()
         );
 
-        let sub_timer = Instant::now();
+        Ok(repository_config_files)
+    }
 
+    fn collect_config_paths(&self) -> Vec<PathBuf> {
+        self.plan
+            .invocations
+            .iter()
+            .flat_map(|invocation| invocation.plugin.config_files.clone())
+            .collect()
+    }
+
+    fn collect_affects_cache_paths(&self) -> Vec<PathBuf> {
+        self.plan
+            .invocations
+            .iter()
+            .flat_map(|invocation| &invocation.plugin.affects_cache)
+            .map(|path| PathBuf::from(path))
+            .collect()
+    }
+
+    fn collect_exported_config_paths(&self) -> Vec<PathBuf> {
+        self.plan
+            .invocations
+            .iter()
+            .flat_map(|invocation| invocation.plugin.exported_config_paths.clone())
+            .unique()
+            .collect_vec()
+    }
+
+    fn load_exported_config_files(&self, exported_config_paths: &[PathBuf]) -> Result<Vec<String>> {
         let mut loaded_config_files = vec![];
 
-        // load exported config paths before anything else
-        for config_file in &exported_config_paths {
-            if self.plan.workspace.root != self.plan.staging_area.destination_directory {
-                // for formatters
-                let loaded_config_file = load_config_file_from_source(
-                    config_file,
-                    &self.plan.staging_area.destination_directory,
-                )?;
+        for config_file in exported_config_paths {
+            self.load_config_file_for_destinations(config_file, &mut loaded_config_files)?;
+        }
 
-                if !loaded_config_file.is_empty() {
-                    loaded_config_files.push(loaded_config_file);
-                }
-            }
+        Ok(loaded_config_files)
+    }
 
-            // for linters
-            let loaded_config_file =
-                load_config_file_from_source(config_file, &self.plan.workspace.root)?;
+    fn load_config_file_for_destinations(
+        &self,
+        config_file: &PathBuf,
+        loaded_config_files: &mut Vec<String>,
+    ) -> Result<()> {
+        if self.plan.workspace.root != self.plan.staging_area.destination_directory {
+            let loaded_config_file = load_config_file_from_source(
+                config_file,
+                &self.plan.staging_area.destination_directory,
+            )?;
 
             if !loaded_config_file.is_empty() {
                 loaded_config_files.push(loaded_config_file);
             }
         }
 
-        self.check_and_copy_configs_into_tool_install(&mut loaded_config_files)?;
-        self.plan_plugins_fetch(&mut loaded_config_files)?;
+        let loaded_config_file =
+            load_config_file_from_source(config_file, &self.plan.workspace.root)?;
+        if !loaded_config_file.is_empty() {
+            loaded_config_files.push(loaded_config_file);
+        }
 
-        for config_file in &repository_config_files {
+        Ok(())
+    }
+
+    fn load_repository_config_files(&self, repository_config_files: &[PathBuf]) {
+        for config_file in repository_config_files {
             if let Err(err) = load_config_file_from_repository(
                 config_file,
                 &self.plan.workspace,
@@ -345,26 +375,39 @@ impl Executor {
                 error!("Failed to load config file from repository: {:?}", err);
             }
         }
+    }
+
+    fn load_qlty_config_files(&self, loaded_config_files: &mut Vec<String>) -> Result<()> {
+        let config_file_names = self.collect_config_file_names();
 
         for config_file in &config_file_names {
-            if self.plan.workspace.root != self.plan.staging_area.destination_directory {
-                // for formatters
-                let loaded_config_file = load_config_file_from_qlty_dir(
-                    config_file,
-                    &self.plan.workspace,
-                    &self.plan.staging_area.destination_directory,
-                )?;
+            self.load_qlty_config_file_for_destinations(config_file, loaded_config_files)?;
+        }
 
-                if !loaded_config_file.is_empty() {
-                    loaded_config_files.push(loaded_config_file);
-                }
-            }
+        Ok(())
+    }
 
-            // for linters
+    fn collect_config_file_names(&self) -> Vec<String> {
+        self.plan
+            .invocations
+            .iter()
+            .flat_map(|invocation| &invocation.plugin.config_files)
+            .map(path_to_string)
+            .collect::<HashSet<_>>()
+            .into_iter()
+            .collect()
+    }
+
+    fn load_qlty_config_file_for_destinations(
+        &self,
+        config_file: &str,
+        loaded_config_files: &mut Vec<String>,
+    ) -> Result<()> {
+        if self.plan.workspace.root != self.plan.staging_area.destination_directory {
             let loaded_config_file = load_config_file_from_qlty_dir(
                 config_file,
                 &self.plan.workspace,
-                &self.plan.workspace.root,
+                &self.plan.staging_area.destination_directory,
             )?;
 
             if !loaded_config_file.is_empty() {
@@ -372,20 +415,17 @@ impl Executor {
             }
         }
 
-        debug!(
-            "Staged {} config files in {:.2}s",
-            repository_config_files.len(),
-            sub_timer.elapsed().as_secs_f32()
-        );
+        let loaded_config_file = load_config_file_from_qlty_dir(
+            config_file,
+            &self.plan.workspace,
+            &self.plan.workspace.root,
+        )?;
 
-        info!(
-            "Staged {} workspace entries and {} config files in {:.2}s",
-            self.plan.workspace_entry_paths().len(),
-            repository_config_files.len(),
-            timer.elapsed().as_secs_f32()
-        );
+        if !loaded_config_file.is_empty() {
+            loaded_config_files.push(loaded_config_file);
+        }
 
-        Ok(loaded_config_files)
+        Ok(())
     }
 
     fn plan_plugins_fetch(&self, loaded_config_files: &mut Vec<String>) -> Result<()> {
@@ -790,4 +830,357 @@ fn walk_collect_entries_parallel(builder: &WalkBuilder) -> Vec<DirEntry> {
 
     let dents = dents.lock().unwrap();
     dents.to_vec()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::planner::config_files::PluginConfigFile;
+    use crate::planner::target::Target;
+    use crate::tool::null_tool::NullTool;
+    use crate::{Planner, Settings};
+    use driver::test::build_driver;
+    use qlty_analysis::workspace_entries::TargetMode;
+    use qlty_analysis::{WorkspaceEntry, WorkspaceEntryKind};
+    use qlty_config::config::{InvocationDirectoryDef, PluginDef};
+    use qlty_config::{QltyConfig, Workspace};
+    use qlty_test_utilities::git::sample_repo;
+    use qlty_types::analysis::v1::ExecutionVerb;
+    use staging_area::{Mode, StagingArea};
+    use std::fs::create_dir_all;
+    use std::path::PathBuf;
+    use std::time::SystemTime;
+    use tempfile::TempDir;
+
+    fn build_plan() -> (TempDir, Plan) {
+        let (temp_dir, _repo) = sample_repo();
+        let temp_dir_path = temp_dir.path().to_path_buf();
+        let workspace = Workspace {
+            root: temp_dir_path.clone(),
+        };
+
+        let temp_dir_config_file = temp_dir_path.join("test_config.yml");
+        std::fs::write(&temp_dir_config_file, "Sample config file").unwrap();
+
+        let mut settings = Settings::default();
+        settings.progress = false; // Disable progress bar for tests
+        let cache = Planner::build_cache(&workspace, &settings).unwrap();
+        let issue_cache = IssueCache::new(cache);
+        let path = PathBuf::from(temp_dir_path.join("lib/hello.rb"));
+        let staging_area = StagingArea::generate(Mode::Source, workspace.root.clone(), None);
+        let mut driver = build_driver(vec![], vec![]);
+        driver.copy_configs_into_tool_install = true;
+
+        let plugin = PluginDef {
+            config_files: vec![PathBuf::from("test_config.yml")],
+            ..Default::default()
+        };
+
+        let invocation_plan = InvocationPlan {
+            target_root: temp_dir_path.clone(),
+            workspace_entries: Arc::new(vec![WorkspaceEntry {
+                path: path.clone(),
+                content_modified: SystemTime::now(),
+                language_name: None,
+                contents_size: 0,
+                kind: WorkspaceEntryKind::File,
+            }]),
+            invocation_id: "".to_string(),
+            verb: ExecutionVerb::Check,
+            workspace: Workspace::new().unwrap(),
+            settings: Default::default(),
+            runtime: None,
+            runtime_version: None,
+            plugin_name: "test".to_string(),
+            plugin: plugin.clone(),
+            tool: Box::new(NullTool {
+                plugin_name: "test".to_string(),
+                parent_directory: temp_dir_path.join(".qlty/tools/test"),
+                plugin: plugin.clone(),
+            }),
+            driver_name: "test".to_string(),
+            driver,
+            plugin_configs: vec![PluginConfigFile {
+                path: temp_dir_config_file,
+                contents: "Sample config file".to_string(),
+            }],
+            targets: vec![Target {
+                path: path,
+                content_modified: SystemTime::now(),
+                language_name: None,
+                contents_size: 0,
+                kind: WorkspaceEntryKind::File,
+            }],
+            invocation_directory: staging_area.destination_directory.clone(),
+            invocation_directory_def: InvocationDirectoryDef::default(),
+        };
+
+        let plan = Plan {
+            verb: ExecutionVerb::Check,
+            target_mode: TargetMode::All,
+            settings: settings.clone(),
+            workspace: workspace.clone(),
+            config: QltyConfig::default(),
+            issue_cache,
+            hits: vec![],
+            invocations: vec![invocation_plan],
+            jobs: 2,
+            transformers: vec![],
+            staging_area,
+            fail_level: settings.fail_level,
+        };
+
+        (temp_dir, plan)
+    }
+
+    fn build_executor(plan: Option<&Plan>, temp_dir: Option<TempDir>) -> (TempDir, Executor) {
+        if plan.is_some() && temp_dir.is_some() {
+            (temp_dir.unwrap(), Executor::new(plan.unwrap()))
+        } else {
+            let (temp_dir, plan) = build_plan();
+            (temp_dir, Executor::new(&plan))
+        }
+    }
+
+    #[test]
+    fn test_copy_tools_to_install_directory_works() {
+        let (_temp_dir, executor) = build_executor(None, None);
+
+        let tool_directory = PathBuf::from(executor.plan.invocations[0].tool.directory());
+        create_dir_all(&tool_directory).ok();
+
+        executor.install().ok();
+
+        assert!(!tool_directory.join("test_config.yml").exists());
+        executor.stage_workspace_entries().ok();
+
+        assert!(tool_directory.exists());
+        assert!(tool_directory.join("test_config.yml").exists());
+    }
+
+    #[test]
+    fn test_collect_config_paths_method() {
+        let (_temp_dir, executor) = build_executor(None, None);
+
+        let config_paths = executor.collect_config_paths();
+
+        assert_eq!(config_paths.len(), 1);
+        assert!(config_paths.contains(&PathBuf::from("test_config.yml")));
+    }
+
+    #[test]
+    fn test_collect_affects_cache_paths_method() {
+        let (temp_dir, _plan) = build_plan();
+
+        // Create a plan with affects_cache
+        let mut modified_plan = build_plan().1;
+        modified_plan.invocations[0].plugin.affects_cache =
+            vec!["package.json".to_string(), "yarn.lock".to_string()];
+
+        let executor = Executor::new(&modified_plan);
+        let cache_paths = executor.collect_affects_cache_paths();
+
+        assert_eq!(cache_paths.len(), 2);
+        assert!(cache_paths.contains(&PathBuf::from("package.json")));
+        assert!(cache_paths.contains(&PathBuf::from("yarn.lock")));
+
+        drop(temp_dir); // Keep temp_dir alive
+    }
+
+    #[test]
+    fn test_collect_exported_config_paths_method() {
+        let (temp_dir, _plan) = build_plan();
+
+        // Create a plan with exported config paths
+        let mut modified_plan = build_plan().1;
+        modified_plan.invocations[0].plugin.exported_config_paths = vec![
+            PathBuf::from("exported-eslint.config.js"),
+            PathBuf::from("exported-prettier.config.js"),
+        ];
+
+        let executor = Executor::new(&modified_plan);
+        let exported_paths = executor.collect_exported_config_paths();
+
+        assert_eq!(exported_paths.len(), 2);
+        assert!(exported_paths.contains(&PathBuf::from("exported-eslint.config.js")));
+        assert!(exported_paths.contains(&PathBuf::from("exported-prettier.config.js")));
+
+        drop(temp_dir);
+    }
+
+    #[test]
+    fn test_collect_config_file_names_method() {
+        let (_temp_dir, executor) = build_executor(None, None);
+
+        let config_names = executor.collect_config_file_names();
+
+        assert_eq!(config_names.len(), 1);
+        assert!(config_names.contains(&"test_config.yml".to_string()));
+    }
+
+    #[test]
+    fn test_collect_methods_with_multiple_invocations() {
+        let (temp_dir, _repo) = sample_repo();
+        let temp_dir_path = temp_dir.path().to_path_buf();
+        let workspace = Workspace {
+            root: temp_dir_path.clone(),
+        };
+
+        // Create multiple config files
+        let config_file1 = temp_dir_path.join("eslint.config.js");
+        let config_file2 = temp_dir_path.join("prettier.config.js");
+        std::fs::write(&config_file1, "eslint config").unwrap();
+        std::fs::write(&config_file2, "prettier config").unwrap();
+
+        let mut settings = Settings::default();
+        settings.progress = false; // Disable progress bar for tests
+        let cache = Planner::build_cache(&workspace, &settings).unwrap();
+        let issue_cache = IssueCache::new(cache);
+        let staging_area = StagingArea::generate(Mode::Source, workspace.root.clone(), None);
+
+        // Create two invocations with different plugins
+        let plugin1 = PluginDef {
+            config_files: vec![PathBuf::from("eslint.config.js")],
+            affects_cache: vec!["package.json".to_string()],
+            exported_config_paths: vec![PathBuf::from("shared-config.json")],
+            ..Default::default()
+        };
+
+        let plugin2 = PluginDef {
+            config_files: vec![PathBuf::from("prettier.config.js")],
+            affects_cache: vec!["yarn.lock".to_string()],
+            exported_config_paths: vec![
+                PathBuf::from("shared-config.json"), // Duplicate for dedup testing
+                PathBuf::from("unique-config.json"),
+            ],
+            ..Default::default()
+        };
+
+        let invocation1 = InvocationPlan {
+            target_root: temp_dir_path.clone(),
+            workspace_entries: Arc::new(vec![]),
+            invocation_id: "test1".to_string(),
+            verb: ExecutionVerb::Check,
+            workspace: Workspace::new().unwrap(),
+            settings: Default::default(),
+            runtime: None,
+            runtime_version: None,
+            plugin_name: "eslint".to_string(),
+            plugin: plugin1,
+            tool: Box::new(NullTool {
+                plugin_name: "eslint".to_string(),
+                parent_directory: temp_dir_path.join(".qlty/tools/eslint"),
+                plugin: PluginDef::default(),
+            }),
+            driver_name: "eslint".to_string(),
+            driver: build_driver(vec![], vec![]),
+            plugin_configs: vec![],
+            targets: vec![],
+            invocation_directory: staging_area.destination_directory.clone(),
+            invocation_directory_def: InvocationDirectoryDef::default(),
+        };
+
+        let invocation2 = InvocationPlan {
+            target_root: temp_dir_path.clone(),
+            workspace_entries: Arc::new(vec![]),
+            invocation_id: "test2".to_string(),
+            verb: ExecutionVerb::Check,
+            workspace: Workspace::new().unwrap(),
+            settings: Default::default(),
+            runtime: None,
+            runtime_version: None,
+            plugin_name: "prettier".to_string(),
+            plugin: plugin2,
+            tool: Box::new(NullTool {
+                plugin_name: "prettier".to_string(),
+                parent_directory: temp_dir_path.join(".qlty/tools/prettier"),
+                plugin: PluginDef::default(),
+            }),
+            driver_name: "prettier".to_string(),
+            driver: build_driver(vec![], vec![]),
+            plugin_configs: vec![],
+            targets: vec![],
+            invocation_directory: staging_area.destination_directory.clone(),
+            invocation_directory_def: InvocationDirectoryDef::default(),
+        };
+
+        let plan = Plan {
+            verb: ExecutionVerb::Check,
+            target_mode: TargetMode::All,
+            settings: settings.clone(),
+            workspace: workspace.clone(),
+            config: QltyConfig::default(),
+            issue_cache,
+            hits: vec![],
+            invocations: vec![invocation1, invocation2],
+            jobs: 2,
+            transformers: vec![],
+            staging_area,
+            fail_level: settings.fail_level,
+        };
+
+        let executor = Executor::new(&plan);
+
+        // Test collect_config_paths
+        let config_paths = executor.collect_config_paths();
+        assert_eq!(config_paths.len(), 2);
+        assert!(config_paths.contains(&PathBuf::from("eslint.config.js")));
+        assert!(config_paths.contains(&PathBuf::from("prettier.config.js")));
+
+        // Test collect_affects_cache_paths
+        let cache_paths = executor.collect_affects_cache_paths();
+        assert_eq!(cache_paths.len(), 2);
+        assert!(cache_paths.contains(&PathBuf::from("package.json")));
+        assert!(cache_paths.contains(&PathBuf::from("yarn.lock")));
+
+        // Test collect_exported_config_paths (should deduplicate)
+        let exported_paths = executor.collect_exported_config_paths();
+        assert_eq!(exported_paths.len(), 2); // Should be deduplicated
+        assert!(exported_paths.contains(&PathBuf::from("shared-config.json")));
+        assert!(exported_paths.contains(&PathBuf::from("unique-config.json")));
+
+        // Test collect_config_file_names
+        let config_names = executor.collect_config_file_names();
+        assert_eq!(config_names.len(), 2);
+        assert!(config_names.contains(&"eslint.config.js".to_string()));
+        assert!(config_names.contains(&"prettier.config.js".to_string()));
+    }
+
+    #[test]
+    fn test_collect_methods_with_empty_invocations() {
+        let (temp_dir, _repo) = sample_repo();
+        let temp_dir_path = temp_dir.path().to_path_buf();
+        let workspace = Workspace {
+            root: temp_dir_path.clone(),
+        };
+
+        let mut settings = Settings::default();
+        settings.progress = false; // Disable progress bar for tests
+        let cache = Planner::build_cache(&workspace, &settings).unwrap();
+        let issue_cache = IssueCache::new(cache);
+        let staging_area = StagingArea::generate(Mode::Source, workspace.root.clone(), None);
+
+        let plan = Plan {
+            verb: ExecutionVerb::Check,
+            target_mode: TargetMode::All,
+            settings: settings.clone(),
+            workspace: workspace.clone(),
+            config: QltyConfig::default(),
+            issue_cache,
+            hits: vec![],
+            invocations: vec![], // Empty invocations
+            jobs: 2,
+            transformers: vec![],
+            staging_area,
+            fail_level: settings.fail_level,
+        };
+
+        let executor = Executor::new(&plan);
+
+        // All collect methods should return empty vectors
+        assert!(executor.collect_config_paths().is_empty());
+        assert!(executor.collect_affects_cache_paths().is_empty());
+        assert!(executor.collect_exported_config_paths().is_empty());
+        assert!(executor.collect_config_file_names().is_empty());
+    }
 }
