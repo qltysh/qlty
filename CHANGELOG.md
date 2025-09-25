@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.575.0 (2025-09-24)
+
+### Fixed
+
+- Fix interaction of exported_config_paths and copy_configs_into_tool_install directives (#2402)
+
 ## v0.574.0 (2025-09-12)
 
 ### Improved
