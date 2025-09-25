@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.576.0 (2025-09-25)
+## v0.577.0 (2025-09-25)
 
 ### Fixed
 
@@ -8,7 +8,7 @@
 
 #### Notes
 
-NB: There was no release version 0.575.0
+NB: There was no release versions: 0.575.0, 0.576.0
 
 ## v0.574.0 (2025-09-12)
 
