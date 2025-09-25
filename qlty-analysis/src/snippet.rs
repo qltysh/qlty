@@ -1,5 +1,5 @@
-pub const MAX_SNIPPET_LINES: usize = 1000;
-pub const MAX_SNIPPET_BYTES: usize = 50 * 1024; // 50 kilobytes
+pub const MAX_SNIPPET_LINES: usize = 50;
+pub const MAX_SNIPPET_BYTES: usize = 5 * 1024; // 5 kilobytes
 
 pub fn truncate_snippet(snippet: &str) -> String {
     let mut truncated = String::new();
@@ -35,23 +35,23 @@ mod test {
 
     #[test]
     fn test_truncate_snippet_by_line_count() {
-        let lines: Vec<String> = (1..=1500).map(|i| format!("Line {}", i)).collect();
+        let lines: Vec<String> = (1..=100).map(|i| format!("Line {}", i)).collect();
         let input = lines.join("\n");
         let result = truncate_snippet(&input);
 
         let result_lines: Vec<&str> = result.lines().collect();
-        assert_eq!(result_lines.len(), 1000);
+        assert_eq!(result_lines.len(), 50);
         assert_eq!(result_lines[0], "Line 1");
-        assert_eq!(result_lines[999], "Line 1000");
+        assert_eq!(result_lines[49], "Line 50");
     }
 
     #[test]
     fn test_truncate_snippet_by_byte_size() {
-        let long_line = "a".repeat(60 * 1024);
+        let long_line = "a".repeat(6 * 1024);
         let input = format!("Short line\n{}", long_line);
         let result = truncate_snippet(&input);
 
-        assert!(result.len() <= 50 * 1024);
+        assert!(result.len() <= 5 * 1024);
         assert!(result.starts_with("Short line"));
         assert!(!result.contains(&long_line));
     }
@@ -60,13 +60,13 @@ mod test {
     fn test_truncate_snippet_byte_size_respects_line_boundaries() {
         let line_size = 100;
         let line = "a".repeat(line_size);
-        let num_lines = (50 * 1024) / line_size + 10;
+        let num_lines = (5 * 1024) / line_size + 10;
         let lines: Vec<String> = (0..num_lines).map(|_| line.clone()).collect();
         let input = lines.join("\n");
 
         let result = truncate_snippet(&input);
 
-        assert!(result.len() <= 50 * 1024);
+        assert!(result.len() <= 5 * 1024);
         let result_lines: Vec<&str> = result.lines().collect();
         for line in result_lines {
             assert_eq!(line.len(), line_size);
@@ -89,7 +89,7 @@ mod test {
 
     #[test]
     fn test_truncate_snippet_exactly_at_limits() {
-        let lines: Vec<String> = (1..=1000).map(|i| format!("Line {}", i)).collect();
+        let lines: Vec<String> = (1..=50).map(|i| format!("Line {}", i)).collect();
         let input = lines.join("\n");
         let result = truncate_snippet(&input);
         assert_eq!(result, input);
