@@ -317,7 +317,7 @@ impl Executor {
             .invocations
             .iter()
             .flat_map(|invocation| &invocation.plugin.affects_cache)
-            .map(|path| PathBuf::from(path))
+            .map(PathBuf::from)
             .collect()
     }
 
@@ -852,99 +852,182 @@ mod tests {
     use std::time::SystemTime;
     use tempfile::TempDir;
 
-    fn build_plan() -> (TempDir, Plan) {
-        let (temp_dir, _repo) = sample_repo();
-        let temp_dir_path = temp_dir.path().to_path_buf();
-        let workspace = Workspace {
-            root: temp_dir_path.clone(),
-        };
+    struct TestContext {
+        temp_dir: TempDir,
+        temp_dir_path: PathBuf,
+        workspace: Workspace,
+        settings: Settings,
+        issue_cache: IssueCache,
+        staging_area: StagingArea,
+    }
 
-        let temp_dir_config_file = temp_dir_path.join("test_config.yml");
-        std::fs::write(&temp_dir_config_file, "Sample config file").unwrap();
+    impl TestContext {
+        fn new() -> Self {
+            let (temp_dir, _repo) = sample_repo();
+            let temp_dir_path = temp_dir.path().to_path_buf();
+            let workspace = Workspace {
+                root: temp_dir_path.clone(),
+            };
 
-        let mut settings = Settings::default();
-        settings.progress = false; // Disable progress bar for tests
-        let cache = Planner::build_cache(&workspace, &settings).unwrap();
-        let issue_cache = IssueCache::new(cache);
-        let path = PathBuf::from(temp_dir_path.join("lib/hello.rb"));
-        let staging_area = StagingArea::generate(Mode::Source, workspace.root.clone(), None);
-        let mut driver = build_driver(vec![], vec![]);
-        driver.copy_configs_into_tool_install = true;
+            let mut settings = Settings::default();
+            settings.progress = false;
+            let cache = Planner::build_cache(&workspace, &settings).unwrap();
+            let issue_cache = IssueCache::new(cache);
+            let staging_area = StagingArea::generate(Mode::Source, workspace.root.clone(), None);
 
-        let plugin = PluginDef {
-            config_files: vec![PathBuf::from("test_config.yml")],
-            ..Default::default()
-        };
+            Self {
+                temp_dir,
+                temp_dir_path,
+                workspace,
+                settings,
+                issue_cache,
+                staging_area,
+            }
+        }
 
-        let invocation_plan = InvocationPlan {
-            target_root: temp_dir_path.clone(),
-            workspace_entries: Arc::new(vec![WorkspaceEntry {
-                path: path.clone(),
-                content_modified: SystemTime::now(),
-                language_name: None,
-                contents_size: 0,
-                kind: WorkspaceEntryKind::File,
-            }]),
-            invocation_id: "".to_string(),
-            verb: ExecutionVerb::Check,
-            workspace: Workspace::new().unwrap(),
-            settings: Default::default(),
-            runtime: None,
-            runtime_version: None,
-            plugin_name: "test".to_string(),
-            plugin: plugin.clone(),
-            tool: Box::new(NullTool {
-                plugin_name: "test".to_string(),
-                parent_directory: temp_dir_path.join(".qlty/tools/test"),
-                plugin: plugin.clone(),
-            }),
-            driver_name: "test".to_string(),
-            driver,
-            plugin_configs: vec![PluginConfigFile {
-                path: temp_dir_config_file,
-                contents: "Sample config file".to_string(),
-            }],
-            targets: vec![Target {
-                path: path,
-                content_modified: SystemTime::now(),
-                language_name: None,
-                contents_size: 0,
-                kind: WorkspaceEntryKind::File,
-            }],
-            invocation_directory: staging_area.destination_directory.clone(),
-            invocation_directory_def: InvocationDirectoryDef::default(),
-        };
+        fn create_config_file(&self, name: &str, content: &str) -> PathBuf {
+            let config_file = self.temp_dir_path.join(name);
+            std::fs::write(&config_file, content).unwrap();
+            config_file
+        }
+    }
 
+    struct InvocationPlanBuilder {
+        plugin_name: String,
+        plugin: PluginDef,
+        driver: driver::Driver,
+        config_files: Vec<PluginConfigFile>,
+    }
+
+    impl InvocationPlanBuilder {
+        fn new(plugin_name: &str) -> Self {
+            Self {
+                plugin_name: plugin_name.to_string(),
+                plugin: PluginDef::default(),
+                driver: build_driver(vec![], vec![]),
+                config_files: vec![],
+            }
+        }
+
+        fn with_config_files(mut self, config_files: Vec<PathBuf>) -> Self {
+            self.plugin.config_files = config_files;
+            self
+        }
+
+        fn with_affects_cache(mut self, affects_cache: Vec<String>) -> Self {
+            self.plugin.affects_cache = affects_cache;
+            self
+        }
+
+        fn with_exported_config_paths(mut self, exported_config_paths: Vec<PathBuf>) -> Self {
+            self.plugin.exported_config_paths = exported_config_paths;
+            self
+        }
+
+        fn with_copy_configs_into_tool_install(mut self) -> Self {
+            self.driver.copy_configs_into_tool_install = true;
+            self
+        }
+
+        fn with_plugin_config_file(mut self, path: PathBuf, contents: &str) -> Self {
+            self.config_files.push(PluginConfigFile {
+                path,
+                contents: contents.to_string(),
+            });
+            self
+        }
+
+        fn build(self, ctx: &TestContext) -> InvocationPlan {
+            let path = PathBuf::from(ctx.temp_dir_path.join("lib/hello.rb"));
+
+            InvocationPlan {
+                target_root: ctx.temp_dir_path.clone(),
+                workspace_entries: Arc::new(vec![WorkspaceEntry {
+                    path: path.clone(),
+                    content_modified: SystemTime::now(),
+                    language_name: None,
+                    contents_size: 0,
+                    kind: WorkspaceEntryKind::File,
+                }]),
+                invocation_id: "".to_string(),
+                verb: ExecutionVerb::Check,
+                workspace: Workspace::new().unwrap(),
+                settings: Default::default(),
+                runtime: None,
+                runtime_version: None,
+                plugin_name: self.plugin_name.clone(),
+                plugin: self.plugin.clone(),
+                tool: Box::new(NullTool {
+                    plugin_name: self.plugin_name.clone(),
+                    parent_directory: ctx
+                        .temp_dir_path
+                        .join(format!(".qlty/tools/{}", self.plugin_name)),
+                    plugin: self.plugin.clone(),
+                }),
+                driver_name: self.plugin_name.clone(),
+                driver: self.driver,
+                plugin_configs: self.config_files,
+                targets: vec![Target {
+                    path,
+                    content_modified: SystemTime::now(),
+                    language_name: None,
+                    contents_size: 0,
+                    kind: WorkspaceEntryKind::File,
+                }],
+                invocation_directory: ctx.staging_area.destination_directory.clone(),
+                invocation_directory_def: InvocationDirectoryDef::default(),
+            }
+        }
+    }
+
+    fn build_plan_with_invocations_and_context(
+        ctx: TestContext,
+        invocations: Vec<InvocationPlan>,
+    ) -> (TempDir, Plan) {
         let plan = Plan {
             verb: ExecutionVerb::Check,
             target_mode: TargetMode::All,
-            settings: settings.clone(),
-            workspace: workspace.clone(),
+            settings: ctx.settings.clone(),
+            workspace: ctx.workspace.clone(),
             config: QltyConfig::default(),
-            issue_cache,
+            issue_cache: ctx.issue_cache,
             hits: vec![],
-            invocations: vec![invocation_plan],
+            invocations,
             jobs: 2,
             transformers: vec![],
-            staging_area,
-            fail_level: settings.fail_level,
+            staging_area: ctx.staging_area,
+            fail_level: ctx.settings.fail_level,
         };
 
-        (temp_dir, plan)
+        (ctx.temp_dir, plan)
     }
 
-    fn build_executor(plan: Option<&Plan>, temp_dir: Option<TempDir>) -> (TempDir, Executor) {
-        if plan.is_some() && temp_dir.is_some() {
-            (temp_dir.unwrap(), Executor::new(plan.unwrap()))
-        } else {
-            let (temp_dir, plan) = build_plan();
-            (temp_dir, Executor::new(&plan))
-        }
+    fn build_plan_with_invocations(invocations: Vec<InvocationPlan>) -> (TempDir, Plan) {
+        let ctx = TestContext::new();
+        build_plan_with_invocations_and_context(ctx, invocations)
+    }
+
+    fn build_plan() -> (TempDir, Plan) {
+        let ctx = TestContext::new();
+        let config_file = ctx.create_config_file("test_config.yml", "Sample config file");
+
+        let invocation = InvocationPlanBuilder::new("test")
+            .with_config_files(vec![PathBuf::from("test_config.yml")])
+            .with_copy_configs_into_tool_install()
+            .with_plugin_config_file(config_file.clone(), "Sample config file")
+            .build(&ctx);
+
+        build_plan_with_invocations_and_context(ctx, vec![invocation])
+    }
+
+    fn build_executor() -> (TempDir, Executor) {
+        let (temp_dir, plan) = build_plan();
+        (temp_dir, Executor::new(&plan))
     }
 
     #[test]
     fn test_copy_tools_to_install_directory_works() {
-        let (_temp_dir, executor) = build_executor(None, None);
+        let (_temp_dir, executor) = build_executor();
 
         let tool_directory = PathBuf::from(executor.plan.invocations[0].tool.directory());
         create_dir_all(&tool_directory).ok();
@@ -960,7 +1043,7 @@ mod tests {
 
     #[test]
     fn test_collect_config_paths_method() {
-        let (_temp_dir, executor) = build_executor(None, None);
+        let (_temp_dir, executor) = build_executor();
 
         let config_paths = executor.collect_config_paths();
 
@@ -970,35 +1053,34 @@ mod tests {
 
     #[test]
     fn test_collect_affects_cache_paths_method() {
-        let (temp_dir, _plan) = build_plan();
+        let ctx = TestContext::new();
+        let invocation = InvocationPlanBuilder::new("test")
+            .with_affects_cache(vec!["package.json".to_string(), "yarn.lock".to_string()])
+            .build(&ctx);
 
-        // Create a plan with affects_cache
-        let mut modified_plan = build_plan().1;
-        modified_plan.invocations[0].plugin.affects_cache =
-            vec!["package.json".to_string(), "yarn.lock".to_string()];
-
-        let executor = Executor::new(&modified_plan);
+        let (temp_dir, plan) = build_plan_with_invocations(vec![invocation]);
+        let executor = Executor::new(&plan);
         let cache_paths = executor.collect_affects_cache_paths();
 
         assert_eq!(cache_paths.len(), 2);
         assert!(cache_paths.contains(&PathBuf::from("package.json")));
         assert!(cache_paths.contains(&PathBuf::from("yarn.lock")));
 
-        drop(temp_dir); // Keep temp_dir alive
+        drop(temp_dir);
     }
 
     #[test]
     fn test_collect_exported_config_paths_method() {
-        let (temp_dir, _plan) = build_plan();
+        let ctx = TestContext::new();
+        let invocation = InvocationPlanBuilder::new("test")
+            .with_exported_config_paths(vec![
+                PathBuf::from("exported-eslint.config.js"),
+                PathBuf::from("exported-prettier.config.js"),
+            ])
+            .build(&ctx);
 
-        // Create a plan with exported config paths
-        let mut modified_plan = build_plan().1;
-        modified_plan.invocations[0].plugin.exported_config_paths = vec![
-            PathBuf::from("exported-eslint.config.js"),
-            PathBuf::from("exported-prettier.config.js"),
-        ];
-
-        let executor = Executor::new(&modified_plan);
+        let (temp_dir, plan) = build_plan_with_invocations(vec![invocation]);
+        let executor = Executor::new(&plan);
         let exported_paths = executor.collect_exported_config_paths();
 
         assert_eq!(exported_paths.len(), 2);
@@ -1010,7 +1092,7 @@ mod tests {
 
     #[test]
     fn test_collect_config_file_names_method() {
-        let (_temp_dir, executor) = build_executor(None, None);
+        let (_temp_dir, executor) = build_executor();
 
         let config_names = executor.collect_config_file_names();
 
@@ -1020,167 +1102,61 @@ mod tests {
 
     #[test]
     fn test_collect_methods_with_multiple_invocations() {
-        let (temp_dir, _repo) = sample_repo();
-        let temp_dir_path = temp_dir.path().to_path_buf();
-        let workspace = Workspace {
-            root: temp_dir_path.clone(),
-        };
+        let ctx = TestContext::new();
+        ctx.create_config_file("eslint.config.js", "eslint config");
+        ctx.create_config_file("prettier.config.js", "prettier config");
 
-        // Create multiple config files
-        let config_file1 = temp_dir_path.join("eslint.config.js");
-        let config_file2 = temp_dir_path.join("prettier.config.js");
-        std::fs::write(&config_file1, "eslint config").unwrap();
-        std::fs::write(&config_file2, "prettier config").unwrap();
+        let invocation1 = InvocationPlanBuilder::new("eslint")
+            .with_config_files(vec![PathBuf::from("eslint.config.js")])
+            .with_affects_cache(vec!["package.json".to_string()])
+            .with_exported_config_paths(vec![PathBuf::from("shared-config.json")])
+            .build(&ctx);
 
-        let mut settings = Settings::default();
-        settings.progress = false; // Disable progress bar for tests
-        let cache = Planner::build_cache(&workspace, &settings).unwrap();
-        let issue_cache = IssueCache::new(cache);
-        let staging_area = StagingArea::generate(Mode::Source, workspace.root.clone(), None);
-
-        // Create two invocations with different plugins
-        let plugin1 = PluginDef {
-            config_files: vec![PathBuf::from("eslint.config.js")],
-            affects_cache: vec!["package.json".to_string()],
-            exported_config_paths: vec![PathBuf::from("shared-config.json")],
-            ..Default::default()
-        };
-
-        let plugin2 = PluginDef {
-            config_files: vec![PathBuf::from("prettier.config.js")],
-            affects_cache: vec!["yarn.lock".to_string()],
-            exported_config_paths: vec![
-                PathBuf::from("shared-config.json"), // Duplicate for dedup testing
+        let invocation2 = InvocationPlanBuilder::new("prettier")
+            .with_config_files(vec![PathBuf::from("prettier.config.js")])
+            .with_affects_cache(vec!["yarn.lock".to_string()])
+            .with_exported_config_paths(vec![
+                PathBuf::from("shared-config.json"),
                 PathBuf::from("unique-config.json"),
-            ],
-            ..Default::default()
-        };
+            ])
+            .build(&ctx);
 
-        let invocation1 = InvocationPlan {
-            target_root: temp_dir_path.clone(),
-            workspace_entries: Arc::new(vec![]),
-            invocation_id: "test1".to_string(),
-            verb: ExecutionVerb::Check,
-            workspace: Workspace::new().unwrap(),
-            settings: Default::default(),
-            runtime: None,
-            runtime_version: None,
-            plugin_name: "eslint".to_string(),
-            plugin: plugin1,
-            tool: Box::new(NullTool {
-                plugin_name: "eslint".to_string(),
-                parent_directory: temp_dir_path.join(".qlty/tools/eslint"),
-                plugin: PluginDef::default(),
-            }),
-            driver_name: "eslint".to_string(),
-            driver: build_driver(vec![], vec![]),
-            plugin_configs: vec![],
-            targets: vec![],
-            invocation_directory: staging_area.destination_directory.clone(),
-            invocation_directory_def: InvocationDirectoryDef::default(),
-        };
-
-        let invocation2 = InvocationPlan {
-            target_root: temp_dir_path.clone(),
-            workspace_entries: Arc::new(vec![]),
-            invocation_id: "test2".to_string(),
-            verb: ExecutionVerb::Check,
-            workspace: Workspace::new().unwrap(),
-            settings: Default::default(),
-            runtime: None,
-            runtime_version: None,
-            plugin_name: "prettier".to_string(),
-            plugin: plugin2,
-            tool: Box::new(NullTool {
-                plugin_name: "prettier".to_string(),
-                parent_directory: temp_dir_path.join(".qlty/tools/prettier"),
-                plugin: PluginDef::default(),
-            }),
-            driver_name: "prettier".to_string(),
-            driver: build_driver(vec![], vec![]),
-            plugin_configs: vec![],
-            targets: vec![],
-            invocation_directory: staging_area.destination_directory.clone(),
-            invocation_directory_def: InvocationDirectoryDef::default(),
-        };
-
-        let plan = Plan {
-            verb: ExecutionVerb::Check,
-            target_mode: TargetMode::All,
-            settings: settings.clone(),
-            workspace: workspace.clone(),
-            config: QltyConfig::default(),
-            issue_cache,
-            hits: vec![],
-            invocations: vec![invocation1, invocation2],
-            jobs: 2,
-            transformers: vec![],
-            staging_area,
-            fail_level: settings.fail_level,
-        };
-
+        let (temp_dir, plan) = build_plan_with_invocations(vec![invocation1, invocation2]);
         let executor = Executor::new(&plan);
 
-        // Test collect_config_paths
         let config_paths = executor.collect_config_paths();
         assert_eq!(config_paths.len(), 2);
         assert!(config_paths.contains(&PathBuf::from("eslint.config.js")));
         assert!(config_paths.contains(&PathBuf::from("prettier.config.js")));
 
-        // Test collect_affects_cache_paths
         let cache_paths = executor.collect_affects_cache_paths();
         assert_eq!(cache_paths.len(), 2);
         assert!(cache_paths.contains(&PathBuf::from("package.json")));
         assert!(cache_paths.contains(&PathBuf::from("yarn.lock")));
 
-        // Test collect_exported_config_paths (should deduplicate)
         let exported_paths = executor.collect_exported_config_paths();
-        assert_eq!(exported_paths.len(), 2); // Should be deduplicated
+        assert_eq!(exported_paths.len(), 2);
         assert!(exported_paths.contains(&PathBuf::from("shared-config.json")));
         assert!(exported_paths.contains(&PathBuf::from("unique-config.json")));
 
-        // Test collect_config_file_names
         let config_names = executor.collect_config_file_names();
         assert_eq!(config_names.len(), 2);
         assert!(config_names.contains(&"eslint.config.js".to_string()));
         assert!(config_names.contains(&"prettier.config.js".to_string()));
+
+        drop(temp_dir);
     }
 
     #[test]
     fn test_collect_methods_with_empty_invocations() {
-        let (temp_dir, _repo) = sample_repo();
-        let temp_dir_path = temp_dir.path().to_path_buf();
-        let workspace = Workspace {
-            root: temp_dir_path.clone(),
-        };
-
-        let mut settings = Settings::default();
-        settings.progress = false; // Disable progress bar for tests
-        let cache = Planner::build_cache(&workspace, &settings).unwrap();
-        let issue_cache = IssueCache::new(cache);
-        let staging_area = StagingArea::generate(Mode::Source, workspace.root.clone(), None);
-
-        let plan = Plan {
-            verb: ExecutionVerb::Check,
-            target_mode: TargetMode::All,
-            settings: settings.clone(),
-            workspace: workspace.clone(),
-            config: QltyConfig::default(),
-            issue_cache,
-            hits: vec![],
-            invocations: vec![], // Empty invocations
-            jobs: 2,
-            transformers: vec![],
-            staging_area,
-            fail_level: settings.fail_level,
-        };
-
+        let (temp_dir, plan) = build_plan_with_invocations(vec![]);
         let executor = Executor::new(&plan);
 
-        // All collect methods should return empty vectors
         assert!(executor.collect_config_paths().is_empty());
         assert!(executor.collect_affects_cache_paths().is_empty());
         assert!(executor.collect_exported_config_paths().is_empty());
         assert!(executor.collect_config_file_names().is_empty());
+
+        drop(temp_dir);
     }
 }
