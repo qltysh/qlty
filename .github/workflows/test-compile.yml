@@ -45,8 +45,9 @@ jobs:
           fetch-depth: 0
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
         with:
+          toolchain: stable
           targets: ${{ matrix.target }}
 
       - name: Cache Rust
