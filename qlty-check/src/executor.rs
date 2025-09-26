@@ -1,12 +1,14 @@
-mod driver;
+pub mod driver;
 mod invocation_result;
 mod invocation_script;
 pub mod staging_area;
 
-use self::staging_area::{load_config_file_from_qlty_dir, load_config_file_from_repository};
+use self::staging_area::{
+    load_config_file_from_qlty_dir, load_config_file_from_repository, load_config_file_from_source,
+};
 use crate::llm::Fixer;
 use crate::planner::check_filters::CheckFilters;
-use crate::planner::config_files::config_globset;
+use crate::planner::config_files::{ConfigOperationType, ConfigStagingOperation};
 use crate::planner::source_extractor::SourceExtractor;
 use crate::Tool;
 use crate::{
@@ -18,7 +20,6 @@ use crate::{cache::IssuesCacheHit, planner::Plan, results::FormattedFile, Result
 use anyhow::{bail, Context, Result};
 use chrono::Utc;
 pub use driver::Driver;
-use ignore::{DirEntry, WalkBuilder, WalkState};
 pub use invocation_result::{InvocationResult, InvocationStatus};
 pub use invocation_script::{compute_invocation_script, plan_target_list};
 use itertools::Itertools;
@@ -29,7 +30,6 @@ use qlty_types::analysis::v1::{Issue, Message, MessageLevel};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rayon::prelude::*;
-use staging_area::load_config_file_from_source;
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -228,6 +228,7 @@ impl Executor {
         let timer = Instant::now();
         let sub_timer = Instant::now();
 
+        // Stage workspace entries first
         let results = self
             .plan
             .workspace_entry_paths()
@@ -245,223 +246,131 @@ impl Executor {
             sub_timer.elapsed().as_secs_f32()
         );
 
+        // Execute config staging operations from the plan
         let sub_timer = Instant::now();
-        let config_file_names = self
-            .plan
-            .invocations
-            .iter()
-            .flat_map(|invocation| &invocation.plugin.config_files)
-            .map(path_to_string)
-            .collect::<std::collections::HashSet<_>>() // Unique
-            .into_iter()
-            .collect::<Vec<_>>();
-
-        let mut repository_config_files = vec![];
-        let walk_builder = self.plan.workspace.walk_builder();
-
-        let mut config_paths = self
-            .plan
-            .invocations
-            .iter()
-            .flat_map(|invocation| invocation.plugin.config_files.clone())
-            .collect::<Vec<PathBuf>>();
-
-        for invocation in self.plan.invocations.iter() {
-            for affects_cache in &invocation.plugin.affects_cache {
-                config_paths.push(PathBuf::from(affects_cache))
-            }
-        }
-
-        let config_globset = config_globset(&config_paths)?;
-
-        for entry in walk_collect_entries_parallel(&walk_builder) {
-            let file_name = entry.file_name().to_str().unwrap();
-            let path = entry.path().to_str().unwrap();
-
-            if config_globset.is_match(file_name)
-                && !path.contains(
-                    self.plan
-                        .workspace
-                        .library()?
-                        .configs_dir()
-                        .to_str()
-                        .unwrap(),
-                )
-            {
-                repository_config_files.push(entry.path().to_owned());
-            }
-        }
-
-        let exported_config_paths = self
-            .plan
-            .invocations
-            .iter()
-            .flat_map(|invocation| invocation.plugin.exported_config_paths.clone())
-            .unique()
-            .collect_vec();
-
-        debug!(
-            "Walker found {} config and affects cache files in {:.2}s",
-            repository_config_files.len(),
-            sub_timer.elapsed().as_secs_f32()
-        );
-
-        let sub_timer = Instant::now();
-
-        let mut loaded_config_files = vec![];
-
-        // load exported config paths before anything else
-        for config_file in &exported_config_paths {
-            if self.plan.workspace.root != self.plan.staging_area.destination_directory {
-                // for formatters
-                let loaded_config_file = load_config_file_from_source(
-                    config_file,
-                    &self.plan.staging_area.destination_directory,
-                )?;
-
-                if !loaded_config_file.is_empty() {
-                    loaded_config_files.push(loaded_config_file);
-                }
-            }
-
-            // for linters
-            let loaded_config_file =
-                load_config_file_from_source(config_file, &self.plan.workspace.root)?;
-
-            if !loaded_config_file.is_empty() {
-                loaded_config_files.push(loaded_config_file);
-            }
-        }
-
-        self.check_and_copy_configs_into_tool_install(&mut loaded_config_files)?;
-        self.plan_plugins_fetch(&mut loaded_config_files)?;
-
-        for config_file in &repository_config_files {
-            if let Err(err) = load_config_file_from_repository(
-                config_file,
-                &self.plan.workspace,
-                &self.plan.staging_area.destination_directory,
-            ) {
-                error!("Failed to load config file from repository: {:?}", err);
-            }
-        }
-
-        for config_file in &config_file_names {
-            if self.plan.workspace.root != self.plan.staging_area.destination_directory {
-                // for formatters
-                let loaded_config_file = load_config_file_from_qlty_dir(
-                    config_file,
-                    &self.plan.workspace,
-                    &self.plan.staging_area.destination_directory,
-                )?;
-
-                if !loaded_config_file.is_empty() {
-                    loaded_config_files.push(loaded_config_file);
-                }
-            }
-
-            // for linters
-            let loaded_config_file = load_config_file_from_qlty_dir(
-                config_file,
-                &self.plan.workspace,
-                &self.plan.workspace.root,
-            )?;
-
-            if !loaded_config_file.is_empty() {
-                loaded_config_files.push(loaded_config_file);
-            }
-        }
+        let loaded_config_files = self.execute_config_staging_operations()?;
 
         debug!(
             "Staged {} config files in {:.2}s",
-            repository_config_files.len(),
+            loaded_config_files.len(),
             sub_timer.elapsed().as_secs_f32()
         );
 
         info!(
             "Staged {} workspace entries and {} config files in {:.2}s",
             self.plan.workspace_entry_paths().len(),
-            repository_config_files.len(),
+            loaded_config_files.len(),
             timer.elapsed().as_secs_f32()
         );
 
         Ok(loaded_config_files)
     }
 
-    fn plan_plugins_fetch(&self, loaded_config_files: &mut Vec<String>) -> Result<()> {
-        let mut plugin_fetches = HashMap::new();
+    fn execute_config_staging_operations(&self) -> Result<Vec<String>> {
+        let mut loaded_config_files = Vec::new();
 
-        for invocation in self.plan.invocations.iter() {
-            if !invocation.plugin.fetch.is_empty() {
-                plugin_fetches.insert(&invocation.plugin_name, &invocation.plugin.fetch);
-            }
-        }
-
-        let directories = [
-            self.plan.workspace.root.clone(),
-            self.plan.staging_area.destination_directory.clone(),
-        ];
-
-        for (plugin_name, fetches) in plugin_fetches {
-            for fetch in fetches {
-                fetch
-                    .download_file_to(&directories)
-                    .with_context(|| format!("Failed to fetch file for plugin: {}", plugin_name))?;
-
-                loaded_config_files.push(fetch.path.clone());
-            }
-        }
-
-        Ok(())
-    }
-
-    fn check_and_copy_configs_into_tool_install(
-        &self,
-        loaded_config_files: &mut Vec<String>,
-    ) -> Result<()> {
-        for invocation in self.plan.invocations.iter() {
-            if invocation.driver.copy_configs_into_tool_install {
-                for config_file in &invocation.plugin_configs {
-                    if let Some(config_file) = Self::copy_configs_into_tool_install(
-                        &config_file.path,
-                        &PathBuf::from(invocation.tool.directory()),
-                    )? {
-                        loaded_config_files.push(path_to_string(config_file));
-                    }
+        for operation in &self.plan.config_staging_operations {
+            match self.execute_single_config_operation(operation) {
+                Ok(Some(loaded_file)) => loaded_config_files.push(loaded_file),
+                Ok(None) => {} // Operation completed but no file to track for cleanup
+                Err(err) => {
+                    error!(
+                        "Failed to execute config operation {:?}: {:?}",
+                        operation, err
+                    );
+                    // Continue with other operations rather than failing entirely
                 }
             }
         }
 
-        Ok(())
+        Ok(loaded_config_files)
     }
 
-    fn copy_configs_into_tool_install(
-        file_path: &PathBuf,
-        tool_dir: &Path,
-    ) -> Result<Option<PathBuf>> {
-        // in case tool directory does not exist
-        // happens for tools without downloads
-        if !tool_dir.exists() {
-            std::fs::create_dir_all(tool_dir).with_context(|| {
-                format!("Failed to create tool directory {}", tool_dir.display())
-            })?;
+    fn execute_single_config_operation(
+        &self,
+        operation: &ConfigStagingOperation,
+    ) -> Result<Option<String>> {
+        match operation.operation_type {
+            ConfigOperationType::CopyToStagingArea => {
+                load_config_file_from_repository(
+                    &operation.source_path,
+                    &self.plan.workspace,
+                    &operation.destination_path.parent().unwrap(),
+                )?;
+                Ok(Some(path_to_string(&operation.destination_path)))
+            }
+            ConfigOperationType::CopyToWorkspaceRoot => {
+                let loaded_file = load_config_file_from_source(
+                    &operation.source_path,
+                    &operation.destination_path.parent().unwrap(),
+                )?;
+                Ok(if loaded_file.is_empty() {
+                    None
+                } else {
+                    Some(loaded_file)
+                })
+            }
+            ConfigOperationType::LoadFromQltyDir => {
+                let config_file_name = operation.source_path.to_string_lossy().to_string();
+                let loaded_file = load_config_file_from_qlty_dir(
+                    &config_file_name,
+                    &self.plan.workspace,
+                    &operation.destination_path.parent().unwrap(),
+                )?;
+                Ok(if loaded_file.is_empty() {
+                    None
+                } else {
+                    Some(loaded_file)
+                })
+            }
+            ConfigOperationType::CopyToToolInstall => {
+                let tool_dir = &operation.destination_path.parent().unwrap();
+                if !tool_dir.exists() {
+                    std::fs::create_dir_all(tool_dir).with_context(|| {
+                        format!("Failed to create tool directory {}", tool_dir.display())
+                    })?;
+                }
+
+                debug!(
+                    "Copying {} to {}",
+                    operation.source_path.display(),
+                    operation.destination_path.display()
+                );
+                std::fs::copy(&operation.source_path, &operation.destination_path).with_context(
+                    || {
+                        format!(
+                            "Failed to copy config file {} to {}",
+                            operation.source_path.display(),
+                            operation.destination_path.display()
+                        )
+                    },
+                )?;
+
+                Ok(Some(path_to_string(&operation.destination_path)))
+            }
+            ConfigOperationType::FetchFile => {
+                // Find the fetch configuration for this file
+                for invocation in &self.plan.invocations {
+                    for fetch in &invocation.plugin.fetch {
+                        if fetch.path == operation.source_path.to_string_lossy() {
+                            let directories =
+                                [operation.destination_path.parent().unwrap().to_path_buf()];
+                            fetch.download_file_to(&directories).with_context(|| {
+                                format!(
+                                    "Failed to fetch file for plugin: {}",
+                                    invocation.plugin_name
+                                )
+                            })?;
+                            return Ok(Some(path_to_string(&operation.destination_path)));
+                        }
+                    }
+                }
+                bail!(
+                    "Fetch configuration not found for path: {:?}",
+                    operation.source_path
+                );
+            }
         }
-
-        // This file_path comes from Walkbuilder, so it should be valid/safe to unwrap
-        let file_name = file_path.file_name().unwrap().to_str().unwrap();
-        let target = tool_dir.join(file_name);
-        let result = std::fs::copy(file_path, &target);
-
-        debug!("Copying {} to {}", file_path.display(), target.display());
-        result.with_context(|| {
-            format!(
-                "Failed to copy config file {} to {}",
-                file_path.display(),
-                target.display()
-            )
-        })?;
-
-        Ok(Some(target))
     }
 
     fn run_invocation_pools(
@@ -772,22 +681,4 @@ fn run_invocation(
     }
 
     Ok(result)
-}
-
-fn walk_collect_entries_parallel(builder: &WalkBuilder) -> Vec<DirEntry> {
-    let dents = Arc::new(Mutex::new(vec![]));
-
-    builder.build_parallel().run(|| {
-        let dents = dents.clone();
-
-        Box::new(move |result| {
-            if let Ok(dent) = result {
-                dents.lock().unwrap().push(dent);
-            }
-            WalkState::Continue
-        })
-    });
-
-    let dents = dents.lock().unwrap();
-    dents.to_vec()
 }

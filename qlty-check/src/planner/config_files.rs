@@ -1,6 +1,7 @@
 use super::{config::enabled_plugins, Planner};
 use anyhow::{Context, Result};
 use globset::{GlobBuilder, GlobSet, GlobSetBuilder};
+use itertools::Itertools;
 use serde::Serialize;
 use std::{
     collections::HashMap,
@@ -13,6 +14,27 @@ use tracing::{debug, error};
 pub struct PluginConfigFile {
     pub path: PathBuf,
     pub contents: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ConfigStagingOperation {
+    pub source_path: PathBuf,
+    pub destination_path: PathBuf,
+    pub operation_type: ConfigOperationType,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub enum ConfigOperationType {
+    /// Copy config from repository to staging area
+    CopyToStagingArea,
+    /// Copy config from repository to workspace root
+    CopyToWorkspaceRoot,
+    /// Load config from qlty directory to destination
+    LoadFromQltyDir,
+    /// Copy config into tool install directory
+    CopyToToolInstall,
+    /// Download and place fetched file
+    FetchFile,
 }
 
 impl Ord for PluginConfigFile {
@@ -84,9 +106,15 @@ pub fn plugin_configs(planner: &Planner) -> Result<HashMap<String, Vec<PluginCon
     let mut configs: HashMap<String, Vec<PluginConfigFile>> = HashMap::new();
 
     for active_plugin in &plugins {
+        // Collect config_files and affects_cache paths for globset matching
+        let mut config_paths = active_plugin.plugin.config_files.clone();
+        for affects_cache in &active_plugin.plugin.affects_cache {
+            config_paths.push(PathBuf::from(affects_cache));
+        }
+
         plugins_configs.push(PluginConfig {
             plugin_name: active_plugin.name.clone(),
-            config_globset: config_globset(&active_plugin.plugin.config_files)?,
+            config_globset: config_globset(&config_paths)?,
         });
 
         for exported_config_path in &active_plugin.plugin.exported_config_paths {
@@ -147,4 +175,559 @@ pub fn plugin_configs(planner: &Planner) -> Result<HashMap<String, Vec<PluginCon
     }
 
     Ok(configs)
+}
+
+pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<ConfigStagingOperation>> {
+    let mut operations = Vec::new();
+    let plugins = enabled_plugins(planner)?;
+
+    // Collect all config paths that need to be found in the repository
+    let mut all_config_paths = Vec::new();
+    let mut plugin_name_map = HashMap::new();
+
+    for active_plugin in &plugins {
+        let mut config_paths = active_plugin.plugin.config_files.clone();
+        for affects_cache in &active_plugin.plugin.affects_cache {
+            config_paths.push(PathBuf::from(affects_cache));
+        }
+
+        for config_path in &config_paths {
+            all_config_paths.push(config_path.clone());
+            plugin_name_map.insert(config_path.clone(), active_plugin.name.clone());
+        }
+    }
+
+    let config_globset = config_globset(&all_config_paths)?;
+    let exclude_globset = exclude_globset(&planner.config.exclude_patterns)?;
+
+    // Find all matching config files in repository
+    let mut repository_config_files = Vec::new();
+    for entry in planner.workspace.walker() {
+        let entry = entry?;
+        if let Some(os_str) = entry.path().file_name() {
+            let file_name = os_str.to_os_string();
+            if config_globset.is_match(&file_name) && !exclude_globset.is_match(entry.path()) {
+                // Skip files in qlty library configs directory
+                if let Ok(library) = planner.workspace.library() {
+                    if entry.path().starts_with(library.configs_dir()) {
+                        continue;
+                    }
+                }
+                repository_config_files.push(entry.path().to_owned());
+            }
+        }
+    }
+
+    // Add operations for repository config files
+    for config_file in repository_config_files {
+        operations.push(ConfigStagingOperation {
+            source_path: config_file.clone(),
+            destination_path: planner
+                .staging_area
+                .destination_directory
+                .join(config_file.file_name().unwrap()),
+            operation_type: ConfigOperationType::CopyToStagingArea,
+        });
+    }
+
+    // Add operations for exported config paths
+    let exported_config_paths: Vec<_> = plugins
+        .iter()
+        .flat_map(|plugin| &plugin.plugin.exported_config_paths)
+        .unique()
+        .collect();
+
+    for exported_config_path in exported_config_paths {
+        let file_name = exported_config_path.file_name().ok_or(anyhow::anyhow!(
+            "Invalid exported config path: {:?}",
+            exported_config_path
+        ))?;
+
+        // For formatters (staging area != workspace root)
+        if planner.workspace.root != planner.staging_area.destination_directory {
+            operations.push(ConfigStagingOperation {
+                source_path: exported_config_path.clone(),
+                destination_path: planner.staging_area.destination_directory.join(file_name),
+                operation_type: ConfigOperationType::CopyToStagingArea,
+            });
+        }
+
+        // For linters (workspace root)
+        operations.push(ConfigStagingOperation {
+            source_path: exported_config_path.clone(),
+            destination_path: planner.workspace.root.join(file_name),
+            operation_type: ConfigOperationType::CopyToWorkspaceRoot,
+        });
+    }
+
+    // Add operations for qlty config files
+    let config_file_names: Vec<_> = plugins
+        .iter()
+        .flat_map(|plugin| &plugin.plugin.config_files)
+        .map(|path| path.to_string_lossy().to_string())
+        .collect::<std::collections::HashSet<_>>()
+        .into_iter()
+        .collect();
+
+    for config_file_name in config_file_names {
+        // For formatters
+        if planner.workspace.root != planner.staging_area.destination_directory {
+            operations.push(ConfigStagingOperation {
+                source_path: PathBuf::from(&config_file_name), // Will be resolved from qlty dir
+                destination_path: planner
+                    .staging_area
+                    .destination_directory
+                    .join(&config_file_name),
+                operation_type: ConfigOperationType::LoadFromQltyDir,
+            });
+        }
+
+        // For linters
+        operations.push(ConfigStagingOperation {
+            source_path: PathBuf::from(&config_file_name),
+            destination_path: planner.workspace.root.join(&config_file_name),
+            operation_type: ConfigOperationType::LoadFromQltyDir,
+        });
+    }
+
+    // Add operations for plugin fetches
+    for active_plugin in &plugins {
+        if !active_plugin.plugin.fetch.is_empty() {
+            for fetch in &active_plugin.plugin.fetch {
+                // Plugin fetch downloads to both workspace root and staging area
+                operations.push(ConfigStagingOperation {
+                    source_path: PathBuf::from(&fetch.path), // URL/source identifier
+                    destination_path: planner.workspace.root.join(&fetch.path),
+                    operation_type: ConfigOperationType::FetchFile,
+                });
+
+                if planner.workspace.root != planner.staging_area.destination_directory {
+                    operations.push(ConfigStagingOperation {
+                        source_path: PathBuf::from(&fetch.path),
+                        destination_path: planner
+                            .staging_area
+                            .destination_directory
+                            .join(&fetch.path),
+                        operation_type: ConfigOperationType::FetchFile,
+                    });
+                }
+            }
+        }
+    }
+
+    Ok(operations)
+}
+
+pub fn compute_tool_install_config_operations(
+    planner: &Planner,
+    invocations: &[crate::planner::InvocationPlan],
+) -> Result<Vec<ConfigStagingOperation>> {
+    let mut operations = Vec::new();
+    let plugin_configs = plugin_configs(planner)?;
+
+    for invocation in invocations {
+        if invocation.driver.copy_configs_into_tool_install {
+            let plugin_name = &invocation.plugin_name;
+            if let Some(configs) = plugin_configs.get(plugin_name) {
+                for config in configs {
+                    let tool_dir = PathBuf::from(invocation.tool.directory());
+                    let file_name = config
+                        .path
+                        .file_name()
+                        .ok_or(anyhow::anyhow!("Invalid config path: {:?}", config.path))?;
+
+                    operations.push(ConfigStagingOperation {
+                        source_path: config.path.clone(),
+                        destination_path: tool_dir.join(file_name),
+                        operation_type: ConfigOperationType::CopyToToolInstall,
+                    });
+                }
+            }
+        }
+    }
+
+    Ok(operations)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::executor::driver::test::build_driver;
+    use crate::executor::Driver;
+    use crate::planner::target::Target;
+    use crate::planner::{InvocationPlan, Planner};
+    use crate::tool::null_tool::NullTool;
+    use crate::Settings;
+    use qlty_analysis::{WorkspaceEntry, WorkspaceEntryKind};
+    use qlty_config::config::InvocationDirectoryDef;
+    use qlty_config::{QltyConfig, Workspace};
+    use qlty_types::analysis::v1::ExecutionVerb;
+    use std::fs;
+    use std::sync::Arc;
+    use std::time::SystemTime;
+    use tempfile::TempDir;
+
+    fn create_test_planner() -> (Planner, TempDir) {
+        let temp_dir = TempDir::new().unwrap();
+        let workspace = Workspace::for_root(temp_dir.path()).unwrap();
+        let settings = Settings {
+            root: temp_dir.path().to_path_buf(),
+            ..Default::default()
+        };
+        let config = QltyConfig::default();
+
+        let cache = Planner::build_cache(&workspace, &settings).unwrap();
+
+        let planner = Planner {
+            verb: ExecutionVerb::Check,
+            settings,
+            workspace,
+            config,
+            staging_area: crate::executor::staging_area::StagingArea::generate(
+                crate::executor::staging_area::Mode::Source,
+                temp_dir.path().to_path_buf(),
+                None,
+            ),
+            issue_cache: crate::cache::IssueCache::new(cache),
+            target_mode: None,
+            workspace_entry_finder_builder: None,
+            cache_hits: vec![],
+            active_plugins: vec![],
+            plugin_configs: HashMap::new(),
+            invocations: vec![],
+            transformers: vec![],
+            config_staging_operations: vec![],
+        };
+
+        (planner, temp_dir)
+    }
+
+    #[test]
+    fn test_config_globset_with_config_files_only() {
+        let config_files = vec![PathBuf::from(".eslintrc.js"), PathBuf::from("package.json")];
+        let globset = config_globset(&config_files).unwrap();
+
+        assert!(globset.is_match(".eslintrc.js"));
+        assert!(globset.is_match("package.json"));
+        assert!(!globset.is_match("other.txt"));
+    }
+
+    #[test]
+    fn test_config_globset_with_affects_cache() {
+        let config_files = vec![
+            PathBuf::from(".eslintrc.js"),
+            PathBuf::from("package.json"),
+            PathBuf::from("yarn.lock"), // affects_cache file
+        ];
+        let globset = config_globset(&config_files).unwrap();
+
+        assert!(globset.is_match(".eslintrc.js"));
+        assert!(globset.is_match("package.json"));
+        assert!(globset.is_match("yarn.lock"));
+        assert!(!globset.is_match("other.txt"));
+    }
+
+    #[test]
+    fn test_compute_config_staging_operations_empty_plugins() {
+        let (planner, _temp_dir) = create_test_planner();
+        let operations = compute_config_staging_operations(&planner).unwrap();
+        assert!(operations.is_empty());
+    }
+
+    #[test]
+    fn test_compute_config_staging_operations_with_repository_configs() {
+        let (mut planner, temp_dir) = create_test_planner();
+
+        // Create a test config file in the repository
+        fs::write(temp_dir.path().join(".eslintrc.js"), "module.exports = {};").unwrap();
+
+        // Set up the plugin definition with config files
+        let mut eslint_plugin_def = qlty_config::config::PluginDef::default();
+        eslint_plugin_def.config_files = vec![PathBuf::from(".eslintrc.js")];
+
+        let mut plugin_definitions = HashMap::new();
+        plugin_definitions.insert("eslint".to_string(), eslint_plugin_def);
+
+        // Set up the complete config with both enabled plugins and definitions
+        let config = qlty_config::QltyConfig {
+            plugin: vec![qlty_config::config::EnabledPlugin {
+                name: "eslint".to_string(),
+                ..Default::default()
+            }],
+            plugins: qlty_config::config::PluginsConfig {
+                definitions: plugin_definitions,
+                downloads: HashMap::new(),
+                releases: HashMap::new(),
+            },
+            ..Default::default()
+        };
+
+        planner.config = config;
+
+        // Call the actual function being tested
+        let operations = compute_config_staging_operations(&planner).unwrap();
+
+        // Should find the repository config file
+        let staging_ops: Vec<_> = operations
+            .iter()
+            .filter(|op| matches!(op.operation_type, ConfigOperationType::CopyToStagingArea))
+            .collect();
+
+        // Should also have LoadFromQltyDir operations
+        let qlty_ops: Vec<_> = operations
+            .iter()
+            .filter(|op| matches!(op.operation_type, ConfigOperationType::LoadFromQltyDir))
+            .collect();
+
+        // We should have found the .eslintrc.js file in the repository
+        let found_eslintrc = staging_ops
+            .iter()
+            .any(|op| op.source_path.file_name().unwrap().to_str().unwrap() == ".eslintrc.js");
+
+        assert!(found_eslintrc, "Should find .eslintrc.js in repository");
+        assert!(
+            !qlty_ops.is_empty(),
+            "Should have qlty directory operations"
+        );
+    }
+
+    #[test]
+    fn test_compute_tool_install_config_operations_empty_invocations() {
+        let (planner, _temp_dir) = create_test_planner();
+        let operations = compute_tool_install_config_operations(&planner, &[]).unwrap();
+        assert!(operations.is_empty());
+    }
+
+    #[test]
+    fn test_exclude_globset() {
+        let patterns = vec!["node_modules/**".to_string(), "*.tmp".to_string()];
+        let globset = exclude_globset(&patterns).unwrap();
+
+        assert!(globset.is_match(&PathBuf::from("node_modules/package/index.js")));
+        assert!(globset.is_match(&PathBuf::from("test.tmp")));
+        assert!(!globset.is_match(&PathBuf::from("src/main.js")));
+    }
+
+    #[test]
+    fn test_config_globset_invalid_patterns() {
+        // Test error handling for invalid glob patterns
+        let invalid_patterns = vec![PathBuf::from("[invalid-glob")];
+        let result = config_globset(&invalid_patterns);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_exclude_globset_invalid_patterns() {
+        // Test error handling for invalid exclusion patterns
+        let invalid_patterns = vec!["[invalid-glob".to_string()];
+        let result = exclude_globset(&invalid_patterns);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_compute_config_staging_operations_with_exported_configs() {
+        let (mut planner, _temp_dir) = create_test_planner();
+
+        // Set up plugin with exported config paths
+        let mut plugin_def = qlty_config::config::PluginDef::default();
+        plugin_def.exported_config_paths = vec![PathBuf::from("custom.config")];
+
+        let mut plugin_definitions = HashMap::new();
+        plugin_definitions.insert("custom_plugin".to_string(), plugin_def);
+
+        let config = qlty_config::QltyConfig {
+            plugin: vec![qlty_config::config::EnabledPlugin {
+                name: "custom_plugin".to_string(),
+                ..Default::default()
+            }],
+            plugins: qlty_config::config::PluginsConfig {
+                definitions: plugin_definitions,
+                downloads: HashMap::new(),
+                releases: HashMap::new(),
+            },
+            ..Default::default()
+        };
+
+        planner.config = config;
+        let operations = compute_config_staging_operations(&planner).unwrap();
+
+        // Should create operations for exported config paths
+        let workspace_ops: Vec<_> = operations
+            .iter()
+            .filter(|op| matches!(op.operation_type, ConfigOperationType::CopyToWorkspaceRoot))
+            .collect();
+
+        assert!(
+            !workspace_ops.is_empty(),
+            "Should have workspace copy operations for exported configs"
+        );
+    }
+
+    #[test]
+    fn test_compute_config_staging_operations_mixed_config_types() {
+        let (mut planner, temp_dir) = create_test_planner();
+
+        // Create files in repository
+        fs::write(temp_dir.path().join(".eslintrc.js"), "module.exports = {};").unwrap();
+        fs::write(temp_dir.path().join("package-lock.json"), "{}").unwrap();
+
+        // Set up plugin with both config_files AND affects_cache
+        let mut plugin_def = qlty_config::config::PluginDef::default();
+        plugin_def.config_files = vec![PathBuf::from(".eslintrc.js")];
+        plugin_def.affects_cache = vec!["package-lock.json".to_string()];
+
+        let mut plugin_definitions = HashMap::new();
+        plugin_definitions.insert("eslint".to_string(), plugin_def);
+
+        let config = qlty_config::QltyConfig {
+            plugin: vec![qlty_config::config::EnabledPlugin {
+                name: "eslint".to_string(),
+                ..Default::default()
+            }],
+            plugins: qlty_config::config::PluginsConfig {
+                definitions: plugin_definitions,
+                downloads: HashMap::new(),
+                releases: HashMap::new(),
+            },
+            ..Default::default()
+        };
+
+        planner.config = config;
+        let operations = compute_config_staging_operations(&planner).unwrap();
+
+        let staging_ops: Vec<_> = operations
+            .iter()
+            .filter(|op| matches!(op.operation_type, ConfigOperationType::CopyToStagingArea))
+            .collect();
+
+        // Should find both config files AND affects_cache files
+        let found_files: Vec<_> = staging_ops
+            .iter()
+            .map(|op| op.source_path.file_name().unwrap().to_str().unwrap())
+            .collect();
+
+        assert!(
+            found_files.contains(&".eslintrc.js"),
+            "Should find config file"
+        );
+        assert!(
+            found_files.contains(&"package-lock.json"),
+            "Should find affects_cache file"
+        );
+    }
+
+    #[test]
+    fn test_compute_tool_install_config_operations_with_copy_enabled() {
+        let (mut planner, temp_dir) = create_test_planner();
+
+        // Create actual config files in the workspace directory where they'll be discovered
+        let config_file_path = temp_dir.path().join("test_config.yml");
+        fs::write(&config_file_path, "test: config").unwrap();
+
+        // Enable the test plugin in the planner config so it gets discovered
+        planner.config.plugins.definitions.insert(
+            "test".to_string(),
+            qlty_config::config::PluginDef {
+                config_files: vec![PathBuf::from("test_config.yml")],
+                ..Default::default()
+            },
+        );
+
+        // Also add the plugin to the enabled plugins list
+        planner
+            .config
+            .plugin
+            .push(qlty_config::config::EnabledPlugin {
+                name: "test".to_string(),
+                ..Default::default()
+            });
+
+        // Create a mock invocation using NullTool (like the existing test)
+
+        let plugin = qlty_config::config::PluginDef {
+            config_files: vec![PathBuf::from("test_config.yml")],
+            ..Default::default()
+        };
+
+        let tool_dir = temp_dir.path().join(".qlty/tools/test");
+        let mut driver = build_driver(vec![], vec![]);
+        driver.copy_configs_into_tool_install = true; // Key setting!
+
+        let mock_file_path = temp_dir.path().join("lib/hello.rb");
+        let invocation = InvocationPlan {
+            invocation_id: "test".to_string(),
+            verb: ExecutionVerb::Check,
+            settings: Settings::default(),
+            workspace: Workspace::new().unwrap(),
+            runtime: None,
+            runtime_version: None,
+            plugin_name: "test".to_string(),
+            plugin: plugin.clone(),
+            tool: Box::new(NullTool {
+                plugin_name: "test".to_string(),
+                parent_directory: tool_dir.clone(),
+                plugin: plugin.clone(),
+            }),
+            driver_name: "test".to_string(),
+            driver: Driver::from(driver),
+            plugin_configs: vec![], // Not used by the function we're testing
+            target_root: temp_dir.path().to_path_buf(),
+            workspace_entries: Arc::new(vec![WorkspaceEntry {
+                path: mock_file_path.clone(),
+                content_modified: SystemTime::now(),
+                language_name: None,
+                contents_size: 0,
+                kind: WorkspaceEntryKind::File,
+            }]),
+            targets: vec![Target {
+                path: mock_file_path,
+                content_modified: SystemTime::now(),
+                language_name: None,
+                contents_size: 0,
+                kind: WorkspaceEntryKind::File,
+            }],
+            invocation_directory: temp_dir.path().to_path_buf(),
+            invocation_directory_def: InvocationDirectoryDef::default(),
+        };
+
+        let operations = compute_tool_install_config_operations(&planner, &[invocation]).unwrap();
+
+        // Should create tool install operations for the config file
+        let tool_install_ops: Vec<_> = operations
+            .iter()
+            .filter(|op| matches!(op.operation_type, ConfigOperationType::CopyToToolInstall))
+            .collect();
+
+        assert!(
+            !tool_install_ops.is_empty(),
+            "Should have tool install operations when copy_configs_into_tool_install=true"
+        );
+        assert_eq!(
+            tool_install_ops.len(),
+            1,
+            "Should have one operation for the config file"
+        );
+
+        let op = &tool_install_ops[0];
+        assert_eq!(
+            op.source_path, config_file_path,
+            "Should copy from the config file"
+        );
+        assert!(
+            op.destination_path
+                .to_string_lossy()
+                .contains("test_config.yml"),
+            "Should copy config file to tool directory"
+        );
+        assert!(
+            op.destination_path
+                .to_string_lossy()
+                .contains(".qlty/tools/test"),
+            "Should copy to tool installation directory"
+        );
+        assert!(
+            matches!(op.operation_type, ConfigOperationType::CopyToToolInstall),
+            "Should be CopyToToolInstall operation"
+        );
+    }
 }
