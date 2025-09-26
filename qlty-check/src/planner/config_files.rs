@@ -1,4 +1,4 @@
-use super::{config::enabled_plugins, Planner};
+use super::{config::enabled_plugins, ActivePlugin, Planner};
 use anyhow::{Context, Result};
 use globset::{GlobBuilder, GlobSet, GlobSetBuilder};
 use itertools::Itertools;
@@ -177,71 +177,87 @@ pub fn plugin_configs(planner: &Planner) -> Result<HashMap<String, Vec<PluginCon
 }
 
 pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<ConfigOperation>> {
-    let mut operations = Vec::new();
     let plugins = enabled_plugins(planner)?;
+    let all_config_paths = collect_all_config_paths(&plugins);
 
-    // Collect all config paths that need to be found in the repository
-    let mut all_config_paths = Vec::new();
+    let mut operations = Vec::new();
+    operations.extend(repository_config_operations(planner, &all_config_paths)?);
+    operations.extend(exported_config_operations(planner, &plugins)?);
+    operations.extend(qlty_config_operations(planner, &plugins)?);
+    operations.extend(fetch_operations(planner, &plugins));
 
-    for active_plugin in &plugins {
-        let mut config_paths = active_plugin.plugin.config_files.clone();
+    Ok(operations)
+}
+
+fn collect_all_config_paths(plugins: &[ActivePlugin]) -> Vec<PathBuf> {
+    let mut paths = Vec::new();
+
+    for active_plugin in plugins {
+        paths.extend(active_plugin.plugin.config_files.clone());
         for affects_cache in &active_plugin.plugin.affects_cache {
-            config_paths.push(PathBuf::from(affects_cache));
-        }
-
-        for config_path in &config_paths {
-            all_config_paths.push(config_path.clone());
+            paths.push(PathBuf::from(affects_cache));
         }
     }
 
-    let config_globset = config_globset(&all_config_paths)?;
+    paths
+}
+
+fn repository_config_operations(
+    planner: &Planner,
+    all_config_paths: &[PathBuf],
+) -> Result<Vec<ConfigOperation>> {
+    if all_config_paths.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let config_globset = config_globset(&all_config_paths.to_vec())?;
     let exclude_globset = exclude_globset(&planner.config.exclude_patterns)?;
 
-    // Find all matching config files in repository
-    let mut repository_config_files = Vec::new();
+    let mut operations = Vec::new();
     for entry in planner.workspace.walker() {
         let entry = entry?;
         if let Some(os_str) = entry.path().file_name() {
             let file_name = os_str.to_os_string();
             if config_globset.is_match(&file_name) && !exclude_globset.is_match(entry.path()) {
-                // Skip files in qlty library configs directory
                 if let Ok(library) = planner.workspace.library() {
                     if entry.path().starts_with(library.configs_dir()) {
                         continue;
                     }
                 }
-                repository_config_files.push(entry.path().to_owned());
+
+                let destination_path = entry
+                    .path()
+                    .strip_prefix(&planner.workspace.root)
+                    .map(|relative_path| {
+                        planner
+                            .staging_area
+                            .destination_directory
+                            .join(relative_path)
+                    })
+                    .unwrap_or_else(|_| {
+                        planner
+                            .staging_area
+                            .destination_directory
+                            .join(entry.path().file_name().unwrap())
+                    });
+
+                operations.push(ConfigOperation {
+                    source: ConfigSource::File(entry.path().to_path_buf()),
+                    destination: destination_path,
+                    mode: ConfigCopyMode::Symlink,
+                });
             }
         }
     }
 
-    // Add operations for repository config files
-    for config_file in repository_config_files {
-        let destination_path = config_file
-            .strip_prefix(&planner.workspace.root)
-            .map(|relative_path| {
-                planner
-                    .staging_area
-                    .destination_directory
-                    .join(relative_path)
-            })
-            .unwrap_or_else(|_| {
-                planner
-                    .staging_area
-                    .destination_directory
-                    .join(config_file.file_name().unwrap())
-            });
+    Ok(operations)
+}
 
-        operations.push(ConfigOperation {
-            source: ConfigSource::File(config_file.clone()),
-            destination: destination_path,
-            mode: ConfigCopyMode::Symlink,
-        });
-    }
-
-    let library = planner.workspace.library().ok();
-
-    // Add operations for exported config paths
+fn exported_config_operations(
+    planner: &Planner,
+    plugins: &[ActivePlugin],
+) -> Result<Vec<ConfigOperation>> {
+    let mut operations = Vec::new();
     let exported_config_paths: Vec<_> = plugins
         .iter()
         .flat_map(|plugin| &plugin.plugin.exported_config_paths)
@@ -254,7 +270,6 @@ pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<Config
             exported_config_path
         ))?;
 
-        // For formatters (staging area != workspace root)
         if planner.workspace.root != planner.staging_area.destination_directory {
             operations.push(ConfigOperation {
                 source: ConfigSource::File(exported_config_path.clone()),
@@ -263,7 +278,6 @@ pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<Config
             });
         }
 
-        // For linters (workspace root)
         operations.push(ConfigOperation {
             source: ConfigSource::File(exported_config_path.clone()),
             destination: planner.workspace.root.join(file_name),
@@ -271,7 +285,16 @@ pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<Config
         });
     }
 
-    // Add operations for qlty config files
+    Ok(operations)
+}
+
+fn qlty_config_operations(
+    planner: &Planner,
+    plugins: &[ActivePlugin],
+) -> Result<Vec<ConfigOperation>> {
+    let mut operations = Vec::new();
+    let library = planner.workspace.library().ok();
+
     let config_file_names: Vec<_> = plugins
         .iter()
         .flat_map(|plugin| &plugin.plugin.config_files)
@@ -287,7 +310,6 @@ pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<Config
             PathBuf::from(&config_file_name)
         };
 
-        // For formatters
         if planner.workspace.root != planner.staging_area.destination_directory {
             operations.push(ConfigOperation {
                 source: ConfigSource::File(source_path.clone()),
@@ -299,7 +321,6 @@ pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<Config
             });
         }
 
-        // For linters
         operations.push(ConfigOperation {
             source: ConfigSource::File(source_path.clone()),
             destination: planner.workspace.root.join(&config_file_name),
@@ -307,29 +328,31 @@ pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<Config
         });
     }
 
-    // Add operations for plugin fetches
-    for active_plugin in &plugins {
-        if !active_plugin.plugin.fetch.is_empty() {
-            for fetch in &active_plugin.plugin.fetch {
-                // Plugin fetch downloads to both workspace root and staging area
+    Ok(operations)
+}
+
+fn fetch_operations(planner: &Planner, plugins: &[ActivePlugin]) -> Vec<ConfigOperation> {
+    let mut operations = Vec::new();
+
+    for active_plugin in plugins {
+        for fetch in &active_plugin.plugin.fetch {
+            operations.push(ConfigOperation {
+                source: ConfigSource::Download(fetch.clone()),
+                destination: planner.workspace.root.join(&fetch.path),
+                mode: ConfigCopyMode::Copy,
+            });
+
+            if planner.workspace.root != planner.staging_area.destination_directory {
                 operations.push(ConfigOperation {
                     source: ConfigSource::Download(fetch.clone()),
-                    destination: planner.workspace.root.join(&fetch.path),
+                    destination: planner.staging_area.destination_directory.join(&fetch.path),
                     mode: ConfigCopyMode::Copy,
                 });
-
-                if planner.workspace.root != planner.staging_area.destination_directory {
-                    operations.push(ConfigOperation {
-                        source: ConfigSource::Download(fetch.clone()),
-                        destination: planner.staging_area.destination_directory.join(&fetch.path),
-                        mode: ConfigCopyMode::Copy,
-                    });
-                }
             }
         }
     }
 
-    Ok(operations)
+    operations
 }
 
 pub fn compute_tool_install_config_operations(
