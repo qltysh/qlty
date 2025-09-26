@@ -183,7 +183,6 @@ pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<Config
 
     // Collect all config paths that need to be found in the repository
     let mut all_config_paths = Vec::new();
-    let mut plugin_name_map = HashMap::new();
 
     for active_plugin in &plugins {
         let mut config_paths = active_plugin.plugin.config_files.clone();
@@ -193,7 +192,6 @@ pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<Config
 
         for config_path in &config_paths {
             all_config_paths.push(config_path.clone());
-            plugin_name_map.insert(config_path.clone(), active_plugin.name.clone());
         }
     }
 
@@ -220,12 +218,24 @@ pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<Config
 
     // Add operations for repository config files
     for config_file in repository_config_files {
+        let destination_path = config_file
+            .strip_prefix(&planner.workspace.root)
+            .map(|relative_path| {
+                planner
+                    .staging_area
+                    .destination_directory
+                    .join(relative_path)
+            })
+            .unwrap_or_else(|_| {
+                planner
+                    .staging_area
+                    .destination_directory
+                    .join(config_file.file_name().unwrap())
+            });
+
         operations.push(ConfigStagingOperation {
             source_path: config_file.clone(),
-            destination_path: planner
-                .staging_area
-                .destination_directory
-                .join(config_file.file_name().unwrap()),
+            destination_path,
             operation_type: ConfigOperationType::CopyToStagingArea,
         });
     }

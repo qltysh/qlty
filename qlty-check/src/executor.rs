@@ -270,16 +270,14 @@ impl Executor {
         let mut loaded_config_files = Vec::new();
 
         for operation in &self.plan.config_staging_operations {
-            match self.execute_single_config_operation(operation) {
-                Ok(Some(loaded_file)) => loaded_config_files.push(loaded_file),
-                Ok(None) => {} // Operation completed but no file to track for cleanup
-                Err(err) => {
-                    error!(
-                        "Failed to execute config operation {:?}: {:?}",
-                        operation, err
-                    );
-                    // Continue with other operations rather than failing entirely
-                }
+            let maybe_loaded = self
+                .execute_single_config_operation(operation)
+                .with_context(|| {
+                    format!("Failed to execute config staging operation: {operation:?}")
+                })?;
+
+            if let Some(loaded_file) = maybe_loaded {
+                loaded_config_files.push(loaded_file);
             }
         }
 
@@ -292,17 +290,22 @@ impl Executor {
     ) -> Result<Option<String>> {
         match operation.operation_type {
             ConfigOperationType::CopyToStagingArea => {
-                load_config_file_from_repository(
+                let loaded_file = load_config_file_from_repository(
                     &operation.source_path,
                     &self.plan.workspace,
-                    &operation.destination_path.parent().unwrap(),
+                    operation.destination_path.parent().unwrap(),
                 )?;
-                Ok(Some(path_to_string(&operation.destination_path)))
+
+                Ok(if loaded_file.is_empty() {
+                    None
+                } else {
+                    Some(loaded_file)
+                })
             }
             ConfigOperationType::CopyToWorkspaceRoot => {
                 let loaded_file = load_config_file_from_source(
                     &operation.source_path,
-                    &operation.destination_path.parent().unwrap(),
+                    operation.destination_path.parent().unwrap(),
                 )?;
                 Ok(if loaded_file.is_empty() {
                     None
@@ -315,7 +318,7 @@ impl Executor {
                 let loaded_file = load_config_file_from_qlty_dir(
                     &config_file_name,
                     &self.plan.workspace,
-                    &operation.destination_path.parent().unwrap(),
+                    operation.destination_path.parent().unwrap(),
                 )?;
                 Ok(if loaded_file.is_empty() {
                     None
@@ -353,8 +356,35 @@ impl Executor {
                 for invocation in &self.plan.invocations {
                     for fetch in &invocation.plugin.fetch {
                         if fetch.path == operation.source_path.to_string_lossy() {
-                            let directories =
-                                [operation.destination_path.parent().unwrap().to_path_buf()];
+                            let fetch_relative = Path::new(&fetch.path);
+                            let dest_parent = operation
+                                .destination_path
+                                .parent()
+                                .context("Fetch destination missing parent directory")?;
+
+                            let directories = if let Some(relative_parent) = fetch_relative.parent()
+                            {
+                                let depth = relative_parent.components().count();
+                                let mut root_dir = dest_parent.to_path_buf();
+
+                                for _ in 0..depth {
+                                    root_dir = root_dir
+                                        .parent()
+                                        .with_context(|| {
+                                            format!(
+                                                "Destination path {} lacks ancestors for fetch path {}",
+                                                dest_parent.display(),
+                                                relative_parent.display()
+                                            )
+                                        })?
+                                        .to_path_buf();
+                                }
+
+                                vec![root_dir]
+                            } else {
+                                vec![dest_parent.to_path_buf()]
+                            };
+
                             fetch.download_file_to(&directories).with_context(|| {
                                 format!(
                                     "Failed to fetch file for plugin: {}",
