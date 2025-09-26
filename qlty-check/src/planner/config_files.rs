@@ -29,8 +29,8 @@ pub enum ConfigOperationType {
     CopyToStagingArea,
     /// Copy config from repository to workspace root
     CopyToWorkspaceRoot,
-    /// Load config from qlty directory to destination
-    LoadFromQltyDir,
+    /// Copy config from qlty directory to destination
+    CopyFromQltyDir,
     /// Copy config into tool install directory
     CopyToToolInstall,
     /// Download and place fetched file
@@ -288,7 +288,7 @@ pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<Config
                     .staging_area
                     .destination_directory
                     .join(&config_file_name),
-                operation_type: ConfigOperationType::LoadFromQltyDir,
+                operation_type: ConfigOperationType::CopyFromQltyDir,
             });
         }
 
@@ -296,7 +296,7 @@ pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<Config
         operations.push(ConfigStagingOperation {
             source_path: PathBuf::from(&config_file_name),
             destination_path: planner.workspace.root.join(&config_file_name),
-            operation_type: ConfigOperationType::LoadFromQltyDir,
+            operation_type: ConfigOperationType::CopyFromQltyDir,
         });
     }
 
@@ -486,7 +486,7 @@ mod tests {
         // Should also have LoadFromQltyDir operations
         let qlty_ops: Vec<_> = operations
             .iter()
-            .filter(|op| matches!(op.operation_type, ConfigOperationType::LoadFromQltyDir))
+            .filter(|op| matches!(op.operation_type, ConfigOperationType::CopyFromQltyDir))
             .collect();
 
         // We should have found the .eslintrc.js file in the repository

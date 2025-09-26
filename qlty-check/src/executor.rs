@@ -313,7 +313,7 @@ impl Executor {
                     Some(loaded_file)
                 })
             }
-            ConfigOperationType::LoadFromQltyDir => {
+            ConfigOperationType::CopyFromQltyDir => {
                 let config_file_name = operation.source_path.to_string_lossy().to_string();
                 let loaded_file = load_config_file_from_qlty_dir(
                     &config_file_name,
