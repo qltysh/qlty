@@ -3,12 +3,9 @@ mod invocation_result;
 mod invocation_script;
 pub mod staging_area;
 
-use self::staging_area::{
-    load_config_file_from_qlty_dir, load_config_file_from_repository, load_config_file_from_source,
-};
 use crate::llm::Fixer;
 use crate::planner::check_filters::CheckFilters;
-use crate::planner::config_files::{ConfigOperationType, ConfigStagingOperation};
+use crate::planner::config_files::{ConfigCopyMode, ConfigOperation, ConfigSource};
 use crate::planner::source_extractor::SourceExtractor;
 use crate::Tool;
 use crate::{
@@ -24,13 +21,16 @@ pub use invocation_result::{InvocationResult, InvocationStatus};
 pub use invocation_script::{compute_invocation_script, plan_target_list};
 use itertools::Itertools;
 use qlty_analysis::utils::fs::path_to_string;
-use qlty_config::config::DriverType;
+use qlty_config::config::{DriverType, PluginFetch};
+use qlty_config::http;
 use qlty_config::issue_transformer::IssueTransformer;
 use qlty_types::analysis::v1::{Issue, Message, MessageLevel};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rayon::prelude::*;
 use std::collections::{HashMap, HashSet};
+use std::fs::File;
+use std::io::Write as _;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::{
@@ -268,10 +268,11 @@ impl Executor {
 
     fn execute_config_staging_operations(&self) -> Result<Vec<String>> {
         let mut loaded_config_files = Vec::new();
+        let mut download_cache: HashMap<String, Vec<u8>> = HashMap::new();
 
         for operation in &self.plan.config_staging_operations {
             let maybe_loaded = self
-                .execute_single_config_operation(operation)
+                .execute_single_config_operation(operation, &mut download_cache)
                 .with_context(|| {
                     format!("Failed to execute config staging operation: {operation:?}")
                 })?;
@@ -286,121 +287,128 @@ impl Executor {
 
     fn execute_single_config_operation(
         &self,
-        operation: &ConfigStagingOperation,
+        operation: &ConfigOperation,
+        download_cache: &mut HashMap<String, Vec<u8>>,
     ) -> Result<Option<String>> {
-        match operation.operation_type {
-            ConfigOperationType::CopyToStagingArea => {
-                let loaded_file = load_config_file_from_repository(
-                    &operation.source_path,
-                    &self.plan.workspace,
-                    operation.destination_path.parent().unwrap(),
-                )?;
-
-                Ok(if loaded_file.is_empty() {
-                    None
-                } else {
-                    Some(loaded_file)
-                })
+        match &operation.source {
+            ConfigSource::File(source_path) => {
+                self.stage_file(source_path, &operation.destination, operation.mode.clone())
             }
-            ConfigOperationType::CopyToWorkspaceRoot => {
-                let loaded_file = load_config_file_from_source(
-                    &operation.source_path,
-                    operation.destination_path.parent().unwrap(),
-                )?;
-                Ok(if loaded_file.is_empty() {
-                    None
-                } else {
-                    Some(loaded_file)
-                })
-            }
-            ConfigOperationType::CopyFromQltyDir => {
-                let config_file_name = operation.source_path.to_string_lossy().to_string();
-                let loaded_file = load_config_file_from_qlty_dir(
-                    &config_file_name,
-                    &self.plan.workspace,
-                    operation.destination_path.parent().unwrap(),
-                )?;
-                Ok(if loaded_file.is_empty() {
-                    None
-                } else {
-                    Some(loaded_file)
-                })
-            }
-            ConfigOperationType::CopyToToolInstall => {
-                let tool_dir = &operation.destination_path.parent().unwrap();
-                if !tool_dir.exists() {
-                    std::fs::create_dir_all(tool_dir).with_context(|| {
-                        format!("Failed to create tool directory {}", tool_dir.display())
-                    })?;
-                }
-
-                debug!(
-                    "Copying {} to {}",
-                    operation.source_path.display(),
-                    operation.destination_path.display()
-                );
-                std::fs::copy(&operation.source_path, &operation.destination_path).with_context(
-                    || {
-                        format!(
-                            "Failed to copy config file {} to {}",
-                            operation.source_path.display(),
-                            operation.destination_path.display()
-                        )
-                    },
-                )?;
-
-                Ok(Some(path_to_string(&operation.destination_path)))
-            }
-            ConfigOperationType::FetchFile => {
-                // Find the fetch configuration for this file
-                for invocation in &self.plan.invocations {
-                    for fetch in &invocation.plugin.fetch {
-                        if fetch.path == operation.source_path.to_string_lossy() {
-                            let fetch_relative = Path::new(&fetch.path);
-                            let dest_parent = operation
-                                .destination_path
-                                .parent()
-                                .context("Fetch destination missing parent directory")?;
-
-                            let directories = if let Some(relative_parent) = fetch_relative.parent()
-                            {
-                                let depth = relative_parent.components().count();
-                                let mut root_dir = dest_parent.to_path_buf();
-
-                                for _ in 0..depth {
-                                    root_dir = root_dir
-                                        .parent()
-                                        .with_context(|| {
-                                            format!(
-                                                "Destination path {} lacks ancestors for fetch path {}",
-                                                dest_parent.display(),
-                                                relative_parent.display()
-                                            )
-                                        })?
-                                        .to_path_buf();
-                                }
-
-                                vec![root_dir]
-                            } else {
-                                vec![dest_parent.to_path_buf()]
-                            };
-
-                            fetch.download_file_to(&directories).with_context(|| {
-                                format!(
-                                    "Failed to fetch file for plugin: {}",
-                                    invocation.plugin_name
-                                )
-                            })?;
-                            return Ok(Some(path_to_string(&operation.destination_path)));
-                        }
-                    }
-                }
-                bail!(
-                    "Fetch configuration not found for path: {:?}",
-                    operation.source_path
-                );
+            ConfigSource::Download(fetch) => {
+                self.download_file(fetch, &operation.destination, download_cache)
             }
         }
+    }
+
+    fn stage_file(
+        &self,
+        source_path: &Path,
+        destination_path: &Path,
+        mode: ConfigCopyMode,
+    ) -> Result<Option<String>> {
+        if !source_path.exists() {
+            return Ok(None);
+        }
+
+        ensure_parent_exists(destination_path)?;
+
+        if destination_path.exists() {
+            return Ok(Some(path_to_string(destination_path)));
+        }
+
+        match mode {
+            ConfigCopyMode::Symlink => {
+                debug!(
+                    "Symlinking {} to {}",
+                    source_path.display(),
+                    destination_path.display()
+                );
+                create_symlink(source_path, destination_path).with_context(|| {
+                    format!(
+                        "Failed to symlink config file {} to {}",
+                        source_path.display(),
+                        destination_path.display()
+                    )
+                })?;
+            }
+            ConfigCopyMode::Copy => {
+                debug!(
+                    "Copying {} to {}",
+                    source_path.display(),
+                    destination_path.display()
+                );
+                std::fs::copy(source_path, destination_path).with_context(|| {
+                    format!(
+                        "Failed to copy config file {} to {}",
+                        source_path.display(),
+                        destination_path.display()
+                    )
+                })?;
+            }
+        }
+
+        Ok(Some(path_to_string(destination_path)))
+    }
+
+    fn download_file(
+        &self,
+        fetch: &PluginFetch,
+        destination_path: &Path,
+        download_cache: &mut HashMap<String, Vec<u8>>,
+    ) -> Result<Option<String>> {
+        ensure_parent_exists(destination_path)?;
+
+        let data = if let Some(cached) = download_cache.get(&fetch.url) {
+            cached.clone()
+        } else {
+            let response = http::get(&fetch.url)
+                .call()
+                .with_context(|| format!("Failed to get url: {}", fetch.url))?;
+
+            if response.status() != 200 {
+                bail!(
+                    "Failed to download file: {}, status: {}",
+                    fetch.url,
+                    response.status()
+                );
+            }
+
+            let data = response
+                .into_string()
+                .with_context(|| {
+                    format!(
+                        "Failed to get contents of {} to download to {}",
+                        fetch.url, fetch.path
+                    )
+                })?
+                .into_bytes();
+
+            download_cache.insert(fetch.url.clone(), data.clone());
+            data
+        };
+
+        if let Some(parent) = destination_path.parent() {
+            if !parent.exists() {
+                std::fs::create_dir_all(parent)
+                    .with_context(|| format!("Failed to create directory: {}", parent.display()))?;
+            }
+        }
+
+        let mut file = File::create(destination_path).with_context(|| {
+            format!(
+                "Failed to create file for fetched config: {}",
+                destination_path.display()
+            )
+        })?;
+
+        file.write_all(&data).with_context(|| {
+            format!(
+                "Failed to write fetched config to {}",
+                destination_path.display()
+            )
+        })?;
+
+        Ok(Some(path_to_string(destination_path)))
     }
 
     fn run_invocation_pools(
@@ -711,4 +719,30 @@ fn run_invocation(
     }
 
     Ok(result)
+}
+
+fn ensure_parent_exists(path: &Path) -> Result<()> {
+    if let Some(parent) = path.parent() {
+        if !parent.exists() {
+            std::fs::create_dir_all(parent)
+                .with_context(|| format!("Failed to create directory: {}", parent.display()))?;
+        }
+    } else {
+        error!(
+            "No parent directory for destination file: {:?}, this could cause issues",
+            path
+        );
+    }
+
+    Ok(())
+}
+
+#[cfg(unix)]
+fn create_symlink(from: &Path, to: &Path) -> std::io::Result<()> {
+    std::os::unix::fs::symlink(from, to)
+}
+
+#[cfg(windows)]
+fn create_symlink(from: &Path, to: &Path) -> std::io::Result<()> {
+    std::os::windows::fs::symlink_file(from, to)
 }

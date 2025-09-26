@@ -7,7 +7,7 @@ use crate::issue_muter::IssueMuter;
 use crate::patch_builder::PatchBuilder;
 use crate::planner::config_files::{
     compute_config_staging_operations, compute_tool_install_config_operations, plugin_configs,
-    ConfigStagingOperation, PluginConfigFile,
+    ConfigOperation, PluginConfigFile,
 };
 use crate::Settings;
 use anyhow::{bail, Error, Result};
@@ -73,7 +73,7 @@ pub struct Planner {
     plugin_configs: HashMap<String, Vec<PluginConfigFile>>,
     invocations: Vec<InvocationPlan>,
     transformers: Vec<Box<dyn IssueTransformer>>,
-    config_staging_operations: Vec<ConfigStagingOperation>,
+    config_staging_operations: Vec<ConfigOperation>,
 }
 
 impl Planner {

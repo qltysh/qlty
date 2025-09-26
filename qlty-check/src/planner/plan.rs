@@ -1,4 +1,4 @@
-use super::config_files::ConfigStagingOperation;
+use super::config_files::ConfigOperation;
 use super::InvocationPlan;
 use crate::cache::IssueCache;
 use crate::cache::IssuesCacheHit;
@@ -28,7 +28,7 @@ pub struct Plan {
     pub transformers: Vec<Box<dyn IssueTransformer>>,
     pub invocations: Vec<InvocationPlan>,
     pub fail_level: Option<Level>,
-    pub config_staging_operations: Vec<ConfigStagingOperation>,
+    pub config_staging_operations: Vec<ConfigOperation>,
 }
 
 impl Plan {

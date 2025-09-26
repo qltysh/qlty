@@ -2,9 +2,10 @@ use super::{config::enabled_plugins, Planner};
 use anyhow::{Context, Result};
 use globset::{GlobBuilder, GlobSet, GlobSetBuilder};
 use itertools::Itertools;
+use qlty_config::config::PluginFetch;
 use serde::Serialize;
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     fs,
     path::{Path, PathBuf},
 };
@@ -17,24 +18,22 @@ pub struct PluginConfigFile {
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct ConfigStagingOperation {
-    pub source_path: PathBuf,
-    pub destination_path: PathBuf,
-    pub operation_type: ConfigOperationType,
+pub struct ConfigOperation {
+    pub source: ConfigSource,
+    pub destination: PathBuf,
+    pub mode: ConfigCopyMode,
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub enum ConfigOperationType {
-    /// Copy config from repository to staging area
-    CopyToStagingArea,
-    /// Copy config from repository to workspace root
-    CopyToWorkspaceRoot,
-    /// Copy config from qlty directory to destination
-    CopyFromQltyDir,
-    /// Copy config into tool install directory
-    CopyToToolInstall,
-    /// Download and place fetched file
-    FetchFile,
+pub enum ConfigSource {
+    File(PathBuf),
+    Download(PluginFetch),
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub enum ConfigCopyMode {
+    Symlink,
+    Copy,
 }
 
 impl Ord for PluginConfigFile {
@@ -177,7 +176,7 @@ pub fn plugin_configs(planner: &Planner) -> Result<HashMap<String, Vec<PluginCon
     Ok(configs)
 }
 
-pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<ConfigStagingOperation>> {
+pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<ConfigOperation>> {
     let mut operations = Vec::new();
     let plugins = enabled_plugins(planner)?;
 
@@ -233,12 +232,14 @@ pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<Config
                     .join(config_file.file_name().unwrap())
             });
 
-        operations.push(ConfigStagingOperation {
-            source_path: config_file.clone(),
-            destination_path,
-            operation_type: ConfigOperationType::CopyToStagingArea,
+        operations.push(ConfigOperation {
+            source: ConfigSource::File(config_file.clone()),
+            destination: destination_path,
+            mode: ConfigCopyMode::Symlink,
         });
     }
+
+    let library = planner.workspace.library().ok();
 
     // Add operations for exported config paths
     let exported_config_paths: Vec<_> = plugins
@@ -255,18 +256,18 @@ pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<Config
 
         // For formatters (staging area != workspace root)
         if planner.workspace.root != planner.staging_area.destination_directory {
-            operations.push(ConfigStagingOperation {
-                source_path: exported_config_path.clone(),
-                destination_path: planner.staging_area.destination_directory.join(file_name),
-                operation_type: ConfigOperationType::CopyToStagingArea,
+            operations.push(ConfigOperation {
+                source: ConfigSource::File(exported_config_path.clone()),
+                destination: planner.staging_area.destination_directory.join(file_name),
+                mode: ConfigCopyMode::Symlink,
             });
         }
 
         // For linters (workspace root)
-        operations.push(ConfigStagingOperation {
-            source_path: exported_config_path.clone(),
-            destination_path: planner.workspace.root.join(file_name),
-            operation_type: ConfigOperationType::CopyToWorkspaceRoot,
+        operations.push(ConfigOperation {
+            source: ConfigSource::File(exported_config_path.clone()),
+            destination: planner.workspace.root.join(file_name),
+            mode: ConfigCopyMode::Symlink,
         });
     }
 
@@ -280,23 +281,29 @@ pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<Config
         .collect();
 
     for config_file_name in config_file_names {
+        let source_path = if let Some(library) = &library {
+            library.configs_dir().join(&config_file_name)
+        } else {
+            PathBuf::from(&config_file_name)
+        };
+
         // For formatters
         if planner.workspace.root != planner.staging_area.destination_directory {
-            operations.push(ConfigStagingOperation {
-                source_path: PathBuf::from(&config_file_name), // Will be resolved from qlty dir
-                destination_path: planner
+            operations.push(ConfigOperation {
+                source: ConfigSource::File(source_path.clone()),
+                destination: planner
                     .staging_area
                     .destination_directory
                     .join(&config_file_name),
-                operation_type: ConfigOperationType::CopyFromQltyDir,
+                mode: ConfigCopyMode::Symlink,
             });
         }
 
         // For linters
-        operations.push(ConfigStagingOperation {
-            source_path: PathBuf::from(&config_file_name),
-            destination_path: planner.workspace.root.join(&config_file_name),
-            operation_type: ConfigOperationType::CopyFromQltyDir,
+        operations.push(ConfigOperation {
+            source: ConfigSource::File(source_path.clone()),
+            destination: planner.workspace.root.join(&config_file_name),
+            mode: ConfigCopyMode::Symlink,
         });
     }
 
@@ -305,20 +312,17 @@ pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<Config
         if !active_plugin.plugin.fetch.is_empty() {
             for fetch in &active_plugin.plugin.fetch {
                 // Plugin fetch downloads to both workspace root and staging area
-                operations.push(ConfigStagingOperation {
-                    source_path: PathBuf::from(&fetch.path), // URL/source identifier
-                    destination_path: planner.workspace.root.join(&fetch.path),
-                    operation_type: ConfigOperationType::FetchFile,
+                operations.push(ConfigOperation {
+                    source: ConfigSource::Download(fetch.clone()),
+                    destination: planner.workspace.root.join(&fetch.path),
+                    mode: ConfigCopyMode::Copy,
                 });
 
                 if planner.workspace.root != planner.staging_area.destination_directory {
-                    operations.push(ConfigStagingOperation {
-                        source_path: PathBuf::from(&fetch.path),
-                        destination_path: planner
-                            .staging_area
-                            .destination_directory
-                            .join(&fetch.path),
-                        operation_type: ConfigOperationType::FetchFile,
+                    operations.push(ConfigOperation {
+                        source: ConfigSource::Download(fetch.clone()),
+                        destination: planner.staging_area.destination_directory.join(&fetch.path),
+                        mode: ConfigCopyMode::Copy,
                     });
                 }
             }
@@ -331,8 +335,9 @@ pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<Config
 pub fn compute_tool_install_config_operations(
     planner: &Planner,
     invocations: &[crate::planner::InvocationPlan],
-) -> Result<Vec<ConfigStagingOperation>> {
+) -> Result<Vec<ConfigOperation>> {
     let mut operations = Vec::new();
+    let mut seen_destinations = HashSet::new();
     let plugin_configs = plugin_configs(planner)?;
 
     for invocation in invocations {
@@ -346,11 +351,15 @@ pub fn compute_tool_install_config_operations(
                         .file_name()
                         .ok_or(anyhow::anyhow!("Invalid config path: {:?}", config.path))?;
 
-                    operations.push(ConfigStagingOperation {
-                        source_path: config.path.clone(),
-                        destination_path: tool_dir.join(file_name),
-                        operation_type: ConfigOperationType::CopyToToolInstall,
-                    });
+                    let destination = tool_dir.join(file_name);
+
+                    if seen_destinations.insert(destination.clone()) {
+                        operations.push(ConfigOperation {
+                            source: ConfigSource::File(config.path.clone()),
+                            destination,
+                            mode: ConfigCopyMode::Copy,
+                        });
+                    }
                 }
             }
         }
@@ -477,26 +486,32 @@ mod tests {
         // Call the actual function being tested
         let operations = compute_config_staging_operations(&planner).unwrap();
 
+        let staging_dir = planner.staging_area.destination_directory.clone();
+        let workspace_root = planner.workspace.root.clone();
+
         // Should find the repository config file
         let staging_ops: Vec<_> = operations
             .iter()
-            .filter(|op| matches!(op.operation_type, ConfigOperationType::CopyToStagingArea))
+            .filter(|op| op.destination.starts_with(&staging_dir))
             .collect();
 
-        // Should also have LoadFromQltyDir operations
+        // Should also have qlty directory operations (workspace root symlinks)
         let qlty_ops: Vec<_> = operations
             .iter()
-            .filter(|op| matches!(op.operation_type, ConfigOperationType::CopyFromQltyDir))
+            .filter(|op| op.destination.starts_with(&workspace_root))
             .collect();
 
         // We should have found the .eslintrc.js file in the repository
-        let found_eslintrc = staging_ops
-            .iter()
-            .any(|op| op.source_path.file_name().unwrap().to_str().unwrap() == ".eslintrc.js");
+        let found_eslintrc = staging_ops.iter().any(|op| match &op.source {
+            ConfigSource::File(path) => path.file_name().unwrap() == ".eslintrc.js",
+            _ => false,
+        });
 
         assert!(found_eslintrc, "Should find .eslintrc.js in repository");
         assert!(
-            !qlty_ops.is_empty(),
+            qlty_ops
+                .iter()
+                .any(|op| matches!(op.mode, ConfigCopyMode::Symlink)),
             "Should have qlty directory operations"
         );
     }
@@ -562,13 +577,16 @@ mod tests {
         let operations = compute_config_staging_operations(&planner).unwrap();
 
         // Should create operations for exported config paths
+        let workspace_root = planner.workspace.root.clone();
         let workspace_ops: Vec<_> = operations
             .iter()
-            .filter(|op| matches!(op.operation_type, ConfigOperationType::CopyToWorkspaceRoot))
+            .filter(|op| op.destination.starts_with(&workspace_root))
             .collect();
 
         assert!(
-            !workspace_ops.is_empty(),
+            workspace_ops
+                .iter()
+                .any(|op| matches!(op.mode, ConfigCopyMode::Symlink)),
             "Should have workspace copy operations for exported configs"
         );
     }
@@ -605,15 +623,19 @@ mod tests {
         planner.config = config;
         let operations = compute_config_staging_operations(&planner).unwrap();
 
+        let staging_dir = planner.staging_area.destination_directory.clone();
         let staging_ops: Vec<_> = operations
             .iter()
-            .filter(|op| matches!(op.operation_type, ConfigOperationType::CopyToStagingArea))
+            .filter(|op| op.destination.starts_with(&staging_dir))
             .collect();
 
         // Should find both config files AND affects_cache files
         let found_files: Vec<_> = staging_ops
             .iter()
-            .map(|op| op.source_path.file_name().unwrap().to_str().unwrap())
+            .filter_map(|op| match &op.source {
+                ConfigSource::File(path) => path.file_name().and_then(|os| os.to_str()),
+                _ => None,
+            })
             .collect();
 
         assert!(
@@ -705,7 +727,12 @@ mod tests {
         // Should create tool install operations for the config file
         let tool_install_ops: Vec<_> = operations
             .iter()
-            .filter(|op| matches!(op.operation_type, ConfigOperationType::CopyToToolInstall))
+            .filter(|op| {
+                matches!(
+                    (&op.source, op.mode.clone()),
+                    (ConfigSource::File(_), ConfigCopyMode::Copy)
+                )
+            })
             .collect();
 
         assert!(
@@ -719,25 +746,20 @@ mod tests {
         );
 
         let op = &tool_install_ops[0];
-        assert_eq!(
-            op.source_path, config_file_path,
+        assert!(
+            matches!(&op.source, ConfigSource::File(path) if path == &config_file_path),
             "Should copy from the config file"
         );
         assert!(
-            op.destination_path
-                .to_string_lossy()
-                .contains("test_config.yml"),
+            op.destination.to_string_lossy().contains("test_config.yml"),
             "Should copy config file to tool directory"
         );
         assert!(
-            op.destination_path
+            op.destination
                 .to_string_lossy()
                 .contains(".qlty/tools/test"),
             "Should copy to tool installation directory"
         );
-        assert!(
-            matches!(op.operation_type, ConfigOperationType::CopyToToolInstall),
-            "Should be CopyToToolInstall operation"
-        );
+        assert!(matches!(op.mode, ConfigCopyMode::Copy));
     }
 }
