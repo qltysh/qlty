@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.578.0 (2025-09-26)
+
+### New
+
+- Ensure read important env vars for BuildKite for coverage publishing (#2415)
+
+### Improved
+
+- Reduce snippet size limits for storage and performance optimization (#2409)
+
 ## v0.577.0 (2025-09-25)
 
 ### Fixed
