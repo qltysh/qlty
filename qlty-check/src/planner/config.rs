@@ -276,6 +276,7 @@ mod test {
             plugin_configs: HashMap::new(),
             invocations: vec![],
             transformers: vec![],
+            config_staging_operations: vec![],
         }
     }
 
