@@ -28,7 +28,7 @@ pub struct Plan {
     pub transformers: Vec<Box<dyn IssueTransformer>>,
     pub invocations: Vec<InvocationPlan>,
     pub fail_level: Option<Level>,
-    pub config_staging_operations: Vec<ConfigOperation>,
+    pub config_operations: Vec<ConfigOperation>,
 }
 
 impl Plan {

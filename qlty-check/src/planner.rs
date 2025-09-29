@@ -6,8 +6,7 @@ use crate::executor::staging_area::{Mode, StagingArea};
 use crate::issue_muter::IssueMuter;
 use crate::patch_builder::PatchBuilder;
 use crate::planner::config_files::{
-    compute_config_staging_operations, compute_tool_install_config_operations, plugin_configs,
-    ConfigOperation, PluginConfigFile,
+    compute_config_staging_operations, plugin_configs, ConfigOperation, PluginConfigFile,
 };
 use crate::Settings;
 use anyhow::{bail, Error, Result};
@@ -237,15 +236,8 @@ impl Planner {
     }
 
     fn compute_config_staging_operations(&mut self) -> Result<()> {
-        // Compute main config staging operations first
-        let mut operations = compute_config_staging_operations(self)?;
+        self.config_staging_operations = compute_config_staging_operations(self)?;
 
-        // Then compute tool install operations after other configs are staged
-        let tool_install_operations =
-            compute_tool_install_config_operations(self, &self.invocations)?;
-        operations.extend(tool_install_operations);
-
-        self.config_staging_operations = operations;
         Ok(())
     }
 
@@ -368,7 +360,7 @@ impl Planner {
             transformers: self.transformers.clone(),
             staging_area: self.staging_area.clone(),
             fail_level: self.settings.fail_level,
-            config_staging_operations: self.config_staging_operations.clone(),
+            config_operations: self.config_staging_operations.clone(),
         })
     }
 

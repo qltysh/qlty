@@ -181,10 +181,16 @@ pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<Config
     let all_config_paths = collect_all_config_paths(&plugins);
 
     let mut operations = Vec::new();
+    // Operations for config files in the repository
     operations.extend(repository_config_operations(planner, &all_config_paths)?);
+    // Operations for any exported config files in the sources
     operations.extend(exported_config_operations(planner, &plugins)?);
+    // Operations for config files in the .qlty/configs directory
     operations.extend(qlty_config_operations(planner, &plugins)?);
+    // Operations for any fetch directives
     operations.extend(fetch_operations(planner, &plugins));
+    // Operations for any copying config files into tool installations
+    operations.extend(tool_install_config_operations(planner)?);
 
     Ok(operations)
 }
@@ -355,15 +361,12 @@ fn fetch_operations(planner: &Planner, plugins: &[ActivePlugin]) -> Vec<ConfigOp
     operations
 }
 
-pub fn compute_tool_install_config_operations(
-    planner: &Planner,
-    invocations: &[crate::planner::InvocationPlan],
-) -> Result<Vec<ConfigOperation>> {
+fn tool_install_config_operations(planner: &Planner) -> Result<Vec<ConfigOperation>> {
     let mut operations = Vec::new();
     let mut seen_destinations = HashSet::new();
     let plugin_configs = plugin_configs(planner)?;
 
-    for invocation in invocations {
+    for invocation in &planner.invocations {
         if invocation.driver.copy_configs_into_tool_install {
             let plugin_name = &invocation.plugin_name;
             if let Some(configs) = plugin_configs.get(plugin_name) {
@@ -540,9 +543,9 @@ mod tests {
     }
 
     #[test]
-    fn test_compute_tool_install_config_operations_empty_invocations() {
+    fn test_tool_install_config_operations_empty_invocations() {
         let (planner, _temp_dir) = create_test_planner();
-        let operations = compute_tool_install_config_operations(&planner, &[]).unwrap();
+        let operations = tool_install_config_operations(&planner).unwrap();
         assert!(operations.is_empty());
     }
 
@@ -672,7 +675,7 @@ mod tests {
     }
 
     #[test]
-    fn test_compute_tool_install_config_operations_with_copy_enabled() {
+    fn test_tool_install_config_operations_with_copy_enabled() {
         let (mut planner, temp_dir) = create_test_planner();
 
         // Create actual config files in the workspace directory where they'll be discovered
@@ -744,8 +747,9 @@ mod tests {
             invocation_directory: temp_dir.path().to_path_buf(),
             invocation_directory_def: InvocationDirectoryDef::default(),
         };
+        planner.invocations.push(invocation);
 
-        let operations = compute_tool_install_config_operations(&planner, &[invocation]).unwrap();
+        let operations = tool_install_config_operations(&planner).unwrap();
 
         // Should create tool install operations for the config file
         let tool_install_ops: Vec<_> = operations

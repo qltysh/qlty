@@ -1,3 +1,4 @@
+mod config_files;
 pub mod driver;
 mod invocation_result;
 mod invocation_script;
@@ -5,7 +6,6 @@ pub mod staging_area;
 
 use crate::llm::Fixer;
 use crate::planner::check_filters::CheckFilters;
-use crate::planner::config_files::{ConfigCopyMode, ConfigOperation, ConfigSource};
 use crate::planner::source_extractor::SourceExtractor;
 use crate::Tool;
 use crate::{
@@ -16,21 +16,19 @@ use crate::{
 use crate::{cache::IssuesCacheHit, planner::Plan, results::FormattedFile, Results};
 use anyhow::{bail, Context, Result};
 use chrono::Utc;
+use config_files::perform_config_operation;
 pub use driver::Driver;
 pub use invocation_result::{InvocationResult, InvocationStatus};
 pub use invocation_script::{compute_invocation_script, plan_target_list};
 use itertools::Itertools;
 use qlty_analysis::utils::fs::path_to_string;
-use qlty_config::config::{DriverType, PluginFetch};
-use qlty_config::http;
+use qlty_config::config::DriverType;
 use qlty_config::issue_transformer::IssueTransformer;
 use qlty_types::analysis::v1::{Issue, Message, MessageLevel};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rayon::prelude::*;
 use std::collections::{HashMap, HashSet};
-use std::fs::File;
-use std::io::Write as _;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::{
@@ -181,9 +179,9 @@ impl Executor {
         }
 
         if !self.plan.invocations.is_empty() {
-            let loaded_config_files = self.stage_workspace_entries()?;
+            let staged_config_files = self.stage_workspace_entries()?;
             invocations = self.run_invocations(&transformers)?;
-            self.cleanup_config_files(&loaded_config_files)?;
+            self.cleanup_config_files(&staged_config_files)?;
         } else {
             info!("No invocations to run, skipping all runtimes.");
         }
@@ -248,167 +246,40 @@ impl Executor {
 
         // Execute config staging operations from the plan
         let sub_timer = Instant::now();
-        let loaded_config_files = self.execute_config_staging_operations()?;
+        let staged_config_files = self.stage_configs()?;
 
         debug!(
             "Staged {} config files in {:.2}s",
-            loaded_config_files.len(),
+            staged_config_files.len(),
             sub_timer.elapsed().as_secs_f32()
         );
 
         info!(
             "Staged {} workspace entries and {} config files in {:.2}s",
             self.plan.workspace_entry_paths().len(),
-            loaded_config_files.len(),
+            staged_config_files.len(),
             timer.elapsed().as_secs_f32()
         );
 
-        Ok(loaded_config_files)
+        Ok(staged_config_files)
     }
 
-    fn execute_config_staging_operations(&self) -> Result<Vec<String>> {
-        let mut loaded_config_files = Vec::new();
+    fn stage_configs(&self) -> Result<Vec<String>> {
+        let mut staged_config_files = Vec::new();
         let mut download_cache: HashMap<String, Vec<u8>> = HashMap::new();
 
-        for operation in &self.plan.config_staging_operations {
-            let maybe_loaded = self
-                .execute_single_config_operation(operation, &mut download_cache)
+        for operation in &self.plan.config_operations {
+            let maybe_staged = perform_config_operation(operation, &mut download_cache)
                 .with_context(|| {
                     format!("Failed to execute config staging operation: {operation:?}")
                 })?;
 
-            if let Some(loaded_file) = maybe_loaded {
-                loaded_config_files.push(loaded_file);
+            if let Some(staged_file) = maybe_staged {
+                staged_config_files.push(staged_file);
             }
         }
 
-        Ok(loaded_config_files)
-    }
-
-    fn execute_single_config_operation(
-        &self,
-        operation: &ConfigOperation,
-        download_cache: &mut HashMap<String, Vec<u8>>,
-    ) -> Result<Option<String>> {
-        match &operation.source {
-            ConfigSource::File(source_path) => {
-                self.stage_file(source_path, &operation.destination, operation.mode.clone())
-            }
-            ConfigSource::Download(fetch) => {
-                self.download_file(fetch, &operation.destination, download_cache)
-            }
-        }
-    }
-
-    fn stage_file(
-        &self,
-        source_path: &Path,
-        destination_path: &Path,
-        mode: ConfigCopyMode,
-    ) -> Result<Option<String>> {
-        if !source_path.exists() {
-            return Ok(None);
-        }
-
-        ensure_parent_exists(destination_path)?;
-
-        if destination_path.exists() {
-            return Ok(Some(path_to_string(destination_path)));
-        }
-
-        match mode {
-            ConfigCopyMode::Symlink => {
-                debug!(
-                    "Symlinking {} to {}",
-                    source_path.display(),
-                    destination_path.display()
-                );
-                create_symlink(source_path, destination_path).with_context(|| {
-                    format!(
-                        "Failed to symlink config file {} to {}",
-                        source_path.display(),
-                        destination_path.display()
-                    )
-                })?;
-            }
-            ConfigCopyMode::Copy => {
-                debug!(
-                    "Copying {} to {}",
-                    source_path.display(),
-                    destination_path.display()
-                );
-                std::fs::copy(source_path, destination_path).with_context(|| {
-                    format!(
-                        "Failed to copy config file {} to {}",
-                        source_path.display(),
-                        destination_path.display()
-                    )
-                })?;
-            }
-        }
-
-        Ok(Some(path_to_string(destination_path)))
-    }
-
-    fn download_file(
-        &self,
-        fetch: &PluginFetch,
-        destination_path: &Path,
-        download_cache: &mut HashMap<String, Vec<u8>>,
-    ) -> Result<Option<String>> {
-        ensure_parent_exists(destination_path)?;
-
-        let data = if let Some(cached) = download_cache.get(&fetch.url) {
-            cached.clone()
-        } else {
-            let response = http::get(&fetch.url)
-                .call()
-                .with_context(|| format!("Failed to get url: {}", fetch.url))?;
-
-            if response.status() != 200 {
-                bail!(
-                    "Failed to download file: {}, status: {}",
-                    fetch.url,
-                    response.status()
-                );
-            }
-
-            let data = response
-                .into_string()
-                .with_context(|| {
-                    format!(
-                        "Failed to get contents of {} to download to {}",
-                        fetch.url, fetch.path
-                    )
-                })?
-                .into_bytes();
-
-            download_cache.insert(fetch.url.clone(), data.clone());
-            data
-        };
-
-        if let Some(parent) = destination_path.parent() {
-            if !parent.exists() {
-                std::fs::create_dir_all(parent)
-                    .with_context(|| format!("Failed to create directory: {}", parent.display()))?;
-            }
-        }
-
-        let mut file = File::create(destination_path).with_context(|| {
-            format!(
-                "Failed to create file for fetched config: {}",
-                destination_path.display()
-            )
-        })?;
-
-        file.write_all(&data).with_context(|| {
-            format!(
-                "Failed to write fetched config to {}",
-                destination_path.display()
-            )
-        })?;
-
-        Ok(Some(path_to_string(destination_path)))
+        Ok(staged_config_files)
     }
 
     fn run_invocation_pools(
@@ -598,8 +469,8 @@ impl Executor {
         Ok(issues)
     }
 
-    fn cleanup_config_files(&self, loaded_config_files: &[String]) -> Result<()> {
-        for config_file in loaded_config_files {
+    fn cleanup_config_files(&self, staged_config_files: &[String]) -> Result<()> {
+        for config_file in staged_config_files {
             std::fs::remove_file(Path::new(config_file)).ok();
         }
 
@@ -719,30 +590,4 @@ fn run_invocation(
     }
 
     Ok(result)
-}
-
-fn ensure_parent_exists(path: &Path) -> Result<()> {
-    if let Some(parent) = path.parent() {
-        if !parent.exists() {
-            std::fs::create_dir_all(parent)
-                .with_context(|| format!("Failed to create directory: {}", parent.display()))?;
-        }
-    } else {
-        error!(
-            "No parent directory for destination file: {:?}, this could cause issues",
-            path
-        );
-    }
-
-    Ok(())
-}
-
-#[cfg(unix)]
-fn create_symlink(from: &Path, to: &Path) -> std::io::Result<()> {
-    std::os::unix::fs::symlink(from, to)
-}
-
-#[cfg(windows)]
-fn create_symlink(from: &Path, to: &Path) -> std::io::Result<()> {
-    std::os::windows::fs::symlink_file(from, to)
 }
