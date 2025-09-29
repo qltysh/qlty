@@ -46,7 +46,10 @@ impl CI for Buildkite {
     }
 
     fn pull_number(&self) -> String {
-        self.env.var("BUILDKITE_PULL_REQUEST").unwrap_or_default()
+        self.env
+            .var("BUILDKITE_PULL_REQUEST")
+            .filter(|v| v != "false")
+            .unwrap_or_default()
     }
 
     fn repository_name(&self) -> String {
@@ -207,5 +210,16 @@ mod test {
             env: Box::new(HashMapEnv::new(env)),
         };
         assert_eq!(&ci.pull_number(), "99");
+    }
+
+    #[test]
+    fn empty_pull_number() {
+        let mut env: HashMap<String, String> = HashMap::default();
+        env.insert("BUILDKITE_PULL_REQUEST".to_string(), "false".to_string());
+
+        let ci = Buildkite {
+            env: Box::new(HashMapEnv::new(env)),
+        };
+        assert_eq!(&ci.pull_number(), "");
     }
 }
