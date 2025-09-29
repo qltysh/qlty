@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.579.0 (2025-09-29)
+
+### Fixed
+
+- Ensure 'false' is not interpreted as a pull request number from BuildKite's environment (#2423)
+
 ## v0.578.0 (2025-09-26)
 
 ### New
