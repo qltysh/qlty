@@ -5,8 +5,9 @@ use crate::cache::{IssueCache, IssuesCacheHit};
 use crate::executor::staging_area::{Mode, StagingArea};
 use crate::issue_muter::IssueMuter;
 use crate::patch_builder::PatchBuilder;
-use crate::planner::config_files::plugin_configs;
-use crate::planner::config_files::PluginConfigFile;
+use crate::planner::config_files::{
+    compute_config_staging_operations, plugin_configs, ConfigOperation, PluginConfigFile,
+};
 use crate::Settings;
 use anyhow::{bail, Error, Result};
 use check_filters::CheckFilters;
@@ -71,6 +72,7 @@ pub struct Planner {
     plugin_configs: HashMap<String, Vec<PluginConfigFile>>,
     invocations: Vec<InvocationPlan>,
     transformers: Vec<Box<dyn IssueTransformer>>,
+    config_staging_operations: Vec<ConfigOperation>,
 }
 
 impl Planner {
@@ -93,6 +95,7 @@ impl Planner {
             plugin_configs: HashMap::new(),
             invocations: vec![],
             transformers: vec![],
+            config_staging_operations: vec![],
         })
     }
 
@@ -106,6 +109,7 @@ impl Planner {
         self.compute_enabled_plugins()?;
         self.compute_staging_area()?;
         self.compute_invocations()?;
+        self.compute_config_staging_operations()?;
         self.compute_transformers();
         let plan = self.build_plan();
         info!(
@@ -231,6 +235,12 @@ impl Planner {
         Ok(())
     }
 
+    fn compute_config_staging_operations(&mut self) -> Result<()> {
+        self.config_staging_operations = compute_config_staging_operations(self)?;
+
+        Ok(())
+    }
+
     fn compute_transformers(&mut self) {
         if let Ok(diff_line_filter) = self
             .workspace_entry_finder_builder
@@ -350,6 +360,7 @@ impl Planner {
             transformers: self.transformers.clone(),
             staging_area: self.staging_area.clone(),
             fail_level: self.settings.fail_level,
+            config_operations: self.config_staging_operations.clone(),
         })
     }
 
