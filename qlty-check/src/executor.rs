@@ -59,6 +59,10 @@ impl Executor {
 
     pub fn install_and_invoke(&self) -> Result<Results> {
         let install_messages = self.install()?;
+        if self.plan.settings.install_only {
+            return Ok(Results::new(install_messages, vec![], vec![], vec![]));
+        }
+
         self.run_prepare_scripts()?;
         let mut result = self.invoke()?;
 
@@ -67,7 +71,7 @@ impl Executor {
         Ok(result)
     }
 
-    pub fn install(&self) -> Result<Vec<Message>> {
+    fn install(&self) -> Result<Vec<Message>> {
         let mut install_messages = vec![];
         let installation_results =
             Self::install_tools(self.plan.tools(), self.plan.jobs, self.progress.clone());
