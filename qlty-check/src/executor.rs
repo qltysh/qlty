@@ -49,7 +49,7 @@ pub struct Executor {
 
 impl Executor {
     pub fn new(plan: &Plan) -> Self {
-        let progress = Progress::new(plan.settings.progress, plan.progress_increments());
+        let progress = Progress::new(plan.progress_enabled, plan.progress_increments());
         Self {
             plan: plan.clone(),
             progress,
@@ -59,7 +59,7 @@ impl Executor {
 
     pub fn install_and_invoke(&self) -> Result<Results> {
         let install_messages = self.install()?;
-        if self.plan.settings.install_only {
+        if self.plan.install_only {
             return Ok(Results::new(install_messages, vec![], vec![], vec![]));
         }
 
@@ -78,7 +78,7 @@ impl Executor {
 
         for installation_result in installation_results {
             let (name, result) = installation_result;
-            if self.plan.settings.skip_errored_plugins {
+            if self.plan.skip_errored_plugins {
                 if let Err(err) = result {
                     error!("Error installing tool {}: {:?}", name, err);
 
@@ -142,7 +142,7 @@ impl Executor {
             .invocations
             .iter()
             .filter(|invocation| {
-                if self.plan.settings.skip_errored_plugins {
+                if self.plan.skip_errored_plugins {
                     invocation.tool.is_installed()
                 } else {
                     true
@@ -171,14 +171,14 @@ impl Executor {
         self.plan.workspace.library()?.create()?;
 
         let mut transformers: Vec<Box<dyn IssueTransformer>> = vec![Box::new(CheckFilters {
-            filters: self.plan.settings.filters.clone(),
+            filters: self.plan.filters.clone(),
         })];
 
         transformers.push(Box::new(SourceExtractor {
             staging_area: self.plan.staging_area.clone(),
         }));
 
-        if self.plan.settings.ai {
+        if self.plan.ai_enabled {
             transformers.push(Box::new(Fixer::new(&self.plan, self.progress.clone())));
         }
 
@@ -194,7 +194,7 @@ impl Executor {
         let mut issues = Self::build_issue_results(
             &self.plan.hits,
             &invocations,
-            self.plan.settings.skip_errored_plugins,
+            self.plan.skip_errored_plugins,
         )?;
         let formatted = Self::build_formatted(&invocations);
 
@@ -304,7 +304,7 @@ impl Executor {
                         return None;
                     }
 
-                    if self.plan.settings.skip_errored_plugins && !plan.tool.is_installed() {
+                    if self.plan.skip_errored_plugins && !plan.tool.is_installed() {
                         warn!(
                             "Skipping invocation for {} because --skip-errored-plugins is set and the tool is not installed",
                             plan.invocation_label()
