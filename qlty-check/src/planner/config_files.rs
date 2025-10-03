@@ -105,15 +105,9 @@ pub fn plugin_configs(planner: &Planner) -> Result<HashMap<String, Vec<PluginCon
     let mut configs: HashMap<String, Vec<PluginConfigFile>> = HashMap::new();
 
     for active_plugin in &plugins {
-        // Collect config_files and affects_cache paths for globset matching
-        let mut config_paths = active_plugin.plugin.config_files.clone();
-        for affects_cache in &active_plugin.plugin.affects_cache {
-            config_paths.push(PathBuf::from(affects_cache));
-        }
-
         plugins_configs.push(PluginConfig {
             plugin_name: active_plugin.name.clone(),
-            config_globset: config_globset(&config_paths)?,
+            config_globset: config_globset(&active_plugin.plugin.config_files)?,
         });
 
         for exported_config_path in &active_plugin.plugin.exported_config_paths {
@@ -788,5 +782,52 @@ mod tests {
             "Should copy to tool installation directory"
         );
         assert!(matches!(op.mode, ConfigCopyMode::Copy));
+    }
+
+    #[test]
+    fn test_plugin_configs_excludes_affects_cache() {
+        let (mut planner, temp_dir) = create_test_planner();
+
+        fs::write(temp_dir.path().join(".eslintrc.js"), "module.exports = {};").unwrap();
+        fs::write(temp_dir.path().join("package-lock.json"), "{}").unwrap();
+
+        let mut plugin_def = qlty_config::config::PluginDef::default();
+        plugin_def.config_files = vec![PathBuf::from(".eslintrc.js")];
+        plugin_def.affects_cache = vec!["package-lock.json".to_string()];
+
+        let mut plugin_definitions = HashMap::new();
+        plugin_definitions.insert("eslint".to_string(), plugin_def);
+
+        let config = qlty_config::QltyConfig {
+            plugin: vec![qlty_config::config::EnabledPlugin {
+                name: "eslint".to_string(),
+                ..Default::default()
+            }],
+            plugins: qlty_config::config::PluginsConfig {
+                definitions: plugin_definitions,
+                downloads: HashMap::new(),
+                releases: HashMap::new(),
+            },
+            ..Default::default()
+        };
+
+        planner.config = config;
+
+        let configs = plugin_configs(&planner).unwrap();
+        let eslint_configs = configs.get("eslint").unwrap();
+
+        let config_paths: Vec<_> = eslint_configs
+            .iter()
+            .map(|c| c.path.file_name().unwrap().to_str().unwrap())
+            .collect();
+
+        assert!(
+            config_paths.contains(&".eslintrc.js"),
+            "Should include config file"
+        );
+        assert!(
+            !config_paths.contains(&"package-lock.json"),
+            "Should not include affects_cache file as a config"
+        );
     }
 }
