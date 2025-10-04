@@ -1,4 +1,4 @@
-FROM lukemathwalker/cargo-chef:latest AS chef
+FROM lukemathwalker/cargo-chef:0.1.72-rust-latest AS chef
 WORKDIR /app
 
 FROM chef AS planner
