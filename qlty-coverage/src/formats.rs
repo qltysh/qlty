@@ -98,3 +98,95 @@ pub fn parser_for(&format: &Formats) -> Box<dyn Parser> {
         Formats::Qlty => Box::new(parser::Qlty::new()),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_try_from_lcov_extension() {
+        let path = Path::new("coverage.lcov");
+        let format = Formats::try_from(path).unwrap();
+        assert_eq!(format, Formats::Lcov);
+    }
+
+    #[test]
+    fn test_try_from_info_extension() {
+        let path = Path::new("coverage.info");
+        let format = Formats::try_from(path).unwrap();
+        assert_eq!(format, Formats::Lcov);
+    }
+
+    #[test]
+    fn test_try_from_json_extension() {
+        let path = Path::new("coverage.json");
+        let format = Formats::try_from(path).unwrap();
+        assert_eq!(format, Formats::Simplecov);
+    }
+
+    #[test]
+    fn test_try_from_jsonl_extension() {
+        let path = Path::new("coverage.jsonl");
+        let format = Formats::try_from(path).unwrap();
+        assert_eq!(format, Formats::Qlty);
+    }
+
+    #[test]
+    fn test_try_from_out_extension() {
+        let path = Path::new("coverage.out");
+        let format = Formats::try_from(path).unwrap();
+        assert_eq!(format, Formats::Coverprofile);
+    }
+
+    #[test]
+    fn test_try_from_jacoco_xml() {
+        let path = Path::new("jacoco.xml");
+        let format = Formats::try_from(path).unwrap();
+        assert_eq!(format, Formats::Jacoco);
+    }
+
+    #[test]
+    fn test_try_from_clover_xml() {
+        let path = Path::new("clover.xml");
+        let format = Formats::try_from(path).unwrap();
+        assert_eq!(format, Formats::Clover);
+    }
+
+    #[test]
+    fn test_try_from_dotcover_xml() {
+        let path = Path::new("dotcover.xml");
+        let format = Formats::try_from(path).unwrap();
+        assert_eq!(format, Formats::Dotcover);
+    }
+
+    #[test]
+    fn test_try_from_cobertura_xml() {
+        let path = Path::new("coverage.xml");
+        let format = Formats::try_from(path).unwrap();
+        assert_eq!(format, Formats::Cobertura);
+    }
+
+    #[test]
+    fn test_try_from_dotcover_xml_by_content() {
+        let temp_dir = std::env::temp_dir();
+        let path = temp_dir.join("test.xml");
+        std::fs::write(&path, "<coverage DotCoverVersion=\"1.0\"></coverage>").unwrap();
+        let format = Formats::try_from(path.as_path()).unwrap();
+        assert_eq!(format, Formats::Dotcover);
+        std::fs::remove_file(path).unwrap();
+    }
+
+    #[test]
+    fn test_try_from_unknown_extension() {
+        let path = Path::new("coverage.txt");
+        let result = Formats::try_from(path);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_try_from_no_extension() {
+        let path = Path::new("coverage");
+        let result = Formats::try_from(path);
+        assert!(result.is_err());
+    }
+}
