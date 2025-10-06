@@ -8,6 +8,8 @@ use anyhow::{anyhow, bail, Context as _, Result};
 use config::{Config, File, FileFormat};
 use console::style;
 use qlty_types::level_from_str;
+use serde::de::IntoDeserializer;
+use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use std::path::Path;
 use toml::Value;
@@ -268,9 +270,20 @@ impl Builder {
         let file = File::from_str(&yaml, FileFormat::Yaml);
         let builder = Config::builder().add_source(file);
         let config = builder.build()?;
-        config
+        let json_value: JsonValue = config
             .try_deserialize()
-            .context("Invalid TOML configuration")
+            .context("Invalid TOML configuration")?;
+
+        serde_ignored::deserialize(json_value.into_deserializer(), |path| {
+            let path = path.to_string();
+            let warning_message = format!(
+                "{} The `{}` entry in qlty.toml is not part of the supported configuration and will be ignored.",
+                style("WARNING:").bold().yellow(),
+                style(path).bold()
+            );
+            warn_once(&warning_message);
+        })
+        .context("Invalid TOML configuration")
     }
 
     fn post_process_config(config: QltyConfig) -> Result<QltyConfig> {
@@ -464,6 +477,7 @@ fn sort_enabled_plugins(plugins: &mut [EnabledPlugin]) {
 mod test {
     use super::*;
     use crate::config::{CheckTrigger, ExtraPackage, IssueMode, PluginFetch};
+    use crate::warning_tracker::{clear_warnings, collected_warnings};
     use std::path::PathBuf;
     use toml::{toml, Value::Table};
 
@@ -495,6 +509,78 @@ mod test {
 
         let result = Builder::extract_sources(Table(input));
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_unknown_fields_emit_warning() {
+        clear_warnings();
+
+        let invalid_config = toml! {
+            config_version = "0"
+            unexpected_key = "value"
+
+            [plugins.definitions.rubocop]
+            runtime = "ruby"
+        };
+
+        let result = Builder::toml_to_config(Table(invalid_config));
+        assert!(result.is_ok());
+
+        let warnings = collected_warnings();
+        assert!(warnings
+            .iter()
+            .any(|warning| warning.contains("unexpected_key")));
+
+        clear_warnings();
+    }
+
+    #[test]
+    fn test_valid_config_no_warnings() {
+        clear_warnings();
+
+        let valid_config = toml! {
+            config_version = "0"
+
+            [[plugin]]
+            name = "rubocop"
+            version = "1.56.3"
+
+            [plugins.definitions.rubocop]
+            runtime = "ruby"
+        };
+
+        let result = Builder::toml_to_config(Table(valid_config));
+        assert!(result.is_ok());
+
+        let warnings = collected_warnings();
+        assert!(warnings.is_empty(), "Unexpected warnings: {:?}", warnings);
+
+        clear_warnings();
+    }
+
+    #[test]
+    fn test_unknown_nested_field_emit_warning() {
+        clear_warnings();
+
+        let invalid_config = toml! {
+            config_version = "0"
+
+            [coverage]
+            unexpected_nested = true
+
+            [plugins.definitions.rubocop]
+            runtime = "ruby"
+        };
+
+        let result = Builder::toml_to_config(Table(invalid_config));
+        assert!(result.is_ok());
+
+        let warnings = collected_warnings();
+        assert!(warnings
+            .iter()
+            .any(|warning| warning.contains("coverage.unexpected_nested")));
+
+        clear_warnings();
     }
 
     #[test]
