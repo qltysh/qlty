@@ -35,7 +35,7 @@ jobs:
         uses: qltysh/qlty-action/install@a19242102d17e497f437d7466aa01b528537e899
 
       - name: Install Rust toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@2fcdc490d667999e01ddbbf0f2823181beef6b39
+        uses: actions-rust-lang/setup-rust-toolchain@1780873c7b576612439a134613cc4cc74ce5538c
         with:
           toolchain: stable
 
