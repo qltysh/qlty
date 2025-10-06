@@ -5,7 +5,6 @@ runtime = "python"
 package = "black"
 file_types = ["python"]
 version_command = "black --version"
-recommended = true
 
 [plugins.definitions.black.drivers.format]
 script = "black -q ${target}"

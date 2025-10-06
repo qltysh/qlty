@@ -11,6 +11,7 @@ use qlty_types::level_from_str;
 use serde::de::IntoDeserializer;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
+use std::env;
 use std::path::Path;
 use toml::Value;
 use tracing::{debug, trace, warn};
@@ -274,7 +275,13 @@ impl Builder {
             .try_deserialize()
             .context("Invalid TOML configuration")?;
 
+        let config_validation_disabled = Self::config_validation_disabled();
+
         serde_ignored::deserialize(json_value.into_deserializer(), |path| {
+            if config_validation_disabled {
+                return;
+            }
+
             let path = path.to_string();
             let warning_message = format!(
                 "{} The `{}` entry in qlty.toml is not part of the supported configuration and will be ignored.",
@@ -284,6 +291,16 @@ impl Builder {
             warn_once(&warning_message);
         })
         .context("Invalid TOML configuration")
+    }
+
+    fn config_validation_disabled() -> bool {
+        match env::var("QLTY_DISABLE_CONFIG_VALIDATION") {
+            Ok(value) => {
+                let normalized = value.trim().to_ascii_lowercase();
+                normalized == "1" || normalized == "true"
+            }
+            Err(_) => false,
+        }
     }
 
     fn post_process_config(config: QltyConfig) -> Result<QltyConfig> {
