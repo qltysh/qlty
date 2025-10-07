@@ -372,6 +372,67 @@ name = "eslint"
     }
 
     #[test]
+    fn test_migrate_engines() {
+        let doc = r#"
+[[plugin]]
+name = "shellcheck"
+
+[[plugin]]
+name = "rubocop"
+
+[[plugin]]
+name = "eslint"
+"#
+        .parse::<DocumentMut>()
+        .unwrap();
+
+        let mut engines = std::collections::HashMap::new();
+        engines.insert(
+            "rubocop".to_string(),
+            classic::Plugin {
+                enabled: Some(true),
+            },
+        );
+        engines.insert(
+            "eslint".to_string(),
+            classic::Plugin {
+                enabled: Some(true),
+            },
+        );
+
+        let config = ClassicConfig {
+            engines: Some(engines),
+            ..Default::default()
+        };
+
+        let settings = basic_settings();
+        let mut migrator = MigrateConfig {
+            settings,
+            document: doc,
+        };
+
+        migrator.migrate_plugins(&config).unwrap();
+
+        let plugin_array = migrator
+            .document
+            .get("plugin")
+            .unwrap()
+            .as_array_of_tables()
+            .unwrap();
+
+        assert_eq!(plugin_array.len(), 2);
+
+        let plugin_names: Vec<_> = plugin_array
+            .iter()
+            .map(|table| table.get("name").unwrap().as_str().unwrap())
+            .collect();
+
+        assert!(plugin_names.contains(&"rubocop"));
+        assert!(plugin_names.contains(&"eslint"));
+        assert!(!plugin_names.contains(&"shellcheck"));
+    }
+
+    #[test]
     fn test_migrate_plugins_with_no_enabled_plugins() {
         let doc = r#"
 [[plugin]]
