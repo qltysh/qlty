@@ -88,41 +88,12 @@ impl ClassicConfig {
     }
 
     pub fn enabled_plugin_names(&self) -> Vec<String> {
-        let mut plugins: Vec<String> = self
-            .plugins
-            .as_ref()
-            .map(|plugins| {
-                plugins
-                    .iter()
-                    .filter_map(|(name, plugin)| {
-                        if plugin.enabled.unwrap_or(false) {
-                            Some(name.clone())
-                        } else {
-                            None
-                        }
-                    })
-                    .collect()
-            })
-            .unwrap_or_default();
-
-        let mut engines = self
-            .engines
-            .as_ref()
-            .map(|engines| {
-                engines
-                    .iter()
-                    .filter_map(|(name, engine)| {
-                        if engine.enabled.unwrap_or(false) {
-                            Some(name.clone())
-                        } else {
-                            None
-                        }
-                    })
-                    .collect()
-            })
-            .unwrap_or_default();
-
-        plugins.append(&mut engines);
-        plugins
+        self.plugins
+            .iter()
+            .chain(self.engines.iter())
+            .flat_map(|map| map.iter())
+            .filter(|&(_name, plugin)| plugin.enabled.unwrap_or(false))
+            .map(|(name, _plugin)| name.clone())
+            .collect()
     }
 }
