@@ -496,7 +496,28 @@ mod test {
     use crate::config::{CheckTrigger, ExtraPackage, IssueMode, PluginFetch};
     use crate::warning_tracker::{clear_warnings, collected_warnings};
     use std::path::PathBuf;
+    use std::sync::{LazyLock, Mutex, MutexGuard};
     use toml::{toml, Value::Table};
+
+    static WARNINGS_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
+
+    struct WarningTestContext {
+        _lock: MutexGuard<'static, ()>,
+    }
+
+    impl WarningTestContext {
+        fn new() -> Self {
+            let lock = WARNINGS_LOCK.lock().unwrap();
+            clear_warnings();
+            WarningTestContext { _lock: lock }
+        }
+    }
+
+    impl Drop for WarningTestContext {
+        fn drop(&mut self) {
+            clear_warnings();
+        }
+    }
 
     #[test]
     fn test_extract_sources_with_only_source() {
@@ -530,7 +551,7 @@ mod test {
 
     #[test]
     fn test_unknown_fields_emit_warning() {
-        clear_warnings();
+        let _ctx = WarningTestContext::new();
 
         let invalid_config = toml! {
             config_version = "0"
@@ -547,13 +568,11 @@ mod test {
         assert!(warnings
             .iter()
             .any(|warning| warning.contains("unexpected_key")));
-
-        clear_warnings();
     }
 
     #[test]
     fn test_valid_config_no_warnings() {
-        clear_warnings();
+        let _ctx = WarningTestContext::new();
 
         let valid_config = toml! {
             config_version = "0"
@@ -571,13 +590,11 @@ mod test {
 
         let warnings = collected_warnings();
         assert!(warnings.is_empty(), "Unexpected warnings: {:?}", warnings);
-
-        clear_warnings();
     }
 
     #[test]
     fn test_unknown_nested_field_emit_warning() {
-        clear_warnings();
+        let _ctx = WarningTestContext::new();
 
         let invalid_config = toml! {
             config_version = "0"
@@ -596,8 +613,6 @@ mod test {
         assert!(warnings
             .iter()
             .any(|warning| warning.contains("coverage.unexpected_nested")));
-
-        clear_warnings();
     }
 
     #[test]
