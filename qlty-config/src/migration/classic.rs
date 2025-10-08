@@ -67,6 +67,7 @@ pub struct ClassicConfig {
     pub checks: Option<Checks>,
     pub exclude_patterns: Option<Vec<String>>,
     pub plugins: Option<HashMap<String, Plugin>>,
+    pub engines: Option<HashMap<String, Plugin>>,
 }
 
 impl ClassicConfig {
@@ -88,19 +89,11 @@ impl ClassicConfig {
 
     pub fn enabled_plugin_names(&self) -> Vec<String> {
         self.plugins
-            .as_ref()
-            .map(|plugins| {
-                plugins
-                    .iter()
-                    .filter_map(|(name, plugin)| {
-                        if plugin.enabled.unwrap_or(false) {
-                            Some(name.clone())
-                        } else {
-                            None
-                        }
-                    })
-                    .collect()
-            })
-            .unwrap_or_default()
+            .iter()
+            .chain(self.engines.iter())
+            .flat_map(|map| map.iter())
+            .filter(|&(_name, plugin)| plugin.enabled.unwrap_or(false))
+            .map(|(name, _plugin)| name.clone())
+            .collect()
     }
 }

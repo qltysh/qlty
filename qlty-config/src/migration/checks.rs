@@ -242,6 +242,7 @@ mod test {
             }),
             exclude_patterns: None,
             plugins: None,
+            engines: None,
         }
     }
 
@@ -395,6 +396,7 @@ mod test {
             }),
             exclude_patterns: None,
             plugins: None,
+            engines: None,
         };
 
         CheckMigration::migrate_duplication_check(
@@ -485,6 +487,7 @@ mod test {
                 }),
             }),
             plugins: None,
+            engines: None,
         };
 
         CheckMigration::migrate_maintainability_checks(&classic_config, &mut smells_table)?;
@@ -555,6 +558,7 @@ mod test {
             checks: None,
             exclude_patterns: None,
             plugins: None,
+            engines: None,
         };
 
         CheckMigration::migrate_maintainability_checks(&classic_config, &mut smells_table)?;
