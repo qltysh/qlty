@@ -39,7 +39,7 @@ package_file_candidate_filters = ["prettier"]
 script = "prettier --config ${config_file} -w ${target}"
 runs_from = { type = "tool_directory" }
 batch_by = "config_file"
-success_codes = [0, 2]
+success_codes = [0] # https://prettier.io/docs/cli#exit-codes
 cache_results = true
 output = "rewrite"
 batch = true
