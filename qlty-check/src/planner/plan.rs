@@ -3,8 +3,8 @@ use super::InvocationPlan;
 use crate::cache::IssueCache;
 use crate::cache::IssuesCacheHit;
 use crate::executor::staging_area::StagingArea;
+use crate::settings::CheckFilter;
 use crate::tool::Tool;
-use crate::Settings;
 use qlty_analysis::workspace_entries::TargetMode;
 use qlty_config::config::issue_transformer::IssueTransformer;
 use qlty_config::{QltyConfig, Workspace};
@@ -18,7 +18,14 @@ use std::path::PathBuf;
 pub struct Plan {
     pub verb: ExecutionVerb,
     pub target_mode: TargetMode,
-    pub settings: Settings,
+    pub progress_enabled: bool,
+    pub install_only: bool,
+    pub skip_errored_plugins: bool,
+    pub ai_enabled: bool,
+    pub fix_enabled: bool,
+    pub allow_unsafe: bool,
+    pub auth_token: Option<String>,
+    pub filters: Vec<CheckFilter>,
     pub config: QltyConfig,
     pub workspace: Workspace,
     pub jobs: usize,

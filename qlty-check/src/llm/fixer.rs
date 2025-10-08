@@ -66,12 +66,12 @@ impl IssueTransformer for Fixer {
 impl Fixer {
     pub fn new(plan: &Plan, progress: Progress) -> Self {
         // If auth_token is missing, use empty string as a fallback
-        let auth_token = plan.settings.auth_token.clone().unwrap_or_default();
+        let auth_token = plan.auth_token.clone().unwrap_or_default();
 
         Self {
             progress,
             staging_area: plan.staging_area.clone(),
-            r#unsafe: plan.settings.r#unsafe,
+            r#unsafe: plan.allow_unsafe,
             attempts_per_file: Arc::new(Mutex::new(HashMap::new())),
             total_attempts: Arc::new(AtomicUsize::new(0)),
             auth_token,

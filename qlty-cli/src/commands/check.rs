@@ -123,6 +123,10 @@ pub struct Check {
 
     /// Files to analyze
     pub paths: Vec<PathBuf>,
+
+    /// Install tools only, do not run checks
+    #[arg(long)]
+    install_only: bool,
 }
 
 impl Check {
@@ -313,6 +317,7 @@ impl Check {
                 }
             };
         }
+        settings.install_only = self.install_only;
 
         Ok(settings)
     }
