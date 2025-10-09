@@ -434,18 +434,6 @@ impl Publish {
             }
         );
 
-        if report.excluded_files_count > 0 {
-            eprintln!(
-                "    WARNING: {} {} excluded",
-                report.excluded_files_count.to_formatted_string(&Locale::en),
-                if report.excluded_files_count == 1 {
-                    "path"
-                } else {
-                    "paths"
-                }
-            );
-        }
-
         let mut missing_files = report.missing_files.iter().collect::<Vec<_>>();
         missing_files.sort();
 
