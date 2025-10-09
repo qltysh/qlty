@@ -16,7 +16,7 @@ success_codes = [0, 1]
 output = "stdout"
 output_format = "sarif"
 batch = true
-cache = true
+cache_results = true
 suggested = "targets"
 
 [plugins.definitions.ktlint.drivers.format]
