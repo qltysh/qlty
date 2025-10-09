@@ -1,5 +1,6 @@
 use crate::{
-    initializer::Settings, Arguments, CommandError, CommandSuccess, Initializer, QltyRelease,
+    initializer::{DetectedPlugin, Settings},
+    Arguments, CommandError, CommandSuccess, Initializer, QltyRelease,
 };
 use anyhow::{Context, Result};
 use clap::Args;
@@ -8,7 +9,10 @@ use qlty_config::{
     config::{IssueMode, PluginDef},
     Workspace,
 };
-use std::fs::{self, create_dir_all};
+use std::{
+    collections::HashMap,
+    fs::{self, create_dir_all},
+};
 use toml_edit::{array, table, value, DocumentMut};
 
 #[derive(Args, Debug)]
@@ -33,18 +37,18 @@ impl ConfigDocument {
         })
     }
 
-    pub fn enable_plugin(&mut self, name: &str, version: &str) -> Result<()> {
+    pub fn enable_plugin(&mut self, plugin: DetectedPlugin) -> Result<()> {
         let config = self.workspace.config()?;
 
         let plugin_def = config
             .plugins
             .definitions
-            .get(name)
+            .get(&plugin.name)
             .cloned()
             .with_context(|| {
                 format!(
                     "Unknown plugin: The {} plugin was not found in any source.",
-                    name
+                    &plugin.name
                 )
             })?;
 
@@ -54,14 +58,18 @@ impl ConfigDocument {
 
         if let Some(plugin_tables) = self.document["plugin"].as_array_of_tables_mut() {
             for plugin_table in plugin_tables.iter_mut() {
-                if plugin_table["name"].as_str() == Some(name) {
+                if plugin_table["name"].as_str() == Some(&plugin.name) {
                     match plugin_table.get("mode") {
                         Some(value) if value.as_str() == Some(IssueMode::Disabled.to_str()) => {
                             plugin_table.remove("mode");
                             return Ok(());
                         }
                         Some(_) | None => {
-                            eprintln!("{} Plugin {} is already enabled", style("⚠").yellow(), name);
+                            eprintln!(
+                                "{} Plugin {} is already enabled",
+                                style("⚠").yellow(),
+                                &plugin.name
+                            );
                             return Ok(());
                         }
                     }
@@ -70,10 +78,30 @@ impl ConfigDocument {
         }
 
         let mut plugin_table = table();
-        plugin_table["name"] = value(name);
+        plugin_table["name"] = value(&plugin.name);
 
-        if version != "latest" {
-            plugin_table["version"] = value(version);
+        if &plugin.version != "latest" {
+            plugin_table["version"] = value(&plugin.version);
+        }
+
+        if let Some(package_file) = &plugin.package_file {
+            plugin_table["package_file"] = value(package_file);
+        }
+
+        if !plugin.package_filters.is_empty() {
+            let mut filters_array = toml_edit::Array::new();
+            for filter in &plugin.package_filters {
+                filters_array.push(filter);
+            }
+            plugin_table["package_filters"] = filters_array.into();
+        }
+
+        if let Some(prefix) = &plugin.prefix {
+            plugin_table["prefix"] = value(prefix);
+        }
+
+        if plugin.mode != IssueMode::Block {
+            plugin_table["mode"] = value(plugin.mode.to_str());
         }
 
         self.document["plugin"]
@@ -81,7 +109,7 @@ impl ConfigDocument {
             .unwrap()
             .push(plugin_table.as_table().unwrap().clone());
 
-        self.copy_configs(name, plugin_def)?;
+        self.copy_configs(&plugin.name, plugin_def)?;
 
         Ok(())
     }
@@ -119,6 +147,32 @@ impl ConfigDocument {
 
         Ok(())
     }
+
+    pub fn enable_plugins(
+        &mut self,
+        workspace: &Workspace,
+        plugins_to_enable: HashMap<String, String>,
+    ) -> Result<()> {
+        let settings = Settings {
+            workspace: workspace.clone(),
+            skip_plugins: false,
+            skip_default_source: false,
+            plugins_to_enable: Some(plugins_to_enable),
+            ..Default::default()
+        };
+
+        let mut initializer = Initializer::new(settings)?;
+        initializer.prepare()?;
+        initializer.compute()?;
+
+        for plugin in initializer.plugins {
+            self.enable_plugin(plugin)?;
+        }
+
+        self.write()?;
+
+        Ok(())
+    }
 }
 
 impl Enable {
@@ -150,17 +204,17 @@ impl Enable {
             eprintln!("{} Created .qlty/qlty.toml", style("✔").green());
         }
 
-        let mut config = ConfigDocument::new(&workspace)?;
+        let mut plugins_to_enable = HashMap::new();
 
         for plugin in &self.plugins {
             let parts: Vec<&str> = plugin.split('=').collect();
 
             match parts.len() {
                 1 => {
-                    config.enable_plugin(parts[0], "latest")?;
+                    plugins_to_enable.insert(parts[0].to_string(), "latest".to_string());
                 }
                 2 => {
-                    config.enable_plugin(parts[0], parts[1])?;
+                    plugins_to_enable.insert(parts[0].to_string(), parts[1].to_string());
                 }
                 _ => {
                     return CommandError::err("Invalid plugin format");
@@ -168,7 +222,9 @@ impl Enable {
             }
         }
 
-        config.write()?;
+        let mut config = ConfigDocument::new(&workspace)?;
+        config.enable_plugins(&workspace, plugins_to_enable)?;
+
         CommandSuccess::ok()
     }
 }
@@ -177,7 +233,7 @@ impl Enable {
 mod tests {
     use super::*;
     use qlty_analysis::utils::fs::path_to_native_string;
-    use qlty_test_utilities::git::sample_repo;
+    use qlty_test_utilities::git::{create_temp_dir, init as init_repo, sample_repo};
 
     #[test]
     fn test_enable_plugin() {
@@ -207,7 +263,12 @@ output = "pass_fail"
         };
 
         let mut config = ConfigDocument::new(&workspace).unwrap();
-        config.enable_plugin("to_enable", "latest").unwrap();
+        let plugin = DetectedPlugin {
+            name: "to_enable".to_string(),
+            version: "latest".to_string(),
+            ..Default::default()
+        };
+        config.enable_plugin(plugin).unwrap();
 
         let expected = r#"
 config_version = "0"
@@ -256,7 +317,12 @@ output = "pass_fail"
         };
 
         let mut config = ConfigDocument::new(&workspace).unwrap();
-        config.enable_plugin("to_enable", "1.2.1").unwrap();
+        let plugin = DetectedPlugin {
+            name: "to_enable".to_string(),
+            version: "1.2.1".to_string(),
+            ..Default::default()
+        };
+        config.enable_plugin(plugin).unwrap();
 
         let expected = r#"
 config_version = "0"
@@ -311,7 +377,12 @@ mode = "monitor"
         };
 
         let mut config = ConfigDocument::new(&workspace).unwrap();
-        config.enable_plugin("already_enabled", "1.2.1").unwrap();
+        let plugin = DetectedPlugin {
+            name: "already_enabled".to_string(),
+            version: "1.2.1".to_string(),
+            ..Default::default()
+        };
+        config.enable_plugin(plugin).unwrap();
 
         let expected = r#"
 config_version = "0"
@@ -367,7 +438,12 @@ mode = "disabled"
         };
 
         let mut config = ConfigDocument::new(&workspace).unwrap();
-        config.enable_plugin("marked_disabled", "1.2.1").unwrap();
+        let plugin = DetectedPlugin {
+            name: "marked_disabled".to_string(),
+            version: "1.2.1".to_string(),
+            ..Default::default()
+        };
+        config.enable_plugin(plugin).unwrap();
 
         let expected = r#"
 config_version = "0"
@@ -413,7 +489,12 @@ default = true
         };
 
         let mut config = ConfigDocument::new(&workspace).unwrap();
-        config.enable_plugin("shellcheck", "latest").unwrap();
+        let plugin = DetectedPlugin {
+            name: "shellcheck".to_string(),
+            version: "latest".to_string(),
+            ..Default::default()
+        };
+        config.enable_plugin(plugin).unwrap();
 
         let expected = r#"
 config_version = "0"
@@ -432,6 +513,65 @@ name = "shellcheck"
             .join(".shellcheckrc");
 
         assert!(expected_config_path.exists(), "Config file was not copied");
+        assert_eq!(config.document.to_string().trim(), expected.trim());
+    }
+
+    #[test]
+    fn test_package_files() {
+        let temp_dir = create_temp_dir();
+        let temp_path = temp_dir.path().to_path_buf();
+
+        fs::create_dir_all(&temp_path.join(path_to_native_string(".qlty"))).ok();
+        fs::write(
+            &temp_path.join(path_to_native_string(".qlty/qlty.toml")),
+            r#"
+config_version = "0"
+
+[[source]]
+name = "default"
+default = true
+
+            "#,
+        )
+        .ok();
+
+        let package_file = temp_path.join("package.json");
+        let package_file_contents = r#"{
+                "devDependencies": {
+                    "eslint": "8.0.0",
+                    "eslint-remix": "14.0.0",
+                    "eslint-prettier": "4.0.0",
+                    "other": "1.0.0"
+                },
+                "scripts": {
+                    "test": "echo hello && exit 1"
+                }
+            }"#;
+        std::fs::write(&package_file, package_file_contents).ok();
+
+        init_repo(&temp_path);
+
+        let workspace = Workspace {
+            root: temp_path.clone(),
+        };
+
+        let mut config = ConfigDocument::new(&workspace).unwrap();
+        let plugin = HashMap::from([("eslint".to_string(), "latest".to_string())]);
+        config.enable_plugins(&workspace, plugin).unwrap();
+
+        let expected = r#"
+config_version = "0"
+
+[[source]]
+name = "default"
+default = true
+
+[[plugin]]
+name = "eslint"
+package_file = "package.json"
+package_filters = ["eslint", "prettier"]
+        "#;
+
         assert_eq!(config.document.to_string().trim(), expected.trim());
     }
 }
