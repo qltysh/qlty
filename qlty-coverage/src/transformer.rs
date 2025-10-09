@@ -240,18 +240,11 @@ impl DefaultPathFixer {
     }
 
     fn clean_windows_prefix(&self, path: &str) -> String {
-        // Remove common Windows drive prefixes like C:/, D:/, etc.
-        if let Some(stripped) = path.strip_prefix("C:/") {
-            return stripped.to_string();
-        }
-        if let Some(stripped) = path.strip_prefix("D:/") {
-            return stripped.to_string();
-        }
-        // Handle any single letter drive
         if path.len() >= 3 && path.chars().nth(1) == Some(':') && path.chars().nth(2) == Some('/') {
-            return path[3..].to_string();
+            path[3..].to_string()
+        } else {
+            path.to_string()
         }
-        path.to_string()
     }
 }
 
