@@ -70,7 +70,8 @@ impl Initializer {
                 ..Default::default()
             };
 
-            // Get the plugin definition from scanner's sources_only_config
+            // plugin definitions are present in souces_only_config and not
+            // in default config
             if let Some(plugin_def) = self
                 .scanner
                 .sources_only_config
