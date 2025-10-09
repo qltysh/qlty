@@ -114,7 +114,7 @@ tar = "0.4.44"
 tempfile = "3.18.0"
 termbg = "0.6.0"
 thiserror = "2.0.16"
-time = { version = "0.3.43", features = [
+time = { version = "0.3.44", features = [
     "serde-well-known",
     "formatting",
     "parsing",
