@@ -54,9 +54,7 @@ impl Planner {
         let metadata = metadata_planner.compute()?;
 
         let transformers = self.compute_transformers(&metadata)?;
-        let auto_path_fixing_enabled = transformers
-            .iter()
-            .any(|t| format!("{:?}", t).contains("DefaultPathFixer"));
+        let auto_path_fixing_enabled = transformers.iter().any(|t| t.is_default_path_fixer());
 
         Ok(Plan {
             metadata: metadata.clone(),

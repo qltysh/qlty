@@ -8,6 +8,10 @@ use std::{fmt::Debug, path::PathBuf};
 pub trait Transformer: Debug + Send + Sync + 'static {
     fn transform(&self, file_coverage: FileCoverage) -> Option<FileCoverage>;
     fn clone_box(&self) -> Box<dyn Transformer>;
+
+    fn is_default_path_fixer(&self) -> bool {
+        false
+    }
 }
 
 impl Clone for Box<dyn Transformer> {
@@ -276,6 +280,10 @@ impl Transformer for DefaultPathFixer {
 
     fn clone_box(&self) -> Box<dyn Transformer> {
         Box::new(self.clone())
+    }
+
+    fn is_default_path_fixer(&self) -> bool {
+        true
     }
 }
 
