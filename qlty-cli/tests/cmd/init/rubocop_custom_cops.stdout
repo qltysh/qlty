@@ -83,6 +83,3 @@ drivers = [
 [[plugin]]
 name = "trufflehog"
 
-[[plugin]]
-name = "yamllint"
-
