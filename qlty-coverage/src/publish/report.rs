@@ -20,6 +20,9 @@ pub struct Report {
 
     pub totals: CoverageMetrics,
     pub excluded_files_count: usize,
+
+    #[serde(skip_serializing)]
+    pub auto_path_fixing_enabled: bool,
 }
 
 impl Report {

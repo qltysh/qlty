@@ -26,6 +26,7 @@ https://qlty.sh/d/coverage
 
  COVERAGE DATA 
 
+    Auto-path fixing: Enabled
     2 unique code file paths
     2 paths are missing on disk (100.0%)
 

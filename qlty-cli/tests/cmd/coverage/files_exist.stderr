@@ -31,6 +31,7 @@ https://qlty.sh/d/coverage
 
  COVERAGE DATA 
 
+    Auto-path fixing: Enabled
     WARNING: 1 code file path was excluded by configuration rules
 
     2 unique code file paths
