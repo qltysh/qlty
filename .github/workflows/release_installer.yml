@@ -22,7 +22,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Setup AWS CLI
-        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838
+        uses: aws-actions/configure-aws-credentials@00943011d9042930efac3dcd3a170e4273319bc8
         with:
           role-to-assume: ${{ secrets.QLTY_RELEASE_AWS_ROLE_ARN }}
           role-session-name: ${{ vars.QLTY_RELEASE_AWS_ROLE_SESSION_NAME }}
