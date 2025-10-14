@@ -2,7 +2,7 @@ use super::{config::enabled_plugins, ActivePlugin, Planner};
 use anyhow::{Context, Result};
 use globset::{GlobBuilder, GlobSet, GlobSetBuilder};
 use itertools::Itertools;
-use qlty_config::config::PluginFetch;
+use qlty_config::{config::PluginFetch, warn_once};
 use serde::Serialize;
 use std::{
     collections::{HashMap, HashSet},
@@ -148,10 +148,10 @@ pub fn plugin_configs(planner: &Planner) -> Result<HashMap<String, Vec<PluginCon
                             "Excluding config file {:?} due to exclude patterns",
                             entry.path()
                         );
-                        eprintln!(
+                        warn_once(&format!(
                             "Excluding config file {:?} due to exclude patterns",
                             entry.path()
-                        );
+                        ));
                     } else {
                         let entry_path = entry.path();
                         let config_file = match PluginConfigFile::from_path(entry_path) {
