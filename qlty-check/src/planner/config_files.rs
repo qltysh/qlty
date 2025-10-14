@@ -148,6 +148,10 @@ pub fn plugin_configs(planner: &Planner) -> Result<HashMap<String, Vec<PluginCon
                             "Excluding config file {:?} due to exclude patterns",
                             entry.path()
                         );
+                        eprintln!(
+                            "Excluding config file {:?} due to exclude patterns",
+                            entry.path()
+                        );
                     } else {
                         let entry_path = entry.path();
                         let config_file = match PluginConfigFile::from_path(entry_path) {
