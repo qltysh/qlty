@@ -9,7 +9,7 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
-use tracing::{debug, error};
+use tracing::{debug, error, warn};
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash)]
 pub struct PluginConfigFile {
@@ -142,26 +142,31 @@ pub fn plugin_configs(planner: &Planner) -> Result<HashMap<String, Vec<PluginCon
         if let Some(os_str) = entry.path().file_name() {
             let file_name = os_str.to_os_string();
             for plugin_config in &plugins_configs {
-                if plugin_config.config_globset.is_match(&file_name)
-                    && !exclude_globset.is_match(entry.path())
-                {
-                    let entry_path = entry.path();
-                    let config_file = match PluginConfigFile::from_path(entry_path) {
-                        Ok(config_file) => config_file,
-                        _ => {
-                            error!("Failed to read config file from path {:?}", entry_path);
-                            continue;
-                        }
-                    };
+                if plugin_config.config_globset.is_match(&file_name) {
+                    if exclude_globset.is_match(entry.path()) {
+                        warn!(
+                            "Excluding config file {:?} due to exclude patterns",
+                            entry.path()
+                        );
+                    } else {
+                        let entry_path = entry.path();
+                        let config_file = match PluginConfigFile::from_path(entry_path) {
+                            Ok(config_file) => config_file,
+                            _ => {
+                                error!("Failed to read config file from path {:?}", entry_path);
+                                continue;
+                            }
+                        };
 
-                    debug!(
-                        "Found config file for plugin {}: {:?}",
-                        &plugin_config.plugin_name, &config_file.path
-                    );
-                    configs
-                        .entry(plugin_config.plugin_name.clone())
-                        .or_default()
-                        .push(config_file);
+                        debug!(
+                            "Found config file for plugin {}: {:?}",
+                            &plugin_config.plugin_name, &config_file.path
+                        );
+                        configs
+                            .entry(plugin_config.plugin_name.clone())
+                            .or_default()
+                            .push(config_file);
+                    }
                 }
             }
         }
