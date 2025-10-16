@@ -3885,7 +3885,7 @@ impl serde::Serialize for Stats {
         if !self.project_id.is_empty() {
             len += 1;
         }
-        if !self.id.is_empty() {
+        if !self.analysis_id.is_empty() {
             len += 1;
         }
         if !self.reference.is_empty() {
@@ -3961,8 +3961,8 @@ impl serde::Serialize for Stats {
         if !self.project_id.is_empty() {
             struct_ser.serialize_field("projectId", &self.project_id)?;
         }
-        if !self.id.is_empty() {
-            struct_ser.serialize_field("id", &self.id)?;
+        if !self.analysis_id.is_empty() {
+            struct_ser.serialize_field("analysisId", &self.analysis_id)?;
         }
         if !self.reference.is_empty() {
             struct_ser.serialize_field("reference", &self.reference)?;
@@ -4048,7 +4048,8 @@ impl<'de> serde::Deserialize<'de> for Stats {
             "workspaceId",
             "project_id",
             "projectId",
-            "id",
+            "analysis_id",
+            "analysisId",
             "reference",
             "build_id",
             "buildId",
@@ -4086,7 +4087,7 @@ impl<'de> serde::Deserialize<'de> for Stats {
         enum GeneratedField {
             WorkspaceId,
             ProjectId,
-            Id,
+            AnalysisId,
             Reference,
             BuildId,
             CommitSha,
@@ -4132,7 +4133,7 @@ impl<'de> serde::Deserialize<'de> for Stats {
                         match value {
                             "workspaceId" | "workspace_id" => Ok(GeneratedField::WorkspaceId),
                             "projectId" | "project_id" => Ok(GeneratedField::ProjectId),
-                            "id" => Ok(GeneratedField::Id),
+                            "analysisId" | "analysis_id" => Ok(GeneratedField::AnalysisId),
                             "reference" => Ok(GeneratedField::Reference),
                             "buildId" | "build_id" => Ok(GeneratedField::BuildId),
                             "commitSha" | "commit_sha" => Ok(GeneratedField::CommitSha),
@@ -4176,7 +4177,7 @@ impl<'de> serde::Deserialize<'de> for Stats {
             {
                 let mut workspace_id__ = None;
                 let mut project_id__ = None;
-                let mut id__ = None;
+                let mut analysis_id__ = None;
                 let mut reference__ = None;
                 let mut build_id__ = None;
                 let mut commit_sha__ = None;
@@ -4213,11 +4214,11 @@ impl<'de> serde::Deserialize<'de> for Stats {
                             }
                             project_id__ = Some(map_.next_value()?);
                         }
-                        GeneratedField::Id => {
-                            if id__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("id"));
+                        GeneratedField::AnalysisId => {
+                            if analysis_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("analysisId"));
                             }
-                            id__ = Some(map_.next_value()?);
+                            analysis_id__ = Some(map_.next_value()?);
                         }
                         GeneratedField::Reference => {
                             if reference__.is_some() {
@@ -4378,7 +4379,7 @@ impl<'de> serde::Deserialize<'de> for Stats {
                 Ok(Stats {
                     workspace_id: workspace_id__.unwrap_or_default(),
                     project_id: project_id__.unwrap_or_default(),
-                    id: id__.unwrap_or_default(),
+                    analysis_id: analysis_id__.unwrap_or_default(),
                     reference: reference__.unwrap_or_default(),
                     build_id: build_id__.unwrap_or_default(),
                     commit_sha: commit_sha__.unwrap_or_default(),

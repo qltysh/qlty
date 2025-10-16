@@ -88,7 +88,7 @@ pub struct Stats {
     #[prost(string, tag="7")]
     pub project_id: ::prost::alloc::string::String,
     #[prost(string, tag="16")]
-    pub id: ::prost::alloc::string::String,
+    pub analysis_id: ::prost::alloc::string::String,
     #[prost(string, tag="12")]
     pub reference: ::prost::alloc::string::String,
     #[prost(string, tag="13")]
