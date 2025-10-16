@@ -20,16 +20,6 @@ pub fn warn_once(warning_message: &str) {
 }
 
 #[cfg(test)]
-pub(crate) fn clear_warnings() {
-    WARNING_TRACKER.lock().unwrap().clear();
-}
-
-#[cfg(test)]
-pub(crate) fn collected_warnings() -> Vec<String> {
-    WARNING_TRACKER.lock().unwrap().iter().cloned().collect()
-}
-
-#[cfg(test)]
 mod tests {
     use super::*;
 
