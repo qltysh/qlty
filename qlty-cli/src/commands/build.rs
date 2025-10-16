@@ -323,6 +323,7 @@ impl Build {
         });
 
         let mut metadata = Metadata {
+            id: Uuid::now_v7().to_string(),
             workspace_id: env::var("QLTY_WORKSPACE_ID").unwrap_or_default(),
             project_id: match config.project_id {
                 Some(ref id) => id.clone(),

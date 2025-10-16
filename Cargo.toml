@@ -141,7 +141,7 @@ tree-sitter-typescript = "0.21.2"
 trycmd = "0.15.8"
 ureq = { version = "2.12.1", features = ["json", "proxy-from-env"] }
 url = "2.5.7"
-uuid = { version = "1.14.0", features = ["v4"] }
+uuid = { version = "1.14.0", features = ["v4", "v7"] }
 walkdir = "2.5.0"
 webbrowser = "1.0.4"
 whoami = "1.5.2"
