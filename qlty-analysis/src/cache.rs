@@ -207,7 +207,7 @@ mod test {
     #[test]
     fn filesystem_cache() {
         let tmpdir = tempfile::tempdir().unwrap();
-        let cache = FilesystemCache::new(tmpdir.into_path(), "bytes");
+        let cache = FilesystemCache::new(tmpdir.keep(), "bytes");
 
         let mut digest = HashDigest::new();
         digest.add("foo", "bar");
