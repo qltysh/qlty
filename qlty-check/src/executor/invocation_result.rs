@@ -59,6 +59,7 @@ impl InvocationResult {
             invocation: Invocation {
                 workspace_id: Default::default(),
                 project_id: Default::default(),
+                analysis_id: Default::default(),
                 reference: Default::default(),
                 build_id: Default::default(),
                 build_timestamp: Default::default(),

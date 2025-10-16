@@ -331,6 +331,7 @@ impl Add for analysis::v1::Stats {
 
     fn add(self, other: Self) -> Self {
         Self {
+            analysis_id: self.analysis_id,
             name: self.name,
             fully_qualified_name: self.fully_qualified_name,
             workspace_id: self.workspace_id,
