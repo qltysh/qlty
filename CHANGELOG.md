@@ -1,5 +1,42 @@
 # Changelog
 
+## v0.584.0 (2025-10-17)
+
+No changes. (Release was triggered by internal improvements.)
+
+## v0.583.0 (2025-10-16)
+
+### Fixed
+
+- Revert behavior introduced in 0.582.0 which inadvertently caused our TOML parsing to become more strict in certain cases (#2452)
+
+## v0.582.0 (2025-10-16)
+
+### New
+
+- Add automatic path fixing for CI/CD environments when publishing coverage (#2338)
+
+### Fixed
+
+- Unify plugins enable and qlty init behaviour for package_file and filters (#2334)
+- Warn on excluding config_file (#2446)
+
+## v0.581.0 (2025-10-09)
+
+### New
+
+- Add install only flag to check command (#2426)
+- Add support for engines in config migrate (#2439)
+
+### Fixed
+
+- Fix prettier success_codes configuration (#2428)
+- Fix plugin configs not to include affects cache (#2427)
+
+#### Notes
+
+NB: There was no release version: 0.580.0
+
 ## v0.579.0 (2025-09-29)
 
 ### Fixed
