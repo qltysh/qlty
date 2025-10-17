@@ -55,6 +55,8 @@ pub struct Message {
     pub workspace_id: ::prost::alloc::string::String,
     #[prost(string, tag="8")]
     pub project_id: ::prost::alloc::string::String,
+    #[prost(string, tag="15")]
+    pub analysis_id: ::prost::alloc::string::String,
     #[prost(string, tag="9")]
     pub reference: ::prost::alloc::string::String,
     #[prost(string, tag="10")]
@@ -85,6 +87,8 @@ pub struct Stats {
     pub workspace_id: ::prost::alloc::string::String,
     #[prost(string, tag="7")]
     pub project_id: ::prost::alloc::string::String,
+    #[prost(string, tag="16")]
+    pub analysis_id: ::prost::alloc::string::String,
     #[prost(string, tag="12")]
     pub reference: ::prost::alloc::string::String,
     #[prost(string, tag="13")]
@@ -136,6 +140,8 @@ pub struct Invocation {
     pub workspace_id: ::prost::alloc::string::String,
     #[prost(string, tag="26")]
     pub project_id: ::prost::alloc::string::String,
+    #[prost(string, tag="33")]
+    pub analysis_id: ::prost::alloc::string::String,
     #[prost(string, tag="27")]
     pub reference: ::prost::alloc::string::String,
     #[prost(string, tag="28")]
@@ -205,6 +211,8 @@ pub struct Issue {
     pub workspace_id: ::prost::alloc::string::String,
     #[prost(string, tag="31")]
     pub project_id: ::prost::alloc::string::String,
+    #[prost(string, tag="42")]
+    pub analysis_id: ::prost::alloc::string::String,
     #[prost(string, tag="1")]
     pub id: ::prost::alloc::string::String,
     #[prost(string, tag="36")]
