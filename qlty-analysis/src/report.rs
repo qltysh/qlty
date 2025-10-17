@@ -90,6 +90,7 @@ impl Report {
         self.invocations.par_iter_mut().for_each(|invocation| {
             invocation.workspace_id = self.metadata.workspace_id.clone();
             invocation.project_id = self.metadata.project_id.clone();
+            invocation.analysis_id = self.metadata.id.clone();
             invocation.reference = self.metadata.reference.clone();
             invocation.build_id = self.metadata.build_id.clone();
             invocation.build_timestamp = self.metadata.start_time;
@@ -99,6 +100,7 @@ impl Report {
         self.messages.par_iter_mut().for_each(|message| {
             message.workspace_id = self.metadata.workspace_id.clone();
             message.project_id = self.metadata.project_id.clone();
+            message.analysis_id = self.metadata.id.clone();
             message.reference = self.metadata.reference.clone();
             message.build_id = self.metadata.build_id.clone();
             message.build_timestamp = self.metadata.start_time;
@@ -108,6 +110,7 @@ impl Report {
         self.issues.par_iter_mut().for_each(|issue| {
             issue.workspace_id = self.metadata.workspace_id.clone();
             issue.project_id = self.metadata.project_id.clone();
+            issue.analysis_id = self.metadata.id.clone();
             issue.analyzed_at = Some(self.metadata.start_time.unwrap());
             issue.pull_request_number = self.metadata.pull_request_number.clone();
             issue.tracked_branch_id = self.metadata.tracked_branch_id.clone();
@@ -120,6 +123,7 @@ impl Report {
         self.stats.par_iter_mut().for_each(|stats| {
             stats.workspace_id = self.metadata.workspace_id.clone();
             stats.project_id = self.metadata.project_id.clone();
+            stats.analysis_id = self.metadata.id.clone();
             stats.analyzed_at = Some(self.metadata.start_time.unwrap());
             stats.pull_request_number = self.metadata.pull_request_number.clone();
             stats.tracked_branch_id = self.metadata.tracked_branch_id.clone();

@@ -18,6 +18,7 @@
   "invocations": [],
   "issues": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -59,6 +60,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "tool": "qlty",
@@ -100,6 +102,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "tool": "qlty",
@@ -131,6 +134,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "tool": "qlty",
@@ -162,6 +166,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "tool": "qlty",
@@ -189,6 +194,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "tool": "qlty",
@@ -216,6 +222,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "tool": "qlty",
@@ -243,6 +250,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "tool": "qlty",
@@ -273,6 +281,7 @@
   ],
   "stats": [
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "boolean_logic.ts",
@@ -293,6 +302,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "count_complex_function.ts",
@@ -313,6 +323,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "count_complex_nested_function.ts",
@@ -333,6 +344,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "count_nesting_loops.ts",
@@ -353,6 +365,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "count_ternary.ts",
@@ -373,6 +386,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "count_binary.ts",
@@ -393,6 +407,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "count_if.ts",
@@ -413,6 +428,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "count_loop.ts",
@@ -433,6 +449,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "count_no_logic.ts",
@@ -453,6 +470,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "cyclo_if_else.ts",
@@ -473,6 +491,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "cyclo_if_else_if.ts",
@@ -493,6 +512,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "cyclo_if_else_if_else.ts",
@@ -513,6 +533,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "iterative_for_of.ts",
@@ -533,6 +554,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "iterative_map.ts",
@@ -553,6 +575,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "iterative_methods_with_filter_and_include.ts",
@@ -573,6 +596,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "basic_declaration.ts",
@@ -593,6 +617,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "class_declaration.ts",
@@ -613,6 +638,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "declaration_with_access_modifiers.ts",
@@ -633,6 +659,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "declaration_with_initializer.ts",
@@ -653,6 +680,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "ignore_collaborators.ts",
@@ -673,6 +701,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "multiple.ts",
@@ -693,6 +722,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "read.ts",
@@ -713,6 +743,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "unique.ts",
@@ -733,6 +764,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "write.ts",
@@ -753,6 +785,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "file_complexity.ts",
@@ -773,6 +806,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "function_complexity.ts",
@@ -793,6 +827,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "methods_with_parameters.ts",
@@ -813,6 +848,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "methods_without_parameters.ts",
@@ -833,6 +869,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "singleton_methods_with_parameters.ts",
@@ -853,6 +890,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "singleton_methods_without_parameters.ts",
@@ -873,6 +911,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "identical.ts",
@@ -893,6 +932,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "lcom_0.ts",
@@ -913,6 +953,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "lcom_1-1.ts",
@@ -933,6 +974,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "lcom_1.ts",
@@ -953,6 +995,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "lcom_2.ts",
@@ -973,6 +1016,7 @@
       "lcom4": 2
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "lines.ts",
@@ -993,6 +1037,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "nested_control.ts",
@@ -1013,6 +1058,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "parameters.ts",
@@ -1033,6 +1079,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "returns.ts",
@@ -1053,6 +1100,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "cognitive",
@@ -1072,6 +1120,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "cyclomatic",
@@ -1091,6 +1140,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "fields",
@@ -1110,6 +1160,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "functions",
@@ -1129,6 +1180,7 @@
       "lcom4": 2
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "lcom",

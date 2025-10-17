@@ -18,6 +18,7 @@
   "invocations": [],
   "issues": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -59,6 +60,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -100,6 +102,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -127,6 +130,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -154,6 +158,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -185,6 +190,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -216,6 +222,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -243,6 +250,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -270,6 +278,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -297,6 +306,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -325,6 +335,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -354,6 +365,7 @@
   ],
   "stats": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "BooleanLogic.cs",
@@ -374,6 +386,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "FileComplexity.cs",
@@ -394,6 +407,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "FunctionComplexity.cs",
@@ -414,6 +428,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Identical.cs",
@@ -434,6 +449,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Lines.cs",
@@ -454,6 +470,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "NestedControl.cs",
@@ -474,6 +491,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Parameters.cs",
@@ -494,6 +512,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Returns.cs",
@@ -514,6 +533,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CountConditionalAssignment.cs",
@@ -534,6 +554,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CountFunctionWithTernary.cs",
@@ -554,6 +575,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CountNonSequentialLogicalOperators.cs",
@@ -574,6 +596,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CountRecursion.cs",
@@ -594,6 +617,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "MultipleConditionals.cs",
@@ -614,6 +638,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloBasic.cs",
@@ -634,6 +659,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloIf.cs",
@@ -654,6 +680,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloIfElse.cs",
@@ -674,6 +701,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloIfElseIf.cs",
@@ -694,6 +722,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloIfElseIfElse.cs",
@@ -714,6 +743,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "EmptyFunction.cs",
@@ -734,6 +764,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "EmptyIf.cs",
@@ -754,6 +785,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "IfWithBool.cs",
@@ -774,6 +806,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "IterativeForOf.cs",
@@ -794,6 +827,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "IterativeMap.cs",
@@ -814,6 +848,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "IterativeMethodsWithFilterAndInclude.cs",
@@ -834,6 +869,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "WhileLoop.cs",
@@ -854,6 +890,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "ClassDeclaration.cs",
@@ -874,6 +911,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "GetterSetterDeclaration.cs",
@@ -894,6 +932,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Multiple.cs",
@@ -914,6 +953,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Other.cs",
@@ -934,6 +974,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "PrivateFieldDeclaration.cs",
@@ -954,6 +995,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "PublicFieldDeclaration.cs",
@@ -974,6 +1016,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Read.cs",
@@ -994,6 +1037,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "StaticFieldDeclaration.cs",
@@ -1014,6 +1058,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Unique.cs",
@@ -1034,6 +1079,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Write.cs",
@@ -1054,6 +1100,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "MethodsWithParams.cs",
@@ -1074,6 +1121,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "MethodsWithoutParams.cs",
@@ -1094,6 +1142,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "SingletonMethodsWithParams.cs",
@@ -1114,6 +1163,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "SingletonMethodsWithoutParams.cs",
@@ -1134,6 +1184,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_0.cs",
@@ -1154,6 +1205,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_1-1.cs",
@@ -1174,6 +1226,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_1.cs",
@@ -1194,6 +1247,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_2.cs",
@@ -1214,6 +1268,7 @@
       "lcom4": 2
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cognitive",
@@ -1233,6 +1288,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclomatic",
@@ -1252,6 +1308,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "fields",
@@ -1271,6 +1328,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "functions",
@@ -1290,6 +1348,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom",

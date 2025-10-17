@@ -11,6 +11,7 @@
   "invocations": [],
   "issues": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -52,6 +53,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -93,6 +95,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -134,6 +137,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -175,6 +179,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -216,6 +221,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -257,6 +263,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -288,6 +295,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -319,6 +327,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -350,6 +359,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -381,6 +391,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -412,6 +423,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -443,6 +455,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -474,6 +487,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -505,6 +519,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -536,6 +551,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -563,6 +579,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -590,6 +607,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -617,6 +635,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -644,6 +663,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -671,6 +691,7 @@
       "mode": "MODE_COMMENT"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -700,6 +721,7 @@
   ],
   "stats": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "BooleanLogic.swift",
@@ -720,6 +742,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "FileComplexity.swift",
@@ -740,6 +763,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "FunctionComplexity.swift",
@@ -760,6 +784,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Identical.swift",
@@ -780,6 +805,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Lines.swift",
@@ -800,6 +826,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "NestedControl.swift",
@@ -820,6 +847,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Returns.swift",
@@ -840,6 +868,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "SwiftClosures.swift",
@@ -860,6 +889,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "SwiftEnums.swift",
@@ -880,6 +910,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "SwiftExtensions.swift",
@@ -900,6 +931,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "SwiftProtocols.swift",
@@ -920,6 +952,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "SwiftStructs.swift",
@@ -940,6 +973,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "boolean_logic.swift",
@@ -960,6 +994,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "class_example.swift",
@@ -980,6 +1015,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CountConditionalAssignment.swift",
@@ -1000,6 +1036,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CountFunctionWithTernary.swift",
@@ -1020,6 +1057,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CountNonSequentialLogicalOperators.swift",
@@ -1040,6 +1078,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CountRecursion.swift",
@@ -1060,6 +1099,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "MultipleConditionals.swift",
@@ -1080,6 +1120,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloBasic.swift",
@@ -1100,6 +1141,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloIf.swift",
@@ -1120,6 +1162,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloIfElse.swift",
@@ -1140,6 +1183,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloIfElseIf.swift",
@@ -1160,6 +1204,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloIfElseIfElse.swift",
@@ -1180,6 +1225,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "EmptyFunction.swift",
@@ -1200,6 +1246,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "EmptyIf.swift",
@@ -1220,6 +1267,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "IfWithBool.swift",
@@ -1240,6 +1288,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "IterativeForOf.swift",
@@ -1260,6 +1309,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "IterativeMap.swift",
@@ -1280,6 +1330,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "IterativeMethodsWithFilterAndInclude.swift",
@@ -1300,6 +1351,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "WhileLoop.swift",
@@ -1320,6 +1372,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "ClassDeclaration.swift",
@@ -1340,6 +1393,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "GetterSetterDeclaration.swift",
@@ -1360,6 +1414,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Multiple.swift",
@@ -1380,6 +1435,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Other.swift",
@@ -1400,6 +1456,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "PrivateFieldDeclaration.swift",
@@ -1420,6 +1477,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "PublicFieldDeclaration.swift",
@@ -1440,6 +1498,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Read.swift",
@@ -1460,6 +1519,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "StaticFieldDeclaration.swift",
@@ -1480,6 +1540,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Unique.swift",
@@ -1500,6 +1561,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Write.swift",
@@ -1520,6 +1582,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "file_complexity.swift",
@@ -1540,6 +1603,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "function_complexity.swift",
@@ -1560,6 +1624,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "MethodsWithParams.swift",
@@ -1580,6 +1645,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "MethodsWithoutParams.swift",
@@ -1600,6 +1666,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "SingletonMethodsWithParams.swift",
@@ -1620,6 +1687,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "SingletonMethodsWithoutParams.swift",
@@ -1640,6 +1708,7 @@
       "lcom4": 2
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_0.swift",
@@ -1660,6 +1729,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_1-1.swift",
@@ -1680,6 +1750,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_1.swift",
@@ -1700,6 +1771,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_2.swift",
@@ -1720,6 +1792,7 @@
       "lcom4": 2
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "nested_control.swift",
@@ -1740,6 +1813,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "parameters.swift",
@@ -1760,6 +1834,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cognitive",
@@ -1779,6 +1854,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclomatic",
@@ -1798,6 +1874,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "fields",
@@ -1817,6 +1894,7 @@
       "lcom4": 2
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "functions",
@@ -1836,6 +1914,7 @@
       "lcom4": 4
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom",
