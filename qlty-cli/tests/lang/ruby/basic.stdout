@@ -18,6 +18,7 @@
   "invocations": [],
   "issues": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -45,6 +46,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -72,6 +74,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -99,6 +102,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -130,6 +134,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -161,6 +166,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -188,6 +194,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -215,6 +222,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -244,6 +252,7 @@
   ],
   "stats": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "boolean_logic.rb",
@@ -264,6 +273,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_catch_rescue_statements.rb",
@@ -284,6 +294,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_complex_logical_operator_sequence.rb",
@@ -304,6 +315,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_conditional_assignment.rb",
@@ -324,6 +336,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_function_with_ternary.rb",
@@ -344,6 +357,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_if_elsif.rb",
@@ -364,6 +378,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_multiple_if_statements.rb",
@@ -384,6 +399,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_nested_if_else.rb",
@@ -404,6 +420,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_nested_in_method_like_structures.rb",
@@ -424,6 +441,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_nested_logical_expressions.rb",
@@ -444,6 +462,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_nested_rescue_statements.rb",
@@ -464,6 +483,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_nested_while_statements.rb",
@@ -484,6 +504,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_nesting_for_catch_rescue_statements.rb",
@@ -504,6 +525,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_nesting_for_switch_statements.rb",
@@ -524,6 +546,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_nesting_for_while_statements.rb",
@@ -544,6 +567,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_non_sequential_logical_operators.rb",
@@ -564,6 +588,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_recursion.rb",
@@ -584,6 +609,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_recursive_calls_with_other_elements.rb",
@@ -604,6 +630,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_simple_logical_operator_sequences.rb",
@@ -624,6 +651,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_switch_statements.rb",
@@ -644,6 +672,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "does_not_increment_for_eponymous_method_called_on_object.rb",
@@ -664,6 +693,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "does_not_increment_recursion_for_class_method.rb",
@@ -684,6 +714,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "increments_nesting_level_for_each_switch_statement.rb",
@@ -704,6 +735,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "no_params_with_parenthesis.rb",
@@ -724,6 +756,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "recursion_no_params_with_self.rb",
@@ -744,6 +777,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "empty_function.rb",
@@ -764,6 +798,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "empty_if.rb",
@@ -784,6 +819,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "if_else.rb",
@@ -804,6 +840,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "if_elsif.rb",
@@ -824,6 +861,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "if_elsif_else.rb",
@@ -844,6 +882,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "if_with_conjunction.rb",
@@ -864,6 +903,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "if_with_var.rb",
@@ -884,6 +924,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "iterative_each.rb",
@@ -904,6 +945,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "iterative_each_with_select.rb",
@@ -924,6 +966,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "iterative_for.rb",
@@ -944,6 +987,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "iterative_map.rb",
@@ -964,6 +1008,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "non_iterative_do.rb",
@@ -984,6 +1029,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "single_variable.rb",
@@ -1004,6 +1050,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "while_loop.rb",
@@ -1024,6 +1071,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "class_declaration.rb",
@@ -1044,6 +1092,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "ignore_collaborators.rb",
@@ -1064,6 +1113,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "manual_method_declaration.rb",
@@ -1084,6 +1134,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "multiple.rb",
@@ -1104,6 +1155,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "read.rb",
@@ -1124,6 +1176,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "struct_declaration.rb",
@@ -1144,6 +1197,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "unique.rb",
@@ -1164,6 +1218,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "write.rb",
@@ -1184,6 +1239,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "file_complexity.rb",
@@ -1204,6 +1260,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "function_complexity.rb",
@@ -1224,6 +1281,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "methods_with_parameters.rb",
@@ -1244,6 +1302,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "methods_without_parameters.rb",
@@ -1264,6 +1323,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "singleton_methods_with_parameters.rb",
@@ -1284,6 +1344,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "singleton_methods_without_parameters.rb",
@@ -1304,6 +1365,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "identical.rb",
@@ -1324,6 +1386,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_0.rb",
@@ -1344,6 +1407,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_1-1.rb",
@@ -1364,6 +1428,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_1.rb",
@@ -1384,6 +1449,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_2.rb",
@@ -1404,6 +1470,7 @@
       "lcom4": 2
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lines.rb",
@@ -1424,6 +1491,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "nested_control.rb",
@@ -1444,6 +1512,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "parameters.rb",
@@ -1464,6 +1533,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "returns.rb",
@@ -1484,6 +1554,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cognitive",
@@ -1503,6 +1574,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclomatic",
@@ -1522,6 +1594,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "fields",
@@ -1541,6 +1614,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "functions",
@@ -1560,6 +1634,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom",

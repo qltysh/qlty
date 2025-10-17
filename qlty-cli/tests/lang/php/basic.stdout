@@ -18,6 +18,7 @@
   "invocations": [],
   "issues": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -58,6 +59,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -98,6 +100,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -125,6 +128,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -156,6 +160,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -187,6 +192,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -214,6 +220,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -241,6 +248,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -268,6 +276,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -295,6 +304,7 @@
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "tool": "qlty",
@@ -325,6 +335,7 @@
   ],
   "stats": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "boolean_logic.php",
@@ -345,6 +356,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_conditional_assignment.php",
@@ -365,6 +377,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_function_with_ternary.php",
@@ -385,6 +398,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_non_sequential_logical_operators.php",
@@ -405,6 +419,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_recursion.php",
@@ -425,6 +440,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "multiple_conditionals.php",
@@ -445,6 +461,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclo_basic.php",
@@ -465,6 +482,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclo_if.php",
@@ -485,6 +503,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclo_if_else.php",
@@ -505,6 +524,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclo_if_else_if.php",
@@ -525,6 +545,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclo_if_else_if_else.php",
@@ -545,6 +566,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "empty_function.php",
@@ -565,6 +587,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "empty_if.php",
@@ -585,6 +608,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "if_with_bool.php",
@@ -605,6 +629,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "iterative_for_of.php",
@@ -625,6 +650,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "iterative_map.php",
@@ -645,6 +671,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "iterative_methods_with_filter_and_include.php",
@@ -665,6 +692,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "while_loop.php",
@@ -685,6 +713,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "class_declaration.php",
@@ -705,6 +734,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "getter_setter_declaration.php",
@@ -725,6 +755,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "ignore_collaborators.php",
@@ -745,6 +776,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "multiple.php",
@@ -765,6 +797,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "private_field_declaration.php",
@@ -785,6 +818,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "public_field_declaration.php",
@@ -805,6 +839,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "read.php",
@@ -825,6 +860,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "static_field_declaration.php",
@@ -845,6 +881,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "unique.php",
@@ -865,6 +902,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "write.php",
@@ -885,6 +923,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "file_complexity.php",
@@ -905,6 +944,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "function_complexity.php",
@@ -925,6 +965,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "methods_with_parameters.php",
@@ -945,6 +986,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "methods_without_parameters.php",
@@ -965,6 +1007,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "singleton_methods_with_parameters.php",
@@ -985,6 +1028,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "singleton_methods_without_parameters.php",
@@ -1005,6 +1049,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "identical.php",
@@ -1025,6 +1070,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_0.php",
@@ -1045,6 +1091,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_1-1.php",
@@ -1065,6 +1112,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_1.php",
@@ -1085,6 +1133,7 @@
       "lcom4": 1
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_2.php",
@@ -1105,6 +1154,7 @@
       "lcom4": 2
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lines.php",
@@ -1125,6 +1175,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "nested_control.php",
@@ -1145,6 +1196,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "parameters.php",
@@ -1165,6 +1217,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "returns.php",
@@ -1185,6 +1238,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cognitive",
@@ -1204,6 +1258,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclomatic",
@@ -1223,6 +1278,7 @@
       "lcom4": 0
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "fields",
@@ -1242,6 +1298,7 @@
       "lcom4": 2
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "functions",
@@ -1261,6 +1318,7 @@
       "lcom4": 2
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom",
