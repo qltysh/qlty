@@ -271,26 +271,45 @@ impl Builder {
         let file = File::from_str(&yaml, FileFormat::Yaml);
         let builder = Config::builder().add_source(file);
         let config = builder.build()?;
-        let json_value: JsonValue = config
+        Self::warn_on_unexpected_config(&config);
+
+        config
             .try_deserialize()
-            .context("Invalid TOML configuration")?;
+            .context("Invalid TOML configuration")
+    }
 
-        let config_validation_disabled = Self::config_validation_disabled();
+    fn warn_on_unexpected_config(config: &Config) {
+        if Self::config_validation_disabled() {
+            return;
+        }
 
-        serde_ignored::deserialize(json_value.into_deserializer(), |path| {
-            if config_validation_disabled {
+        let json_value: JsonValue = match config.clone().try_deserialize() {
+            Ok(value) => value,
+            Err(error) => {
+                debug!(
+                    "Skipping unexpected config warning; unable to deserialize config: {}",
+                    error
+                );
                 return;
             }
+        };
 
-            let path = path.to_string();
-            let warning_message = format!(
-                "{} The `{}` entry in qlty.toml is not part of the supported configuration and will be ignored.",
-                style("WARNING:").bold().yellow(),
-                style(path).bold()
-            );
-            warn_once(&warning_message);
-        })
-        .context("Invalid TOML configuration")
+        let warning_result: std::result::Result<QltyConfig, _> = serde_ignored::deserialize(
+            json_value.into_deserializer(),
+            |path| {
+                let path = path.to_string();
+                let warning_message = format!(
+                    "{} The `{}` entry in qlty.toml is not part of the supported configuration and will be ignored.",
+                    style("WARNING:").bold().yellow(),
+                    style(path).bold()
+                );
+                warn_once(&warning_message);
+            },
+        );
+
+        if let Err(error) = warning_result {
+            trace!("Failed to inspect unexpected config entries: {}", error);
+        }
     }
 
     fn config_validation_disabled() -> bool {
@@ -547,6 +566,28 @@ mod test {
 
         let result = Builder::extract_sources(Table(input));
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_malformed_booleans_are_parsed_but_no_warnings() {
+        let _ctx = WarningTestContext::new();
+
+        let invalid_config = toml! {
+            config_version = "0"
+            unexpected_key = "value"
+
+            [plugins.definitions.rubocop]
+            runtime = "ruby"
+
+            [smells.boolean_logic]
+            enabled = "false"
+        };
+
+        let result = Builder::toml_to_config(Table(invalid_config));
+        assert!(result.is_ok());
+
+        let warnings = collected_warnings();
+        assert!(warnings.is_empty(), "Unexpected warnings: {:?}", warnings);
     }
 
     #[test]
