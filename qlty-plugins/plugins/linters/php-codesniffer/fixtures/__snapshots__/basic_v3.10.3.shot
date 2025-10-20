@@ -14,7 +14,7 @@ exports[`linter=php-codesniffer fixture=basic version=3.10.3 1`] = `
         },
       },
       "message": "Spaces must be used to indent lines; tabs are not allowed",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "Generic.WhiteSpace.DisallowTabIndent.TabsUsed",
       "snippet": "	public function sayHello(DateTimeImutable $date): void",
       "snippetWithContext": "<?php declare(strict_types = 1);
@@ -39,7 +39,7 @@ class HelloWorld
         },
       },
       "message": "Spaces must be used to indent lines; tabs are not allowed",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "Generic.WhiteSpace.DisallowTabIndent.TabsUsed",
       "snippet": "	{",
       "snippetWithContext": "<?php declare(strict_types = 1);
@@ -64,7 +64,7 @@ class HelloWorld
         },
       },
       "message": "Spaces must be used to indent lines; tabs are not allowed",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "Generic.WhiteSpace.DisallowTabIndent.TabsUsed",
       "snippet": "		echo 'Hello, ' . $date->format('j. n. Y');",
       "snippetWithContext": "<?php declare(strict_types = 1);
@@ -89,7 +89,7 @@ class HelloWorld
         },
       },
       "message": "Spaces must be used to indent lines; tabs are not allowed",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "Generic.WhiteSpace.DisallowTabIndent.TabsUsed",
       "snippet": "	}",
       "snippetWithContext": "<?php declare(strict_types = 1);
@@ -114,7 +114,7 @@ class HelloWorld
         },
       },
       "message": "Missing doc comment for class HelloWorld",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "PEAR.Commenting.ClassComment.Missing",
       "snippet": "class HelloWorld",
       "snippetWithContext": "<?php declare(strict_types = 1);
@@ -139,7 +139,7 @@ class HelloWorld
         },
       },
       "message": "Missing file doc comment",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "PEAR.Commenting.FileComment.Missing",
       "snippet": "<?php declare(strict_types = 1);",
       "snippetWithContext": "<?php declare(strict_types = 1);
@@ -164,7 +164,7 @@ class HelloWorld
         },
       },
       "message": "Missing doc comment for function sayHello()",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "PEAR.Commenting.FunctionComment.Missing",
       "snippet": "	public function sayHello(DateTimeImutable $date): void",
       "snippetWithContext": "<?php declare(strict_types = 1);
@@ -189,7 +189,7 @@ class HelloWorld
         },
       },
       "message": "Line indented incorrectly; expected at least 4 spaces, found 1",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "PEAR.WhiteSpace.ScopeIndent.Incorrect",
       "snippet": "	{",
       "snippetWithContext": "<?php declare(strict_types = 1);
@@ -214,7 +214,7 @@ class HelloWorld
         },
       },
       "message": "Line indented incorrectly; expected at least 8 spaces, found 2",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "PEAR.WhiteSpace.ScopeIndent.Incorrect",
       "snippet": "		echo 'Hello, ' . $date->format('j. n. Y');",
       "snippetWithContext": "<?php declare(strict_types = 1);
@@ -239,7 +239,7 @@ class HelloWorld
         },
       },
       "message": "Line indented incorrectly; expected 4 spaces, found 1",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "PEAR.WhiteSpace.ScopeIndent.IncorrectExact",
       "snippet": "	public function sayHello(DateTimeImutable $date): void",
       "snippetWithContext": "<?php declare(strict_types = 1);
@@ -264,7 +264,7 @@ class HelloWorld
         },
       },
       "message": "Line indented incorrectly; expected 4 spaces, found 1",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "PEAR.WhiteSpace.ScopeIndent.IncorrectExact",
       "snippet": "	}",
       "snippetWithContext": "<?php declare(strict_types = 1);

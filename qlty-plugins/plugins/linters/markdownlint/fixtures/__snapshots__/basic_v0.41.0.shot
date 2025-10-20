@@ -14,7 +14,7 @@ exports[`linter=markdownlint fixture=basic version=0.41.0 1`] = `
         },
       },
       "message": "Heading levels should only increment by one level at a time",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "MD001",
       "snippet": "#### Here",
       "snippetWithContext": "## Crazy
@@ -35,7 +35,7 @@ exports[`linter=markdownlint fixture=basic version=0.41.0 1`] = `
         },
       },
       "message": "First line in a file should be a top-level heading",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "MD041",
       "snippet": "## Crazy",
       "snippetWithContext": "## Crazy

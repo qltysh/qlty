@@ -16,7 +16,7 @@ exports[`linter=radarlint-scala fixture=foo version=2.0.0 1`] = `
         },
       },
       "message": "Remove this unused "result" local variable.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "scala:S1481",
       "snippet": "      val result = 10 / 0",
       "snippetWithContext": "    val numbers = List(1, 2, 3, 4, 5)

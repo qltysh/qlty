@@ -16,7 +16,7 @@ exports[`linter=radarlint-go fixture=main version=2.0.0 1`] = `
         },
       },
       "message": "Take the required action to fix the issue indicated by this "FIXME" comment.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_MONITOR",
       "ruleKey": "go:S1134",
       "snippet": "	// FIXME: Handle edge cases properly  // 🚨 Triggers go:S1134",
       "snippetWithContext": "	for _, num := range numbers {
@@ -46,7 +46,7 @@ func main() {
         },
       },
       "message": "Complete the task associated to this TODO comment.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_MONITOR",
       "ruleKey": "go:S1135",
       "snippet": "// TODO: Refactor this function to improve efficiency  // 🚨 Triggers go:S1134",
       "snippetWithContext": "package main

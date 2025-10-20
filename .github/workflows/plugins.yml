@@ -1,6 +1,8 @@
 name: Plugin Tests
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "0 12 * * 5"
   push:
     branches:
       - main
@@ -9,12 +11,18 @@ on:
       - "qlty-config/**"
       - "qlty-check/src/tool/**"
       - ".github/workflows/plugins.yml"
+      - "qlty-cli/src/commands/plugins/enable.rs"
+      - "qlty-cli/src/initializer/scanner.rs"
+      - "qlty-cli/src/initializer/scanner/**"
   pull_request:
     paths:
       - "qlty-plugins/**"
       - "qlty-config/**"
       - "qlty-check/src/tool/**"
       - ".github/workflows/plugins.yml"
+      - "qlty-cli/src/commands/plugins/enable.rs"
+      - "qlty-cli/src/initializer/scanner.rs"
+      - "qlty-cli/src/initializer/scanner/**"
 
 permissions:
   actions: write
