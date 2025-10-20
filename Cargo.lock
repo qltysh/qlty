@@ -3209,12 +3209,12 @@ dependencies = [
 
 [[package]]
 name = "tree-sitter-c-sharp"
-version = "0.21.3"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8997ad04502208449025114e434c9024a33a74e700513c702a9d2cac6522a771"
+checksum = "04c0f6d2209a3cd6d0bb9d2934715da15a15710d3c09c7c1ecd4c9804c3ecd10"
 dependencies = [
  "cc",
- "tree-sitter",
+ "tree-sitter-language",
 ]
 
 [[package]]
@@ -3256,6 +3256,12 @@ dependencies = [
  "cc",
  "tree-sitter",
 ]
+
+[[package]]
+name = "tree-sitter-language"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c4013970217383f67b18aef68f6fb2e8d409bc5755227092d32efb0422ba24b8"
 
 [[package]]
 name = "tree-sitter-php"
