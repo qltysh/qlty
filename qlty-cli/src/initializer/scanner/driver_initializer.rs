@@ -146,6 +146,58 @@ impl DriverInitializer for TargetDriver {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct EnableDriver {
+    pub workspace_entries_globset: GlobSet,
+    pub key: String,
+    pub driver_name: String,
+    pub version: String,
+}
+
+impl EnableDriver {
+    pub fn new(
+        candidate: DriverCandidate,
+        plugin_def: &PluginDef,
+        scanner: &Scanner,
+    ) -> Result<Self> {
+        let workspace_entries_globset =
+            build_workspace_entries_globset(scanner, plugin_def, &candidate.driver)?;
+
+        Ok(EnableDriver {
+            workspace_entries_globset,
+            key: candidate.key,
+            driver_name: candidate.name,
+            version: candidate.version,
+        })
+    }
+}
+
+impl DriverInitializer for EnableDriver {
+    fn driver_name(&self) -> String {
+        self.driver_name.to_string()
+    }
+
+    fn version(&self) -> String {
+        self.version.to_string()
+    }
+
+    fn key(&self) -> String {
+        self.key.to_string()
+    }
+
+    fn is_enabler(&self, _path: &str) -> bool {
+        true
+    }
+
+    fn is_workspace_entry(&self, path: &str) -> bool {
+        self.workspace_entries_globset.is_match(path)
+    }
+
+    fn clone_box(&self) -> Box<dyn DriverInitializer> {
+        Box::new(self.clone())
+    }
+}
+
 fn build_workspace_entries_globset(
     scanner: &Scanner,
     plugin_def: &PluginDef,
