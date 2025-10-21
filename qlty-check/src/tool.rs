@@ -166,8 +166,13 @@ pub trait Tool: Debug + Sync + Send {
         }
 
         if let Some(plugin) = self.plugin() {
-            sha.update(plugin.package.as_ref().unwrap());
-            sha.update(plugin.version.as_ref().unwrap());
+            if let Some(package) = plugin.package {
+                sha.update(&package);
+            }
+
+            if let Some(version) = plugin.version {
+                sha.update(&version);
+            }
 
             let mut extra_packages = plugin.extra_packages.clone();
             extra_packages.sort_by(|a, b| a.name.cmp(&b.name));
@@ -740,8 +745,10 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn extra_env_vars_with_plugin_env(&self) -> Result<HashMap<String, String>> {
+        dbg!("extra_env_vars_with_plugin_env");
         let mut env = self.extra_env_vars()?;
         if let Some(plugin) = self.plugin() {
+            dbg!("plugin env vars");
             env.extend(self.load_environment_vars(&plugin.environment));
         }
 
