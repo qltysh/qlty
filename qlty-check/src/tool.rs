@@ -745,10 +745,8 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn extra_env_vars_with_plugin_env(&self) -> Result<HashMap<String, String>> {
-        dbg!("extra_env_vars_with_plugin_env");
         let mut env = self.extra_env_vars()?;
         if let Some(plugin) = self.plugin() {
-            dbg!("plugin env vars");
             env.extend(self.load_environment_vars(&plugin.environment));
         }
 
