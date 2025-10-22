@@ -16,7 +16,7 @@ Please make sure you are using the latest version of the CLI with `qlty upgrade`
 
 Also, please make sure you are specifying the latest source tag in your qlty.toml file.
 
-For more information, please visit: https://qlty.io/docs/troubleshooting/source-parse-error"#;
+For more information, please visit: https://docs.qlty.sh/cli/debugging"#;
 
 /// Configure proxy options for git operations
 ///
