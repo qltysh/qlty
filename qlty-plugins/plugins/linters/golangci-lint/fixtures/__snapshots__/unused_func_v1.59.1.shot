@@ -14,7 +14,7 @@ exports[`linter=golangci-lint fixture=unused_func version=1.59.1 1`] = `
         },
       },
       "message": "func \`helper\` is unused",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "unused",
       "snippet": "func helper() {",
       "snippetWithContext": "package main

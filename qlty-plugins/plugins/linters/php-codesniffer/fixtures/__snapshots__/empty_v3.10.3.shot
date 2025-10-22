@@ -14,7 +14,7 @@ exports[`linter=php-codesniffer fixture=empty version=3.10.3 1`] = `
         },
       },
       "message": "No PHP code was found in this file and short open tags are not allowed by this install of PHP. This file may be using short open tags but PHP does not allow them.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "Internal.NoCodeFound",
       "tool": "php-codesniffer",
     },

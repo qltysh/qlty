@@ -16,7 +16,7 @@ exports[`linter=radarlint-ruby fixture=foo version=2.0.0 1`] = `
         },
       },
       "message": "Either remove or fill this block of code.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_MONITOR",
       "ruleKey": "ruby:S108",
       "snippet": "  rescue",
       "snippetWithContext": "def fetch_data(url)
@@ -55,7 +55,7 @@ exports[`linter=radarlint-ruby fixture=foo version=2.0.0 1`] = `
         },
       },
       "message": "Remove this unused "file" local variable.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_MONITOR",
       "ruleKey": "ruby:S1481",
       "snippet": "  file = File.open("/home/user/data.txt", "r")",
       "snippetWithContext": "  password = "supersecretpassword"
@@ -94,7 +94,7 @@ exports[`linter=radarlint-ruby fixture=foo version=2.0.0 1`] = `
         },
       },
       "message": "Remove this unused "password" local variable.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_MONITOR",
       "ruleKey": "ruby:S1481",
       "snippet": "  password = "supersecretpassword"",
       "snippetWithContext": "require 'net/http'
@@ -132,7 +132,7 @@ def fetch_data(url)
         },
       },
       "message": "Remove this unused "query" local variable.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_MONITOR",
       "ruleKey": "ruby:S1481",
       "snippet": "  query = "SELECT * FROM users WHERE name = '#{user_input}'"",
       "snippetWithContext": "  puts response
@@ -171,7 +171,7 @@ def fetch_data(url)
         },
       },
       "message": "This condition duplicates the one on line 26.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_MONITOR",
       "ruleKey": "ruby:S1862",
       "snippet": "  elsif user_input == "admin"",
       "snippetWithContext": "  query = "SELECT * FROM users WHERE name = '#{user_input}'"
