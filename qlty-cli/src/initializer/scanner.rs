@@ -7,7 +7,7 @@ mod package_json;
 use super::{Renderer, Settings, SourceSpec};
 use anyhow::Result;
 use driver_candidate::DriverCandidate;
-use driver_initializer::{ConfigDriver, DriverInitializer, TargetDriver};
+use driver_initializer::{ConfigDriver, DriverInitializer, EnableDriver, TargetDriver};
 use indicatif::ProgressBar;
 use itertools::Itertools;
 use package_file::PackageFileScanner;
@@ -363,6 +363,19 @@ impl Scanner {
         };
 
         for candidate in DriverCandidate::build_driver_candidates(plugin_def) {
+            // When plugins_to_enable is set, we enable all drivers for that plugin regardless of suggestion
+            if let Some(plugins_to_enable) = &self.settings.plugins_to_enable {
+                if plugins_to_enable.contains_key(plugin_name) {
+                    let driver_initializer = EnableDriver::new(candidate, plugin_def, self)?;
+
+                    plugin_initializer
+                        .driver_initializers
+                        .push(Box::new(driver_initializer));
+                }
+
+                continue;
+            }
+
             let driver_initializer: Box<dyn DriverInitializer> = match &candidate.driver.suggested {
                 SuggestionMode::Targets => {
                     Box::new(TargetDriver::new(candidate, plugin_def, self)?)
@@ -654,6 +667,30 @@ config_files = ["config.toml", "second_config.toml"]
             .iter()
             .find(|p| p.name == "exists")
             .is_none());
+    }
+
+    #[test]
+    fn test_scan_when_not_suggested_but_in_plugins_to_enable() {
+        let (mut scanner, _td) = create_scanner();
+
+        scanner.settings.plugins_to_enable =
+            Some(HashMap::from([("exists".to_string(), "1.0.0".to_string())]));
+        scanner.prepare().unwrap();
+        update_source_suggested(&mut scanner, SuggestionMode::Never);
+
+        assert!(scanner.scan(&ProgressBar::hidden()).is_ok());
+        assert_eq!(scanner.plugins.len(), 1);
+        assert!(scanner
+            .plugins
+            .iter()
+            .find(|p| p.name == "exists")
+            .is_some());
+
+        let installed_plugin = scanner.plugins.iter().find(|p| p.name == "exists").unwrap();
+        assert_eq!(installed_plugin.version, "1.0.0");
+        assert_eq!(installed_plugin.files_count, 7);
+        assert_eq!(installed_plugin.config_files.len(), 0);
+        assert_eq!(installed_plugin.package_file, None);
     }
 
     #[test]
