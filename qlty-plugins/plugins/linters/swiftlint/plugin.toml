@@ -1,8 +1,6 @@
 config_version = "0"
 
 [plugins.downloads.swiftlint]
-github = "terraform-linters/swiftlint"
-download_type = "zip"
 strip_components = 0
 
 [[plugins.downloads.swiftlint.system]]
