@@ -526,7 +526,9 @@ mod test {
 
     impl WarningTestContext {
         fn new() -> Self {
-            let lock = WARNINGS_LOCK.lock().unwrap();
+            let lock = WARNINGS_LOCK
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
             clear_warnings();
             WarningTestContext { _lock: lock }
         }
@@ -569,12 +571,11 @@ mod test {
     }
 
     #[test]
-    fn test_malformed_booleans_are_parsed_but_no_warnings() {
+    fn test_stringified_booleans_are_parsed() {
         let _ctx = WarningTestContext::new();
 
         let invalid_config = toml! {
             config_version = "0"
-            unexpected_key = "value"
 
             [plugins.definitions.rubocop]
             runtime = "ruby"
