@@ -19,7 +19,7 @@ const QLTY_TOML_PARSE_ERROR: &str = r#"There was an error reading your qlty.toml
 
 Please make sure you are using the latest version of the CLI with `qlty upgrade`.
 
-For more information, please visit: https://qlty.io/docs/troubleshooting/qlty-toml-parse-error"#;
+For more information, please visit: https://docs.qlty.sh/qlty-toml"#;
 
 pub struct Builder;
 
