@@ -4,7 +4,7 @@ exports[`linter=brakeman fixture=basic version=6.2.2 1`] = `
 {
   "issues": [
     {
-      "category": "CATEGORY_LINT",
+      "category": "CATEGORY_VULNERABILITY",
       "documentationUrl": "https://brakemanscanner.org/docs/warning_types/dangerous_eval/",
       "level": "LEVEL_HIGH",
       "location": {
