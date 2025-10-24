@@ -10,7 +10,7 @@ exports[`linter=radarlint-java fixture=Empty version=2.0.0 1`] = `
         "path": "Empty.in.java",
       },
       "message": "Move this file to a named package.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "java:S1220",
       "tool": "radarlint-java",
     },

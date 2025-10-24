@@ -16,7 +16,7 @@ exports[`linter=radarlint-iac fixture=foo version=2.0.0 1`] = `
         },
       },
       "message": "Restrict IP addresses authorized to access administration services.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_MONITOR",
       "ruleKey": "terraform:S6321",
       "snippet": "    cidr_blocks = ["0.0.0.0/0"]",
       "snippetWithContext": "}

@@ -16,7 +16,7 @@ exports[`linter=radarlint-python fixture=foo version=2.0.0 1`] = `
         },
       },
       "message": "Complete the task associated to this "TODO" comment.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "python:S1135",
       "snippet": "    # TODO: This is vulnerable to SQL injection",
       "snippetWithContext": "import os
