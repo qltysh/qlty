@@ -1,4 +1,4 @@
-use super::{config::enabled_plugins, ActivePlugin, Planner};
+use super::{enabled_plugins, ActivePlugin, Planner};
 use anyhow::{Context, Result};
 use globset::{GlobBuilder, GlobSet, GlobSetBuilder};
 use itertools::Itertools;
@@ -323,6 +323,10 @@ fn qlty_config_operations(
             PathBuf::from(&config_file_name)
         };
 
+        if !source_path.exists() {
+            continue;
+        }
+
         if planner.workspace.root != planner.staging_area.destination_directory {
             operations.push(ConfigOperation {
                 source: ConfigSource::File(source_path.clone()),
@@ -405,13 +409,14 @@ fn tool_install_config_operations(planner: &Planner) -> Result<Vec<ConfigOperati
 mod tests {
     use super::*;
     use crate::executor::driver::test::build_driver;
+    use crate::executor::staging_area::{Mode, StagingArea};
     use crate::executor::Driver;
     use crate::planner::target::Target;
     use crate::planner::{InvocationPlan, Planner};
     use crate::tool::null_tool::NullTool;
     use crate::Settings;
     use qlty_analysis::{WorkspaceEntry, WorkspaceEntryKind};
-    use qlty_config::config::InvocationDirectoryDef;
+    use qlty_config::config::{EnabledPlugin, InvocationDirectoryDef, PluginDef, PluginsConfig};
     use qlty_config::{QltyConfig, Workspace};
     use qlty_types::analysis::v1::ExecutionVerb;
     use std::fs;
@@ -419,7 +424,7 @@ mod tests {
     use std::time::SystemTime;
     use tempfile::TempDir;
 
-    fn create_test_planner() -> (Planner, TempDir) {
+    fn create_test_planner() -> (Planner, TempDir, TempDir) {
         let temp_dir = TempDir::new().unwrap();
         let workspace = Workspace::for_root(temp_dir.path()).unwrap();
         let settings = Settings {
@@ -429,16 +434,17 @@ mod tests {
         let config = QltyConfig::default();
 
         let cache = Planner::build_cache(&workspace, &settings).unwrap();
+        let staging_area_temp_dir = TempDir::new().unwrap();
 
         let planner = Planner {
             verb: ExecutionVerb::Check,
             settings,
             workspace,
             config,
-            staging_area: crate::executor::staging_area::StagingArea::generate(
-                crate::executor::staging_area::Mode::Source,
+            staging_area: StagingArea::generate(
+                Mode::ReadWrite,
                 temp_dir.path().to_path_buf(),
-                None,
+                Some(staging_area_temp_dir.path().to_path_buf()),
             ),
             issue_cache: crate::cache::IssueCache::new(cache),
             target_mode: None,
@@ -451,7 +457,7 @@ mod tests {
             config_staging_operations: vec![],
         };
 
-        (planner, temp_dir)
+        (planner, temp_dir, staging_area_temp_dir)
     }
 
     #[test]
@@ -481,32 +487,34 @@ mod tests {
 
     #[test]
     fn test_compute_config_staging_operations_empty_plugins() {
-        let (planner, _temp_dir) = create_test_planner();
+        let (planner, _temp_dir, _staging_area_temp_dir) = create_test_planner();
         let operations = compute_config_staging_operations(&planner).unwrap();
         assert!(operations.is_empty());
     }
 
     #[test]
     fn test_compute_config_staging_operations_with_repository_configs() {
-        let (mut planner, temp_dir) = create_test_planner();
+        let (mut planner, _temp_dir, _staging_area_temp_dir) = create_test_planner();
+        let workspace_root = planner.workspace.root.clone();
+        let staging_dir = planner.staging_area.destination_directory.clone();
 
         // Create a test config file in the repository
-        fs::write(temp_dir.path().join(".eslintrc.js"), "module.exports = {};").unwrap();
+        fs::write(workspace_root.join(".eslintrc.js"), "module.exports = {};").unwrap();
 
         // Set up the plugin definition with config files
-        let mut eslint_plugin_def = qlty_config::config::PluginDef::default();
+        let mut eslint_plugin_def = PluginDef::default();
         eslint_plugin_def.config_files = vec![PathBuf::from(".eslintrc.js")];
 
         let mut plugin_definitions = HashMap::new();
         plugin_definitions.insert("eslint".to_string(), eslint_plugin_def);
 
         // Set up the complete config with both enabled plugins and definitions
-        let config = qlty_config::QltyConfig {
-            plugin: vec![qlty_config::config::EnabledPlugin {
+        let config = QltyConfig {
+            plugin: vec![EnabledPlugin {
                 name: "eslint".to_string(),
                 ..Default::default()
             }],
-            plugins: qlty_config::config::PluginsConfig {
+            plugins: PluginsConfig {
                 definitions: plugin_definitions,
                 downloads: HashMap::new(),
                 releases: HashMap::new(),
@@ -519,39 +527,95 @@ mod tests {
         // Call the actual function being tested
         let operations = compute_config_staging_operations(&planner).unwrap();
 
-        let staging_dir = planner.staging_area.destination_directory.clone();
-        let workspace_root = planner.workspace.root.clone();
+        assert!(
+            operations.len() == 1,
+            "Should have one operation for staging area"
+        );
+        let staging_dir_op = operations.first().unwrap();
+        assert!(staging_dir_op.destination == staging_dir.join(".eslintrc.js"));
+    }
 
-        // Should find the repository config file
+    #[test]
+    fn test_compute_config_staging_operations_with_configs_in_qlty_configs_dir() {
+        let (mut planner, _temp_dir, _staging_area_temp_dir) = create_test_planner();
+        let config_path = planner
+            .workspace
+            .library()
+            .unwrap()
+            .configs_dir()
+            .join(".eslintrc.js");
+
+        // Create a test config file in the repository
+        fs::write(&config_path, "module.exports = {};").unwrap();
+
+        // Set up the plugin definition with config files
+        let mut eslint_plugin_def = PluginDef::default();
+        eslint_plugin_def.config_files = vec![PathBuf::from(".eslintrc.js")];
+
+        let mut plugin_definitions = HashMap::new();
+        plugin_definitions.insert("eslint".to_string(), eslint_plugin_def);
+
+        // Set up the complete config with both enabled plugins and definitions
+        let config = QltyConfig {
+            plugin: vec![EnabledPlugin {
+                name: "eslint".to_string(),
+                ..Default::default()
+            }],
+            plugins: PluginsConfig {
+                definitions: plugin_definitions,
+                downloads: HashMap::new(),
+                releases: HashMap::new(),
+            },
+            ..Default::default()
+        };
+
+        planner.config = config;
+
+        let operations = compute_config_staging_operations(&planner).unwrap();
+        assert!(operations.len() == 2, "Should have two operations");
+
+        let staging_dir = planner.staging_area.destination_directory.clone();
+
         let staging_ops: Vec<_> = operations
             .iter()
             .filter(|op| op.destination.starts_with(&staging_dir))
             .collect();
 
-        // Should also have qlty directory operations (workspace root symlinks)
+        assert!(
+            staging_ops.len() == 1,
+            "Should have one operation for staging area"
+        );
+        let staging_dir_op = staging_ops.first().unwrap();
+        assert!(staging_dir_op.destination == staging_dir.join(".eslintrc.js"));
+        match &staging_dir_op.source {
+            ConfigSource::File(path) => {
+                assert!(path == &config_path);
+            }
+            _ => panic!("Expected ConfigSource::File"),
+        }
+
         let qlty_ops: Vec<_> = operations
             .iter()
-            .filter(|op| op.destination.starts_with(&workspace_root))
+            .filter(|op| op.destination.starts_with(&planner.workspace.root))
             .collect();
 
-        // We should have found the .eslintrc.js file in the repository
-        let found_eslintrc = staging_ops.iter().any(|op| match &op.source {
-            ConfigSource::File(path) => path.file_name().unwrap() == ".eslintrc.js",
-            _ => false,
-        });
-
-        assert!(found_eslintrc, "Should find .eslintrc.js in repository");
         assert!(
-            qlty_ops
-                .iter()
-                .any(|op| matches!(op.mode, ConfigCopyMode::Symlink)),
-            "Should have qlty directory operations"
+            qlty_ops.len() == 1,
+            "Should have one operation for workspace root"
         );
+        let qlty_dir_op = qlty_ops.first().unwrap();
+        assert!(qlty_dir_op.destination == planner.workspace.root.join(".eslintrc.js"));
+        match &qlty_dir_op.source {
+            ConfigSource::File(path) => {
+                assert!(path == &config_path);
+            }
+            _ => panic!("Expected ConfigSource::File"),
+        }
     }
 
     #[test]
     fn test_tool_install_config_operations_empty_invocations() {
-        let (planner, _temp_dir) = create_test_planner();
+        let (planner, _temp_dir, _staging_area_temp_dir) = create_test_planner();
         let operations = tool_install_config_operations(&planner).unwrap();
         assert!(operations.is_empty());
     }
@@ -584,21 +648,21 @@ mod tests {
 
     #[test]
     fn test_compute_config_staging_operations_with_exported_configs() {
-        let (mut planner, _temp_dir) = create_test_planner();
+        let (mut planner, _temp_dir, _staging_area_temp_dir) = create_test_planner();
 
         // Set up plugin with exported config paths
-        let mut plugin_def = qlty_config::config::PluginDef::default();
+        let mut plugin_def = PluginDef::default();
         plugin_def.exported_config_paths = vec![PathBuf::from("custom.config")];
 
         let mut plugin_definitions = HashMap::new();
         plugin_definitions.insert("custom_plugin".to_string(), plugin_def);
 
-        let config = qlty_config::QltyConfig {
-            plugin: vec![qlty_config::config::EnabledPlugin {
+        let config = QltyConfig {
+            plugin: vec![EnabledPlugin {
                 name: "custom_plugin".to_string(),
                 ..Default::default()
             }],
-            plugins: qlty_config::config::PluginsConfig {
+            plugins: PluginsConfig {
                 definitions: plugin_definitions,
                 downloads: HashMap::new(),
                 releases: HashMap::new(),
@@ -608,44 +672,75 @@ mod tests {
 
         planner.config = config;
         let operations = compute_config_staging_operations(&planner).unwrap();
+        assert!(
+            operations.len() == 2,
+            "Should have two operations for exported configs"
+        );
 
         // Should create operations for exported config paths
-        let workspace_root = planner.workspace.root.clone();
-        let workspace_ops: Vec<_> = operations
+        // let workspace_root = planner.workspace.root.clone();
+        // let workspace_ops: Vec<_> = operations
+        //     .iter()
+        //     .filter(|op| op.destination.starts_with(&workspace_root))
+        //     .collect();
+
+        // assert!(
+        //     workspace_ops
+        //         .iter()
+        //         .any(|op| matches!(op.mode, ConfigCopyMode::Symlink)),
+        //     "Should have workspace copy operations for exported configs"
+        // );
+
+        let staging_dir = planner.staging_area.destination_directory.clone();
+
+        let staging_ops: Vec<_> = operations
             .iter()
-            .filter(|op| op.destination.starts_with(&workspace_root))
+            .filter(|op| op.destination.starts_with(&staging_dir))
             .collect();
 
         assert!(
-            workspace_ops
-                .iter()
-                .any(|op| matches!(op.mode, ConfigCopyMode::Symlink)),
-            "Should have workspace copy operations for exported configs"
+            staging_ops.len() == 1,
+            "Should have one operation for staging area"
         );
+        let staging_dir_op = staging_ops.first().unwrap();
+        assert!(staging_dir_op.destination == staging_dir.join("custom.config"));
+
+        let qlty_ops: Vec<_> = operations
+            .iter()
+            .filter(|op| op.destination.starts_with(&planner.workspace.root))
+            .collect();
+
+        assert!(
+            qlty_ops.len() == 1,
+            "Should have one operation for workspace root"
+        );
+        let qlty_dir_op = qlty_ops.first().unwrap();
+        assert!(qlty_dir_op.destination == planner.workspace.root.join("custom.config"));
     }
 
     #[test]
     fn test_compute_config_staging_operations_mixed_config_types() {
-        let (mut planner, temp_dir) = create_test_planner();
+        let (mut planner, _temp_dir, _staging_area_temp_dir) = create_test_planner();
+        let workspace_root = planner.workspace.root.clone();
 
         // Create files in repository
-        fs::write(temp_dir.path().join(".eslintrc.js"), "module.exports = {};").unwrap();
-        fs::write(temp_dir.path().join("package-lock.json"), "{}").unwrap();
+        fs::write(workspace_root.join(".eslintrc.js"), "module.exports = {};").unwrap();
+        fs::write(workspace_root.join("package-lock.json"), "{}").unwrap();
 
         // Set up plugin with both config_files AND affects_cache
-        let mut plugin_def = qlty_config::config::PluginDef::default();
+        let mut plugin_def = PluginDef::default();
         plugin_def.config_files = vec![PathBuf::from(".eslintrc.js")];
         plugin_def.affects_cache = vec!["package-lock.json".to_string()];
 
         let mut plugin_definitions = HashMap::new();
         plugin_definitions.insert("eslint".to_string(), plugin_def);
 
-        let config = qlty_config::QltyConfig {
-            plugin: vec![qlty_config::config::EnabledPlugin {
+        let config = QltyConfig {
+            plugin: vec![EnabledPlugin {
                 name: "eslint".to_string(),
                 ..Default::default()
             }],
-            plugins: qlty_config::config::PluginsConfig {
+            plugins: PluginsConfig {
                 definitions: plugin_definitions,
                 downloads: HashMap::new(),
                 releases: HashMap::new(),
@@ -673,57 +768,55 @@ mod tests {
 
         assert!(
             found_files.contains(&".eslintrc.js"),
-            "Should find config file"
+            "Should find config file (.eslintrc.js)"
         );
         assert!(
             found_files.contains(&"package-lock.json"),
-            "Should find affects_cache file"
+            "Should find affects_cache file (package-lock.json)"
         );
     }
 
     #[test]
     fn test_tool_install_config_operations_with_copy_enabled() {
-        let (mut planner, temp_dir) = create_test_planner();
+        let (mut planner, _temp_dir, _staging_area_temp_dir) = create_test_planner();
+        let workspace_root = planner.workspace.root.clone();
 
         // Create actual config files in the workspace directory where they'll be discovered
-        let config_file_path = temp_dir.path().join("test_config.yml");
+        let config_file_path = workspace_root.join("test_config.yml");
         fs::write(&config_file_path, "test: config").unwrap();
 
         // Enable the test plugin in the planner config so it gets discovered
         planner.config.plugins.definitions.insert(
             "test".to_string(),
-            qlty_config::config::PluginDef {
+            PluginDef {
                 config_files: vec![PathBuf::from("test_config.yml")],
                 ..Default::default()
             },
         );
 
         // Also add the plugin to the enabled plugins list
-        planner
-            .config
-            .plugin
-            .push(qlty_config::config::EnabledPlugin {
-                name: "test".to_string(),
-                ..Default::default()
-            });
+        planner.config.plugin.push(EnabledPlugin {
+            name: "test".to_string(),
+            ..Default::default()
+        });
 
         // Create a mock invocation using NullTool (like the existing test)
 
-        let plugin = qlty_config::config::PluginDef {
+        let plugin = PluginDef {
             config_files: vec![PathBuf::from("test_config.yml")],
             ..Default::default()
         };
 
-        let tool_dir = temp_dir.path().join(".qlty/tools/test");
+        let tool_dir = workspace_root.join(".qlty/tools/test");
         let mut driver = build_driver(vec![], vec![]);
         driver.copy_configs_into_tool_install = true; // Key setting!
 
-        let mock_file_path = temp_dir.path().join("lib/hello.rb");
+        let mock_file_path = workspace_root.join("lib/hello.rb");
         let invocation = InvocationPlan {
             invocation_id: "test".to_string(),
             verb: ExecutionVerb::Check,
             settings: Settings::default(),
-            workspace: Workspace::new().unwrap(),
+            workspace: planner.workspace.clone(),
             runtime: None,
             runtime_version: None,
             plugin_name: "test".to_string(),
@@ -736,7 +829,7 @@ mod tests {
             driver_name: "test".to_string(),
             driver: Driver::from(driver),
             plugin_configs: vec![], // Not used by the function we're testing
-            target_root: temp_dir.path().to_path_buf(),
+            target_root: workspace_root.to_path_buf(),
             workspace_entries: Arc::new(vec![WorkspaceEntry {
                 path: mock_file_path.clone(),
                 content_modified: SystemTime::now(),
@@ -751,7 +844,7 @@ mod tests {
                 contents_size: 0,
                 kind: WorkspaceEntryKind::File,
             }],
-            invocation_directory: temp_dir.path().to_path_buf(),
+            invocation_directory: planner.staging_area.destination_directory.clone(),
             invocation_directory_def: InvocationDirectoryDef::default(),
         };
         planner.invocations.push(invocation);
@@ -769,10 +862,6 @@ mod tests {
             })
             .collect();
 
-        assert!(
-            !tool_install_ops.is_empty(),
-            "Should have tool install operations when copy_configs_into_tool_install=true"
-        );
         assert_eq!(
             tool_install_ops.len(),
             1,
@@ -799,24 +888,25 @@ mod tests {
 
     #[test]
     fn test_plugin_configs_excludes_affects_cache() {
-        let (mut planner, temp_dir) = create_test_planner();
+        let (mut planner, _temp_dir, _staging_area_temp_dir) = create_test_planner();
+        let workspace_root = planner.workspace.root.clone();
 
-        fs::write(temp_dir.path().join(".eslintrc.js"), "module.exports = {};").unwrap();
-        fs::write(temp_dir.path().join("package-lock.json"), "{}").unwrap();
+        fs::write(workspace_root.join(".eslintrc.js"), "module.exports = {};").unwrap();
+        fs::write(workspace_root.join("package-lock.json"), "{}").unwrap();
 
-        let mut plugin_def = qlty_config::config::PluginDef::default();
+        let mut plugin_def = PluginDef::default();
         plugin_def.config_files = vec![PathBuf::from(".eslintrc.js")];
         plugin_def.affects_cache = vec!["package-lock.json".to_string()];
 
         let mut plugin_definitions = HashMap::new();
         plugin_definitions.insert("eslint".to_string(), plugin_def);
 
-        let config = qlty_config::QltyConfig {
-            plugin: vec![qlty_config::config::EnabledPlugin {
+        let config = QltyConfig {
+            plugin: vec![EnabledPlugin {
                 name: "eslint".to_string(),
                 ..Default::default()
             }],
-            plugins: qlty_config::config::PluginsConfig {
+            plugins: PluginsConfig {
                 definitions: plugin_definitions,
                 downloads: HashMap::new(),
                 releases: HashMap::new(),
@@ -842,5 +932,42 @@ mod tests {
             !config_paths.contains(&"package-lock.json"),
             "Should not include affects_cache file as a config"
         );
+    }
+
+    #[test]
+    fn test_compute_config_staging_operations_in_workspace_root() {
+        let (mut planner, _temp_dir, _staging_area_temp_dir) = create_test_planner();
+        let workspace_root = planner.workspace.root.clone();
+        planner.staging_area = StagingArea::generate(Mode::Source, workspace_root.clone(), None);
+
+        // Create files in repository
+        fs::write(workspace_root.join(".eslintrc.js"), "module.exports = {};").unwrap();
+        fs::write(workspace_root.join("package-lock.json"), "{}").unwrap();
+
+        // Set up plugin with both config_files AND affects_cache
+        let mut plugin_def = PluginDef::default();
+        plugin_def.config_files = vec![PathBuf::from(".eslintrc.js")];
+        plugin_def.affects_cache = vec!["package-lock.json".to_string()];
+
+        let mut plugin_definitions = HashMap::new();
+        plugin_definitions.insert("eslint".to_string(), plugin_def);
+
+        let config = QltyConfig {
+            plugin: vec![EnabledPlugin {
+                name: "eslint".to_string(),
+                ..Default::default()
+            }],
+            plugins: PluginsConfig {
+                definitions: plugin_definitions,
+                downloads: HashMap::new(),
+                releases: HashMap::new(),
+            },
+            ..Default::default()
+        };
+
+        planner.config = config;
+
+        let operations = compute_config_staging_operations(&planner).unwrap();
+        assert!(operations.is_empty());
     }
 }
