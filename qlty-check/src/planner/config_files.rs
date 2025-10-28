@@ -677,20 +677,7 @@ mod tests {
             "Should have two operations for exported configs"
         );
 
-        // Should create operations for exported config paths
-        // let workspace_root = planner.workspace.root.clone();
-        // let workspace_ops: Vec<_> = operations
-        //     .iter()
-        //     .filter(|op| op.destination.starts_with(&workspace_root))
-        //     .collect();
-
-        // assert!(
-        //     workspace_ops
-        //         .iter()
-        //         .any(|op| matches!(op.mode, ConfigCopyMode::Symlink)),
-        //     "Should have workspace copy operations for exported configs"
-        // );
-
+        let workspace_root = planner.workspace.root.clone();
         let staging_dir = planner.staging_area.destination_directory.clone();
 
         let staging_ops: Vec<_> = operations
@@ -707,7 +694,7 @@ mod tests {
 
         let qlty_ops: Vec<_> = operations
             .iter()
-            .filter(|op| op.destination.starts_with(&planner.workspace.root))
+            .filter(|op| op.destination.starts_with(&workspace_root))
             .collect();
 
         assert!(
