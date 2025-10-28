@@ -336,6 +336,8 @@ impl Add for analysis::v1::Stats {
             fully_qualified_name: self.fully_qualified_name,
             workspace_id: self.workspace_id,
             project_id: self.project_id,
+            time: self.time,
+            generated_at: self.generated_at,
             kind: self.kind,
             path: self.path,
             language: self.language,
