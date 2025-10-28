@@ -86,8 +86,6 @@ pub struct Message {
     pub tags: ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
     #[prost(message, optional, tag="16")]
     pub generated_at: ::core::option::Option<::pbjson_types::Timestamp>,
-    #[prost(message, optional, tag="17")]
-    pub time: ::core::option::Option<::pbjson_types::Timestamp>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Stats {
@@ -164,8 +162,6 @@ pub struct Invocation {
     pub commit_sha: ::prost::alloc::string::String,
     #[prost(message, optional, tag="34")]
     pub generated_at: ::core::option::Option<::pbjson_types::Timestamp>,
-    #[prost(message, optional, tag="35")]
-    pub time: ::core::option::Option<::pbjson_types::Timestamp>,
     /// Metadata
     #[prost(string, tag="1")]
     pub id: ::prost::alloc::string::String,
