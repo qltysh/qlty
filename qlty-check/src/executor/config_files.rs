@@ -31,15 +31,16 @@ fn stage_file(
     destination_path: &Path,
     mode: ConfigCopyMode,
 ) -> Result<Option<String>> {
-    if !source_path.exists() {
+    // No-op if source does not exist or source and destination are the same
+    if !source_path.exists() || source_path == destination_path {
         return Ok(None);
     }
-
-    ensure_parent_exists(destination_path)?;
 
     if destination_path.exists() {
         return Ok(Some(path_to_string(destination_path)));
     }
+
+    ensure_parent_exists(destination_path)?;
 
     match mode {
         ConfigCopyMode::Symlink => {

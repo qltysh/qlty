@@ -184,8 +184,11 @@ pub fn compute_config_staging_operations(planner: &Planner) -> Result<Vec<Config
     let all_config_paths = collect_all_config_paths(&plugins);
 
     let mut operations = Vec::new();
-    // Operations for config files in the repository
-    operations.extend(repository_config_operations(planner, &all_config_paths)?);
+
+    if planner.staging_area.destination_directory != planner.workspace.root {
+        // Operations for config files in the repository only if staging area is different from workspace root
+        operations.extend(repository_config_operations(planner, &all_config_paths)?);
+    }
     // Operations for any exported config files in the sources
     operations.extend(exported_config_operations(planner, &plugins)?);
     // Operations for config files in the .qlty/configs directory
@@ -221,6 +224,7 @@ fn repository_config_operations(
 
     let config_globset = config_globset(&all_config_paths.to_vec())?;
     let exclude_globset = exclude_globset(&planner.config.exclude_patterns)?;
+    let library = planner.workspace.library();
 
     let mut operations = Vec::new();
     for entry in planner.workspace.walker() {
@@ -228,7 +232,7 @@ fn repository_config_operations(
         if let Some(os_str) = entry.path().file_name() {
             let file_name = os_str.to_os_string();
             if config_globset.is_match(&file_name) && !exclude_globset.is_match(entry.path()) {
-                if let Ok(library) = planner.workspace.library() {
+                if let Ok(library) = library.as_ref() {
                     if entry.path().starts_with(library.configs_dir()) {
                         continue;
                     }
