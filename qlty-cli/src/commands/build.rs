@@ -322,6 +322,11 @@ impl Build {
             }
         });
 
+        let generated_at = Timestamp {
+            seconds: now.unix_timestamp(),
+            nanos: now.nanosecond() as i32,
+        };
+
         let mut metadata = Metadata {
             id: Uuid::now_v7().to_string(),
             workspace_id: env::var("QLTY_WORKSPACE_ID").unwrap_or_default(),
@@ -334,10 +339,7 @@ impl Build {
                 warn!("QLTY_BUILD_ID is unset, generated: {}", uuid);
                 uuid.to_string()
             }),
-            start_time: Some(Timestamp {
-                seconds: now.unix_timestamp(),
-                nanos: now.nanosecond() as i32,
-            }),
+            start_time: Some(generated_at.clone()),
             reference,
             backfill: self.backfill,
             revision_oid: env::var("QLTY_REVISION_OID").unwrap_or_default(),
@@ -346,6 +348,8 @@ impl Build {
             pull_request_number,
             tracked_branch_id: env::var("QLTY_TRACKED_BRANCH_ID").ok(),
             result: AnalysisResult::Success.into(),
+            generated_at: Some(generated_at.clone()),
+            time: Some(generated_at),
             ..Default::default()
         };
 
@@ -365,10 +369,12 @@ impl Build {
                             metadata.commit_message =
                                 head_commit.message().unwrap_or_default().to_string();
 
-                            metadata.committed_at = Some(Timestamp {
+                            let committed_at = Timestamp {
                                 seconds: committer.when().seconds(),
                                 nanos: 0,
-                            });
+                            };
+
+                            metadata.committed_at = Some(committed_at.clone());
 
                             metadata.authored_at = Some(Timestamp {
                                 seconds: author.when().seconds(),
@@ -382,6 +388,10 @@ impl Build {
 
                             metadata.author_email = author.email().unwrap_or_default().to_string();
                             metadata.author_name = author.name().unwrap_or_default().to_string();
+
+                            if self.backfill {
+                                metadata.time = Some(committed_at);
+                            }
                         }
                         Err(e) => warn!("Failed to get head commit: {}", e),
                     },

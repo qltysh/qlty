@@ -95,6 +95,8 @@ impl Report {
             invocation.build_id = self.metadata.build_id.clone();
             invocation.build_timestamp = self.metadata.start_time;
             invocation.commit_sha = self.metadata.revision_oid.clone();
+            invocation.generated_at = self.metadata.generated_at;
+            invocation.time = self.metadata.time;
         });
 
         self.messages.par_iter_mut().for_each(|message| {
@@ -105,6 +107,8 @@ impl Report {
             message.build_id = self.metadata.build_id.clone();
             message.build_timestamp = self.metadata.start_time;
             message.commit_sha = self.metadata.revision_oid.clone();
+            message.generated_at = self.metadata.generated_at;
+            message.time = self.metadata.time;
         });
 
         self.issues.par_iter_mut().for_each(|issue| {
@@ -118,6 +122,8 @@ impl Report {
             issue.reference = self.metadata.reference.clone();
             issue.build_id = self.metadata.build_id.clone();
             issue.commit_sha = self.metadata.revision_oid.clone();
+            issue.generated_at = self.metadata.generated_at;
+            issue.time = self.metadata.time;
         });
 
         self.stats.par_iter_mut().for_each(|stats| {
@@ -131,6 +137,8 @@ impl Report {
             stats.reference = self.metadata.reference.clone();
             stats.build_id = self.metadata.build_id.clone();
             stats.commit_sha = self.metadata.revision_oid.clone();
+            stats.generated_at = self.metadata.generated_at;
+            stats.time = self.metadata.time;
         });
     }
 
