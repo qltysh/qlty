@@ -12,7 +12,9 @@
     "committerName": "TEST",
     "authorEmail": "test@codeclimate.com",
     "authorName": "TEST",
-    "authoredAt": "2024-01-01T00:00:00+00:00"
+    "authoredAt": "2024-01-01T00:00:00+00:00",
+    "generatedAt": "[..]",
+    "time": "[..]"
   },
   "messages": [],
   "invocations": [],
@@ -21,6 +23,8 @@
       "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "similar-code",
@@ -63,6 +67,8 @@
       "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "similar-code",
@@ -105,6 +111,8 @@
       "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "boolean-logic",
@@ -133,6 +141,8 @@
       "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "file-complexity",
@@ -165,6 +175,8 @@
       "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-complexity",
@@ -197,6 +209,8 @@
       "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-parameters",
@@ -225,6 +239,8 @@
       "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -253,6 +269,8 @@
       "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -281,6 +299,8 @@
       "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "return-statements",
@@ -327,7 +347,9 @@
       "blankLines": 1,
       "complexity": 2,
       "cyclomatic": 13,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -348,7 +370,9 @@
       "blankLines": 1,
       "complexity": 2,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -369,7 +393,9 @@
       "blankLines": 2,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -390,7 +416,9 @@
       "blankLines": 3,
       "complexity": 5,
       "cyclomatic": 8,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -411,7 +439,9 @@
       "blankLines": 2,
       "complexity": 1,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -432,7 +462,9 @@
       "blankLines": 2,
       "complexity": 2,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -453,7 +485,9 @@
       "blankLines": 2,
       "complexity": 4,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -474,7 +508,9 @@
       "blankLines": 3,
       "complexity": 2,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -495,7 +531,9 @@
       "blankLines": 3,
       "complexity": 7,
       "cyclomatic": 5,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -516,7 +554,9 @@
       "blankLines": 2,
       "complexity": 4,
       "cyclomatic": 5,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -537,7 +577,9 @@
       "blankLines": 2,
       "complexity": 1,
       "cyclomatic": 4,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -558,7 +600,9 @@
       "blankLines": 3,
       "complexity": 1,
       "cyclomatic": 6,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -579,7 +623,9 @@
       "blankLines": 2,
       "complexity": 1,
       "cyclomatic": 4,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -600,7 +646,9 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -621,7 +669,9 @@
       "blankLines": 1,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -642,7 +692,9 @@
       "blankLines": 1,
       "complexity": 3,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -663,7 +715,9 @@
       "blankLines": 1,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -684,7 +738,9 @@
       "blankLines": 2,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -705,7 +761,9 @@
       "blankLines": 3,
       "complexity": 2,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -726,7 +784,9 @@
       "blankLines": 2,
       "complexity": 2,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -747,7 +807,9 @@
       "blankLines": 3,
       "complexity": 3,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -768,7 +830,9 @@
       "blankLines": 3,
       "complexity": 0,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -789,7 +853,9 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -810,7 +876,9 @@
       "blankLines": 0,
       "complexity": 55,
       "cyclomatic": 27,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -831,7 +899,9 @@
       "blankLines": 1,
       "complexity": 15,
       "cyclomatic": 12,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -852,7 +922,9 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -873,7 +945,9 @@
       "blankLines": 4,
       "complexity": 0,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -894,7 +968,9 @@
       "blankLines": 9,
       "complexity": 6,
       "cyclomatic": 19,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -915,7 +991,9 @@
       "blankLines": 5,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -936,7 +1014,9 @@
       "blankLines": 4,
       "complexity": 1,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -957,7 +1037,9 @@
       "blankLines": 4,
       "complexity": 26,
       "cyclomatic": 27,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -978,7 +1060,9 @@
       "blankLines": 3,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -999,7 +1083,9 @@
       "blankLines": 4,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -1019,7 +1105,9 @@
       "blankLines": 27,
       "complexity": 31,
       "cyclomatic": 45,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -1039,7 +1127,9 @@
       "blankLines": 15,
       "complexity": 13,
       "cyclomatic": 18,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -1059,7 +1149,9 @@
       "blankLines": 3,
       "complexity": 0,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -1079,7 +1171,9 @@
       "blankLines": 6,
       "complexity": 0,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -1099,7 +1193,9 @@
       "blankLines": 5,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     }
   ]
 }

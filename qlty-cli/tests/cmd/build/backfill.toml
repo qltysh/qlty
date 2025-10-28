@@ -1,0 +1,3 @@
+args = ["build", "--print", "--backfill"]
+bin.name = "qlty"
+status.code = 0
