@@ -1,0 +1,160 @@
+{
+  "metadata": {
+    "id": "[..]",
+    "buildId": "[..]",
+    "result": "ANALYSIS_RESULT_SUCCESS",
+    "backfill": true,
+    "filesAnalyzed": 2,
+    "startTime": "[..]",
+    "finishTime": "[..]",
+    "commitMessage": "initial/n",
+    "committedAt": "2024-01-01T00:00:00+00:00",
+    "committerEmail": "test@codeclimate.com",
+    "committerName": "TEST",
+    "authorEmail": "test@codeclimate.com",
+    "authorName": "TEST",
+    "authoredAt": "2024-01-01T00:00:00+00:00",
+    "generatedAt": "[..]",
+    "time": "2024-01-01T00:00:00+00:00"
+  },
+  "messages": [],
+  "invocations": [],
+  "issues": [
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "2024-01-01T00:00:00+00:00",
+      "tool": "qlty",
+      "driver": "duplication",
+      "ruleKey": "identical-code",
+      "message": "Found 28 lines of identical code in 2 locations (mass = 81)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_RUBY",
+      "category": "CATEGORY_DUPLICATION",
+      "snippet": "def foo1(x)/n    if x > 10/n        return x * 2/n    else/n        return x + 1/n    end/n/n    loop do/n        return x * 2/n        return x + 1/n        return x + 1/n    end/nend/n/ndef foo2(x)/n    if x > 10/n        return x * 2/n    else/n        return x + 1/n    end/n/n    loop do/n        return x * 2/n        return x + 1/n        return x + 1/n    end/nend/n",
+      "snippetWithContext": "def foo1(x)/n    if x > 10/n        return x * 2/n    else/n        return x + 1/n    end/n/n    loop do/n        return x * 2/n        return x + 1/n        return x + 1/n    end/nend/n/ndef foo2(x)/n    if x > 10/n        return x * 2/n    else/n        return x + 1/n    end/n/n    loop do/n        return x * 2/n        return x + 1/n        return x + 1/n    end/nend",
+      "effortMinutes": 75,
+      "value": 28,
+      "valueDelta": 13,
+      "location": {
+        "path": "identical_a.rb",
+        "range": {
+          "startLine": 1,
+          "endLine": 28,
+          "startByte": 0,
+          "endByte": 347
+        }
+      },
+      "otherLocations": [
+        {
+          "path": "identical_b.rb",
+        [..]
+        [..]
+        [..]
+        [..]
+        }
+      ],
+      "properties": {
+        [..]
+        [..]
+        [..]
+        [..]
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "2024-01-01T00:00:00+00:00",
+      "tool": "qlty",
+      "driver": "duplication",
+      "ruleKey": "identical-code",
+      "message": "Found 28 lines of identical code in 2 locations (mass = 81)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_RUBY",
+      "category": "CATEGORY_DUPLICATION",
+      "snippet": "def foo1(x)/n    if x > 10/n        return x * 2/n    else/n        return x + 1/n    end/n/n    loop do/n        return x * 2/n        return x + 1/n        return x + 1/n    end/nend/n/ndef foo2(x)/n    if x > 10/n        return x * 2/n    else/n        return x + 1/n    end/n/n    loop do/n        return x * 2/n        return x + 1/n        return x + 1/n    end/nend/n",
+      "snippetWithContext": "def foo1(x)/n    if x > 10/n        return x * 2/n    else/n        return x + 1/n    end/n/n    loop do/n        return x * 2/n        return x + 1/n        return x + 1/n    end/nend/n/ndef foo2(x)/n    if x > 10/n        return x * 2/n    else/n        return x + 1/n    end/n/n    loop do/n        return x * 2/n        return x + 1/n        return x + 1/n    end/nend",
+      "effortMinutes": 75,
+      "value": 28,
+      "valueDelta": 13,
+      "location": {
+        "path": "identical_b.rb",
+        "range": {
+          "startLine": 1,
+          "endLine": 28,
+          "startByte": 0,
+          "endByte": 347
+        }
+      },
+      "otherLocations": [
+        {
+          "path": "identical_a.rb",
+        [..]
+        [..]
+        [..]
+        [..]
+        }
+      ],
+      "properties": {
+        [..]
+        [..]
+        [..]
+        [..]
+      },
+      "mode": "MODE_BLOCK"
+    }
+  ],
+  "stats": [
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "identical_a.rb",
+      "fullyQualifiedName": "identical_a.rb",
+      "path": "identical_a.rb",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_RUBY",
+      "files": 1,
+      "classes": 0,
+      "functions": 2,
+      "fields": 0,
+      "lines": 27,
+      "codeLines": 24,
+      "commentLines": 0,
+      "blankLines": 3,
+      "complexity": 4,
+      "cyclomatic": 15,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "2024-01-01T00:00:00+00:00"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "identical_b.rb",
+      "fullyQualifiedName": "identical_b.rb",
+      "path": "identical_b.rb",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_RUBY",
+      "files": 1,
+      "classes": 0,
+      "functions": 2,
+      "fields": 0,
+      "lines": 27,
+      "codeLines": 24,
+      "commentLines": 0,
+      "blankLines": 3,
+      "complexity": 4,
+      "cyclomatic": 15,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "2024-01-01T00:00:00+00:00"
+    }
+  ]
+}
