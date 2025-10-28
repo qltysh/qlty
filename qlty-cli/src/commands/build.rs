@@ -339,7 +339,7 @@ impl Build {
                 warn!("QLTY_BUILD_ID is unset, generated: {}", uuid);
                 uuid.to_string()
             }),
-            start_time: Some(generated_at.clone()),
+            start_time: Some(generated_at),
             reference,
             backfill: self.backfill,
             revision_oid: env::var("QLTY_REVISION_OID").unwrap_or_default(),
@@ -348,7 +348,7 @@ impl Build {
             pull_request_number,
             tracked_branch_id: env::var("QLTY_TRACKED_BRANCH_ID").ok(),
             result: AnalysisResult::Success.into(),
-            generated_at: Some(generated_at.clone()),
+            generated_at: Some(generated_at),
             time: Some(generated_at),
             ..Default::default()
         };
@@ -374,7 +374,7 @@ impl Build {
                                 nanos: 0,
                             };
 
-                            metadata.committed_at = Some(committed_at.clone());
+                            metadata.committed_at = Some(committed_at);
 
                             metadata.authored_at = Some(Timestamp {
                                 seconds: author.when().seconds(),
