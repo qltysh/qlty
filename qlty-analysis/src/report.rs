@@ -96,7 +96,6 @@ impl Report {
             invocation.build_timestamp = self.metadata.start_time;
             invocation.commit_sha = self.metadata.revision_oid.clone();
             invocation.generated_at = self.metadata.generated_at;
-            invocation.time = self.metadata.time;
         });
 
         self.messages.par_iter_mut().for_each(|message| {
@@ -108,7 +107,6 @@ impl Report {
             message.build_timestamp = self.metadata.start_time;
             message.commit_sha = self.metadata.revision_oid.clone();
             message.generated_at = self.metadata.generated_at;
-            message.time = self.metadata.time;
         });
 
         self.issues.par_iter_mut().for_each(|issue| {
