@@ -322,6 +322,11 @@ impl Build {
             }
         });
 
+        let generated_at = Some(Timestamp {
+            seconds: now.unix_timestamp(),
+            nanos: now.nanosecond() as i32,
+        });
+
         let mut metadata = Metadata {
             id: Uuid::now_v7().to_string(),
             workspace_id: env::var("QLTY_WORKSPACE_ID").unwrap_or_default(),
@@ -346,10 +351,18 @@ impl Build {
             pull_request_number,
             tracked_branch_id: env::var("QLTY_TRACKED_BRANCH_ID").ok(),
             result: AnalysisResult::Success.into(),
+            generated_at,
             ..Default::default()
         };
 
         self.append_commit_metadata(&mut metadata);
+
+        metadata.time = if self.backfill {
+            metadata.committed_at
+        } else {
+            generated_at
+        };
+
         metadata
     }
 

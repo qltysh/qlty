@@ -12,7 +12,9 @@
     "committerName": "TEST",
     "authorEmail": "test@codeclimate.com",
     "authorName": "TEST",
-    "authoredAt": "2024-01-01T00:00:00+00:00"
+    "authoredAt": "2024-01-01T00:00:00+00:00",
+    "generatedAt": "[..]",
+    "time": "[..]"
   },
   "messages": [],
   "invocations": [],
@@ -21,6 +23,8 @@
       "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "boolean-logic",
@@ -49,6 +53,8 @@
       "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "file-complexity",
@@ -81,6 +87,8 @@
       "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-complexity",
@@ -113,6 +121,8 @@
       "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-parameters",
@@ -141,6 +151,8 @@
       "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -169,6 +181,8 @@
       "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -214,7 +228,9 @@
       "blankLines": 1,
       "complexity": 2,
       "cyclomatic": 7,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -235,7 +251,9 @@
       "blankLines": 2,
       "complexity": 5,
       "cyclomatic": 27,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -256,7 +274,9 @@
       "blankLines": 13,
       "complexity": 14,
       "cyclomatic": 16,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -277,7 +297,9 @@
       "blankLines": 1,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -298,7 +320,9 @@
       "blankLines": 0,
       "complexity": 55,
       "cyclomatic": 27,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -319,7 +343,9 @@
       "blankLines": 1,
       "complexity": 15,
       "cyclomatic": 12,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -340,7 +366,9 @@
       "blankLines": 5,
       "complexity": 4,
       "cyclomatic": 19,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -361,7 +389,9 @@
       "blankLines": 3,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -382,7 +412,9 @@
       "blankLines": 3,
       "complexity": 26,
       "cyclomatic": 27,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -403,7 +435,9 @@
       "blankLines": 3,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
       "analysisId": "[..]",
@@ -424,7 +458,9 @@
       "blankLines": 4,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     }
   ]
 }
