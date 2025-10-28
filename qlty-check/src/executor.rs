@@ -410,7 +410,7 @@ impl Executor {
             for fetch in fetches {
                 fetch
                     .download_file_to(&directories)
-                    .with_context(|| format!("Failed to fetch file for plugin: {}", plugin_name))?;
+                    .with_context(|| format!("Failed to fetch file for plugin: {plugin_name}"))?;
 
                 loaded_config_files.push(fetch.path.clone());
             }
