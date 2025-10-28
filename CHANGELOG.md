@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.586.0 (2025-10-28)
+
+### Improved
+
+- Add warnings on unexpected config attributes (#2464)
+
+## v0.585.0 (2025-10-23)
+
+### Fixed
+
+- Fix broken URLs in error messages (#2472)
+- Fix plugins enable behaviour interaction with suggested directive (#2465)
+
 ## v0.584.0 (2025-10-17)
 
 No changes. (Release was triggered by internal improvements.)
