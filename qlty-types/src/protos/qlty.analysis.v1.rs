@@ -48,6 +48,10 @@ pub struct Metadata {
     pub author_name: ::prost::alloc::string::String,
     #[prost(message, optional, tag="22")]
     pub authored_at: ::core::option::Option<::pbjson_types::Timestamp>,
+    #[prost(message, optional, tag="25")]
+    pub generated_at: ::core::option::Option<::pbjson_types::Timestamp>,
+    #[prost(message, optional, tag="26")]
+    pub time: ::core::option::Option<::pbjson_types::Timestamp>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Message {
@@ -80,6 +84,8 @@ pub struct Message {
     pub level: i32,
     #[prost(map="string, string", tag="7")]
     pub tags: ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
+    #[prost(message, optional, tag="16")]
+    pub generated_at: ::core::option::Option<::pbjson_types::Timestamp>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Stats {
@@ -133,6 +139,10 @@ pub struct Stats {
     pub cyclomatic: ::core::option::Option<u32>,
     #[prost(uint32, optional, tag="110")]
     pub lcom4: ::core::option::Option<u32>,
+    #[prost(message, optional, tag="17")]
+    pub generated_at: ::core::option::Option<::pbjson_types::Timestamp>,
+    #[prost(message, optional, tag="18")]
+    pub time: ::core::option::Option<::pbjson_types::Timestamp>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Invocation {
@@ -150,6 +160,8 @@ pub struct Invocation {
     pub build_timestamp: ::core::option::Option<::pbjson_types::Timestamp>,
     #[prost(string, tag="29")]
     pub commit_sha: ::prost::alloc::string::String,
+    #[prost(message, optional, tag="34")]
+    pub generated_at: ::core::option::Option<::pbjson_types::Timestamp>,
     /// Metadata
     #[prost(string, tag="1")]
     pub id: ::prost::alloc::string::String,
@@ -227,6 +239,10 @@ pub struct Issue {
     pub tracked_branch_id: ::core::option::Option<::prost::alloc::string::String>,
     #[prost(message, optional, tag="32")]
     pub analyzed_at: ::core::option::Option<::pbjson_types::Timestamp>,
+    #[prost(message, optional, tag="43")]
+    pub generated_at: ::core::option::Option<::pbjson_types::Timestamp>,
+    #[prost(message, optional, tag="44")]
+    pub time: ::core::option::Option<::pbjson_types::Timestamp>,
     #[prost(string, tag="25")]
     pub tool: ::prost::alloc::string::String,
     #[prost(string, tag="26")]
