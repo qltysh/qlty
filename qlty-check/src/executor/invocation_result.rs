@@ -63,6 +63,7 @@ impl InvocationResult {
                 reference: Default::default(),
                 build_id: Default::default(),
                 build_timestamp: Default::default(),
+                generated_at: Default::default(),
                 commit_sha: Default::default(),
                 id: plan.invocation_id.clone(),
                 qlty_cli_version: QLTY_VERSION.to_string(),
