@@ -5,7 +5,7 @@
     "driver": "structure",
     "ruleKey": "return-statements",
     "message": "Function with many returns (count = 6): foo",
-    "level": "LEVEL_MEDIUM",
+    "level": "LEVEL_LOW",
     "language": "LANGUAGE_JAVASCRIPT",
     "category": "CATEGORY_STRUCTURE",
     "snippet": "function foo(a,b,c,d,e,f,g) {/n  return;/n  return;/n  return;/n  return;/n  return;/n  return;/n}",
@@ -23,6 +23,6 @@
         "endByte": 132
       }
     },
-    "mode": "MODE_BLOCK"
+    "mode": "MODE_COMMENT"
   }
 ]
