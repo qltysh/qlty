@@ -1,10 +1,3 @@
-use crate::source_reader::SourceReader;
-use qlty_analysis::{
-    code::{all_captured_nodes, File},
-    lang,
-    utils::filename_to_language,
-    Language,
-};
 use qlty_config::issue_transformer::IssueTransformer;
 use qlty_types::analysis::v1::Issue;
 use regex::Regex;
@@ -15,6 +8,14 @@ use std::{
     sync::{Arc, RwLock},
 };
 use tracing::{debug, trace};
+
+use crate::{
+    code::{all_captured_nodes, File},
+    lang,
+    source_reader::SourceReader,
+    utils::filename_to_language,
+    Language,
+};
 
 #[derive(Debug)]
 pub struct IssueMuter {

@@ -2604,6 +2604,7 @@ dependencies = [
  "glob",
  "globset",
  "ignore",
+ "indoc",
  "insta",
  "itertools 0.14.0",
  "lazy_static",

@@ -1,6 +1,6 @@
-use crate::source_reader::SourceReader;
 use diffy::DiffOptions;
 use itertools::Itertools;
+use qlty_analysis::source_reader::SourceReader;
 use qlty_config::issue_transformer::IssueTransformer;
 use qlty_types::analysis::v1::{Issue, Location, Replacement};
 use std::sync::Arc;
@@ -192,10 +192,10 @@ fn replace_in_range(
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{
-        parser::{clippy::Clippy, golangci_lint::GolangciLint, shellcheck::Shellcheck, Parser},
-        source_reader::SourceReaderFs,
+    use crate::parser::{
+        clippy::Clippy, golangci_lint::GolangciLint, shellcheck::Shellcheck, Parser,
     };
+    use qlty_analysis::source_reader::SourceReaderFs;
     use std::path::PathBuf;
     use tracing_test::traced_test;
 
