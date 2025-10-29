@@ -70,8 +70,8 @@ impl IssueMuter {
 
     fn rule_key_is_ignored(parser: &IgnoreParser, tool: &str, rule_key: &str, line: usize) -> bool {
         parser.ignore_rule_at_line(line, tool.to_string())
-            || parser.ignore_rule_at_line(line, format!("{}/{}", tool, rule_key))
-            || parser.ignore_rule_at_line(line, format!("{}:{}", tool, rule_key))
+            || parser.ignore_rule_at_line(line, format!("{tool}/{rule_key}"))
+            || parser.ignore_rule_at_line(line, format!("{tool}:{rule_key}"))
     }
 
     fn parse_issue_file(&self, issue: &Issue) {
@@ -260,7 +260,7 @@ impl IgnoreParser {
             language
                 .comment_nodes()
                 .iter()
-                .map(|c| format!("({})", c))
+                .map(|c| format!("({c})"))
                 .collect::<Vec<_>>()
                 .join(" ")
         );

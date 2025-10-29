@@ -13,6 +13,7 @@ use qlty_analysis::{
 use qlty_config::{QltyConfig, Workspace};
 use qlty_types::analysis::v1::{AnalysisResult, ExecutionVerb, Metadata};
 use rayon::prelude::*;
+use std::path::Path;
 use std::{env, path::PathBuf, sync::Arc};
 use time::OffsetDateTime;
 use tracing::{debug, info, warn};
@@ -193,10 +194,9 @@ impl Build {
         &self,
         config: &QltyConfig,
         files: &[Arc<File>],
-        workspace_root: &PathBuf,
+        workspace_root: &Path,
     ) -> Result<Report> {
-        let planner =
-            qlty_smells::structure::Planner::new(config, files.to_vec(), workspace_root.clone())?;
+        let planner = qlty_smells::structure::Planner::new(config, files.to_vec(), workspace_root)?;
         let plan = planner.compute()?;
         let mut executor = qlty_smells::structure::Executor::new(&plan);
         executor.execute();

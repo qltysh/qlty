@@ -14,7 +14,11 @@ use qlty_config::{
     warn_once, QltyConfig,
 };
 use qlty_types::{category_from_str, level_from_str};
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 #[derive(Debug, Clone)]
 pub struct Planner {
@@ -24,15 +28,11 @@ pub struct Planner {
 }
 
 impl Planner {
-    pub fn new(
-        config: &QltyConfig,
-        files: Vec<Arc<File>>,
-        workspace_root: PathBuf,
-    ) -> Result<Self> {
+    pub fn new(config: &QltyConfig, files: Vec<Arc<File>>, workspace_root: &Path) -> Result<Self> {
         Ok(Self {
             config: config.clone(),
             files,
-            workspace_root,
+            workspace_root: workspace_root.to_path_buf(),
         })
     }
 
