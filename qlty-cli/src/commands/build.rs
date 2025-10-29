@@ -104,7 +104,7 @@ impl Build {
                     "Checking structure of {} files... ",
                     workspace_entry_files.len()
                 );
-                self.run_structure(&config, &workspace_entry_files)
+                self.run_structure(&config, &workspace_entry_files, &workspace.root)
             }
             ReportFunctions::Duplication => {
                 info!("Looking for duplication across all files... ");
@@ -189,8 +189,14 @@ impl Build {
         }
     }
 
-    fn run_structure(&self, config: &QltyConfig, files: &[Arc<File>]) -> Result<Report> {
-        let planner = qlty_smells::structure::Planner::new(config, files.to_vec())?;
+    fn run_structure(
+        &self,
+        config: &QltyConfig,
+        files: &[Arc<File>],
+        workspace_root: &PathBuf,
+    ) -> Result<Report> {
+        let planner =
+            qlty_smells::structure::Planner::new(config, files.to_vec(), workspace_root.clone())?;
         let plan = planner.compute()?;
         let mut executor = qlty_smells::structure::Executor::new(&plan);
         executor.execute();

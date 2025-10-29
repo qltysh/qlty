@@ -91,7 +91,7 @@ impl Smells {
             EYES,
             format!("Checking structure of {} files... ", files.len()),
         );
-        let mut report = self.run_structure(&config, &files)?;
+        let mut report = self.run_structure(&config, &files, &workspace.root)?;
 
         if !self.no_duplication {
             steps.start(
@@ -151,8 +151,13 @@ impl Smells {
         Ok(())
     }
 
-    fn run_structure(&self, config: &QltyConfig, files: &[Arc<File>]) -> Result<Report> {
-        let planner = qlty_smells::structure::Planner::new(config, files.to_vec())?;
+    fn run_structure(
+        &self,
+        config: &QltyConfig,
+        files: &[Arc<File>],
+        root: &PathBuf,
+    ) -> Result<Report> {
+        let planner = qlty_smells::structure::Planner::new(config, files.to_vec(), root.clone())?;
         let plan = planner.compute()?;
 
         let mut executor = qlty_smells::structure::Executor::new(&plan);

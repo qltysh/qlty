@@ -20,13 +20,19 @@ impl Executor {
     }
 
     pub fn execute(&mut self) {
-        self.issues = self
+        let mut issues = self
             .plan
             .source_files
             .clone()
             .into_par_iter()
             .flat_map(|source_file| self.check(source_file))
             .collect();
+
+        for transformer in &self.plan.transformers {
+            issues = transformer.transform_batch(issues);
+        }
+
+        self.issues = issues;
     }
 
     pub fn report(&self) -> Report {

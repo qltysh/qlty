@@ -1,11 +1,12 @@
 use qlty_analysis::code::File;
-use qlty_config::config::IssueMode;
+use qlty_config::{config::IssueMode, issue_transformer::IssueTransformer};
 use std::{collections::HashMap, sync::Arc};
 
 #[derive(Clone, Debug)]
 pub struct Plan {
     pub languages: HashMap<String, LanguagePlan>,
     pub source_files: Vec<Arc<File>>,
+    pub transformers: Vec<Box<dyn IssueTransformer>>,
 }
 
 impl Plan {
