@@ -9,7 +9,7 @@ pub trait IssueTransformer: Debug + Send + Sync + 'static {
         Some(issue)
     }
 
-    fn transform_batch(&self, issues: Vec<Issue>) -> Vec<Issue> {
+    fn transform_batch(&self, issues: &Vec<Issue>) -> Vec<Issue> {
         issues
             .par_iter()
             .cloned()
@@ -55,7 +55,7 @@ mod tests {
     #[derive(Debug, Clone)]
     struct FilterBatchTransformer;
     impl IssueTransformer for FilterBatchTransformer {
-        fn transform_batch(&self, issues: Vec<Issue>) -> Vec<Issue> {
+        fn transform_batch(&self, issues: &Vec<Issue>) -> Vec<Issue> {
             issues
                 .iter()
                 .filter(|issue| issue.id.starts_with("KEEP"))
@@ -93,7 +93,7 @@ mod tests {
             create_test_issue("TEST-3"),
         ];
 
-        let result = transformer.transform_batch(issues.clone());
+        let result = transformer.transform_batch(&issues);
         assert_eq!(result.len(), 3);
         assert_eq!(result[0].id, "TEST-1");
         assert_eq!(result[1].id, "TEST-2");
@@ -126,7 +126,7 @@ mod tests {
             create_test_issue("TEST-2"),
             create_test_issue("TEST-3"),
         ];
-        assert!(transformer.transform_batch(issues).is_empty());
+        assert!(transformer.transform_batch(&issues).is_empty());
     }
 
     #[test]
@@ -139,7 +139,7 @@ mod tests {
             create_test_issue("DROP-2"),
         ];
 
-        let result = transformer.transform_batch(issues);
+        let result = transformer.transform_batch(&issues);
         assert_eq!(result.len(), 2);
         assert_eq!(result[0].id, "KEEP-1");
         assert_eq!(result[1].id, "KEEP-2");
@@ -149,6 +149,6 @@ mod tests {
     fn test_filter_batch_transformer_empty() {
         let transformer = FilterBatchTransformer;
         let issues = vec![create_test_issue("DROP-1"), create_test_issue("DROP-2")];
-        assert!(transformer.transform_batch(issues).is_empty());
+        assert!(transformer.transform_batch(&issues).is_empty());
     }
 }
