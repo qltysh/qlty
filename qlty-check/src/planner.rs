@@ -3,7 +3,6 @@ use self::plugin::PluginPlanner;
 use self::plugin_mode_transformer::PluginModeTransformer;
 use crate::cache::{IssueCache, IssuesCacheHit};
 use crate::executor::staging_area::{Mode, StagingArea};
-use crate::issue_muter::IssueMuter;
 use crate::patch_builder::PatchBuilder;
 use crate::planner::config_files::{
     compute_config_staging_operations, plugin_configs, ConfigOperation, PluginConfigFile,
@@ -17,6 +16,7 @@ use itertools::Itertools;
 use plugin_tab_column_width_transformer::PluginTabColumnWidthTransformer;
 use qlty_analysis::cache::{Cache, FilesystemCache, NullCache};
 use qlty_analysis::git::{compute_upstream, DiffLineFilter};
+use qlty_analysis::issue_muter::IssueMuter;
 use qlty_analysis::workspace_entries::TargetMode;
 use qlty_config::config::issue_transformer::IssueTransformer;
 use qlty_config::config::{DriverType, Match, PluginDef, Set, Triage};

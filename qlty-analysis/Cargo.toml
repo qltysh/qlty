@@ -20,6 +20,7 @@ git2.workspace = true
 glob.workspace = true
 globset.workspace = true
 ignore.workspace = true
+indoc.workspace = true
 lazy_static.workspace = true
 md5.workspace = true
 num_cpus.workspace = true

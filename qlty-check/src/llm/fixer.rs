@@ -1,10 +1,10 @@
 use crate::planner::Plan;
-use crate::source_reader::SourceReader;
 use crate::ui::ProgressBar as _;
 use crate::{executor::staging_area::StagingArea, Progress};
 use anyhow::Result;
 use itertools::Itertools;
 use lazy_static::lazy_static;
+use qlty_analysis::source_reader::SourceReader;
 use qlty_cloud::Client;
 use qlty_config::issue_transformer::IssueTransformer;
 use qlty_types::analysis::v1::{Issue, Suggestion};
