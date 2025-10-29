@@ -9,7 +9,7 @@ pub trait IssueTransformer: Debug + Send + Sync + 'static {
         Some(issue)
     }
 
-    fn transform_batch(&self, issues: &Vec<Issue>) -> Vec<Issue> {
+    fn transform_batch(&self, issues: &[Issue]) -> Vec<Issue> {
         issues
             .par_iter()
             .cloned()
@@ -55,7 +55,7 @@ mod tests {
     #[derive(Debug, Clone)]
     struct FilterBatchTransformer;
     impl IssueTransformer for FilterBatchTransformer {
-        fn transform_batch(&self, issues: &Vec<Issue>) -> Vec<Issue> {
+        fn transform_batch(&self, issues: &[Issue]) -> Vec<Issue> {
             issues
                 .iter()
                 .filter(|issue| issue.id.starts_with("KEEP"))

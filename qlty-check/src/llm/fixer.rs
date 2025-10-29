@@ -38,7 +38,7 @@ pub struct Fixer {
 }
 
 impl IssueTransformer for Fixer {
-    fn transform_batch(&self, issues: &Vec<Issue>) -> Vec<Issue> {
+    fn transform_batch(&self, issues: &[Issue]) -> Vec<Issue> {
         issues
             .iter()
             .cloned()
