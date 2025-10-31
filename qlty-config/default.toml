@@ -138,6 +138,9 @@ globs = [
 ]
 interpreters = ["jruby", "rbx", "rake", "macruby", "ruby"]
 
+[file_types.gemfile_lock]
+globs = ["**/Gemfile.lock"]
+
 [file_types.rust]
 globs = ["*.rs"]
 
