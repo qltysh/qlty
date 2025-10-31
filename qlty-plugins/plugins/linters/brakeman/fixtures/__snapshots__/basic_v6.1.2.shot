@@ -27,6 +27,46 @@ exports[`linter=brakeman fixture=basic version=6.1.2 1`] = `
 end",
       "tool": "brakeman",
     },
+    {
+      "category": "CATEGORY_VULNERABILITY",
+      "documentationUrl": "https://brakemanscanner.org/docs/warning_types/unmaintained_dependency/",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "Gemfile.lock",
+        "range": {
+          "endColumn": 1,
+          "endLine": 105,
+          "startColumn": 1,
+          "startLine": 105,
+        },
+      },
+      "message": "Support for Rails 5.2.8.1 ended on 2022-06-01.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "BRAKE0120",
+      "snippet": "    rails (5.2.8.1)",
+      "snippetWithContext": "      net-protocol
+    nio4r (2.5.8)
+    nokogiri (1.14.1)
+      racc (~> 1.4)
+    puma (4.3.12)
+      nio4r (~> 2.0)
+    racc (1.6.2)
+    rack (2.2.6.2)
+    rack-test (2.0.2)
+      rack (>= 1.3)
+    rails (5.2.8.1)
+      actioncable (= 5.2.8.1)
+      actionmailer (= 5.2.8.1)
+      actionpack (= 5.2.8.1)
+      actionview (= 5.2.8.1)
+      activejob (= 5.2.8.1)
+      activemodel (= 5.2.8.1)
+      activerecord (= 5.2.8.1)
+      activestorage (= 5.2.8.1)
+      activesupport (= 5.2.8.1)
+      bundler (>= 1.3.0)",
+      "tool": "brakeman",
+    },
   ],
 }
 `;
