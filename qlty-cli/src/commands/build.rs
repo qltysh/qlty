@@ -5,6 +5,7 @@ use clap::Args;
 use git2::Repository;
 use itertools::Itertools;
 use pbjson_types::Timestamp;
+use qlty_analysis::basic_transformations::BasicTransformations;
 use qlty_analysis::{
     code::File,
     workspace_entries::{TargetMode, WorkspaceEntryFinderBuilder},
@@ -138,6 +139,7 @@ impl Build {
         debug!("Transforming issues...");
         let diff_line_filter = workspace_entry_finder_builder.diff_line_filter()?;
         report.transform_issues(diff_line_filter);
+        report.apply_basic_issue_transformations(&workspace.root, &config);
         report.relativeize_paths(&workspace.root);
         report.attach_metadata();
 

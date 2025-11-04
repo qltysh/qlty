@@ -1,18 +1,18 @@
 [
   {
-    "tool": "untriaged",
-    "ruleKey": "fail",
-    "message": "untriaged failed",
-    "level": "LEVEL_HIGH",
-    "category": "CATEGORY_LINT",
-    "mode": "MODE_BLOCK"
-  },
-  {
     "tool": "triaged",
     "ruleKey": "fail",
     "message": "triaged failed",
     "level": "LEVEL_LOW",
     "category": "CATEGORY_STRUCTURE",
     "mode": "MODE_COMMENT"
+  },
+  {
+    "tool": "untriaged",
+    "ruleKey": "fail",
+    "message": "untriaged failed",
+    "level": "LEVEL_HIGH",
+    "category": "CATEGORY_LINT",
+    "mode": "MODE_BLOCK"
   }
 ]
