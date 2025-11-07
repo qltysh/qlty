@@ -283,7 +283,7 @@ impl MetadataPlanner {
                 .git_tag
                 .as_ref()
                 .filter(|git_tag| !git_tag.is_empty())
-                .map(|git_tag| format!("refs/tags/{}", git_tag))
+                .map(|git_tag| format!("refs/tags/{git_tag}"))
                 .unwrap_or_default(),
             Some(ReferenceType::Branch) | Some(ReferenceType::MergeGroup)
                 if !metadata.branch.is_empty() =>
