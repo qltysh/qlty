@@ -275,6 +275,27 @@ impl MetadataPlanner {
             ReferenceType::Unspecified as i32
         };
 
+        metadata.reference = match ReferenceType::try_from(metadata.reference_type).ok() {
+            Some(ReferenceType::PullRequest) if !metadata.pull_request_number.is_empty() => {
+                format!("refs/pull/{}", metadata.pull_request_number)
+            }
+            Some(ReferenceType::Tag) => metadata
+                .git_tag
+                .as_ref()
+                .filter(|git_tag| !git_tag.is_empty())
+                .map(|git_tag| format!("refs/tags/{}", git_tag))
+                .unwrap_or_default(),
+            Some(ReferenceType::Branch) | Some(ReferenceType::MergeGroup)
+                if !metadata.branch.is_empty() =>
+            {
+                format!("refs/heads/{}", metadata.branch)
+            }
+            _ => String::new(),
+        };
+
+        metadata.complete = !metadata.incomplete
+            && (metadata.total_parts_count.is_none() || metadata.total_parts_count == Some(1));
+
         Ok(metadata)
     }
 
@@ -517,6 +538,55 @@ mod tests {
         let metadata = metadata_planner.compute().unwrap();
 
         assert_eq!(metadata.pull_request_number, "42"); // Override wins over CI's "99"
+    }
+
+    #[test]
+    fn test_complete_true_by_default() {
+        let settings = Settings::default();
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute().unwrap();
+
+        assert!(!metadata.incomplete);
+        assert!(metadata.complete);
+    }
+
+    #[test]
+    fn test_complete_false_when_incomplete_flag_set() {
+        let settings = Settings {
+            incomplete: true,
+            ..Default::default()
+        };
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute().unwrap();
+
+        assert!(metadata.incomplete);
+        assert!(!metadata.complete);
+    }
+
+    #[test]
+    fn test_complete_true_with_single_total_part() {
+        let settings = Settings {
+            total_parts_count: Some(1),
+            ..Default::default()
+        };
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute().unwrap();
+
+        assert!(!metadata.incomplete);
+        assert!(metadata.complete);
+    }
+
+    #[test]
+    fn test_complete_false_with_multiple_parts_even_without_flag() {
+        let settings = Settings {
+            total_parts_count: Some(3),
+            ..Default::default()
+        };
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute().unwrap();
+
+        assert!(!metadata.incomplete);
+        assert!(!metadata.complete);
     }
 
     #[test]
@@ -768,6 +838,55 @@ mod tests {
         let metadata = metadata_planner.compute().unwrap();
 
         assert_eq!(metadata.reference_type, ReferenceType::MergeGroup as i32);
+        assert_eq!(
+            metadata.reference,
+            "refs/heads/gh-readonly-queue/main/pr-123"
+        );
+    }
+
+    #[test]
+    fn test_reference_for_pull_request() {
+        let settings = Settings {
+            override_commit_time: Some("1729100000".to_string()),
+            ..Default::default()
+        };
+        let test_ci = Box::new(TestCI::new());
+        let metadata_planner = MetadataPlanner::new(&settings, Some(test_ci));
+        let metadata = metadata_planner.compute().unwrap();
+
+        assert_eq!(metadata.reference_type, ReferenceType::PullRequest as i32);
+        assert_eq!(metadata.reference, "refs/pull/99");
+    }
+
+    #[test]
+    fn test_reference_for_branch() {
+        let settings = Settings {
+            override_pull_request_number: Some(String::new()),
+            override_git_tag: Some(String::new()),
+            override_commit_time: Some("1729100000".to_string()),
+            ..Default::default()
+        };
+        let test_ci = Box::new(TestCI::new());
+        let metadata_planner = MetadataPlanner::new(&settings, Some(test_ci));
+        let metadata = metadata_planner.compute().unwrap();
+
+        assert_eq!(metadata.reference_type, ReferenceType::Branch as i32);
+        assert_eq!(metadata.reference, "refs/heads/test-branch");
+    }
+
+    #[test]
+    fn test_reference_for_tag() {
+        let settings = Settings {
+            override_pull_request_number: Some(String::new()),
+            override_commit_time: Some("1729100000".to_string()),
+            ..Default::default()
+        };
+        let test_ci = Box::new(TestCI::new());
+        let metadata_planner = MetadataPlanner::new(&settings, Some(test_ci));
+        let metadata = metadata_planner.compute().unwrap();
+
+        assert_eq!(metadata.reference_type, ReferenceType::Tag as i32);
+        assert_eq!(metadata.reference, "refs/tags/v0.1.0");
     }
 
     #[test]
