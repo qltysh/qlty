@@ -70,8 +70,8 @@ fn merge_hits_at_index(
     for i in 0..max_len {
         let mut result: Option<i64> = None;
 
-        for fc_idx in start_idx..end_idx {
-            let hit = file_coverages[fc_idx].hits.get(i).copied();
+        for fc in &file_coverages[start_idx..end_idx] {
+            let hit = fc.hits.get(i).copied();
 
             result = match (result, hit) {
                 // First value we encounter
