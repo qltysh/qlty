@@ -258,28 +258,28 @@ impl Ruby {
                 systems: vec![
                     System {
                         url:
-                            "https://github.com/ruby/ruby-builder/releases/download/toolcache/ruby-${version}-macos-13-arm64.tar.gz"
+                            "https://github.com/ruby/ruby-builder/releases/download/ruby-${version}/ruby-${version}-darwin-arm64.tar.gz"
                                 .to_string(),
                         cpu: Cpu::Aarch64,
                         os: OperatingSystem::MacOS,
                     },
                     System {
                         url:
-                            "https://github.com/ruby/ruby-builder/releases/download/toolcache/ruby-${version}-macos-latest.tar.gz"
+                            "https://github.com/ruby/ruby-builder/releases/download/ruby-${version}/ruby-${version}-darwin-x64.tar.gz"
                                 .to_string(),
                         cpu: Cpu::X86_64,
                         os: OperatingSystem::MacOS,
                     },
                     System {
                         url:
-                            "https://github.com/ruby/ruby-builder/releases/download/toolcache/ruby-${version}-ubuntu-22.04-arm64.tar.gz"
+                            "https://github.com/ruby/ruby-builder/releases/download/ruby-${version}/ruby-${version}-ubuntu-22.04-arm64.tar.gz"
                                 .to_string(),
                         cpu: Cpu::Aarch64,
                         os: OperatingSystem::Linux,
                     },
                     System {
                         url:
-                            "https://github.com/ruby/ruby-builder/releases/download/toolcache/ruby-${version}-ubuntu-22.04.tar.gz"
+                            "https://github.com/ruby/ruby-builder/releases/download/ruby-${version}/ruby-${version}-ubuntu-22.04-x64.tar.gz"
                                 .to_string(),
                         cpu: Cpu::X86_64,
                         os: OperatingSystem::Linux,
