@@ -64,8 +64,8 @@ fn merge_hits_at_index(
     // Start with the first array truncated to min_len
     let mut merged_hits = file_coverages[start_idx].hits[..min_len].to_vec();
 
-    for idx in (start_idx + 1)..end_idx {
-        merged_hits = merge_two_hits_arrays(&merged_hits, &file_coverages[idx].hits[..min_len]);
+    for fc in &file_coverages[(start_idx + 1)..end_idx] {
+        merged_hits = merge_two_hits_arrays(&merged_hits, &fc.hits[..min_len]);
     }
 
     // Move first entry to target position and update its hits
