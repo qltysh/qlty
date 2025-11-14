@@ -62,6 +62,7 @@ impl Planner {
             transformers,
             skip_missing_files: self.settings.skip_missing_files,
             auto_path_fixing_enabled,
+            merge: self.settings.merge,
         })
     }
 

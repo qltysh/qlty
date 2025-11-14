@@ -8,4 +8,5 @@ pub struct Plan {
     pub transformers: Vec<Box<dyn Transformer>>,
     pub skip_missing_files: bool,
     pub auto_path_fixing_enabled: bool,
+    pub merge: bool,
 }

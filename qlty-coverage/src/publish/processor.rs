@@ -1,3 +1,4 @@
+use crate::merging::merge_file_coverages;
 use crate::publish::{metrics::CoverageMetrics, Plan, Report, Results};
 use anyhow::Result;
 use qlty_types::tests::v1::FileCoverage;
@@ -61,6 +62,11 @@ impl Processor {
                     }
                 }
             }
+        }
+
+        // Merge file coverages with duplicate paths if enabled
+        if self.plan.merge {
+            merge_file_coverages(&mut transformed_file_coverages);
         }
 
         let totals = CoverageMetrics::calculate(&transformed_file_coverages);

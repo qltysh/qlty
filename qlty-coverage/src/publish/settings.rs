@@ -8,6 +8,7 @@ pub struct Settings {
     pub add_prefix: Option<String>,
     pub dry_run: bool,
     pub incomplete: bool,
+    pub merge: bool,
     pub name: Option<String>,
     pub output_dir: Option<PathBuf>,
     pub override_branch: Option<String>,

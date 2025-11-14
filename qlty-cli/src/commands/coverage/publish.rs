@@ -143,6 +143,11 @@ pub struct Publish {
     /// The server will merge the uploads into a single report when qlty coverage complete is called.
     pub incomplete: bool,
 
+    #[arg(long)]
+    /// Merge file coverages with duplicate paths before uploading. This is useful when multiple
+    /// coverage reports contain data for the same file.
+    pub merge: bool,
+
     // Paths to coverage reports
     pub paths: Vec<String>,
 }
@@ -251,6 +256,7 @@ impl Publish {
             add_prefix,
             dry_run: self.dry_run,
             incomplete,
+            merge: self.merge,
             name: self.name.clone(),
             output_dir: self.output_dir.clone(),
             override_branch: self.override_branch.clone(),
