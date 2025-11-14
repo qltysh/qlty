@@ -4,13 +4,9 @@ use qlty_types::tests::v1::FileCoverage;
 ///
 /// When multiple FileCoverage entries share the same path, they are merged into a single entry
 /// following these rules:
+/// - All hits arrays are first truncated to the length of the shortest array
 /// - If both hits[i] are non-negative (>= 0), sum them
-/// - If either hits[i] is negative, result is -1
-/// - If arrays are different sizes, use the element that exists
-/// - Missing elements are treated as -1
-///
-/// Time: O(n log n) for sort + O(n * m) for merge where m = avg hits length
-/// Space: O(1) extra space (excluding input vector and temporary merged hits)
+/// - If any hits[i] is negative, result is -1
 pub fn merge_file_coverages(file_coverages: &mut Vec<FileCoverage>) {
     if file_coverages.len() <= 1 {
         return;
@@ -57,38 +53,19 @@ fn merge_hits_at_index(
     end_idx: usize,
     target_idx: usize,
 ) {
-    // Find max length across all hits arrays in this range
-    let max_len = file_coverages[start_idx..end_idx]
+    // Find the minimum length across all hits arrays in this range
+    let min_len = file_coverages[start_idx..end_idx]
         .iter()
         .map(|fc| fc.hits.len())
-        .max()
+        .min()
         .unwrap_or(0);
 
-    // Create merged hits array
-    let mut merged_hits = Vec::with_capacity(max_len);
+    // Merge all entries pairwise: merge first two, then merge result with third, etc.
+    // Start with the first array truncated to min_len
+    let mut merged_hits = file_coverages[start_idx].hits[..min_len].to_vec();
 
-    for i in 0..max_len {
-        let mut result: Option<i64> = None;
-
-        for fc in &file_coverages[start_idx..end_idx] {
-            let hit = fc.hits.get(i).copied();
-
-            result = match (result, hit) {
-                // First value we encounter
-                (None, Some(h)) => Some(h),
-                (None, None) => Some(-1), // Out of bounds treated as -1
-
-                // Either is negative → result is -1
-                (Some(a), Some(b)) if a < 0 || b < 0 => Some(-1),
-                (Some(a), None) if a < 0 => Some(-1),
-                (Some(_), None) => Some(-1), // Missing element treated as -1
-
-                // Both non-negative → sum them
-                (Some(a), Some(b)) => Some(a + b),
-            };
-        }
-
-        merged_hits.push(result.unwrap_or(-1));
+    for idx in (start_idx + 1)..end_idx {
+        merged_hits = merge_two_hits_arrays(&merged_hits, &file_coverages[idx].hits[..min_len]);
     }
 
     // Move first entry to target position and update its hits
@@ -96,6 +73,30 @@ fn merge_hits_at_index(
         file_coverages.swap(target_idx, start_idx);
     }
     file_coverages[target_idx].hits = merged_hits;
+}
+
+/// Merges two hits arrays following these rules:
+/// - If both hits[i] are non-negative (>= 0), sum them
+/// - If either hits[i] is negative, result is -1
+/// - Arrays should already be truncated to the same length before calling this
+fn merge_two_hits_arrays(a: &[i64], b: &[i64]) -> Vec<i64> {
+    let len = a.len().min(b.len());
+    let mut result = Vec::with_capacity(len);
+
+    for i in 0..len {
+        let val_a = a[i];
+        let val_b = b[i];
+
+        let merged = if val_a >= 0 && val_b >= 0 {
+            val_a + val_b
+        } else {
+            -1
+        };
+
+        result.push(merged);
+    }
+
+    result
 }
 
 #[cfg(test)]
@@ -179,7 +180,7 @@ mod tests {
 
         assert_eq!(coverages.len(), 1);
         assert_eq!(coverages[0].path, "src/main.rs");
-        assert_eq!(coverages[0].hits, vec![6, 8, -1, -1]); // [1+5, 2+6, 3+missing, 4+missing]
+        assert_eq!(coverages[0].hits, vec![6, 8]); // Truncated to min length (2), then [1+5, 2+6]
     }
 
     #[test]
@@ -193,7 +194,7 @@ mod tests {
 
         assert_eq!(coverages.len(), 1);
         assert_eq!(coverages[0].path, "src/main.rs");
-        assert_eq!(coverages[0].hits, vec![4, 6, -1, -1]); // [1+3, 2+4, missing+5, missing+6]
+        assert_eq!(coverages[0].hits, vec![4, 6]); // Truncated to min length (2), then [1+3, 2+4]
     }
 
     #[test]
@@ -293,7 +294,7 @@ mod tests {
 
         assert_eq!(coverages.len(), 1);
         assert_eq!(coverages[0].path, "src/main.rs");
-        assert_eq!(coverages[0].hits, vec![-1, -1, -1]); // Empty treated as missing
+        assert_eq!(coverages[0].hits, Vec::<i64>::new()); // Truncated to min length (0)
     }
 
     #[test]
