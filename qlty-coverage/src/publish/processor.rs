@@ -64,19 +64,25 @@ impl Processor {
             }
         }
 
-        // Merge file coverages with duplicate paths if enabled
-        if self.plan.merge {
-            merge_file_coverages(&mut transformed_file_coverages);
-        }
+        // Always merge file coverages for metrics calculation to avoid duplication
+        let mut merged_file_coverages = transformed_file_coverages.clone();
+        merge_file_coverages(&mut merged_file_coverages);
 
-        let totals = CoverageMetrics::calculate(&transformed_file_coverages);
+        let totals = CoverageMetrics::calculate(&merged_file_coverages);
         let ignored_paths_count =
             pre_transform_file_coverages_count - transformed_file_coverages.len();
+
+        // Return merged or unmerged file_coverages based on the merge setting
+        let file_coverages = if self.plan.merge {
+            merged_file_coverages
+        } else {
+            transformed_file_coverages
+        };
 
         Ok(Report {
             metadata: self.plan.metadata.clone(),
             report_files,
-            file_coverages: transformed_file_coverages,
+            file_coverages,
             totals,
             missing_files,
             found_files,
