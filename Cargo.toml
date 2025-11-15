@@ -83,7 +83,7 @@ qlty-types = { version = "0.589.0", path = "qlty-types" }
 rand = "0.8.5"
 rayon = "1.11.0"
 regex = "1.12.2"
-rust-embed = { version = "8.7.2", features = ["include-exclude"] }
+rust-embed = { version = "8.9.0", features = ["include-exclude"] }
 rustls = "0.23.31"
 rustls-platform-verifier = "0.5.3"
 schemars = "1.0.4"
