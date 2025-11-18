@@ -20,12 +20,12 @@ jobs:
           owner: ${{ github.repository_owner }}
 
       - name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
         with:
           fetch-depth: 500
 
       - name: Install Qlty CLI
-        uses: qltysh/qlty-action/install@a19242102d17e497f437d7466aa01b528537e899 # a19242102d17e497f437d7466aa01b528537e899
+        uses: qltysh/qlty-action/install@a19242102d17e497f437d7466aa01b528537e899
 
       - name: Update CHANGELOG.md
         id: claude
@@ -39,7 +39,7 @@ jobs:
           allowed_tools: "Edit,MultiEdit,LS,Read,View,Write,Glob,GlobTool,Grep,GrepTool,BatchTool,WebFetch(domain:docs.qlty.sh),Bash(git:*),Bash(qlty:*),Bash(gh pr view:*),Bash(gh release list:*)"
 
       - name: Commit changes
-        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # 271a8d0340265f705b14b6d32b9829c1cb33d45e
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
         with:
           token: ${{ steps.app-token.outputs.token }}
           title: "chore: Update CHANGELOG.md"
