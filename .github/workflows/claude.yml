@@ -27,27 +27,27 @@ jobs:
       id-token: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 08c6903cd8c0fde910a37f88322edcfb5dd907a8
         with:
           fetch-depth: 1
 
       - name: Install Qlty CLI
-        uses: qltysh/qlty-action/install@a19242102d17e497f437d7466aa01b528537e899
+        uses: qltysh/qlty-action/install@a19242102d17e497f437d7466aa01b528537e899 # a19242102d17e497f437d7466aa01b528537e899
 
       - name: Install Rust toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@2fcdc490d667999e01ddbbf0f2823181beef6b39
+        uses: actions-rust-lang/setup-rust-toolchain@2fcdc490d667999e01ddbbf0f2823181beef6b39 # 2fcdc490d667999e01ddbbf0f2823181beef6b39
         with:
           toolchain: stable
 
       - name: Cache Rust
-        uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0
+        uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # 98c8021b550208e191a6a3145459bfc9fb29c4c0
 
       - name: Type check
         run: cargo check
 
       - name: Run Claude Code
         id: claude
-        uses: anthropics/claude-code-action@beta
+        uses: anthropics/claude-code-action@28f83620103c48a57093dcc2837eec89e036bb9f # beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           use_commit_signing: true
