@@ -147,6 +147,7 @@ mod tests {
     fn setup_crypto_provider() {
         INIT.call_once(|| {
             let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+            std::env::set_var("QLTY_INSECURE_ALLOW_HTTP", "true");
         });
     }
 

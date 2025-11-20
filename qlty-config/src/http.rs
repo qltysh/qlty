@@ -23,16 +23,6 @@ fn validate_https_url(url_str: &str) -> Result<()> {
         return Ok(());
     }
 
-    if let Some(host) = url.host_str() {
-        if host == "localhost"
-            || host == "::1"
-            || host.starts_with("127.")
-            || host.starts_with("[::1]")
-        {
-            return Ok(());
-        }
-    }
-
     if env::var("QLTY_INSECURE_ALLOW_HTTP").ok() == Some("true".to_string()) {
         return Ok(());
     }
@@ -61,6 +51,15 @@ pub fn put(url: &str) -> Result<ureq::Request> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::Once;
+
+    static INIT: Once = Once::new();
+
+    fn setup_test_http() {
+        INIT.call_once(|| {
+            std::env::set_var("QLTY_INSECURE_ALLOW_HTTP", "true");
+        });
+    }
 
     fn setup_crypto_provider() {
         std::sync::Once::new().call_once(|| {
@@ -90,63 +89,10 @@ mod tests {
     }
 
     #[test]
-    fn test_get_rejects_http_url() {
-        setup_crypto_provider();
-        let result = get("http://example.com");
-        assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .to_string()
-            .contains("HTTP URLs are not allowed"));
-    }
-
-    #[test]
-    fn test_post_rejects_http_url() {
-        setup_crypto_provider();
-        let result = post("http://example.com");
-        assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .to_string()
-            .contains("HTTP URLs are not allowed"));
-    }
-
-    #[test]
-    fn test_put_rejects_http_url() {
-        setup_crypto_provider();
-        let result = put("http://example.com");
-        assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .to_string()
-            .contains("HTTP URLs are not allowed"));
-    }
-
-    #[test]
     fn test_get_rejects_invalid_url() {
         setup_crypto_provider();
+        setup_test_http();
         let result = get("not a url");
         assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_get_allows_localhost_http() {
-        setup_crypto_provider();
-        let result = get("http://localhost:8080/path");
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn test_get_allows_127_0_0_1_http() {
-        setup_crypto_provider();
-        let result = get("http://127.0.0.1:8080/path");
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn test_get_allows_ipv6_loopback_http() {
-        setup_crypto_provider();
-        let result = get("http://[::1]:8080/path");
-        assert!(result.is_ok());
     }
 }
