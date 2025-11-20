@@ -260,7 +260,7 @@ mod tests {
     fn test_upload_data_transport_error() {
         setup_crypto_provider();
         let upload = Upload::default();
-        let invalid_url = "http://non-existent-host-12345.invalid:99999/upload";
+        let invalid_url = "http://127.0.0.1:54321/upload";
 
         let result = upload.upload_data(invalid_url, "application/zip", vec![1, 2, 3, 4]);
 

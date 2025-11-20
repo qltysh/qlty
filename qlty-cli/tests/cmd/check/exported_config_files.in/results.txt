@@ -1,0 +1,1 @@
+sample.sh:2:1: OVERRIDE valid line
