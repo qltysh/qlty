@@ -42,14 +42,14 @@ impl Client {
         }
     }
 
-    pub fn post(&self, path: &str) -> Request {
+    pub fn post(&self, path: &str) -> Result<Request> {
         let url = self.build_url(path);
-        self.build_request(http::post(&url))
+        Ok(self.build_request(http::post(&url)?))
     }
 
-    pub fn get(&self, path: &str) -> Request {
+    pub fn get(&self, path: &str) -> Result<Request> {
         let url = self.build_url(path);
-        self.build_request(http::get(&url))
+        Ok(self.build_request(http::get(&url)?))
     }
 
     fn build_url(&self, path: &str) -> String {
@@ -76,7 +76,7 @@ impl Client {
     }
 
     pub fn post_coverage_metadata(&self, url: &str, metadata: &CoverageMetadata) -> Result<Value> {
-        let response_result = self.post(url).send_json(json!({
+        let response_result = self.post(url)?.send_json(json!({
             "data": metadata,
         }));
 
