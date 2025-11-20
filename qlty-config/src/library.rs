@@ -1,4 +1,6 @@
 use anyhow::Result;
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
 use std::{
     env, fs,
     path::{Path, PathBuf},
@@ -36,6 +38,10 @@ impl Library {
 
     pub fn global_cache_root() -> Result<PathBuf> {
         Ok(Self::global_root()?.join("cache"))
+    }
+
+    pub fn global_tmp_root() -> Result<PathBuf> {
+        Ok(Self::global_root()?.join("tmp"))
     }
 
     pub fn new(workspace_root: &Path) -> Result<Self> {
@@ -142,6 +148,17 @@ impl Library {
                 .join(self.local_fingerprint())
                 .join("plugin_cachedir"),
         )?;
+
+        let global_tmp_root = Self::global_tmp_root()?;
+        fs::create_dir_all(&global_tmp_root)?;
+
+        #[cfg(unix)]
+        {
+            let mut perms = fs::metadata(&global_tmp_root)?.permissions();
+            perms.set_mode(0o700);
+            fs::set_permissions(&global_tmp_root, perms)?;
+        }
+
         Ok(())
     }
 
