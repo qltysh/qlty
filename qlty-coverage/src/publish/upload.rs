@@ -79,7 +79,7 @@ impl Upload {
         content_type: &str,
         data: Vec<u8>,
     ) -> Result<(), anyhow::Error> {
-        let response_result = http::put(url)
+        let response_result = http::put(url)?
             .set("Content-Type", content_type)
             .send_bytes(&data);
 
