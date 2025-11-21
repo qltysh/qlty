@@ -143,7 +143,9 @@ impl AddPrefix {
 impl Transformer for AddPrefix {
     fn transform(&self, file_coverage: FileCoverage) -> Option<FileCoverage> {
         let mut file_coverage = file_coverage;
-        file_coverage.path = format!("{}{}", self.prefix, file_coverage.path);
+        let prefix_trimmed = self.prefix.trim_end_matches('/');
+        let path_trimmed = file_coverage.path.trim_start_matches('/');
+        file_coverage.path = format!("{}/{}", prefix_trimmed, path_trimmed);
         Some(file_coverage)
     }
 
@@ -544,7 +546,6 @@ mod tests {
         assert_eq!(transformed.path, "project/src/main.rs");
     }
 
-    // Documenting current behavior, not necessarily desired behavior
     #[test]
     fn test_add_prefix_transformer_no_trailing_slash() {
         let transformer = AddPrefix::new("project");
@@ -553,6 +554,30 @@ mod tests {
             ..Default::default()
         };
         let transformed = transformer.transform(file_coverage).unwrap();
-        assert_eq!(transformed.path, "projectsrc/main.rs");
+        assert_eq!(transformed.path, "project/src/main.rs");
+    }
+
+    #[test]
+    fn test_add_prefix_comprehensive() {
+        let test_cases = vec![
+            ("foo", "bar", "foo/bar"),
+            ("foo/", "bar", "foo/bar"),
+            ("foo", "/bar", "foo/bar"),
+            ("foo/", "/bar", "foo/bar"),
+        ];
+
+        for (prefix, path, expected) in test_cases {
+            let transformer = AddPrefix::new(prefix);
+            let file_coverage = FileCoverage {
+                path: path.to_string(),
+                ..Default::default()
+            };
+            let transformed = transformer.transform(file_coverage).unwrap();
+            assert_eq!(
+                transformed.path, expected,
+                "prefix='{}', path='{}' should produce '{}'",
+                prefix, path, expected
+            );
+        }
     }
 }
