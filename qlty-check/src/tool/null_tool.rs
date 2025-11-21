@@ -28,6 +28,10 @@ impl Tool for NullTool {
         path_to_string(self.parent_directory.join(self.name()))
     }
 
+    fn plugin(&self) -> Option<PluginDef> {
+        Some(self.plugin.clone())
+    }
+
     fn name(&self) -> String {
         self.plugin_name.clone()
     }
