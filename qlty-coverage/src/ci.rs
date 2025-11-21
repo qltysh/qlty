@@ -1,3 +1,4 @@
+mod bitrise;
 mod buildkite;
 mod circleci;
 mod codefresh;
@@ -6,6 +7,7 @@ mod gitlab;
 mod semaphore;
 mod travisci;
 
+pub use bitrise::Bitrise;
 pub use buildkite::Buildkite;
 pub use circleci::CircleCI;
 pub use codefresh::Codefresh;
@@ -79,6 +81,7 @@ pub fn current() -> Option<Box<dyn CI>> {
 
 pub fn all() -> Vec<Box<dyn CI>> {
     vec![
+        Box::<Bitrise>::default(),
         Box::<Buildkite>::default(),
         Box::<CircleCI>::default(),
         Box::<Codefresh>::default(),
