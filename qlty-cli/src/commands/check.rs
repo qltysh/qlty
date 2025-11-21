@@ -8,6 +8,7 @@ use anyhow::bail;
 use anyhow::Result;
 use clap::Args;
 use console::{style, Emoji};
+use qlty_analysis::basic_transformations::BasicTransformations;
 use qlty_check::planner::Plan;
 use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Report, Settings};
 use qlty_config::Workspace;
@@ -171,7 +172,7 @@ impl Check {
             let results = executor.install_and_invoke()?;
 
             let mut processor = Processor::new(&plan, results);
-            let report = processor.compute()?;
+            let mut report = processor.compute()?;
 
             if !report.fixed.is_empty() {
                 if self.verbose >= 1 {
@@ -180,7 +181,7 @@ impl Check {
 
                 self.format_after_fix(&settings, &report)?;
             }
-
+            report.apply_basic_issue_transformations(&settings.root, &workspace.config()?);
             dirty = self.write_stdout(&report, &plan, &settings)?;
             self.write_stderr(&report)?;
 
