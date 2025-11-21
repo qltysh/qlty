@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.591.0 (2025-11-21)
+
+### Improved
+
+- Add Bitrise CI environment detection (#2519)
+
+## v0.590.0 (2025-11-21)
+
+### New
+
+- Add attestations for installer scripts (#2514)
+
+### Fixed
+
+- Use HTTPS for URLs in code (#2513)
+- Improve add-prefix path handling in coverage transformer (#2501)
+- Support passing through env vars for NullTool (#2471)
+
+## v0.589.0 (2025-11-15)
+
+### Fixed
+
+- Move to new Ruby mechanism (#2507)
+- Allow lockfile issues for Brakeman (#2500)
+
 ## v0.586.0 (2025-10-28)
 
 ### Improved
