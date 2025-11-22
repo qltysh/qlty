@@ -411,8 +411,12 @@ impl GitHubReleaseTool {
             Ok(assets) => Ok(assets),
             Err(e) => {
                 if Self::should_fallback_to_api(&e) {
-                    debug!("Proxy request failed, falling back to api.github.com: {}", e);
-                    let api_url = format!("{}/repos/{}/releases/tags/{}", GITHUB_API_BASE, repo, tag);
+                    debug!(
+                        "Proxy request failed, falling back to api.github.com: {}",
+                        e
+                    );
+                    let api_url =
+                        format!("{}/repos/{}/releases/tags/{}", GITHUB_API_BASE, repo, tag);
                     self.get_release_assets(&api_url)
                 } else {
                     Err(e)
