@@ -429,7 +429,9 @@ impl GitHubReleaseTool {
         if let Some(ureq_error) = error.downcast_ref::<ureq::Error>() {
             match ureq_error {
                 ureq::Error::Transport(_) => true,
-                ureq::Error::Status(code, _) => (500..600).contains(code),
+                ureq::Error::Status(code, _) => {
+                    (500..600).contains(code) || *code == 401 || *code == 403 || *code == 407
+                }
             }
         } else {
             false
