@@ -121,7 +121,7 @@ jobs:
           subject-path: ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }}
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v4
         with:
           name: artifacts-${{ env.BINARY_NAME }}-${{ matrix.target }}
           if-no-files-found: error
@@ -159,7 +159,7 @@ jobs:
           sed -i "s/{{SHA_AARCH64_LINUX}}/${{ steps.data.outputs.sha_aarch64_linux }}/g" qlty.rb
           sed -i "s/{{SHA_X86_64_LINUX}}/${{ steps.data.outputs.sha_x86_64_linux }}/g" qlty.rb
       - name: Upload Homebrew formula
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v4
         with:
           name: artifacts-homebrew
           if-no-files-found: error
@@ -167,7 +167,7 @@ jobs:
       - name: Create dist-manifest.json
         run: echo "{\"announcement_tag\":\"v${{ steps.data.outputs.version }}\"}" > dist-manifest.json
       - name: Upload manifest
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v4
         with:
           name: artifacts-manifest
           if-no-files-found: error
