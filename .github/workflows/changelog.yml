@@ -39,7 +39,7 @@ jobs:
           allowed_tools: "Edit,MultiEdit,LS,Read,View,Write,Glob,GlobTool,Grep,GrepTool,BatchTool,WebFetch(domain:docs.qlty.sh),Bash(git:*),Bash(qlty:*),Bash(gh pr view:*),Bash(gh release list:*)"
 
       - name: Commit changes
-        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
+        uses: peter-evans/create-pull-request@84ae59a2cdc2258d6fa0732dd66352dddae2a412
         with:
           token: ${{ steps.app-token.outputs.token }}
           title: "chore: Update CHANGELOG.md"
