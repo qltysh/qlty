@@ -5,8 +5,8 @@ runnable_archive_url = "https://github.com/pinterest/ktlint/releases/download/${
 runtime = "java"
 file_types = ["kotlin"]
 affects_cache = [".editorconfig"]
-latest_version = "1.7.1"
-known_good_version = "1.7.1"
+latest_version = "1.8.0"
+known_good_version = "1.8.0"
 version_command = "java -jar ${linter}/ktlint --version"
 description = "An anti-bikeshedding Kotlin linter with built-in formatter"
 
