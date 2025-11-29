@@ -145,7 +145,7 @@ jobs:
         working-directory: ${{ runner.temp }}/digests
         run: |-
           tags=($(jq -cr '[.tags[] | "-t \(.)"] | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON"))
-          images=($(printf '${{ env.REGISTRY }}/${IMAGE_NAME}@sha256:%s ' *))
+          images=($(printf "${{ env.REGISTRY }}/${IMAGE_NAME}@sha256:%s " *))
           echo tags: "${tags[@]}"
           echo images: "${images[@]}" 
           docker buildx imagetools create "${tags[@]}" "${images[@]}"

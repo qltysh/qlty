@@ -33,8 +33,8 @@ jobs:
         run: |
           git config --global core.longpaths true
           git config --global core.autocrlf false
-          git config --global user.name '${STEPS_APP_TOKEN_OUTPUTS_APP_SLUG}[bot]'
-          git config --global user.email '${STEPS_GET_USER_ID_OUTPUTS_USER_ID}+${STEPS_APP_TOKEN_OUTPUTS_APP_SLUG}[bot]@users.noreply.github.com>'
+          git config --global user.name "${STEPS_APP_TOKEN_OUTPUTS_APP_SLUG}[bot]"
+          git config --global user.email "${STEPS_GET_USER_ID_OUTPUTS_USER_ID}+${STEPS_APP_TOKEN_OUTPUTS_APP_SLUG}[bot]@users.noreply.github.com>"
         env:
           STEPS_APP_TOKEN_OUTPUTS_APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
           STEPS_GET_USER_ID_OUTPUTS_USER_ID: ${{ steps.get-user-id.outputs.user-id }}
@@ -81,16 +81,16 @@ jobs:
 
       - name: Create GitHub Release
         env:
-          PRERELEASE_FLAG: ${{ false && '--prerelease' || '' }}
-          ANNOUNCEMENT_TITLE: Release v${{ steps.version.outputs.version }}
-          ANNOUNCEMENT_BODY: Automated release created by GitHub Actions.
-          RELEASE_COMMIT: ${{ github.sha }}
+          PRERELEASE_FLAG: "${{ false && '--prerelease' || '' }}"
+          ANNOUNCEMENT_TITLE: "Release v${{ steps.version.outputs.version }}"
+          ANNOUNCEMENT_BODY: "Automated release created by GitHub Actions."
+          RELEASE_COMMIT: "${{ github.sha }}"
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           STEPS_VERSION_OUTPUTS_VERSION: ${{ steps.version.outputs.version }}
         run: |
           # Write and read notes from a file to avoid quoting breaking things
           echo "$ANNOUNCEMENT_BODY" > $RUNNER_TEMP/notes.txt
-          gh release create "v${STEPS_VERSION_OUTPUTS_VERSION}" $PRERELEASE_FLAG --title "$ANNOUNCEMENT_TITLE" --notes-file "$RUNNER_TEMP/notes.txt" target/distrib/*
+          gh release create "v${STEPS_VERSION_OUTPUTS_VERSION}" "$PRERELEASE_FLAG" --title "$ANNOUNCEMENT_TITLE" --notes-file "$RUNNER_TEMP/notes.txt" target/distrib/*
   s3-upload:
     needs: release
     runs-on: ubuntu-latest
