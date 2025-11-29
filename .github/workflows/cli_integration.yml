@@ -62,19 +62,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        container: [
-            "ubuntu:24.04",
-            #"redhat/ubi9",
-            "debian:trixie-slim",
-            #"debian:bookworm-slim",
-            # unsupported:
-            # "ubuntu:20.04",
-            # "redhat/ubi8",
-          ]
+        container:
+          # ubuntu:24.04
+          - "ubuntu@sha256:4fdf0125919d24aec972544669dcd7d6a26a8ad7e6561c73d5549bd6db258ac2"
+          # debian:trixie-slim
+          - "debian@sha256:905f0e07e40013bfedf13f38f00e1897b40b51d7ca7cedc01f2d2b7ec8a814eb"
         include:
-          - container: ubuntu:24.04
+          # ubuntu:24.04
+          - container: "ubuntu@sha256:4fdf0125919d24aec972544669dcd7d6a26a8ad7e6561c73d5549bd6db258ac2"
             package_install: apt-get update && apt-get install -y git curl build-essential
-          - container: debian:trixie-slim
+          # debian:trixie-slim
+          - container: "debian@sha256:905f0e07e40013bfedf13f38f00e1897b40b51d7ca7cedc01f2d2b7ec8a814eb"
             package_install: apt-get update && apt-get install -y git curl build-essential
           #- container: debian:bookworm-slim
           #  package_install: apt-get update && apt-get install -y git curl build-essential

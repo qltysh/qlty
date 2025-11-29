@@ -45,11 +45,13 @@ jobs:
           tag: v0.25.17
       - name: Bump version
         id: version
+        env:
+          VERSION_ARG: ${{ inputs.increment == 'version' && inputs.version || inputs.increment || 'minor' }}
         run: |
           cargo release version \
             --execute \
             --no-confirm \
-            ${{ inputs.increment == 'version' && inputs.version || inputs.increment || 'minor' }}
+            "$VERSION_ARG"
 
           echo "version=$(cargo metadata --format-version 1 | jq -r ".workspace_members[0]" | cut -d# -f2)" >> "$GITHUB_OUTPUT"
       - name: Commit changes

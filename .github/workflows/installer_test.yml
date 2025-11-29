@@ -51,7 +51,8 @@ jobs:
           - os: Linux
             name: Linux / debian (sh / wget)
             runner: ubuntu-latest
-            container: debian:trixie-slim
+            # debian:trixie-slim
+            container: debian@sha256:905f0e07e40013bfedf13f38f00e1897b40b51d7ca7cedc01f2d2b7ec8a814eb
             package_install: apt-get update && apt-get install -y xz-utils wget
             file: $INSTALL_SH
             command: sh
@@ -59,7 +60,8 @@ jobs:
           - os: Linux
             name: Linux / alpine (sh)
             runner: ubuntu-latest
-            container: alpine:3
+            # alpine:3
+            container: alpine@sha256:85f2b723e106c34644cd5851d7e81ee87da98ac54672b29947c052a45d31dc2f
             package_install: apk add -U xz
             file: $INSTALL_SH
             command: sh
