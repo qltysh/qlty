@@ -11,6 +11,9 @@ on:
       version:
         required: true
         type: string
+    secrets:
+      QLTY_RELEASE_AWS_ROLE_ARN:
+        required: true
 permissions:
   contents: read
   "id-token": "write"

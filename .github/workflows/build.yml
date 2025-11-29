@@ -189,4 +189,6 @@ jobs:
     uses: ./.github/workflows/release.yml
     with:
       workflow_run_id: ${{ github.event.workflow_run.id }}
-    secrets: inherit
+    secrets:
+      QLTY_APP_PRIVATE_KEY: ${{ secrets.QLTY_APP_PRIVATE_KEY }}
+      QLTY_RELEASE_AWS_ROLE_ARN: ${{ secrets.QLTY_RELEASE_AWS_ROLE_ARN }}
