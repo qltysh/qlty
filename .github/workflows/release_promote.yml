@@ -13,7 +13,6 @@ on:
         type: string
 permissions:
   contents: read
-  "id-token": "write"
 jobs:
   test:
     name: ${{ matrix.runner }}
@@ -36,6 +35,9 @@ jobs:
         shell: sh
   promote:
     needs: test
+    permissions:
+      contents: read
+      id-token: write
     runs-on: ubuntu-latest
     steps:
       - name: Setup AWS CLI
