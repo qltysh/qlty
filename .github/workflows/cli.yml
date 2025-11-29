@@ -48,7 +48,9 @@ jobs:
           toolchain: stable
 
       - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@16edcff251c6bb06f6878981359f84b77b28e7e2
+        uses: taiki-e/install-action@b4b80945859e8ef89a9732a0f46499a443b196fe # v2
+        with:
+          tool: cargo-llvm-cov
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0

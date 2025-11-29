@@ -15,9 +15,7 @@ on:
       - .github/workflows/cli_integration.yml
 
 permissions:
-  actions: write
   contents: read
-  id-token: write
 
 env:
   CARGO_TERM_COLOR: always
