@@ -48,6 +48,8 @@ jobs:
       - name: Checkout repository
         if: ${{ github.event_name != 'pull_request' }}
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          persist-credentials: false
 
       - name: Log into registry ${{ env.REGISTRY }}
         if: ${{ github.event_name != 'pull_request' }}
@@ -90,8 +92,10 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         run: |
           mkdir -p ${{ runner.temp }}/digests
-          digest="${{ steps.build.outputs.digest }}"
+          digest="${STEPS_BUILD_OUTPUTS_DIGEST}"
           touch "${{ runner.temp }}/digests/${digest#sha256:}"
+        env:
+          STEPS_BUILD_OUTPUTS_DIGEST: ${{ steps.build.outputs.digest }}
 
       - name: Upload digest
         if: ${{ github.event_name != 'pull_request' }}
@@ -141,7 +145,7 @@ jobs:
         working-directory: ${{ runner.temp }}/digests
         run: |-
           tags=($(jq -cr '[.tags[] | "-t \(.)"] | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON"))
-          images=($(printf '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@sha256:%s ' *))
+          images=($(printf '${{ env.REGISTRY }}/${IMAGE_NAME}@sha256:%s ' *))
           echo tags: "${tags[@]}"
           echo images: "${images[@]}" 
           docker buildx imagetools create "${tags[@]}" "${images[@]}"
@@ -152,6 +156,8 @@ jobs:
 
           echo "Image digest: $DIGEST"
           echo "digest=$DIGEST" >> $GITHUB_OUTPUT
+        env:
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
 
       # confirm merged image manifests
       - name: Inspect Image Manifests
