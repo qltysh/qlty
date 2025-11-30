@@ -19,6 +19,7 @@ use std::io::{self, Read};
 use std::path::PathBuf;
 use std::thread;
 use tracing::debug;
+use tracing::info;
 use tracing::warn;
 
 static LOOKING_GLASS: Emoji<'_, '_> = Emoji("🔍  ", "");
@@ -326,6 +327,11 @@ impl Check {
         if self.upstream_from_pre_push {
             let mut buffer = String::new();
             io::stdin().read_to_string(&mut buffer)?;
+
+            if buffer.trim().is_empty() {
+                info!("No commits to push, skipping checks");
+                return Ok(None);
+            }
 
             // https://git-scm.com/docs/githooks#_pre_push
             //
