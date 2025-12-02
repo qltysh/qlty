@@ -18,6 +18,7 @@ use qlty_config::QltyConfig;
 use qlty_types::tests::v1::CoverageMetadata;
 use qlty_types::tests::v1::ReferenceType;
 use qlty_types::tests::v1::ReportFile;
+use std::path::PathBuf;
 use std::vec;
 use time::OffsetDateTime;
 
@@ -25,6 +26,7 @@ use time::OffsetDateTime;
 pub struct Planner {
     config: QltyConfig,
     settings: Settings,
+    workspace_root: Option<PathBuf>,
 }
 
 pub struct MetadataPlanner {
@@ -42,10 +44,11 @@ impl std::fmt::Debug for MetadataPlanner {
 }
 
 impl Planner {
-    pub fn new(config: &QltyConfig, settings: &Settings) -> Self {
+    pub fn new(config: &QltyConfig, settings: &Settings, workspace_root: Option<PathBuf>) -> Self {
         Self {
             config: config.clone(),
             settings: settings.clone(),
+            workspace_root,
         }
     }
 
@@ -62,6 +65,7 @@ impl Planner {
             transformers,
             skip_missing_files: self.settings.skip_missing_files,
             auto_path_fixing_enabled,
+            workspace_root: self.workspace_root.clone(),
         })
     }
 
@@ -607,7 +611,7 @@ mod tests {
             ..Default::default()
         };
 
-        let planner = Planner::new(&config, &settings);
+        let planner = Planner::new(&config, &settings, None);
         let metadata = CoverageMetadata::default();
         let transformers = planner.compute_transformers(&metadata).unwrap();
 
@@ -632,7 +636,7 @@ mod tests {
             ..Default::default()
         };
 
-        let planner = Planner::new(&config, &settings);
+        let planner = Planner::new(&config, &settings, None);
         let metadata = CoverageMetadata::default();
         let transformers = planner.compute_transformers(&metadata).unwrap();
 
@@ -657,7 +661,7 @@ mod tests {
             ..Default::default()
         };
 
-        let planner = Planner::new(&config, &settings);
+        let planner = Planner::new(&config, &settings, None);
         let metadata = CoverageMetadata::default();
         let transformers = planner.compute_transformers(&metadata).unwrap();
 
@@ -683,7 +687,7 @@ mod tests {
             ..Default::default()
         };
 
-        let planner = Planner::new(&config, &settings);
+        let planner = Planner::new(&config, &settings, None);
         let metadata = CoverageMetadata::default();
         let transformers = planner.compute_transformers(&metadata).unwrap();
 
@@ -778,7 +782,7 @@ mod tests {
         };
 
         let config = QltyConfig::default();
-        let planner = Planner::new(&config, &settings);
+        let planner = Planner::new(&config, &settings, None);
         let plan = planner.compute().unwrap();
 
         let file_coverage = FileCoverage {

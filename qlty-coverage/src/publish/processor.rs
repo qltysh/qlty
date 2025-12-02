@@ -2,7 +2,7 @@ use crate::publish::{metrics::CoverageMetrics, Plan, Report, Results};
 use anyhow::Result;
 use qlty_types::tests::v1::FileCoverage;
 use std::collections::HashSet;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 pub struct Processor {
     plan: Plan,
@@ -36,13 +36,20 @@ impl Processor {
 
         let mut found_files = HashSet::new();
         let mut missing_files = HashSet::new();
+        let mut outside_workspace_files = HashSet::new();
 
         if self.plan.skip_missing_files {
             transformed_file_coverages.retain(|file_coverage| {
-                match PathBuf::from(&file_coverage.path).try_exists() {
+                let path = PathBuf::from(&file_coverage.path);
+                match path.try_exists() {
                     Ok(true) => {
-                        found_files.insert(file_coverage.path.clone());
-                        true
+                        if !self.is_within_workspace(&path) {
+                            outside_workspace_files.insert(file_coverage.path.clone());
+                            false
+                        } else {
+                            found_files.insert(file_coverage.path.clone());
+                            true
+                        }
                     }
                     _ => {
                         missing_files.insert(file_coverage.path.clone());
@@ -52,9 +59,14 @@ impl Processor {
             });
         } else {
             for file_coverage in &transformed_file_coverages {
-                match PathBuf::from(&file_coverage.path).try_exists() {
+                let path = PathBuf::from(&file_coverage.path);
+                match path.try_exists() {
                     Ok(true) => {
-                        found_files.insert(file_coverage.path.clone());
+                        if !self.is_within_workspace(&path) {
+                            outside_workspace_files.insert(file_coverage.path.clone());
+                        } else {
+                            found_files.insert(file_coverage.path.clone());
+                        }
                     }
                     _ => {
                         missing_files.insert(file_coverage.path.clone());
@@ -74,9 +86,21 @@ impl Processor {
             totals,
             missing_files,
             found_files,
+            outside_workspace_files,
             excluded_files_count: ignored_paths_count,
             auto_path_fixing_enabled: self.plan.auto_path_fixing_enabled,
         })
+    }
+
+    fn is_within_workspace(&self, file_path: &Path) -> bool {
+        let Some(ref workspace_root) = self.plan.workspace_root else {
+            return true;
+        };
+
+        match (file_path.canonicalize(), workspace_root.canonicalize()) {
+            (Ok(canonical_file), Ok(canonical_root)) => canonical_file.starts_with(&canonical_root),
+            _ => false,
+        }
     }
 
     fn transform(&self, file_coverage: FileCoverage) -> Option<FileCoverage> {

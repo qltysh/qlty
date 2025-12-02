@@ -8,7 +8,7 @@ use clap::Args;
 use console::style;
 use indicatif::HumanBytes;
 use num_format::{Locale, ToFormattedString as _};
-use qlty_config::QltyConfig;
+use qlty_config::{QltyConfig, Workspace};
 use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
 use qlty_coverage::publish::{Plan, Planner, Processor, Reader, Report, Settings, Upload};
@@ -171,8 +171,9 @@ impl Publish {
             load_auth_token(&self.token, self.project.as_deref())?
         };
 
+        let workspace_root = Workspace::new().ok().map(|w| w.root);
         let config = load_config();
-        let plan = Planner::new(&config, &settings).compute()?;
+        let plan = Planner::new(&config, &settings, workspace_root.clone()).compute()?;
 
         self.validate_plan(&plan)?;
 
@@ -190,20 +191,31 @@ impl Publish {
         }
 
         if self.should_validate() {
-            let validator = Validator::new(self.validate_file_threshold);
+            let validator = Validator::new(self.validate_file_threshold, workspace_root);
             let validation_result = validator.validate(&report)?;
 
             match validation_result.status {
                 ValidationStatus::Valid => {}
                 ValidationStatus::Invalid => {
-                    return Err(anyhow::anyhow!(
-                        "Coverage validation failed: Only {:.2}% of files are present (threshold: {:.2}%)",
+                    let mut error_msg = format!(
+                        "Coverage validation failed: Only {:.2}% of files are present (threshold: {:.2}%)\n  - {} files missing on disk",
                         validation_result.coverage_percentage,
-                        validation_result.threshold
-                    ).into())
+                        validation_result.threshold,
+                        validation_result.files_missing
+                    );
+                    if validation_result.files_outside_workspace > 0 {
+                        error_msg.push_str(&format!(
+                            "\n  - {} files outside repository",
+                            validation_result.files_outside_workspace
+                        ));
+                    }
+                    return Err(anyhow::anyhow!(error_msg).into());
                 }
                 ValidationStatus::NoCoverageData => {
-                    return Err(anyhow::anyhow!("Coverage validation failed: No coverage data found").into())
+                    return Err(anyhow::anyhow!(
+                        "Coverage validation failed: No coverage data found"
+                    )
+                    .into())
                 }
             }
         }
@@ -397,7 +409,9 @@ impl Publish {
         if report.auto_path_fixing_enabled {
             eprintln!("    Auto-path fixing: Enabled");
         }
-        let total_files_count = report.found_files.len() + report.missing_files.len();
+        let total_files_count = report.found_files.len()
+            + report.missing_files.len()
+            + report.outside_workspace_files.len();
 
         if report.excluded_files_count > 0 {
             eprintln!(
@@ -502,7 +516,7 @@ impl Publish {
             );
 
             eprintln!();
-        } else if total_files_count > 0 {
+        } else if total_files_count > 0 && report.outside_workspace_files.is_empty() {
             eprintln!(
                 "    {}",
                 style(format!(
@@ -511,6 +525,60 @@ impl Publish {
                 ))
                 .dim()
             );
+        }
+
+        // Display files outside repository (only if there are any)
+        if !report.outside_workspace_files.is_empty() {
+            let mut outside_files = report.outside_workspace_files.iter().collect::<Vec<_>>();
+            outside_files.sort();
+
+            let outside_percent = (outside_files.len() as f32 / total_files_count as f32) * 100.0;
+
+            eprintln!(
+                "    {}",
+                style(format!(
+                    "{} {} outside the repository ({:.1}%)",
+                    outside_files.len().to_formatted_string(&Locale::en),
+                    if outside_files.len() == 1 {
+                        "path is"
+                    } else {
+                        "paths are"
+                    },
+                    outside_percent
+                ))
+                .bold()
+            );
+
+            let (paths_to_show, show_all) = if self.verbose {
+                (outside_files.len(), true)
+            } else {
+                (std::cmp::min(20, outside_files.len()), false)
+            };
+
+            eprintln!(
+                "\n    {}\n",
+                style("Files outside repository:").bold().yellow()
+            );
+
+            for path in outside_files.iter().take(paths_to_show) {
+                eprintln!("      {}", style(path.to_string()).yellow());
+            }
+
+            if !show_all && paths_to_show < outside_files.len() {
+                let remaining = outside_files.len() - paths_to_show;
+                eprintln!(
+                    "      {} {}",
+                    style(format!(
+                        "... and {} more",
+                        remaining.to_formatted_string(&Locale::en)
+                    ))
+                    .dim()
+                    .yellow(),
+                    style("(Use --verbose to see all)").dim()
+                );
+            }
+
+            eprintln!();
         }
 
         eprintln!();
