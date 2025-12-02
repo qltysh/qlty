@@ -198,15 +198,21 @@ impl Publish {
                 ValidationStatus::Valid => {}
                 ValidationStatus::Invalid => {
                     let mut error_msg = format!(
-                        "Coverage validation failed: Only {:.2}% of files are present (threshold: {:.2}%)\n  - {} files missing on disk",
+                        "Coverage validation failed: Only {:.2}% of files are present (threshold: {:.2}%)\n  - {} {} missing on disk",
                         validation_result.coverage_percentage,
                         validation_result.threshold,
-                        validation_result.files_missing
+                        validation_result.files_missing,
+                        if validation_result.files_missing == 1 { "file" } else { "files" }
                     );
                     if validation_result.files_outside_workspace > 0 {
                         error_msg.push_str(&format!(
-                            "\n  - {} files outside repository",
-                            validation_result.files_outside_workspace
+                            "\n  - {} {} outside repository",
+                            validation_result.files_outside_workspace,
+                            if validation_result.files_outside_workspace == 1 {
+                                "file"
+                            } else {
+                                "files"
+                            }
                         ));
                     }
                     return Err(anyhow::anyhow!(error_msg).into());
