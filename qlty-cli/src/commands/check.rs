@@ -329,7 +329,7 @@ impl Check {
             io::stdin().read_to_string(&mut buffer)?;
 
             if buffer.trim().is_empty() {
-                info!("No commits to push, skipping checks");
+                info!("No commits to push, checking uncommitted changes");
                 return Ok(None);
             }
 
