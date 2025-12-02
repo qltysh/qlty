@@ -1,7 +1,18 @@
 use crate::formats::Formats;
 use anyhow::Result;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
+
+pub fn is_path_within_workspace(file_path: &Path, workspace_root: Option<&PathBuf>) -> bool {
+    let Some(workspace_root) = workspace_root else {
+        return true;
+    };
+
+    match (file_path.canonicalize(), workspace_root.canonicalize()) {
+        (Ok(canonical_file), Ok(canonical_root)) => canonical_file.starts_with(&canonical_root),
+        _ => false,
+    }
+}
 
 // Format specification priority:
 // 1. The format specified in the path, e.g.: simplecov:./coverage/coverage.json

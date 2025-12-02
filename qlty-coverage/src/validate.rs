@@ -1,8 +1,9 @@
 use anyhow::Result;
 use serde::Serialize;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use crate::publish::Report;
+use crate::utils::is_path_within_workspace;
 
 const DEFAULT_THRESHOLD: f64 = 90.0;
 
@@ -46,7 +47,7 @@ impl Validator {
                 return;
             }
 
-            if !self.is_within_workspace(&path) {
+            if !is_path_within_workspace(&path, self.workspace_root.as_ref()) {
                 validation_result.files_outside_workspace += 1;
                 return;
             }
@@ -73,17 +74,6 @@ impl Validator {
         };
 
         Ok(validation_result)
-    }
-
-    fn is_within_workspace(&self, file_path: &Path) -> bool {
-        let Some(ref workspace_root) = self.workspace_root else {
-            return true;
-        };
-
-        match (file_path.canonicalize(), workspace_root.canonicalize()) {
-            (Ok(canonical_file), Ok(canonical_root)) => canonical_file.starts_with(&canonical_root),
-            _ => false,
-        }
     }
 }
 

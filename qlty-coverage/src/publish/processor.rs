@@ -1,8 +1,9 @@
 use crate::publish::{metrics::CoverageMetrics, Plan, Report, Results};
+use crate::utils::is_path_within_workspace;
 use anyhow::Result;
 use qlty_types::tests::v1::FileCoverage;
 use std::collections::HashSet;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 pub struct Processor {
     plan: Plan,
@@ -43,7 +44,7 @@ impl Processor {
                 let path = PathBuf::from(&file_coverage.path);
                 match path.try_exists() {
                     Ok(true) => {
-                        if !self.is_within_workspace(&path) {
+                        if !is_path_within_workspace(&path, self.plan.workspace_root.as_ref()) {
                             outside_workspace_files.insert(file_coverage.path.clone());
                             false
                         } else {
@@ -62,7 +63,7 @@ impl Processor {
                 let path = PathBuf::from(&file_coverage.path);
                 match path.try_exists() {
                     Ok(true) => {
-                        if !self.is_within_workspace(&path) {
+                        if !is_path_within_workspace(&path, self.plan.workspace_root.as_ref()) {
                             outside_workspace_files.insert(file_coverage.path.clone());
                         } else {
                             found_files.insert(file_coverage.path.clone());
@@ -90,17 +91,6 @@ impl Processor {
             excluded_files_count: ignored_paths_count,
             auto_path_fixing_enabled: self.plan.auto_path_fixing_enabled,
         })
-    }
-
-    fn is_within_workspace(&self, file_path: &Path) -> bool {
-        let Some(ref workspace_root) = self.plan.workspace_root else {
-            return true;
-        };
-
-        match (file_path.canonicalize(), workspace_root.canonicalize()) {
-            (Ok(canonical_file), Ok(canonical_root)) => canonical_file.starts_with(&canonical_root),
-            _ => false,
-        }
     }
 
     fn transform(&self, file_coverage: FileCoverage) -> Option<FileCoverage> {
