@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::source_reader::offset_to_location;
+use qlty_analysis::source_reader::offset_to_location;
 
 use super::Parser;
 use anyhow::Result;

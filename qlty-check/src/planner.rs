@@ -3,14 +3,12 @@ use self::plugin::PluginPlanner;
 use self::plugin_mode_transformer::PluginModeTransformer;
 use crate::cache::{IssueCache, IssuesCacheHit};
 use crate::executor::staging_area::{Mode, StagingArea};
-use crate::issue_muter::IssueMuter;
 use crate::patch_builder::PatchBuilder;
 use crate::planner::config_files::plugin_configs;
 use crate::planner::config_files::PluginConfigFile;
 use crate::Settings;
 use anyhow::{bail, Error, Result};
 use check_filters::CheckFilters;
-use console::style;
 use document_url_generator::DocumentUrlGenerator;
 use itertools::Itertools;
 use plugin_tab_column_width_transformer::PluginTabColumnWidthTransformer;
@@ -18,10 +16,9 @@ use qlty_analysis::cache::{Cache, FilesystemCache, NullCache};
 use qlty_analysis::git::{compute_upstream, DiffLineFilter};
 use qlty_analysis::workspace_entries::TargetMode;
 use qlty_config::config::issue_transformer::IssueTransformer;
-use qlty_config::config::{DriverType, Match, PluginDef, Set, Triage};
-use qlty_config::{warn_once, QltyConfig, Workspace};
+use qlty_config::config::{DriverType, PluginDef};
+use qlty_config::{QltyConfig, Workspace};
 use qlty_types::analysis::v1::ExecutionVerb;
-use qlty_types::{category_from_str, level_from_str};
 use rayon::prelude::*;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -284,50 +281,6 @@ impl Planner {
 
         self.transformers
             .push(Box::new(PatchBuilder::new(self.staging_area.clone())));
-
-        self.transformers
-            .push(Box::new(IssueMuter::new(self.staging_area.clone())));
-
-        // keep triage last
-        let triages = self.build_triages();
-        for issue_triage in &triages {
-            self.transformers.push(Box::new(issue_triage.clone()));
-        }
-    }
-
-    fn build_triages(&self) -> Vec<Triage> {
-        let mut triages = self.config.triage.clone();
-
-        if !self.config.overrides.is_empty() {
-            warn_once(&format!(
-                "{} The `{}` field in qlty.toml is deprecated. Please use `{}` instead.",
-                style("WARNING:").bold().yellow(),
-                style("[[override]]").bold(),
-                style("[[triage]]").bold()
-            ));
-
-            for issue_override in &self.config.overrides {
-                triages.push(Triage {
-                    set: Set {
-                        level: issue_override.level.as_ref().map(|l| level_from_str(l)),
-                        category: issue_override
-                            .category
-                            .as_ref()
-                            .map(|c| category_from_str(c)),
-                        mode: issue_override.mode,
-                        ..Default::default()
-                    },
-                    r#match: Match {
-                        plugins: issue_override.plugins.clone(),
-                        rules: issue_override.rules.clone(),
-                        file_patterns: issue_override.file_patterns.clone(),
-                        ..Default::default()
-                    },
-                });
-            }
-        }
-
-        triages
     }
 
     fn build_plan(&mut self) -> Result<Plan> {
