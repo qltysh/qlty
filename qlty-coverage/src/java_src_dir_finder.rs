@@ -1,6 +1,7 @@
 use anyhow::Result;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use ignore::WalkBuilder;
+use qlty_analysis::utils::fs::path_to_string;
 use std::path::PathBuf;
 
 const JAVA_SRC_DIR_PATTERNS: &[&str] = &[
@@ -47,11 +48,7 @@ impl JavaSrcDirFinder {
                 continue;
             }
 
-            let relative_path = path
-                .strip_prefix(&self.root)
-                .unwrap_or(path)
-                .to_string_lossy()
-                .to_string();
+            let relative_path = path_to_string(path.strip_prefix(&self.root).unwrap_or(path));
 
             if include_globset.is_match(&relative_path) {
                 if self.should_exclude(&relative_path, &exclude_globset) {
