@@ -44,7 +44,7 @@ pub fn load_or_retrieve_auth_token() -> Result<String> {
 
 fn validate_auth_token(auth_token: &String) -> Result<()> {
     let client = qlty_cloud::Client::new(None, Some(auth_token.into()));
-    client.get("/user").call().inspect_err(|_| {
+    client.get("/user")?.call().inspect_err(|_| {
         if let Err(err) = clear_auth_token() {
             warn!("Failed to clear auth token: {}", err);
         }
@@ -65,7 +65,7 @@ fn auth_via_browser() -> Result<String> {
     );
     thread::sleep(Duration::from_millis(500));
 
-    let open_url = http::get(&state.login_url)
+    let open_url = http::get(&state.login_url)?
         .query("state", original_state)
         .query("response_type", "token")
         .query("redirect_uri", &server.base_url)

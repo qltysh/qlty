@@ -726,7 +726,7 @@ impl EnabledPlugin {
 
 impl PluginFetch {
     pub fn download_file_to(&self, directories: &[PathBuf]) -> Result<()> {
-        let response = http::get(&self.url)
+        let response = http::get(&self.url)?
             .call()
             .with_context(|| format!("Failed to get url: {}", &self.url))?;
 

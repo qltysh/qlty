@@ -129,7 +129,7 @@ impl Download {
 
         let url = self.url().with_context(|| "Failed to get download URL")?;
 
-        let response = http::get(&url)
+        let response = http::get(&url)?
             .call()
             .with_context(|| format!("Error downloading file from {url}"))?;
 
@@ -171,7 +171,7 @@ impl Download {
 
         let url = self.url().with_context(|| "Failed to get download URL")?;
 
-        let response = http::get(&url)
+        let response = http::get(&url)?
             .call()
             .with_context(|| format!("Error downloading file from {url}"))?;
 
@@ -207,7 +207,7 @@ impl Download {
     fn install_targz(&self, directory: &Path) -> Result<()> {
         info!("Downloading (tar.gz) {}", self.url()?);
         let url = self.url()?;
-        let response = http::get(&url)
+        let response = http::get(&url)?
             .call()
             .with_context(|| format!("Error downloading file from {url}"))?;
         let reader = response.into_reader();
@@ -221,7 +221,7 @@ impl Download {
     fn install_tarxz(&self, directory: &Path) -> Result<()> {
         info!("Downloading (tar.xz) {}", self.url()?);
         let url = self.url()?;
-        let response = http::get(&url)
+        let response = http::get(&url)?
             .call()
             .with_context(|| format!("Error downloading file from {url}"))?;
 
@@ -278,7 +278,7 @@ impl Download {
     }
 
     fn install_zip(&self, directory: &Path) -> Result<()> {
-        let response = http::get(&self.url()?)
+        let response = http::get(&self.url()?)?
             .call()
             .with_context(|| format!("Error downloading file from {}", self.url().unwrap()))?;
 
