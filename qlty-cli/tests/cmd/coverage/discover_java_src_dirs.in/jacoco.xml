@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE report PUBLIC "-//JACOCO//DTD Report 1.0//EN" "report.dtd">
+<report name="test">
+  <package name="com/example">
+    <class name="com/example/App">
+      <method name="main" desc="([Ljava/lang/String;)V" line="3">
+        <counter type="LINE" missed="0" covered="1"/>
+      </method>
+    </class>
+    <sourcefile name="App.java">
+      <line nr="3" mi="0" ci="1" mb="0" cb="0"/>
+      <counter type="LINE" missed="0" covered="1"/>
+    </sourcefile>
+  </package>
+</report>

@@ -2921,6 +2921,7 @@ dependencies = [
  "cli-table",
  "git2",
  "globset",
+ "ignore",
  "insta",
  "pbjson-types",
  "qlty-analysis",
