@@ -253,11 +253,12 @@ impl Publish {
 
         let incomplete: bool = self.incomplete || self.total_parts_count.unwrap_or(1) > 1;
 
+        let root = std::env::current_dir()?;
         let config = load_config();
         let java_src_dirs = if self.guess_java_src_dirs {
-            let root = std::env::current_dir()?;
             let has_qlty_config = !config.exclude_patterns.is_empty();
-            let finder = JavaSrcDirFinder::new(root, config.exclude_patterns, has_qlty_config);
+            let finder =
+                JavaSrcDirFinder::new(root.clone(), config.exclude_patterns, has_qlty_config);
             let dirs = finder.find()?;
 
             if !dirs.is_empty() && std::env::var("JACOCO_SOURCE_PATH").is_ok() {
@@ -275,6 +276,7 @@ impl Publish {
             add_prefix,
             dry_run: self.dry_run,
             guess_java_src_dirs: self.guess_java_src_dirs,
+            root,
             java_src_dirs,
             incomplete,
             name: self.name.clone(),

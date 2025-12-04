@@ -11,7 +11,7 @@ https://qlty.sh/d/coverage
     override-commit-sha: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
     guess-java-src-dirs: true
     discovered Java src dirs:
-      [CWD]/src/main/java
+      src/main/java
 
  METADATA 
 

@@ -49,8 +49,8 @@ impl JavaSrcDirFinder {
                     continue;
                 }
 
-                tracing::debug!("Found Java src dir: {}", path.display());
-                found_dirs.push(path.to_path_buf());
+                tracing::debug!("Found Java src dir: {}", relative_path);
+                found_dirs.push(PathBuf::from(&relative_path));
             }
         }
 

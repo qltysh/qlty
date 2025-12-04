@@ -117,6 +117,7 @@ impl Planner {
         // This runs after path normalization so it receives clean relative paths
         if !self.settings.java_src_dirs.is_empty() {
             transformers.push(Box::new(ResolveSrcDir::new(
+                self.settings.root.clone(),
                 self.settings.java_src_dirs.clone(),
             )));
         }

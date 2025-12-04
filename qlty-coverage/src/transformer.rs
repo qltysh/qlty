@@ -1,5 +1,6 @@
 use anyhow::Result;
 use globset::{Glob, GlobSet, GlobSetBuilder};
+use qlty_analysis::utils::fs::path_to_string;
 use qlty_config::Workspace;
 use qlty_types::tests::v1::{CoverageMetadata, CoverageSummary, FileCoverage};
 use regex::Regex;
@@ -285,12 +286,13 @@ impl Transformer for DefaultPathFixer {
 
 #[derive(Debug, Clone)]
 pub struct ResolveSrcDir {
+    root: PathBuf,
     src_dirs: Vec<PathBuf>,
 }
 
 impl ResolveSrcDir {
-    pub fn new(src_dirs: Vec<PathBuf>) -> Self {
-        Self { src_dirs }
+    pub fn new(root: PathBuf, src_dirs: Vec<PathBuf>) -> Self {
+        Self { root, src_dirs }
     }
 }
 
@@ -305,10 +307,13 @@ impl Transformer for ResolveSrcDir {
 
         // Try each src dir in order (first match wins)
         for src_dir in &self.src_dirs {
-            let candidate = src_dir.join(&file_coverage.path);
-            if candidate.exists() {
+            // Convert to absolute for existence check
+            let abs_candidate = self.root.join(src_dir).join(&file_coverage.path);
+            if abs_candidate.exists() {
+                // Output relative path
+                let relative_path = src_dir.join(&file_coverage.path);
                 return Some(FileCoverage {
-                    path: candidate.to_string_lossy().to_string(),
+                    path: path_to_string(&relative_path),
                     ..file_coverage
                 });
             }
@@ -633,7 +638,8 @@ mod tests {
             let file_path = temp.path().join("existing.txt");
             fs::write(&file_path, "content").unwrap();
 
-            let transformer = ResolveSrcDir::new(vec![PathBuf::from("/some/src/dir")]);
+            let transformer =
+                ResolveSrcDir::new(temp.path().to_path_buf(), vec![PathBuf::from("src")]);
             let file_coverage = FileCoverage {
                 path: file_path.to_string_lossy().to_string(),
                 ..Default::default()
@@ -652,7 +658,10 @@ mod tests {
             fs::create_dir_all(file_path.parent().unwrap()).unwrap();
             fs::write(&file_path, "class App {}").unwrap();
 
-            let transformer = ResolveSrcDir::new(vec![src_dir]);
+            let transformer = ResolveSrcDir::new(
+                temp.path().to_path_buf(),
+                vec![PathBuf::from("src/main/java")],
+            );
             let file_coverage = FileCoverage {
                 path: "com/example/App.java".to_string(),
                 ..Default::default()
@@ -660,17 +669,18 @@ mod tests {
 
             let result = transformer.transform(file_coverage).unwrap();
             assert!(
-                result.path.ends_with("com/example/App.java")
-                    || result.path.ends_with("com\\example\\App.java")
-            );
-            assert!(
-                result.path.contains("src/main/java") || result.path.contains("src\\main\\java")
+                result.path == "src/main/java/com/example/App.java"
+                    || result.path == "src\\main\\java\\com\\example\\App.java"
             );
         }
 
         #[test]
         fn keeps_original_if_no_match() {
-            let transformer = ResolveSrcDir::new(vec![PathBuf::from("/nonexistent/path")]);
+            let temp = TempDir::new().unwrap();
+            let transformer = ResolveSrcDir::new(
+                temp.path().to_path_buf(),
+                vec![PathBuf::from("nonexistent/path")],
+            );
             let file_coverage = FileCoverage {
                 path: "com/example/Missing.java".to_string(),
                 ..Default::default()
@@ -682,7 +692,8 @@ mod tests {
 
         #[test]
         fn handles_empty_dirs() {
-            let transformer = ResolveSrcDir::new(vec![]);
+            let temp = TempDir::new().unwrap();
+            let transformer = ResolveSrcDir::new(temp.path().to_path_buf(), vec![]);
             let file_coverage = FileCoverage {
                 path: "com/example/App.java".to_string(),
                 ..Default::default()
@@ -704,14 +715,17 @@ mod tests {
             let file_in_second = second_dir.join("App.java");
             fs::write(&file_in_second, "class App {}").unwrap();
 
-            let transformer = ResolveSrcDir::new(vec![first_dir, second_dir]);
+            let transformer = ResolveSrcDir::new(
+                temp.path().to_path_buf(),
+                vec![PathBuf::from("first"), PathBuf::from("second")],
+            );
             let file_coverage = FileCoverage {
                 path: "App.java".to_string(),
                 ..Default::default()
             };
 
             let result = transformer.transform(file_coverage).unwrap();
-            assert!(result.path.contains("second"));
+            assert!(result.path == "second/App.java" || result.path == "second\\App.java");
         }
 
         #[test]
@@ -723,7 +737,10 @@ mod tests {
             let resolved_file = src_dir.join("App.java");
             fs::write(&resolved_file, "class App {}").unwrap();
 
-            let transformer = ResolveSrcDir::new(vec![src_dir]);
+            let transformer = ResolveSrcDir::new(
+                temp.path().to_path_buf(),
+                vec![PathBuf::from("src/main/java")],
+            );
             let file_coverage = FileCoverage {
                 path: "App.java".to_string(),
                 ..Default::default()
@@ -731,7 +748,8 @@ mod tests {
 
             let result = transformer.transform(file_coverage).unwrap();
             assert!(
-                result.path.contains("src/main/java") || result.path.contains("src\\main\\java")
+                result.path == "src/main/java/App.java"
+                    || result.path == "src\\main\\java\\App.java"
             );
         }
     }
