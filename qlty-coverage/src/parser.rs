@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use qlty_types::tests::v1::FileCoverage;
 use std::path::Path;
 
@@ -22,8 +22,10 @@ pub use simplecov::Simplecov;
 
 pub trait Parser {
     fn parse_file(&self, path: &Path) -> Result<Vec<FileCoverage>> {
-        let text = std::fs::read_to_string(path)?;
+        let text = std::fs::read_to_string(path)
+            .with_context(|| format!("Failed to read coverage file: {}", path.display()))?;
         self.parse_text(&text)
+            .with_context(|| format!("Failed to parse coverage file: {}", path.display()))
     }
 
     fn parse_text(&self, text: &str) -> Result<Vec<FileCoverage>>;
