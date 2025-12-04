@@ -10,6 +10,7 @@ use tracing::debug;
 #[derive(Debug, Deserialize)]
 #[serde(rename = "report")]
 struct JacocoSource {
+    #[serde(default)]
     package: Vec<Package>,
 }
 
@@ -382,5 +383,13 @@ mod tests {
                 .join("be/apo/basic/rest/EchoService.java")
                 .to_string_lossy()
         );
+    }
+
+    #[test]
+    fn jacoco_empty_report_no_packages() {
+        let input = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><!DOCTYPE report PUBLIC "-//JACOCO//DTD Report 1.1//EN" "report.dtd"><report name="emptyModule"><sessioninfo id="test-session" start="1764819063102" dump="1764819063595"/></report>"#;
+
+        let parsed_results = Jacoco::new().parse_text(input).unwrap();
+        assert!(parsed_results.is_empty());
     }
 }
