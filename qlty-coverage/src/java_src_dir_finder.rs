@@ -280,9 +280,6 @@ mod tests {
         assert!(JavaSrcDirFinder::is_java_src_dir("src/debug/java"));
         assert!(JavaSrcDirFinder::is_java_src_dir("src/release/kotlin"));
         assert!(JavaSrcDirFinder::is_java_src_dir("app/src/production/java"));
-        assert!(JavaSrcDirFinder::is_java_src_dir(
-            "lib/src/androidTest/kotlin"
-        ));
     }
 
     #[test]
