@@ -298,8 +298,8 @@ impl Transformer for ResolveSrcDir {
     fn transform(&self, file_coverage: FileCoverage) -> Option<FileCoverage> {
         let current_path = Path::new(&file_coverage.path);
 
-        // If file already exists at current path, don't transform
-        if current_path.exists() {
+        // If file already exists at an absolute path, don't transform
+        if current_path.is_absolute() && current_path.exists() {
             return Some(file_coverage);
         }
 
@@ -712,6 +712,27 @@ mod tests {
 
             let result = transformer.transform(file_coverage).unwrap();
             assert!(result.path.contains("second"));
+        }
+
+        #[test]
+        fn resolves_relative_path_even_if_exists_at_cwd() {
+            let temp = TempDir::new().unwrap();
+            let src_dir = temp.path().join("src/main/java");
+            fs::create_dir_all(&src_dir).unwrap();
+
+            let resolved_file = src_dir.join("App.java");
+            fs::write(&resolved_file, "class App {}").unwrap();
+
+            let transformer = ResolveSrcDir::new(vec![src_dir]);
+            let file_coverage = FileCoverage {
+                path: "App.java".to_string(),
+                ..Default::default()
+            };
+
+            let result = transformer.transform(file_coverage).unwrap();
+            assert!(
+                result.path.contains("src/main/java") || result.path.contains("src\\main\\java")
+            );
         }
     }
 }
