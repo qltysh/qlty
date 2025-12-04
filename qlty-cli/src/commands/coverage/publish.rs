@@ -36,7 +36,7 @@ pub struct Publish {
     /// If not specified, the format will be inferred from the file extension or contents.
     pub format: Option<Formats>,
 
-    #[arg(long)]
+    #[arg(long, hide = true)]
     /// Automatically discover Java/Kotlin source directories (e.g., src/main/java/, src/main/kotlin/)
     /// and use them to resolve file paths in coverage reports.
     pub guess_java_src_dirs: bool,
