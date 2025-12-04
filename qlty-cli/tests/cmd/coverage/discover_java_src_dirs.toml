@@ -2,7 +2,7 @@ args = [
   "coverage",
   "publish",
   "--dry-run",
-  "--guess-java-src-dirs",
+  "--discover-java-src-dirs",
   "--validate-file-threshold=100",
   "--override-commit-sha",
   "2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67",

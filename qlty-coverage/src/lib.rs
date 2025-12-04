@@ -13,7 +13,7 @@ mod transformer;
 mod utils;
 pub mod validate;
 
-pub use java_src_dir_finder::JavaSrcDirFinder;
+pub use java_src_dir_finder::{ExclusionStrategy, JavaSrcDirFinder};
 
 #[macro_use]
 mod macros;

@@ -7,19 +7,23 @@ use std::path::PathBuf;
 const EXCLUSION_WORDS: &[&str] = &["test", "tests", "testing", "tester", "build"];
 const EXACT_EXCLUSION_COMPONENTS: &[&str] = &["node_modules"];
 
+#[derive(Debug, Clone)]
+pub enum ExclusionStrategy {
+    UserDefined(Vec<String>),
+    DefaultHeuristics,
+}
+
 #[derive(Debug)]
 pub struct JavaSrcDirFinder {
     root: PathBuf,
-    exclude_patterns: Vec<String>,
-    has_qlty_config: bool,
+    exclusion_strategy: ExclusionStrategy,
 }
 
 impl JavaSrcDirFinder {
-    pub fn new(root: PathBuf, exclude_patterns: Vec<String>, has_qlty_config: bool) -> Self {
+    pub fn new(root: PathBuf, exclusion_strategy: ExclusionStrategy) -> Self {
         Self {
             root,
-            exclude_patterns,
-            has_qlty_config,
+            exclusion_strategy,
         }
     }
 
@@ -75,8 +79,8 @@ impl JavaSrcDirFinder {
     fn build_exclude_globset(&self) -> Result<GlobSet> {
         let mut builder = GlobSetBuilder::new();
 
-        if self.has_qlty_config {
-            for pattern in &self.exclude_patterns {
+        if let ExclusionStrategy::UserDefined(patterns) = &self.exclusion_strategy {
+            for pattern in patterns {
                 builder.add(Glob::new(pattern)?);
             }
         }
@@ -85,10 +89,9 @@ impl JavaSrcDirFinder {
     }
 
     fn should_exclude(&self, relative_path: &str, exclude_globset: &GlobSet) -> bool {
-        if self.has_qlty_config {
-            exclude_globset.is_match(relative_path)
-        } else {
-            self.matches_default_exclusions(relative_path)
+        match &self.exclusion_strategy {
+            ExclusionStrategy::UserDefined(_) => exclude_globset.is_match(relative_path),
+            ExclusionStrategy::DefaultHeuristics => self.matches_default_exclusions(relative_path),
         }
     }
 
@@ -222,7 +225,7 @@ mod tests {
 
     #[test]
     fn matches_default_exclusions_excludes_test_variants() {
-        let finder = JavaSrcDirFinder::new(PathBuf::new(), vec![], false);
+        let finder = JavaSrcDirFinder::new(PathBuf::new(), ExclusionStrategy::DefaultHeuristics);
 
         assert!(finder.matches_default_exclusions("test/src/main/java"));
         assert!(finder.matches_default_exclusions("my-test/src/main/java"));
@@ -235,7 +238,7 @@ mod tests {
 
     #[test]
     fn matches_default_exclusions_allows_non_test_words() {
-        let finder = JavaSrcDirFinder::new(PathBuf::new(), vec![], false);
+        let finder = JavaSrcDirFinder::new(PathBuf::new(), ExclusionStrategy::DefaultHeuristics);
 
         assert!(!finder.matches_default_exclusions("contest/src/main/java"));
         assert!(!finder.matches_default_exclusions("protest/src/main/java"));
@@ -246,7 +249,7 @@ mod tests {
 
     #[test]
     fn matches_default_exclusions_handles_node_modules() {
-        let finder = JavaSrcDirFinder::new(PathBuf::new(), vec![], false);
+        let finder = JavaSrcDirFinder::new(PathBuf::new(), ExclusionStrategy::DefaultHeuristics);
 
         assert!(finder.matches_default_exclusions("node_modules/pkg/src/main/java"));
         assert!(!finder.matches_default_exclusions("my_modules/src/main/java"));
@@ -254,7 +257,7 @@ mod tests {
 
     #[test]
     fn matches_default_exclusions_handles_build() {
-        let finder = JavaSrcDirFinder::new(PathBuf::new(), vec![], false);
+        let finder = JavaSrcDirFinder::new(PathBuf::new(), ExclusionStrategy::DefaultHeuristics);
 
         assert!(finder.matches_default_exclusions("build/src/main/java"));
         assert!(finder.matches_default_exclusions("build-output/src/main/java"));
@@ -330,7 +333,8 @@ mod tests {
         create_dir(root, "src/main/java/com/example");
         create_dir(root, "src/main/kotlin/com/example");
 
-        let finder = JavaSrcDirFinder::new(root.to_path_buf(), vec![], false);
+        let finder =
+            JavaSrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
         let dirs = finder.find().unwrap();
 
         assert_eq!(dirs.len(), 2);
@@ -351,21 +355,23 @@ mod tests {
         create_dir(root, "lib/src/debug/java/com/example");
         create_dir(root, "lib/src/release/kotlin/com/example");
 
-        let finder = JavaSrcDirFinder::new(root.to_path_buf(), vec![], false);
+        let finder =
+            JavaSrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
         let dirs = finder.find().unwrap();
 
         assert_eq!(dirs.len(), 3);
     }
 
     #[test]
-    fn excludes_node_modules_without_config() {
+    fn excludes_node_modules_with_default_heuristics() {
         let temp = TempDir::new().unwrap();
         let root = temp.path();
 
         create_dir(root, "src/main/java/com/example");
         create_dir(root, "node_modules/some-package/src/main/java");
 
-        let finder = JavaSrcDirFinder::new(root.to_path_buf(), vec![], false);
+        let finder =
+            JavaSrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
         let dirs = finder.find().unwrap();
 
         assert_eq!(dirs.len(), 1);
@@ -373,7 +379,7 @@ mod tests {
     }
 
     #[test]
-    fn excludes_test_directories_without_config() {
+    fn excludes_test_directories_with_default_heuristics() {
         let temp = TempDir::new().unwrap();
         let root = temp.path();
 
@@ -382,7 +388,8 @@ mod tests {
         create_dir(root, "test/src/main/java/com/example");
         create_dir(root, "build/src/main/java/com/example");
 
-        let finder = JavaSrcDirFinder::new(root.to_path_buf(), vec![], false);
+        let finder =
+            JavaSrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
         let dirs = finder.find().unwrap();
 
         assert_eq!(dirs.len(), 1);
@@ -390,7 +397,7 @@ mod tests {
     }
 
     #[test]
-    fn uses_qlty_config_exclusions() {
+    fn uses_user_defined_exclusions() {
         let temp = TempDir::new().unwrap();
         let root = temp.path();
 
@@ -399,8 +406,7 @@ mod tests {
 
         let finder = JavaSrcDirFinder::new(
             root.to_path_buf(),
-            vec!["legacy/**".to_string()],
-            true, // has_qlty_config = true
+            ExclusionStrategy::UserDefined(vec!["legacy/**".to_string()]),
         );
         let dirs = finder.find().unwrap();
 
@@ -419,7 +425,8 @@ mod tests {
         create_dir(root, "src/lib");
         create_dir(root, "app/code");
 
-        let finder = JavaSrcDirFinder::new(root.to_path_buf(), vec![], false);
+        let finder =
+            JavaSrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
         let dirs = finder.find().unwrap();
 
         assert!(dirs.is_empty());
@@ -434,7 +441,8 @@ mod tests {
         create_dir(root, "project-b/src/main/kotlin/com/b");
         create_dir(root, "project-c/module/src/main/java/com/c");
 
-        let finder = JavaSrcDirFinder::new(root.to_path_buf(), vec![], false);
+        let finder =
+            JavaSrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
         let dirs = finder.find().unwrap();
 
         assert_eq!(dirs.len(), 3);
@@ -447,7 +455,8 @@ mod tests {
 
         create_dir(root, "app/src/main/java/com/example/kotlin");
 
-        let finder = JavaSrcDirFinder::new(root.to_path_buf(), vec![], false);
+        let finder =
+            JavaSrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
         let dirs = finder.find().unwrap();
 
         assert_eq!(dirs.len(), 1);
@@ -462,7 +471,8 @@ mod tests {
         create_dir(root, "src/main/java/com/example");
         create_dir(root, "contest/src/main/java/com/example");
 
-        let finder = JavaSrcDirFinder::new(root.to_path_buf(), vec![], false);
+        let finder =
+            JavaSrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
         let dirs = finder.find().unwrap();
 
         assert_eq!(dirs.len(), 2);

@@ -14,7 +14,7 @@ use qlty_coverage::print::{print_report_as_json, print_report_as_text};
 use qlty_coverage::publish::{Plan, Planner, Processor, Reader, Report, Settings, Upload};
 use qlty_coverage::token::load_auth_token;
 use qlty_coverage::validate::{ValidationStatus, Validator};
-use qlty_coverage::JavaSrcDirFinder;
+use qlty_coverage::{ExclusionStrategy, JavaSrcDirFinder};
 use std::io::Write as _;
 use std::path::PathBuf;
 use std::time::Instant;
@@ -39,7 +39,7 @@ pub struct Publish {
     #[arg(long, hide = true)]
     /// Automatically discover Java/Kotlin source directories (e.g., src/main/java/, src/main/kotlin/)
     /// and use them to resolve file paths in coverage reports.
-    pub guess_java_src_dirs: bool,
+    pub discover_java_src_dirs: bool,
 
     #[arg(long, hide = true)]
     pub output_dir: Option<PathBuf>,
@@ -166,6 +166,7 @@ impl Publish {
         self.print_deprecation_warnings();
 
         let settings = self.build_settings()?;
+        self.print_settings_warnings(&settings);
 
         self.print_section_header(" SETTINGS ");
         print_settings(&settings);
@@ -255,19 +256,14 @@ impl Publish {
 
         let root = std::env::current_dir()?;
         let config = load_config();
-        let java_src_dirs = if self.guess_java_src_dirs {
-            let has_qlty_config = !config.exclude_patterns.is_empty();
-            let finder =
-                JavaSrcDirFinder::new(root.clone(), config.exclude_patterns, has_qlty_config);
-            let dirs = finder.find()?;
-
-            if !dirs.is_empty() && std::env::var("JACOCO_SOURCE_PATH").is_ok() {
-                eprintln!("WARNING: Both --guess-java-src-dirs and JACOCO_SOURCE_PATH are set.");
-                eprintln!("JACOCO_SOURCE_PATH applies during JaCoCo parsing.");
-                eprintln!("--guess-java-src-dirs applies to all formats during processing.");
-            }
-
-            dirs
+        let java_src_dirs = if self.discover_java_src_dirs {
+            let exclusion_strategy = if config.exclude_patterns.is_empty() {
+                ExclusionStrategy::DefaultHeuristics
+            } else {
+                ExclusionStrategy::UserDefined(config.exclude_patterns)
+            };
+            let finder = JavaSrcDirFinder::new(root.clone(), exclusion_strategy);
+            finder.find()?
         } else {
             Vec::new()
         };
@@ -275,7 +271,7 @@ impl Publish {
         Ok(Settings {
             add_prefix,
             dry_run: self.dry_run,
-            guess_java_src_dirs: self.guess_java_src_dirs,
+            discover_java_src_dirs: self.discover_java_src_dirs,
             root,
             java_src_dirs,
             incomplete,
@@ -316,6 +312,21 @@ impl Publish {
         }
         if self.validate {
             eprintln!("WARNING: --validate is deprecated, validation is now enabled by default. Use --no-validate to disable validation\n");
+        }
+    }
+
+    fn print_settings_warnings(&self, settings: &Settings) {
+        if self.quiet {
+            return;
+        }
+
+        if settings.discover_java_src_dirs
+            && !settings.java_src_dirs.is_empty()
+            && std::env::var("JACOCO_SOURCE_PATH").is_ok()
+        {
+            eprintln!("WARNING: Both --discover-java-src-dirs and JACOCO_SOURCE_PATH are set.");
+            eprintln!("JACOCO_SOURCE_PATH applies during JaCoCo parsing.");
+            eprintln!("--discover-java-src-dirs applies to all formats during processing.\n");
         }
     }
 

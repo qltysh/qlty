@@ -285,18 +285,18 @@ impl Transformer for DefaultPathFixer {
 }
 
 #[derive(Debug, Clone)]
-pub struct ResolveSrcDir {
+pub struct PrependSrcDir {
     root: PathBuf,
     src_dirs: Vec<PathBuf>,
 }
 
-impl ResolveSrcDir {
+impl PrependSrcDir {
     pub fn new(root: PathBuf, src_dirs: Vec<PathBuf>) -> Self {
         Self { root, src_dirs }
     }
 }
 
-impl Transformer for ResolveSrcDir {
+impl Transformer for PrependSrcDir {
     fn transform(&self, file_coverage: FileCoverage) -> Option<FileCoverage> {
         let current_path = Path::new(&file_coverage.path);
 
@@ -627,7 +627,7 @@ mod tests {
         }
     }
 
-    mod resolve_src_dir_tests {
+    mod prepend_src_dir_tests {
         use super::*;
         use std::fs;
         use tempfile::TempDir;
@@ -639,7 +639,7 @@ mod tests {
             fs::write(&file_path, "content").unwrap();
 
             let transformer =
-                ResolveSrcDir::new(temp.path().to_path_buf(), vec![PathBuf::from("src")]);
+                PrependSrcDir::new(temp.path().to_path_buf(), vec![PathBuf::from("src")]);
             let file_coverage = FileCoverage {
                 path: file_path.to_string_lossy().to_string(),
                 ..Default::default()
@@ -658,7 +658,7 @@ mod tests {
             fs::create_dir_all(file_path.parent().unwrap()).unwrap();
             fs::write(&file_path, "class App {}").unwrap();
 
-            let transformer = ResolveSrcDir::new(
+            let transformer = PrependSrcDir::new(
                 temp.path().to_path_buf(),
                 vec![PathBuf::from("src/main/java")],
             );
@@ -677,7 +677,7 @@ mod tests {
         #[test]
         fn keeps_original_if_no_match() {
             let temp = TempDir::new().unwrap();
-            let transformer = ResolveSrcDir::new(
+            let transformer = PrependSrcDir::new(
                 temp.path().to_path_buf(),
                 vec![PathBuf::from("nonexistent/path")],
             );
@@ -693,7 +693,7 @@ mod tests {
         #[test]
         fn handles_empty_dirs() {
             let temp = TempDir::new().unwrap();
-            let transformer = ResolveSrcDir::new(temp.path().to_path_buf(), vec![]);
+            let transformer = PrependSrcDir::new(temp.path().to_path_buf(), vec![]);
             let file_coverage = FileCoverage {
                 path: "com/example/App.java".to_string(),
                 ..Default::default()
@@ -715,7 +715,7 @@ mod tests {
             let file_in_second = second_dir.join("App.java");
             fs::write(&file_in_second, "class App {}").unwrap();
 
-            let transformer = ResolveSrcDir::new(
+            let transformer = PrependSrcDir::new(
                 temp.path().to_path_buf(),
                 vec![PathBuf::from("first"), PathBuf::from("second")],
             );
@@ -737,7 +737,7 @@ mod tests {
             let resolved_file = src_dir.join("App.java");
             fs::write(&resolved_file, "class App {}").unwrap();
 
-            let transformer = ResolveSrcDir::new(
+            let transformer = PrependSrcDir::new(
                 temp.path().to_path_buf(),
                 vec![PathBuf::from("src/main/java")],
             );
