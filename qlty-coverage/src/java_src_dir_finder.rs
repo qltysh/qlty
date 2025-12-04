@@ -64,16 +64,11 @@ impl JavaSrcDirFinder {
 
     fn is_java_src_dir(relative_path: &str) -> bool {
         let components: Vec<&str> = relative_path.split('/').collect();
-        let len = components.len();
 
-        if len < 3 {
-            return false;
-        }
-
-        let third_last = components[len - 3];
-        let last = components[len - 1];
-
-        third_last == "src" && (last == "java" || last == "kotlin")
+        matches!(
+            components.as_slice(),
+            [.., "src", _, lang] if *lang == "java" || *lang == "kotlin"
+        )
     }
 
     fn build_exclude_globset(&self) -> Result<GlobSet> {
