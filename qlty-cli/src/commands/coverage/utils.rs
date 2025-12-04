@@ -106,6 +106,19 @@ pub fn print_settings(settings: &Settings) {
         }
     }
 
+    // Print discovered Java src dirs if --guess-java-src-dirs is enabled
+    if settings.guess_java_src_dirs {
+        eprintln!("    guess-java-src-dirs: true");
+        if settings.java_src_dirs.is_empty() {
+            eprintln!("    discovered Java src dirs: (none found)");
+        } else {
+            eprintln!("    discovered Java src dirs:");
+            for dir in &settings.java_src_dirs {
+                eprintln!("      {}", dir.display());
+            }
+        }
+    }
+
     eprintln!();
 }
 

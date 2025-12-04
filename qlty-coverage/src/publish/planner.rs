@@ -7,6 +7,7 @@ use crate::transformer::AppendMetadata;
 use crate::transformer::ComputeSummary;
 use crate::transformer::DefaultPathFixer;
 use crate::transformer::IgnorePaths;
+use crate::transformer::ResolveSrcDir;
 use crate::transformer::StripDotSlashPrefix;
 use crate::transformer::StripPrefix;
 use crate::utils::extract_path_and_format;
@@ -94,6 +95,13 @@ impl Planner {
         let mut transformers: Vec<Box<dyn Transformer>> = vec![];
 
         transformers.push(Box::new(ComputeSummary::new()));
+
+        // Add ResolveSrcDir transformer if Java src dirs were discovered
+        if !self.settings.java_src_dirs.is_empty() {
+            transformers.push(Box::new(ResolveSrcDir::new(
+                self.settings.java_src_dirs.clone(),
+            )));
+        }
 
         // Check if user provided any manual path fixing options
         let has_manual_path_fixing =
