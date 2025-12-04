@@ -96,13 +96,6 @@ impl Planner {
 
         transformers.push(Box::new(ComputeSummary::new()));
 
-        // Add ResolveSrcDir transformer if Java src dirs were discovered
-        if !self.settings.java_src_dirs.is_empty() {
-            transformers.push(Box::new(ResolveSrcDir::new(
-                self.settings.java_src_dirs.clone(),
-            )));
-        }
-
         // Check if user provided any manual path fixing options
         let has_manual_path_fixing =
             self.settings.strip_prefix.is_some() || self.settings.add_prefix.is_some();
@@ -119,6 +112,14 @@ impl Planner {
         }
 
         transformers.push(Box::new(StripDotSlashPrefix));
+
+        // Add ResolveSrcDir transformer if Java src dirs were discovered
+        // This runs after path normalization so it receives clean relative paths
+        if !self.settings.java_src_dirs.is_empty() {
+            transformers.push(Box::new(ResolveSrcDir::new(
+                self.settings.java_src_dirs.clone(),
+            )));
+        }
 
         if self.config.coverage.ignores.is_some() {
             transformers.push(Box::new(IgnorePaths::new(
