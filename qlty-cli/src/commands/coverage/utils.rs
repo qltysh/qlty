@@ -106,25 +106,22 @@ pub fn print_settings(settings: &Settings) {
         }
     }
 
-    // Print discovered Java src dirs if --discover-java-src-dirs is enabled
+    eprintln!();
+
+    // Print discovered Java src dirs as a sub-section if --discover-java-src-dirs is enabled
     if settings.discover_java_src_dirs {
         eprintln!("    discover-java-src-dirs: true");
+        eprintln!();
+        eprintln!("    Discovered Java source directories:");
         if settings.java_src_dirs.is_empty() {
-            eprintln!("    discovered Java src dirs: (none found)");
+            eprintln!("      (none found)");
         } else {
-            eprintln!("    discovered Java src dirs:");
             for dir in &settings.java_src_dirs {
-                let display = dir.display().to_string();
-                if display.trim().is_empty() || display.contains('\n') {
-                    eprintln!("      {:?}", dir);
-                } else {
-                    eprintln!("      {}", display);
-                }
+                eprintln!("      {}", dir.display());
             }
         }
+        eprintln!();
     }
-
-    eprintln!();
 }
 
 pub fn print_metadata(metadata: &CoverageMetadata, quiet: bool) {
