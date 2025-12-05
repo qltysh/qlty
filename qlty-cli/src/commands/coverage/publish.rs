@@ -14,7 +14,7 @@ use qlty_coverage::print::{print_report_as_json, print_report_as_text};
 use qlty_coverage::publish::{Plan, Planner, Processor, Reader, Report, Settings, Upload};
 use qlty_coverage::token::load_auth_token;
 use qlty_coverage::validate::{ValidationStatus, Validator};
-use qlty_coverage::{ExclusionStrategy, JavaSrcDirFinder};
+use qlty_coverage::{ExclusionStrategy, SrcDirFinder};
 use std::io::Write as _;
 use std::path::PathBuf;
 use std::time::Instant;
@@ -40,6 +40,15 @@ pub struct Publish {
     /// Automatically discover Java/Kotlin source directories (e.g., src/main/java/, src/main/kotlin/)
     /// and use them to resolve file paths in coverage reports.
     pub discover_java_src_dirs: bool,
+
+    #[arg(long = "add-src-dir", hide = true)]
+    /// Add a source directory to search for files. Can be specified multiple times.
+    /// These directories take precedence over auto-discovered directories.
+    pub add_src_dirs: Vec<PathBuf>,
+
+    #[arg(long = "remove-src-dir", hide = true)]
+    /// Remove a source directory from the search list. Can be specified multiple times.
+    pub remove_src_dirs: Vec<PathBuf>,
 
     #[arg(long, hide = true)]
     pub output_dir: Option<PathBuf>,
@@ -256,24 +265,31 @@ impl Publish {
 
         let root = std::env::current_dir()?;
         let config = load_config();
-        let java_src_dirs = if self.discover_java_src_dirs {
-            let exclusion_strategy = if config.exclude_patterns.is_empty() {
+
+        let mut src_search_dirs = self.add_src_dirs.clone();
+        if self.discover_java_src_dirs {
+            let exclusion_strategy = if !self.remove_src_dirs.is_empty() {
+                let patterns: Vec<String> = self
+                    .remove_src_dirs
+                    .iter()
+                    .map(|p| format!("{}/**", p.display()))
+                    .collect();
+                ExclusionStrategy::UserDefined(patterns)
+            } else if config.exclude_patterns.is_empty() {
                 ExclusionStrategy::DefaultHeuristics
             } else {
                 ExclusionStrategy::UserDefined(config.exclude_patterns)
             };
-            let finder = JavaSrcDirFinder::new(root.clone(), exclusion_strategy);
-            finder.find()?
-        } else {
-            Vec::new()
-        };
+            let finder = SrcDirFinder::new(root.clone(), exclusion_strategy);
+            src_search_dirs.extend(finder.find()?);
+        }
 
         Ok(Settings {
             add_prefix,
             dry_run: self.dry_run,
             discover_java_src_dirs: self.discover_java_src_dirs,
             root,
-            java_src_dirs,
+            src_search_dirs,
             incomplete,
             name: self.name.clone(),
             output_dir: self.output_dir.clone(),
@@ -320,13 +336,10 @@ impl Publish {
             return;
         }
 
-        if settings.discover_java_src_dirs
-            && !settings.java_src_dirs.is_empty()
-            && std::env::var("JACOCO_SOURCE_PATH").is_ok()
-        {
-            eprintln!("WARNING: Both --discover-java-src-dirs and JACOCO_SOURCE_PATH are set.");
+        if !settings.src_search_dirs.is_empty() && std::env::var("JACOCO_SOURCE_PATH").is_ok() {
+            eprintln!("WARNING: Both source search directories and JACOCO_SOURCE_PATH are set.");
             eprintln!("JACOCO_SOURCE_PATH applies during JaCoCo parsing.");
-            eprintln!("--discover-java-src-dirs applies to all formats during processing.\n");
+            eprintln!("Source search directories (--add-src-dir/--discover-java-src-dirs) apply to all formats during processing.\n");
         }
     }
 
