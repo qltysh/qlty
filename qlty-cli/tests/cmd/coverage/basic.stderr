@@ -26,6 +26,8 @@ https://qlty.sh/d/coverage
 
  COVERAGE DATA 
 
+    Git Repository: [CWD]/
+
     Auto-path fixing: Enabled
     1 unique code file path
     All code files in the coverage data were found on disk (count: 1).

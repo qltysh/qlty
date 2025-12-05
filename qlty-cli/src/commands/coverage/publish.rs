@@ -433,6 +433,14 @@ impl Publish {
         }
 
         self.print_section_header(" COVERAGE DATA ");
+
+        if let Some(ref git_path) = report.git_repo_path {
+            eprintln!("    Git Repository: {}", style(git_path).dim());
+        } else {
+            eprintln!("    Git Repository: {}", style("not found").dim());
+        }
+        eprintln!();
+
         if report.auto_path_fixing_enabled {
             eprintln!("    Auto-path fixing: Enabled");
         }
@@ -497,7 +505,7 @@ impl Publish {
             let (paths_to_show, show_all) = if self.verbose {
                 (missing_files.len(), true)
             } else {
-                (std::cmp::min(20, missing_files.len()), false)
+                (std::cmp::min(50, missing_files.len()), false)
             };
 
             eprintln!("\n    {}\n", style("Missing code files:").bold().yellow());
@@ -550,6 +558,62 @@ impl Publish {
                 ))
                 .dim()
             );
+        }
+
+        if !report.untracked_files.is_empty() && report.git_repo_path.is_some() {
+            let mut untracked = report.untracked_files.iter().collect::<Vec<_>>();
+            untracked.sort();
+
+            eprintln!(
+                "    {} {} on disk but {} in Git",
+                style(untracked.len().to_formatted_string(&Locale::en)).red(),
+                if untracked.len() == 1 {
+                    "path exists"
+                } else {
+                    "paths exist"
+                },
+                style("not tracked").red()
+            );
+
+            let (paths_to_show, show_all) = if self.verbose {
+                (untracked.len(), true)
+            } else {
+                (std::cmp::min(50, untracked.len()), false)
+            };
+
+            eprintln!(
+                "\n    {}\n",
+                style("Untracked code files (not in Git):").bold().red()
+            );
+
+            for path in untracked.iter().take(paths_to_show) {
+                eprintln!(
+                    "      {} {}",
+                    style("*").red(),
+                    style(path.to_string()).red()
+                );
+            }
+
+            if !show_all && paths_to_show < untracked.len() {
+                let remaining = untracked.len() - paths_to_show;
+                eprintln!(
+                    "      {} {}",
+                    style(format!(
+                        "... and {} more",
+                        remaining.to_formatted_string(&Locale::en)
+                    ))
+                    .dim()
+                    .red(),
+                    style("(Use --verbose to see all)").dim()
+                );
+            }
+
+            eprintln!();
+            eprintln!(
+                "    {} Files not tracked in Git may not appear in coverage reports.",
+                style("NOTE:").bold()
+            );
+            eprintln!();
         }
 
         eprintln!();
