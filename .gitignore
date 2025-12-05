@@ -7,3 +7,5 @@ flamegraph.svg
 /.rustfmt.toml
 /.yamllint.yaml
 tmp/
+
+docs/developer/plans
