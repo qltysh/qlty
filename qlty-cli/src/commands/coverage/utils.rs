@@ -108,15 +108,16 @@ pub fn print_settings(settings: &Settings) {
 
     eprintln!();
 
-    // Print discovered Java src dirs as a sub-section if --discover-java-src-dirs is enabled
-    if settings.discover_java_src_dirs {
-        eprintln!("    discover-java-src-dirs: true");
+    if settings.discover_java_src_dirs || !settings.src_search_dirs.is_empty() {
+        if settings.discover_java_src_dirs {
+            eprintln!("    discover-java-src-dirs: true");
+        }
         eprintln!();
-        eprintln!("    Discovered Java source directories:");
-        if settings.java_src_dirs.is_empty() {
+        eprintln!("    Source search directories:");
+        if settings.src_search_dirs.is_empty() {
             eprintln!("      (none found)");
         } else {
-            for dir in &settings.java_src_dirs {
+            for dir in &settings.src_search_dirs {
                 eprintln!("      {}", dir.display());
             }
         }
