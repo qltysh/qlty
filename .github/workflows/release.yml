@@ -90,7 +90,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup AWS CLI
-        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708
         with:
           role-to-assume: ${{ secrets.QLTY_RELEASE_AWS_ROLE_ARN }}
           role-session-name: ${{ vars.QLTY_RELEASE_AWS_ROLE_SESSION_NAME }}
