@@ -102,7 +102,7 @@ serde-querystring = "0.3.0"
 serde_with = "3.14.1"
 serde_yaml = "0.9.34"
 serde_ignored = "0.1"
-serde-xml-rs = "0.6.0"
+serde-xml-rs = "0.8.2"
 sha2 = "0.10.9"
 shell-escape = "0.1.5"
 similar = { version = "2.7.0", features = ["inline"] }
