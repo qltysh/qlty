@@ -10,6 +10,7 @@ mod jacoco;
 mod lcov;
 mod qlty;
 mod simplecov;
+mod xccov;
 
 pub use clover::Clover;
 pub use cobertura::Cobertura;
@@ -19,6 +20,7 @@ pub use jacoco::Jacoco;
 pub use lcov::Lcov;
 pub use qlty::Qlty;
 pub use simplecov::Simplecov;
+pub use xccov::XccovJson;
 
 pub trait Parser {
     fn parse_file(&self, path: &Path) -> Result<Vec<FileCoverage>> {
