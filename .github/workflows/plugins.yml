@@ -101,5 +101,5 @@ jobs:
       - name: Run plugins tests
         working-directory: plugins
         run: |
-          npm ci
+          npm ci --ignore-scripts
           npm test
