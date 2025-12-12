@@ -12,11 +12,20 @@ use tracing::debug;
 struct JacocoSource {
     #[serde(default)]
     package: Vec<Package>,
+    #[serde(default)]
+    group: Vec<Group>,
+}
+
+#[derive(Debug, Deserialize)]
+struct Group {
+    #[serde(default)]
+    package: Vec<Package>,
 }
 
 #[derive(Debug, Deserialize)]
 struct Package {
     name: String,
+    #[serde(default)]
     sourcefile: Vec<Sourcefile>,
 }
 
@@ -106,7 +115,14 @@ impl Parser for Jacoco {
         let mut file_coverages: Vec<FileCoverage> = vec![];
         let source_paths = self.get_source_paths();
 
-        for package in source.package.iter() {
+        // Collect all packages from both direct packages and packages nested in groups
+        let all_packages: Vec<&Package> = source
+            .package
+            .iter()
+            .chain(source.group.iter().flat_map(|g| g.package.iter()))
+            .collect();
+
+        for package in all_packages {
             for sourcefile in package.sourcefile.iter() {
                 let mut line_hits = Vec::new();
                 if let Some(lines) = sourcefile.line.as_ref() {
@@ -391,5 +407,40 @@ mod tests {
 
         let parsed_results = Jacoco::new().parse_text(input).unwrap();
         assert!(parsed_results.is_empty());
+    }
+
+    #[test]
+    fn jacoco_with_groups() {
+        let input = include_str!("../../tests/fixtures/jacoco/sample_with_groups.xml");
+
+        let parsed_results = Jacoco::new().parse_text(input).unwrap();
+        insta::assert_yaml_snapshot!(parsed_results, @r###"
+        - path: com/example/core/CoreService.java
+          hits:
+            - "-1"
+            - "-1"
+            - "-1"
+            - "-1"
+            - "3"
+            - "-1"
+            - "-1"
+            - "-1"
+            - "-1"
+            - "5"
+        - path: com/example/api/ApiController.java
+          hits:
+            - "-1"
+            - "-1"
+            - "-1"
+            - "-1"
+            - "-1"
+            - "-1"
+            - "-1"
+            - "3"
+            - "-1"
+            - "-1"
+            - "-1"
+            - "0"
+        "###);
     }
 }
