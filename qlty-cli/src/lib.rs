@@ -1,7 +1,9 @@
 pub mod allocator;
 mod arguments;
+mod attestation;
 pub mod auth;
 mod commands;
+mod cosign;
 mod errors;
 pub mod exe_name;
 pub mod export;
