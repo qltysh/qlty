@@ -31,7 +31,7 @@ jobs:
       cancel-in-progress: true
     steps:
       - name: Checkout cloud
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
 
       - name: Install Rust toolchain
         uses: actions-rust-lang/setup-rust-toolchain@2fcdc490d667999e01ddbbf0f2823181beef6b39
