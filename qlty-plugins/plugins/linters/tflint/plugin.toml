@@ -9,8 +9,8 @@ strip_components = 0
 releases = ["tflint"]
 config_files = [".tflint.hcl"]
 file_types = ["terraform"]
-latest_version = "0.59.1"
-known_good_version = "0.59.1"
+latest_version = "0.60.0"
+known_good_version = "0.60.0"
 version_command = "tflint --version"
 description = "A pluggable Terraform linter"
 
