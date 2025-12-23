@@ -17,12 +17,30 @@ use sha2::Digest;
 use sha2::Sha256;
 use std::fmt::Debug;
 use std::fs::File;
-use std::io::BufReader;
-use std::io::Cursor;
+use std::io::{BufReader, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 use tar::Archive;
 use tempfile::tempfile;
 use tracing::{info, trace, warn};
+
+fn download_to_tempfile(url: &str) -> Result<File> {
+    info!("Downloading {}", url);
+    let response = http::get(url)
+        .call()
+        .with_context(|| format!("Error downloading file from {}", url))?;
+
+    let mut reader = response.into_reader();
+    let mut file = tempfile().with_context(|| "Failed to create a temporary file")?;
+
+    std::io::copy(&mut reader, &mut file)
+        .with_context(|| format!("Failed to download file from {}", url))?;
+
+    file.seek(SeekFrom::Start(0))
+        .with_context(|| "Failed to seek to start of temporary file")?;
+
+    Ok(file)
+}
+
 use zip::ZipArchive;
 
 #[cfg(unix)]
@@ -162,28 +180,20 @@ impl Download {
     fn install_gz(&self, directory: &Path, tool_name: &str) -> Result<()> {
         let binary_name = self.binary_name().unwrap_or(tool_name.to_string());
         let binary_path = directory.join(binary_name);
+        let url = self.url()?;
 
-        info!(
-            "Downloading (gz) {} to {}",
-            self.url()?,
-            binary_path.display()
-        );
+        info!("Downloading (gz) {} to {}", url, binary_path.display());
 
-        let url = self.url().with_context(|| "Failed to get download URL")?;
+        let temp_file = download_to_tempfile(&url)?;
 
-        let response = http::get(&url)
-            .call()
-            .with_context(|| format!("Error downloading file from {url}"))?;
-
-        let reader = response.into_reader();
-        let mut decoder = GzDecoder::new(reader);
+        info!("Extracting to {}", binary_path.display());
+        let mut decoder = GzDecoder::new(temp_file);
 
         let mut file = File::create(&binary_path)
             .with_context(|| format!("Error creating file at {}", binary_path.display()))?;
 
-        std::io::copy(&mut decoder, &mut file).with_context(|| {
-            format!("Error copying downloaded data to {}", binary_path.display())
-        })?;
+        std::io::copy(&mut decoder, &mut file)
+            .with_context(|| format!("Error decompressing gz to {}", binary_path.display()))?;
 
         #[cfg(unix)]
         {
@@ -205,38 +215,34 @@ impl Download {
     }
 
     fn install_targz(&self, directory: &Path) -> Result<()> {
-        info!("Downloading (tar.gz) {}", self.url()?);
         let url = self.url()?;
-        let response = http::get(&url)
-            .call()
-            .with_context(|| format!("Error downloading file from {url}"))?;
-        let reader = response.into_reader();
-        let tar = GzDecoder::new(reader);
+        info!("Downloading (tar.gz) {}", url);
+
+        let temp_file = download_to_tempfile(&url)?;
+
+        let tar = GzDecoder::new(temp_file);
         let mut archive = Archive::new(tar);
         self.extract_archive(&mut archive, directory)
-            .with_context(|| format!("Error extracting tar.gz archive from {url}"))?;
+            .with_context(|| format!("Error extracting tar.gz archive from {}", url))?;
         Ok(())
     }
 
     fn install_tarxz(&self, directory: &Path) -> Result<()> {
-        info!("Downloading (tar.xz) {}", self.url()?);
         let url = self.url()?;
-        let response = http::get(&url)
-            .call()
-            .with_context(|| format!("Error downloading file from {url}"))?;
+        info!("Downloading (tar.xz) {}", url);
 
-        let response_reader = response.into_reader();
-        let mut reader = BufReader::new(response_reader);
+        let temp_file = download_to_tempfile(&url)?;
+
+        let mut reader = BufReader::new(temp_file);
         let mut tar: Vec<u8> = Vec::new();
 
         lzma_rs::xz_decompress(&mut reader, &mut tar)
-            .with_context(|| "Failed to decompress xz file".to_string())?;
+            .with_context(|| format!("Failed to decompress xz file from {}", url))?;
 
-        let cursor = Cursor::new(tar);
-        let mut archive = Archive::new(cursor);
+        let mut archive = Archive::new(tar.as_slice());
 
         self.extract_archive(&mut archive, directory)
-            .with_context(|| "Failed to extract tar archive".to_string())
+            .with_context(|| format!("Failed to extract tar archive from {}", url))
     }
 
     fn extract_archive<R: std::io::Read>(
@@ -278,18 +284,13 @@ impl Download {
     }
 
     fn install_zip(&self, directory: &Path) -> Result<()> {
-        let response = http::get(&self.url()?)
-            .call()
-            .with_context(|| format!("Error downloading file from {}", self.url().unwrap()))?;
+        let url = self.url()?;
+        info!("Downloading (zip) {}", url);
 
-        let mut reader = response.into_reader();
-        let mut file = tempfile().with_context(|| "Failed to create a temporary file")?;
-
-        std::io::copy(&mut reader, &mut file)
-            .with_context(|| "Failed to copy response into a temporary file")?;
+        let file = download_to_tempfile(&url)?;
 
         self.extract_zip(file, directory)
-            .with_context(|| "Failed to extract zip archive")?;
+            .with_context(|| format!("Failed to extract zip archive from {}", url))?;
         Ok(())
     }
 

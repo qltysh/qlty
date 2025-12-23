@@ -382,10 +382,12 @@ pub trait Tool: Debug + Sync + Send {
 
                     attempts += 1;
                     if attempts >= max_attempts {
-                        error!(
-                            "Max attempts reached for tool installation: {}",
-                            self.name()
-                        );
+                        if max_attempts > 0 {
+                            error!(
+                                "Max attempts reached for tool installation: {}",
+                                self.name()
+                            );
+                        }
                         return Err(e);
                     }
 
