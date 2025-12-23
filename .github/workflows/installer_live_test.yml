@@ -22,6 +22,9 @@ jobs:
 
           - runner: macos-15
             command: curl https://qlty.sh | sh
+
+          - runner: windows-latest
+            command: powershell -c "curl.exe -fsSL https://qlty.sh | iex"
     steps:
       - name: Install qlty and validate
         run: ${{ matrix.command }} && ~/.qlty/bin/qlty version --no-upgrade-check
