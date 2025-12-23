@@ -27,7 +27,7 @@ jobs:
           - runner: macos-15
             command: curl https://qlty.sh | sh
           - runner: windows-latest
-            command: powershell -c "curl -fsSL https://qlty.sh | iex"
+            command: powershell -c "curl.exe -fsSL https://qlty.sh | iex"
     steps:
       - name: Install qlty and validate
         env:
