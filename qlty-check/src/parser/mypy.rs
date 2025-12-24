@@ -57,7 +57,7 @@ impl Parser for Mypy {
                 level: severity_to_level(&severity).into(),
                 rule_key,
                 location: Some(Location {
-                    path: file.clone(),
+                    path: file,
                     range: Some(Range {
                         start_line: line,
                         start_column,
