@@ -10,7 +10,7 @@ exports[`linter=mypy fixture=basic version=1.19.1 1`] = `
       "location": {
         "path": "basic.in.py",
         "range": {
-          "startColumn": 9,
+          "startColumn": 10,
           "startLine": 14,
         },
       },
@@ -48,7 +48,7 @@ def bad_generator() -> int:
       "location": {
         "path": "basic.in.py",
         "range": {
-          "startColumn": 9,
+          "startColumn": 10,
           "startLine": 13,
         },
       },
@@ -86,7 +86,7 @@ def bad_generator() -> int:",
       "location": {
         "path": "basic.in.py",
         "range": {
-          "startColumn": 9,
+          "startColumn": 10,
           "startLine": 16,
         },
       },
@@ -122,7 +122,7 @@ def bad_generator() -> int:
       "location": {
         "path": "basic.in.py",
         "range": {
-          "startColumn": 4,
+          "startColumn": 5,
           "startLine": 15,
         },
       },
@@ -159,6 +159,7 @@ def bad_generator() -> int:
       "location": {
         "path": "basic.in.py",
         "range": {
+          "startColumn": 1,
           "startLine": 23,
         },
       },

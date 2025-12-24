@@ -44,7 +44,7 @@ impl Parser for Mypy {
                 severity,
             } = message;
 
-            let start_column = positive_col(column);
+            let start_column = normalize_column(column);
             let rule_key = match code.as_deref() {
                 Some(code) if !code.trim().is_empty() => code.to_string(),
                 _ => "mypy_issue".to_string(),
@@ -72,11 +72,13 @@ impl Parser for Mypy {
     }
 }
 
-fn positive_col(column: i32) -> u32 {
+// Mypy columns in json output are 0-based, with -1 indicating no column.
+// convert to 1-based, with a minimum of 1.
+fn normalize_column(column: i32) -> u32 {
     if column > 0 {
-        column as u32
+        (column + 1) as u32
     } else {
-        0
+        1
     }
 }
 
@@ -116,6 +118,7 @@ mod test {
             path: basic.in.py
             range:
               startLine: 1
+              startColumn: 1
         - tool: mypy
           ruleKey: import-untyped
           message: "Library stubs not installed for \"google.protobuf\""
@@ -125,6 +128,7 @@ mod test {
             path: basic.in.py
             range:
               startLine: 1
+              startColumn: 1
         - tool: mypy
           ruleKey: arg-type
           message: "Argument 1 to \"greeting\" has incompatible type \"int\"; expected \"str\""
@@ -134,7 +138,7 @@ mod test {
             path: basic.in.py
             range:
               startLine: 13
-              startColumn: 9
+              startColumn: 10
         - tool: mypy
           ruleKey: arg-type
           message: "Argument 1 to \"greeting\" has incompatible type \"bytes\"; expected \"str\""
@@ -144,7 +148,7 @@ mod test {
             path: basic.in.py
             range:
               startLine: 14
-              startColumn: 9
+              startColumn: 10
         - tool: mypy
           ruleKey: func-returns-value
           message: "\"printer\" does not return a value (it only ever returns None)"
@@ -154,7 +158,7 @@ mod test {
             path: basic.in.py
             range:
               startLine: 15
-              startColumn: 4
+              startColumn: 5
         - tool: mypy
           ruleKey: assignment
           message: "Incompatible types in assignment (expression has type \"int\", variable has type \"str\")"
@@ -164,7 +168,7 @@ mod test {
             path: basic.in.py
             range:
               startLine: 16
-              startColumn: 9
+              startColumn: 10
         - tool: mypy
           ruleKey: misc
           message: "The return type of a generator function should be \"Generator\" or one of its supertypes"
@@ -174,6 +178,7 @@ mod test {
             path: basic.in.py
             range:
               startLine: 23
+              startColumn: 1
         "###);
     }
 }
