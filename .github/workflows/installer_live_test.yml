@@ -24,7 +24,7 @@ jobs:
             command: curl https://qlty.sh | sh
 
           - runner: windows-latest
-            command: powershell -c "curl.exe https://qlty.sh/install.ps1 | iex"
+            command: powershell -c "iwr -UseBasicParsing https://qlty.sh | iex"
     steps:
       - name: Install qlty and validate
         run: ${{ matrix.command }} && ~/.qlty/bin/qlty version --no-upgrade-check
