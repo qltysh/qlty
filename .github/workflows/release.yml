@@ -47,7 +47,7 @@ jobs:
           tag: v0.25.17
 
       - name: Fetch local artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v4
         with:
           run-id: ${{ inputs.workflow_run_id }}
           pattern: artifacts-*
@@ -96,7 +96,7 @@ jobs:
           role-session-name: ${{ vars.QLTY_RELEASE_AWS_ROLE_SESSION_NAME }}
           aws-region: ${{ vars.QLTY_RELEASE_AWS_REGION }}
       - name: Fetch local artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v4
         with:
           run-id: ${{ inputs.workflow_run_id }}
           pattern: artifacts-*
