@@ -1,0 +1,13 @@
+name: Test Installer via IWR in Windows CI
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/test_iwr.yml"
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - name: Install qlty and validate
+        run: powershell -c "iwr https://qlty.sh | iex"
+        shell: sh
