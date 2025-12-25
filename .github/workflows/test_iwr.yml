@@ -9,5 +9,5 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Install qlty and validate
-        run: powershell -c "iwr https://qlty.sh | iex"
+        run: powershell -c "iwr https://qlty.sh -UseBasicParsing | iex"
         shell: sh
