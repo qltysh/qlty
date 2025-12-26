@@ -16,6 +16,11 @@ impl Default for Jenkins {
     }
 }
 
+/*
+    From a Jenkins instance, navigate to $JENKINS_URL/env-vars.html/ to see the list of environment variables and a description of each.
+
+    E.g. https://jenkins.example.com:8080/env-vars.html
+*/
 impl CI for Jenkins {
     fn detect(&self) -> bool {
         self.env.var("JENKINS_URL").is_some()
@@ -37,6 +42,11 @@ impl CI for Jenkins {
         self.env.var("GIT_URL").unwrap_or_default()
     }
 
+    /*
+    Jenkins documentation on "CHANGE_BRANCH" (See $JENKINS_URL/env-vars.html). Note that "BRANCH_NAME" seems to be a bit of a shapeshifter and cannot be used reliably alone.
+
+    "For a multibranch project corresponding to some kind of change request, this will be set to the name of the actual head on the source control system which may or may not be different from BRANCH_NAME. For example in GitHub or Bitbucket this would have the name of the origin branch whereas BRANCH_NAME would be something like PR-24."
+    */
     fn branch(&self) -> String {
         self.env
             .var("CHANGE_BRANCH")
@@ -69,11 +79,11 @@ impl CI for Jenkins {
     }
 
     fn build_id(&self) -> String {
-        self.env.var("INVOCATION_ID").unwrap_or_default()
+        self.env.var("BUILD_ID").unwrap_or_default()
     }
 
     fn build_url(&self) -> String {
-        self.env.var("JOB_URL").unwrap_or_default()
+        self.env.var("BUILD_URL").unwrap_or_default()
     }
 }
 
@@ -213,9 +223,9 @@ mod test {
     #[test]
     fn build() {
         let mut env: HashMap<String, String> = HashMap::default();
-        env.insert("INVOCATION_ID".to_string(), "12345-abcde".to_string());
+        env.insert("BUILD_ID".to_string(), "12345-abcde".to_string());
         env.insert(
-            "JOB_URL".to_string(),
+            "BUILD_URL".to_string(),
             "https://jenkins.example.com/job/my-job/123/".to_string(),
         );
 
