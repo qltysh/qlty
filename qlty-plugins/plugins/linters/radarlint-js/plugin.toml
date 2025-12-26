@@ -31,7 +31,7 @@ output_format = "sarif"
 output_missing = "error"
 batch = true
 cache_results = true
-suggested = "targets"
+suggested = "never"
 
 [[plugins.definitions.radarlint-js.environment]]
 name = "PATH"
