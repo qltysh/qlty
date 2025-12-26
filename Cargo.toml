@@ -99,7 +99,7 @@ sentry-backtrace = "0.34.0"
 serde = { version = "1.0.228", features = ["derive", "rc"] }
 serde_json = { version = "1.0.145", features = ["preserve_order"] }
 serde-querystring = "0.3.0"
-serde_with = "3.14.1"
+serde_with = "3.16.1"
 serde_yaml = "0.9.34"
 serde_ignored = "0.1"
 serde-xml-rs = "0.6.0"
