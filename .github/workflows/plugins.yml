@@ -64,7 +64,7 @@ jobs:
         run: echo "CACHE_MONTH=$(date +'%Y-%m')" >> $GITHUB_ENV
 
       - name: Cache qlty tools
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v4
         with:
           path: ~/.qlty
           key: ${{ runner.os }}-qlty-${{ env.CACHE_MONTH }}-v1
