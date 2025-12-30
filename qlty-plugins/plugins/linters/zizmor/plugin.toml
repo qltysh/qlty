@@ -19,7 +19,7 @@ output_format = "sarif"
 output_category = "vulnerability"
 cache_results = true
 batch = true
-suggested = "config"
+suggested = "targets"
 output_missing = "parse"
 
 # Always run in offline mode by default
