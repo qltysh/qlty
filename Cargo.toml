@@ -29,7 +29,7 @@ cc = "1.2.17"
 chrono = "0.4.42"
 clap = { version = "4.5.48", features = ["derive", "wrap_help"] }
 clap_complete = "4.5.34"
-cli-table = "0.4.9"
+cli-table = "0.5.0"
 config = "0.15.18"
 console = "0.15.11"
 dialoguer = "0.11.0"
