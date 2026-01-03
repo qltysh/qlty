@@ -300,26 +300,45 @@ impl Transformer for PrependSrcDir {
     fn transform(&self, file_coverage: FileCoverage) -> Option<FileCoverage> {
         let current_path = Path::new(&file_coverage.path);
 
-        // If file already exists at an absolute path, don't transform
         if current_path.is_absolute() && current_path.exists() {
             return Some(file_coverage);
         }
 
-        // Try each src dir in order (first match wins)
-        for src_dir in &self.src_dirs {
-            // Convert to absolute for existence check
-            let abs_candidate = self.root.join(src_dir).join(&file_coverage.path);
-            if abs_candidate.exists() {
-                // Output relative path
-                let relative_path = src_dir.join(&file_coverage.path);
-                return Some(FileCoverage {
-                    path: path_to_string(&relative_path),
-                    ..file_coverage
-                });
-            }
+        let matching_dirs: Vec<&PathBuf> = self
+            .src_dirs
+            .iter()
+            .filter(|src_dir| {
+                let abs_candidate = self.root.join(src_dir).join(&file_coverage.path);
+                abs_candidate.exists()
+            })
+            .collect();
+
+        if matching_dirs.len() > 1 {
+            let locations: Vec<String> = matching_dirs
+                .iter()
+                .map(|dir| path_to_string(&dir.join(&file_coverage.path)))
+                .collect();
+
+            tracing::warn!(
+                "File '{}' found in multiple source directories: {}",
+                file_coverage.path,
+                locations.join(", ")
+            );
+            eprintln!(
+                "WARNING: File '{}' found in multiple source directories: {}",
+                file_coverage.path,
+                locations.join(", ")
+            );
         }
 
-        // No match found, keep original path
+        if let Some(src_dir) = matching_dirs.first() {
+            let relative_path = src_dir.join(&file_coverage.path);
+            return Some(FileCoverage {
+                path: path_to_string(&relative_path),
+                ..file_coverage
+            });
+        }
+
         Some(file_coverage)
     }
 
@@ -751,6 +770,31 @@ mod tests {
                 result.path == "src/main/java/App.java"
                     || result.path == "src\\main\\java\\App.java"
             );
+        }
+
+        #[test]
+        fn uses_first_dir_when_found_in_multiple() {
+            let temp = TempDir::new().unwrap();
+
+            let first_dir = temp.path().join("first");
+            let second_dir = temp.path().join("second");
+            fs::create_dir_all(&first_dir).unwrap();
+            fs::create_dir_all(&second_dir).unwrap();
+
+            fs::write(first_dir.join("App.java"), "class App {}").unwrap();
+            fs::write(second_dir.join("App.java"), "class App {}").unwrap();
+
+            let transformer = PrependSrcDir::new(
+                temp.path().to_path_buf(),
+                vec![PathBuf::from("first"), PathBuf::from("second")],
+            );
+            let file_coverage = FileCoverage {
+                path: "App.java".to_string(),
+                ..Default::default()
+            };
+
+            let result = transformer.transform(file_coverage).unwrap();
+            assert!(result.path == "first/App.java" || result.path == "first\\App.java");
         }
     }
 }
