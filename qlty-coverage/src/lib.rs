@@ -1,5 +1,4 @@
 pub mod ci;
-mod env;
 pub mod export;
 pub mod formats;
 pub mod git;

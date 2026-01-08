@@ -11,7 +11,7 @@ impl Whoami {
             Ok(token) => {
                 let client = Client::new(None, Some(token));
                 let json = client
-                    .get("/user")
+                    .get("/user")?
                     .call()?
                     .into_json::<serde_json::Value>()?;
 
