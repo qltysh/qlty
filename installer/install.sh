@@ -12,6 +12,7 @@ Color_Off=''
 # Regular Colors
 Red=''
 Green=''
+Yellow=''
 Dim='' # White
 
 # Bold
@@ -23,9 +24,10 @@ if [ -t 1 ]; then
 	Color_Off=$(printf '\033[0m') # Text Reset
 
 	# Regular Colors
-	Red=$(printf '\033[0;31m')   # Red
-	Green=$(printf '\033[0;32m') # Green
-	Dim=$(printf '\033[0;2m')    # White
+	Red=$(printf '\033[0;31m')    # Red
+	Green=$(printf '\033[0;32m')  # Green
+	Yellow=$(printf '\033[0;33m') # Yellow
+	Dim=$(printf '\033[0;2m')     # White
 
 	# Bold
 	Bold_Green=$(printf '\033[1;32m') # Bold Green
@@ -47,6 +49,74 @@ info_bold() {
 
 success() {
 	printf '%b%s %b\n' "${Green}" "$*" "${Color_Off}"
+}
+
+warn() {
+	printf '%bwarning%b: %s\n' "${Yellow}" "${Color_Off}" "$*" >&2
+}
+
+# Determines if we're in "strict CI mode" where verification failures are fatal
+is_strict_ci_mode() {
+	# Strict CI mode: CI is set AND gh is available AND GITHUB_TOKEN is set and not blank
+	[ -n "${CI:-}" ] && command -v gh >/dev/null 2>&1 && [ -n "${GITHUB_TOKEN:-}" ]
+}
+
+handle_verification_unavailable() {
+	# $1 = warning message
+	warn "$1"
+
+	if is_strict_ci_mode; then
+		error "Attestation verification is required in CI when gh CLI and GITHUB_TOKEN are available"
+	elif [ -t 0 ]; then
+		# Interactive mode: prompt user
+		printf '%b' "${Bold_White}"
+		printf 'Continue installation without attestation verification? [y/N] '
+		printf '%b' "${Color_Off}"
+		read -r response
+		case "$response" in
+		[yY] | [yY][eE][sS])
+			info "Continuing without attestation verification..."
+			;;
+		*)
+			error "Installation cancelled"
+			;;
+		esac
+	else
+		# Non-interactive mode: warn and continue
+		warn "Non-interactive mode: continuing without attestation verification"
+	fi
+}
+
+verify_attestation() {
+	if ! command -v gh >/dev/null 2>&1; then
+		handle_verification_unavailable "GitHub CLI (gh) is not installed - cannot verify attestation"
+		return 0
+	fi
+
+	if ! gh auth status >/dev/null 2>&1; then
+		warn "GitHub CLI is not logged in - cannot verify attestation"
+		warn "Run 'gh auth login' to authenticate"
+		handle_verification_unavailable "GitHub CLI authentication required"
+		return 0
+	fi
+
+	info "Verifying artifact attestation..."
+	verify_output=$(gh attestation verify "$download" -R qltysh/qlty 2>&1)
+	verify_exit_code=$?
+
+	if [ $verify_exit_code -eq 0 ]; then
+		success "Attestation verified successfully"
+		return 0
+	fi
+
+	# HTTP 404 means no attestation found for this artifact hash - always fatal
+	if echo "$verify_output" | grep -q "HTTP 404"; then
+		error "Attestation verification failed: no valid attestation found for this artifact"
+	fi
+
+	# Other errors (network issues, rate limits, etc.)
+	handle_verification_unavailable "Could not verify attestation: $verify_output"
+	return 0
 }
 
 command -v xz >/dev/null ||
@@ -161,6 +231,11 @@ elif command -v wget >/dev/null 2>&1; then
 		error "Failed to download qlty from \"$qlty_uri\""
 else
 	error 'curl or wget is required to install qlty'
+fi
+
+# Verify attestation if enabled
+if [ "${QLTY_VERIFY_ATTESTATIONS-}" = "true" ]; then
+	verify_attestation
 fi
 
 mkdir -p "$download_dir/qlty-$target" ||
