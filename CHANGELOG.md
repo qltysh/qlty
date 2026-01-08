@@ -1,5 +1,77 @@
 # Changelog
 
+## v0.605.0 (2025-12-26)
+
+### New
+
+- Add Jenkins CI environment detection (#2613)
+
+## v0.601.0 (2025-12-24)
+
+### Fixed
+
+- Use mypy JSON output for more consistent parsing (#2609)
+
+## v0.596.0 (2025-12-17)
+
+### Fixed
+
+- Update Ripgrep parser to use plugin name for custom plugin support (#2585)
+
+## v0.595.0 (2025-12-12)
+
+### New
+
+- Add support for Jacoco reports with group elements for multi-module projects (#2572)
+
+## v0.594.0 (2025-12-10)
+
+### New
+
+- Add xccov-json coverage format parser for Apple's xccov JSON format (#2568)
+
+## v0.593.0 (2025-12-04)
+
+### New
+
+- Add `--guess-java-src-dirs` flag to `coverage publish` for automatic Java/Kotlin source directory discovery (#2552)
+
+### Fixed
+
+- Handle JaCoCo reports with no packages (#2554)
+- Add file path context to coverage parsing errors (#2553)
+
+## v0.592.0 (2025-11-23)
+
+### Improved
+
+- Use cached GitHub API responses to reduce rate limit usage (#2522)
+
+## v0.591.0 (2025-11-21)
+
+### Improved
+
+- Add Bitrise CI environment detection (#2519)
+
+## v0.590.0 (2025-11-21)
+
+### New
+
+- Add attestations for installer scripts (#2514)
+
+### Fixed
+
+- Use HTTPS for URLs in code (#2513)
+- Improve add-prefix path handling in coverage transformer (#2501)
+- Support passing through env vars for NullTool (#2471)
+
+## v0.589.0 (2025-11-15)
+
+### Fixed
+
+- Move to new Ruby mechanism (#2507)
+- Allow lockfile issues for Brakeman (#2500)
+
 ## v0.586.0 (2025-10-28)
 
 ### Improved

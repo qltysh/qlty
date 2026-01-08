@@ -29,7 +29,7 @@ jobs:
 
       - name: Install Dependencies
         working-directory: qlty-plugins/plugins
-        run: npm install
+        run: npm install --ignore-scripts
 
       - name: 📦 Install qlty CLI
         run: "curl https://qlty.sh/install.sh | bash"
@@ -61,7 +61,7 @@ jobs:
             qlty-plugins/plugins/linters/**
 
       - name: Read Issues and Create in GitHub
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

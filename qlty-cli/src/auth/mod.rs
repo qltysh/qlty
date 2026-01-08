@@ -61,7 +61,7 @@ fn auth_via_browser() -> Result<String> {
 
     eprintln!(
         "Launching {} in your browser. Once you've logged in, come back to the terminal.",
-        style("http://qlty.sh/login").bold().green()
+        style("https://qlty.sh/login").bold().green()
     );
     thread::sleep(Duration::from_millis(500));
 

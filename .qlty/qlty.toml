@@ -50,3 +50,9 @@ file_patterns = ["qlty-cli/tests/**"]
 [[exclude]]
 plugins = ["markdownlint"]
 file_patterns = [".claude/**"]
+
+[[triage]]
+match.plugins = ["markdownlint"]
+match.rules = ["markdownlint:MD024"]
+match.file_patterns = ["CHANGELOG.md"]
+set.ignored = "true"

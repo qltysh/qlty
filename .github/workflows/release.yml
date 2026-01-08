@@ -15,7 +15,7 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       tag: v${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@7e473efe3cb98aa54f8d4bac15400b15fad77d94 # v2
         id: app-token
         with:
           app-id: ${{ vars.QLTY_APP_ID }}
@@ -47,7 +47,7 @@ jobs:
           tag: v0.25.17
 
       - name: Fetch local artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           run-id: ${{ inputs.workflow_run_id }}
           pattern: artifacts-*
@@ -96,7 +96,7 @@ jobs:
           role-session-name: ${{ vars.QLTY_RELEASE_AWS_ROLE_SESSION_NAME }}
           aws-region: ${{ vars.QLTY_RELEASE_AWS_REGION }}
       - name: Fetch local artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           run-id: ${{ inputs.workflow_run_id }}
           pattern: artifacts-*

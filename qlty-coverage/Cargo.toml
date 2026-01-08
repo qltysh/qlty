@@ -16,6 +16,7 @@ doctest = false
 [dependencies]
 anyhow.workspace = true
 clap.workspace = true
+ignore.workspace = true
 cli-table.workspace = true
 git2.workspace = true
 globset.workspace = true

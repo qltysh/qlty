@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.589.0"
+version = "0.606.0"
 authors = ["Qlty Software Inc."]
 description = "Code quality toolkit"
 documentation = "https://docs.qlty.sh"
@@ -48,7 +48,7 @@ glob = "0.3.3"
 globset = "0.4.15"
 http = "1.3.1"
 ignore = "0.4.22"
-indicatif = "0.17.11"
+indicatif = "0.18.3"
 indoc = "2.0.6"
 insta = { version = "1.43.2", features = ["yaml", "json", "redactions"] }
 itertools = "0.14.0"
@@ -70,20 +70,20 @@ pathdiff = "0.2.3"
 pbjson = "0.7.0"
 pbjson-types = "0.7.0"
 prost = "0.13.5"
-qlty-analysis = { version = "0.589.0", path = "qlty-analysis" }
-qlty-check = { version = "0.589.0", path = "qlty-check" }
-qlty-cloud = { version = "0.589.0", path = "qlty-cloud" }
-qlty-config = { version = "0.589.0", path = "qlty-config" }
-qlty-coverage = { version = "0.589.0", path = "qlty-coverage" }
-qlty-formats = { version = "0.589.0", path = "qlty-formats" }
-qlty-plugins = { version = "0.589.0", path = "qlty-plugins" }
-qlty-smells = { version = "0.589.0", path = "qlty-smells" }
-qlty-test-utilities = { version = "0.589.0", path = "qlty-test-utilities" }
-qlty-types = { version = "0.589.0", path = "qlty-types" }
+qlty-analysis = { version = "0.606.0", path = "qlty-analysis" }
+qlty-check = { version = "0.606.0", path = "qlty-check" }
+qlty-cloud = { version = "0.606.0", path = "qlty-cloud" }
+qlty-config = { version = "0.606.0", path = "qlty-config" }
+qlty-coverage = { version = "0.606.0", path = "qlty-coverage" }
+qlty-formats = { version = "0.606.0", path = "qlty-formats" }
+qlty-plugins = { version = "0.606.0", path = "qlty-plugins" }
+qlty-smells = { version = "0.606.0", path = "qlty-smells" }
+qlty-test-utilities = { version = "0.606.0", path = "qlty-test-utilities" }
+qlty-types = { version = "0.606.0", path = "qlty-types" }
 rand = "0.8.5"
 rayon = "1.11.0"
 regex = "1.12.2"
-rust-embed = { version = "8.7.2", features = ["include-exclude"] }
+rust-embed = { version = "8.9.0", features = ["include-exclude"] }
 rustls = "0.23.31"
 rustls-platform-verifier = "0.5.3"
 schemars = "1.0.4"
@@ -96,7 +96,7 @@ sentry = { version = "0.34.0", default-features = false, features = [
     "ureq",
 ] }
 sentry-backtrace = "0.34.0"
-serde = { version = "1.0.219", features = ["derive", "rc"] }
+serde = { version = "1.0.228", features = ["derive", "rc"] }
 serde_json = { version = "1.0.145", features = ["preserve_order"] }
 serde-querystring = "0.3.0"
 serde_with = "3.14.1"

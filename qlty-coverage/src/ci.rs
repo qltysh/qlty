@@ -1,16 +1,20 @@
+mod bitrise;
 mod buildkite;
 mod circleci;
 mod codefresh;
 mod github;
 mod gitlab;
+mod jenkins;
 mod semaphore;
 mod travisci;
 
+pub use bitrise::Bitrise;
 pub use buildkite::Buildkite;
 pub use circleci::CircleCI;
 pub use codefresh::Codefresh;
 pub use github::GitHub;
 pub use gitlab::GitLab;
+pub use jenkins::Jenkins;
 use qlty_types::tests::v1::CoverageMetadata;
 pub use semaphore::Semaphore;
 pub use travisci::TravisCI;
@@ -79,11 +83,13 @@ pub fn current() -> Option<Box<dyn CI>> {
 
 pub fn all() -> Vec<Box<dyn CI>> {
     vec![
+        Box::<Bitrise>::default(),
         Box::<Buildkite>::default(),
         Box::<CircleCI>::default(),
         Box::<Codefresh>::default(),
         Box::<GitHub>::default(),
         Box::<GitLab>::default(),
+        Box::<Jenkins>::default(),
         Box::<Semaphore>::default(),
         Box::<TravisCI>::default(),
     ]

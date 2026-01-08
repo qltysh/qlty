@@ -11,7 +11,7 @@ const USER_AGENT_PREFIX: &str = "qlty";
 const VERSION_CHECK_INTERVAL: u64 = 24 * 60 * 60; // 24 hours
 
 const DEFAULT_MANIFEST_LOCATION_URL: &str =
-    "http://qlty-releases.s3.amazonaws.com/qlty/latest/dist-manifest.json";
+    "https://qlty-releases.s3.amazonaws.com/qlty/latest/dist-manifest.json";
 const DEFAULT_INSTALL_URL: &str = "https://qlty.sh";
 
 #[derive(Debug, Clone)]

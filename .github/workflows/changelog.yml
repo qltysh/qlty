@@ -12,7 +12,7 @@ jobs:
       issues: read
       id-token: write
     steps:
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2
         id: app-token
         with:
           app-id: ${{ vars.QLTY_APP_ID }}
@@ -29,7 +29,7 @@ jobs:
 
       - name: Update CHANGELOG.md
         id: claude
-        uses: anthropics/claude-code-base-action@beta
+        uses: anthropics/claude-code-base-action@e8132bc5e637a42c27763fc757faa37e1ee43b34 # beta
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

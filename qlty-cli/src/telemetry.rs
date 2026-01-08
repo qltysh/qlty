@@ -6,6 +6,7 @@ use crate::telemetry::git::repository_identifier;
 use crate::{errors::CommandError, success::CommandSuccess};
 use anyhow::Result;
 use mac_address::get_mac_address;
+use qlty_config::Library;
 use sentry::integrations::contexts::utils::os_context;
 use sentry::integrations::panic::message_from_panic_info;
 use sentry::protocol::map::Entry;
@@ -155,7 +156,7 @@ impl Telemetry {
 
         let payload = serde_json::to_string(&event)?;
         let filename = format!("qlty-event-{}.json", message_id);
-        let tempfile_path = std::env::temp_dir().join(filename);
+        let tempfile_path = Library::global_tmp_root()?.join(filename);
 
         std::fs::write(&tempfile_path, payload)?;
         debug!(
@@ -204,7 +205,7 @@ impl Telemetry {
 
         let payload = serde_json::to_string(&event)?;
         let filename = format!("qlty-sentry-event-{}.json", event.event_id);
-        let tempfile_path = std::env::temp_dir().join(filename);
+        let tempfile_path = Library::global_tmp_root()?.join(filename);
 
         std::fs::write(&tempfile_path, payload)?;
         debug!(
