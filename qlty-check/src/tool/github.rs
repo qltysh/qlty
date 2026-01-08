@@ -439,7 +439,7 @@ impl GitHubReleaseTool {
     }
 
     fn get_release_assets(&self, url: &str) -> Result<Vec<serde_json::Value>> {
-        let mut request = http::get(url)
+        let mut request = http::get(url)?
             .set(
                 "User-Agent",
                 &format!("{}/{}", USER_AGENT_PREFIX, QLTY_VERSION),

@@ -1,7 +1,5 @@
-use crate::{
-    ci::CI,
-    env::{EnvSource, SystemEnv},
-};
+use crate::ci::CI;
+use qlty_config::env::{EnvSource, SystemEnv};
 use regex::Regex;
 use serde_json::Value;
 use std::fs;

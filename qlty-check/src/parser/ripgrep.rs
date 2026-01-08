@@ -53,7 +53,7 @@ struct Match {
 pub struct Ripgrep {}
 
 impl Parser for Ripgrep {
-    fn parse(&self, _plugin_name: &str, output: &str) -> Result<Vec<Issue>> {
+    fn parse(&self, plugin_name: &str, output: &str) -> Result<Vec<Issue>> {
         let mut issues = vec![];
 
         for ripgrep_output in output.trim().lines() {
@@ -91,7 +91,7 @@ impl Parser for Ripgrep {
             issues.extend(ripgrep_issue.data.submatches.iter().flat_map(|submatch| {
                 lines.text.iter().flat_map(|text| {
                     Some(Issue {
-                        tool: "ripgrep".into(),
+                        tool: plugin_name.into(),
                         message: text.trim().to_string(),
                         category: Category::Lint.into(),
                         level: Level::Note.into(),
