@@ -162,8 +162,9 @@ impl Fixer {
     fn try_fix(&self, path: &String, issues: &[Issue]) -> Result<Vec<Issue>> {
         let client = Client::new(None, Some(self.auth_token.clone()));
         let content = self.staging_area.read(path.clone().into())?;
+        let request = client.post("/fixes/batch")?;
         let response = API_THREAD_POOL.scope(|_| {
-            client.post("/fixes/batch").send_json(json!({
+            request.send_json(json!({
                 "issues": issues,
                 "files": [{ "path": path, "content": content }],
                 "options": {

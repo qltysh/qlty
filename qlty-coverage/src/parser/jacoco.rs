@@ -1,6 +1,6 @@
-use crate::env::{EnvSource, SystemEnv};
 use crate::Parser;
 use anyhow::{Context, Result};
+use qlty_config::env::{EnvSource, SystemEnv};
 use qlty_types::tests::v1::FileCoverage;
 use serde::Deserialize;
 use serde_xml_rs;

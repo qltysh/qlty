@@ -25,7 +25,7 @@ use tracing::{info, trace, warn};
 
 fn download_to_tempfile(url: &str) -> Result<File> {
     info!("Downloading {}", url);
-    let response = http::get(url)
+    let response = http::get(url)?
         .call()
         .with_context(|| format!("Error downloading file from {}", url))?;
 
@@ -147,7 +147,7 @@ impl Download {
 
         let url = self.url().with_context(|| "Failed to get download URL")?;
 
-        let response = http::get(&url)
+        let response = http::get(&url)?
             .call()
             .with_context(|| format!("Error downloading file from {url}"))?;
 
