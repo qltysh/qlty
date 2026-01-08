@@ -1,7 +1,7 @@
+use crate::env::{EnvSource, SystemEnv};
 use anyhow::{anyhow, Result};
 use once_cell::sync::Lazy;
 use rustls_platform_verifier::BuilderVerifierExt;
-use std::env;
 use std::sync::Arc;
 use url::Url;
 
@@ -17,18 +17,23 @@ static AGENT: Lazy<ureq::Agent> = Lazy::new(|| {
 });
 
 fn validate_https_url(url_str: &str) -> Result<()> {
-    let url = Url::parse(url_str)?;
+    validate_https_url_with_env(url_str, &SystemEnv)
+}
 
-    if url.scheme() == "https" {
+fn validate_https_url_with_env(url_str: &str, env: &dyn EnvSource) -> Result<()> {
+    let url = Url::parse(url_str)?;
+    let scheme = url.scheme();
+
+    if scheme == "https" {
         return Ok(());
     }
 
-    if env::var("QLTY_INSECURE_ALLOW_HTTP").ok() == Some("true".to_string()) {
+    if scheme == "http" && env.var("QLTY_INSECURE_ALLOW_HTTP") == Some("true".to_string()) {
         return Ok(());
     }
 
     Err(anyhow!(
-        "HTTP URLs are not allowed. Use HTTPS or set QLTY_INSECURE_ALLOW_HTTP=true for testing: {}",
+        "HTTP URLs are not allowed. Use HTTPS or set QLTY_INSECURE_ALLOW_HTTP=true for development/testing: {}",
         url_str
     ))
 }
@@ -51,14 +56,17 @@ pub fn put(url: &str) -> Result<ureq::Request> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::Once;
+    use std::collections::HashMap;
 
-    static INIT: Once = Once::new();
+    #[derive(Debug, Default)]
+    struct HashMapEnv {
+        inner: HashMap<String, String>,
+    }
 
-    fn setup_test_http() {
-        INIT.call_once(|| {
-            std::env::set_var("QLTY_INSECURE_ALLOW_HTTP", "true");
-        });
+    impl EnvSource for HashMapEnv {
+        fn var(&self, name: &str) -> Option<String> {
+            self.inner.get(name).cloned()
+        }
     }
 
     fn setup_crypto_provider() {
@@ -89,10 +97,50 @@ mod tests {
     }
 
     #[test]
-    fn test_get_rejects_invalid_url() {
-        setup_crypto_provider();
-        setup_test_http();
-        let result = get("not a url");
+    fn test_rejects_invalid_url() {
+        let env = HashMapEnv::default();
+        let result = validate_https_url_with_env("not a url", &env);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_https_allowed() {
+        let env = HashMapEnv::default();
+        let result = validate_https_url_with_env("https://example.com", &env);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_http_rejected_without_env_var() {
+        let env = HashMapEnv::default();
+        let result = validate_https_url_with_env("http://example.com", &env);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_http_allowed_with_env_var() {
+        let mut env = HashMapEnv::default();
+        env.inner
+            .insert("QLTY_INSECURE_ALLOW_HTTP".to_string(), "true".to_string());
+        let result = validate_https_url_with_env("http://example.com", &env);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_ftp_rejected_even_with_env_var() {
+        let mut env = HashMapEnv::default();
+        env.inner
+            .insert("QLTY_INSECURE_ALLOW_HTTP".to_string(), "true".to_string());
+        let result = validate_https_url_with_env("ftp://example.com", &env);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_file_rejected_even_with_env_var() {
+        let mut env = HashMapEnv::default();
+        env.inner
+            .insert("QLTY_INSECURE_ALLOW_HTTP".to_string(), "true".to_string());
+        let result = validate_https_url_with_env("file:///etc/passwd", &env);
         assert!(result.is_err());
     }
 }
