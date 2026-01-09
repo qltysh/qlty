@@ -14,12 +14,12 @@ pub enum ExclusionStrategy {
 }
 
 #[derive(Debug)]
-pub struct JavaSrcDirFinder {
+pub struct SrcDirFinder {
     root: PathBuf,
     exclusion_strategy: ExclusionStrategy,
 }
 
-impl JavaSrcDirFinder {
+impl SrcDirFinder {
     pub fn new(root: PathBuf, exclusion_strategy: ExclusionStrategy) -> Self {
         Self {
             root,
@@ -151,21 +151,18 @@ mod tests {
 
     #[test]
     fn split_into_words_handles_simple() {
-        assert_eq!(JavaSrcDirFinder::split_into_words("test"), vec!["test"]);
-        assert_eq!(
-            JavaSrcDirFinder::split_into_words("contest"),
-            vec!["contest"]
-        );
+        assert_eq!(SrcDirFinder::split_into_words("test"), vec!["test"]);
+        assert_eq!(SrcDirFinder::split_into_words("contest"), vec!["contest"]);
     }
 
     #[test]
     fn split_into_words_handles_dashes() {
         assert_eq!(
-            JavaSrcDirFinder::split_into_words("my-test"),
+            SrcDirFinder::split_into_words("my-test"),
             vec!["my", "test"]
         );
         assert_eq!(
-            JavaSrcDirFinder::split_into_words("test-thing"),
+            SrcDirFinder::split_into_words("test-thing"),
             vec!["test", "thing"]
         );
     }
@@ -173,11 +170,11 @@ mod tests {
     #[test]
     fn split_into_words_handles_underscores() {
         assert_eq!(
-            JavaSrcDirFinder::split_into_words("my_test"),
+            SrcDirFinder::split_into_words("my_test"),
             vec!["my", "test"]
         );
         assert_eq!(
-            JavaSrcDirFinder::split_into_words("test_thing"),
+            SrcDirFinder::split_into_words("test_thing"),
             vec!["test", "thing"]
         );
     }
@@ -185,42 +182,30 @@ mod tests {
     #[test]
     fn split_into_words_handles_camel_case() {
         assert_eq!(
-            JavaSrcDirFinder::split_into_words("testSomething"),
+            SrcDirFinder::split_into_words("testSomething"),
             vec!["test", "something"]
         );
         assert_eq!(
-            JavaSrcDirFinder::split_into_words("somethingTest"),
+            SrcDirFinder::split_into_words("somethingTest"),
             vec!["something", "test"]
         );
+        assert_eq!(SrcDirFinder::split_into_words("MyTest"), vec!["my", "test"]);
         assert_eq!(
-            JavaSrcDirFinder::split_into_words("MyTest"),
-            vec!["my", "test"]
-        );
-        assert_eq!(
-            JavaSrcDirFinder::split_into_words("androidTest"),
+            SrcDirFinder::split_into_words("androidTest"),
             vec!["android", "test"]
         );
     }
 
     #[test]
     fn split_into_words_preserves_non_test_words() {
-        assert_eq!(
-            JavaSrcDirFinder::split_into_words("contest"),
-            vec!["contest"]
-        );
-        assert_eq!(
-            JavaSrcDirFinder::split_into_words("protest"),
-            vec!["protest"]
-        );
-        assert_eq!(
-            JavaSrcDirFinder::split_into_words("testify"),
-            vec!["testify"]
-        );
+        assert_eq!(SrcDirFinder::split_into_words("contest"), vec!["contest"]);
+        assert_eq!(SrcDirFinder::split_into_words("protest"), vec!["protest"]);
+        assert_eq!(SrcDirFinder::split_into_words("testify"), vec!["testify"]);
     }
 
     #[test]
     fn matches_default_exclusions_excludes_test_variants() {
-        let finder = JavaSrcDirFinder::new(PathBuf::new(), ExclusionStrategy::DefaultHeuristics);
+        let finder = SrcDirFinder::new(PathBuf::new(), ExclusionStrategy::DefaultHeuristics);
 
         assert!(finder.matches_default_exclusions("test/src/main/java"));
         assert!(finder.matches_default_exclusions("my-test/src/main/java"));
@@ -233,7 +218,7 @@ mod tests {
 
     #[test]
     fn matches_default_exclusions_allows_non_test_words() {
-        let finder = JavaSrcDirFinder::new(PathBuf::new(), ExclusionStrategy::DefaultHeuristics);
+        let finder = SrcDirFinder::new(PathBuf::new(), ExclusionStrategy::DefaultHeuristics);
 
         assert!(!finder.matches_default_exclusions("contest/src/main/java"));
         assert!(!finder.matches_default_exclusions("protest/src/main/java"));
@@ -244,7 +229,7 @@ mod tests {
 
     #[test]
     fn matches_default_exclusions_handles_node_modules() {
-        let finder = JavaSrcDirFinder::new(PathBuf::new(), ExclusionStrategy::DefaultHeuristics);
+        let finder = SrcDirFinder::new(PathBuf::new(), ExclusionStrategy::DefaultHeuristics);
 
         assert!(finder.matches_default_exclusions("node_modules/pkg/src/main/java"));
         assert!(!finder.matches_default_exclusions("my_modules/src/main/java"));
@@ -252,7 +237,7 @@ mod tests {
 
     #[test]
     fn matches_default_exclusions_handles_build() {
-        let finder = JavaSrcDirFinder::new(PathBuf::new(), ExclusionStrategy::DefaultHeuristics);
+        let finder = SrcDirFinder::new(PathBuf::new(), ExclusionStrategy::DefaultHeuristics);
 
         assert!(finder.matches_default_exclusions("build/src/main/java"));
         assert!(finder.matches_default_exclusions("build-output/src/main/java"));
@@ -262,59 +247,57 @@ mod tests {
 
     #[test]
     fn is_java_src_dir_matches_maven_java() {
-        assert!(JavaSrcDirFinder::is_java_src_dir("src/main/java"));
-        assert!(JavaSrcDirFinder::is_java_src_dir("app/src/main/java"));
-        assert!(JavaSrcDirFinder::is_java_src_dir(
+        assert!(SrcDirFinder::is_java_src_dir("src/main/java"));
+        assert!(SrcDirFinder::is_java_src_dir("app/src/main/java"));
+        assert!(SrcDirFinder::is_java_src_dir(
             "project/module/src/main/java"
         ));
     }
 
     #[test]
     fn is_java_src_dir_matches_maven_kotlin() {
-        assert!(JavaSrcDirFinder::is_java_src_dir("src/main/kotlin"));
-        assert!(JavaSrcDirFinder::is_java_src_dir("app/src/main/kotlin"));
+        assert!(SrcDirFinder::is_java_src_dir("src/main/kotlin"));
+        assert!(SrcDirFinder::is_java_src_dir("app/src/main/kotlin"));
     }
 
     #[test]
     fn is_java_src_dir_matches_gradle_variants() {
-        assert!(JavaSrcDirFinder::is_java_src_dir("src/debug/java"));
-        assert!(JavaSrcDirFinder::is_java_src_dir("src/release/kotlin"));
-        assert!(JavaSrcDirFinder::is_java_src_dir("app/src/production/java"));
+        assert!(SrcDirFinder::is_java_src_dir("src/debug/java"));
+        assert!(SrcDirFinder::is_java_src_dir("src/release/kotlin"));
+        assert!(SrcDirFinder::is_java_src_dir("app/src/production/java"));
     }
 
     #[test]
     fn is_java_src_dir_rejects_too_few_components() {
-        assert!(!JavaSrcDirFinder::is_java_src_dir("java"));
-        assert!(!JavaSrcDirFinder::is_java_src_dir("main/java"));
-        assert!(!JavaSrcDirFinder::is_java_src_dir(""));
+        assert!(!SrcDirFinder::is_java_src_dir("java"));
+        assert!(!SrcDirFinder::is_java_src_dir("main/java"));
+        assert!(!SrcDirFinder::is_java_src_dir(""));
     }
 
     #[test]
     fn is_java_src_dir_rejects_wrong_structure() {
-        assert!(!JavaSrcDirFinder::is_java_src_dir("app/main/java"));
-        assert!(!JavaSrcDirFinder::is_java_src_dir("src/java"));
-        assert!(!JavaSrcDirFinder::is_java_src_dir("source/main/java"));
+        assert!(!SrcDirFinder::is_java_src_dir("app/main/java"));
+        assert!(!SrcDirFinder::is_java_src_dir("src/java"));
+        assert!(!SrcDirFinder::is_java_src_dir("source/main/java"));
     }
 
     #[test]
     fn is_java_src_dir_rejects_subdirectories_of_source_roots() {
-        assert!(!JavaSrcDirFinder::is_java_src_dir("src/main/java/com"));
-        assert!(!JavaSrcDirFinder::is_java_src_dir(
-            "src/main/java/com/example"
-        ));
-        assert!(!JavaSrcDirFinder::is_java_src_dir(
+        assert!(!SrcDirFinder::is_java_src_dir("src/main/java/com"));
+        assert!(!SrcDirFinder::is_java_src_dir("src/main/java/com/example"));
+        assert!(!SrcDirFinder::is_java_src_dir(
             "src/main/java/com/example/kotlin"
         ));
-        assert!(!JavaSrcDirFinder::is_java_src_dir(
+        assert!(!SrcDirFinder::is_java_src_dir(
             "app/src/main/java/com/gusto/foundation/async/kotlin"
         ));
     }
 
     #[test]
     fn is_java_src_dir_rejects_non_java_kotlin_endings() {
-        assert!(!JavaSrcDirFinder::is_java_src_dir("src/main/scala"));
-        assert!(!JavaSrcDirFinder::is_java_src_dir("src/main/groovy"));
-        assert!(!JavaSrcDirFinder::is_java_src_dir("src/main/resources"));
+        assert!(!SrcDirFinder::is_java_src_dir("src/main/scala"));
+        assert!(!SrcDirFinder::is_java_src_dir("src/main/groovy"));
+        assert!(!SrcDirFinder::is_java_src_dir("src/main/resources"));
     }
 
     #[test]
@@ -325,8 +308,7 @@ mod tests {
         create_dir(root, "src/main/java/com/example");
         create_dir(root, "src/main/kotlin/com/example");
 
-        let finder =
-            JavaSrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
+        let finder = SrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
         let dirs = finder.find().unwrap();
 
         assert_eq!(dirs.len(), 2);
@@ -347,8 +329,7 @@ mod tests {
         create_dir(root, "lib/src/debug/java/com/example");
         create_dir(root, "lib/src/release/kotlin/com/example");
 
-        let finder =
-            JavaSrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
+        let finder = SrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
         let dirs = finder.find().unwrap();
 
         assert_eq!(dirs.len(), 3);
@@ -362,8 +343,7 @@ mod tests {
         create_dir(root, "src/main/java/com/example");
         create_dir(root, "node_modules/some-package/src/main/java");
 
-        let finder =
-            JavaSrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
+        let finder = SrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
         let dirs = finder.find().unwrap();
 
         assert_eq!(dirs.len(), 1);
@@ -380,8 +360,7 @@ mod tests {
         create_dir(root, "test/src/main/java/com/example");
         create_dir(root, "build/src/main/java/com/example");
 
-        let finder =
-            JavaSrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
+        let finder = SrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
         let dirs = finder.find().unwrap();
 
         assert_eq!(dirs.len(), 1);
@@ -396,7 +375,7 @@ mod tests {
         create_dir(root, "app/src/main/java/com/example");
         create_dir(root, "legacy/src/main/java/com/example");
 
-        let finder = JavaSrcDirFinder::new(
+        let finder = SrcDirFinder::new(
             root.to_path_buf(),
             ExclusionStrategy::UserDefined(vec!["legacy/**".to_string()]),
         );
@@ -417,8 +396,7 @@ mod tests {
         create_dir(root, "src/lib");
         create_dir(root, "app/code");
 
-        let finder =
-            JavaSrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
+        let finder = SrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
         let dirs = finder.find().unwrap();
 
         assert!(dirs.is_empty());
@@ -433,8 +411,7 @@ mod tests {
         create_dir(root, "project-b/src/main/kotlin/com/b");
         create_dir(root, "project-c/module/src/main/java/com/c");
 
-        let finder =
-            JavaSrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
+        let finder = SrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
         let dirs = finder.find().unwrap();
 
         assert_eq!(dirs.len(), 3);
@@ -447,8 +424,7 @@ mod tests {
 
         create_dir(root, "app/src/main/java/com/example/kotlin");
 
-        let finder =
-            JavaSrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
+        let finder = SrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
         let dirs = finder.find().unwrap();
 
         assert_eq!(dirs.len(), 1);
@@ -463,8 +439,7 @@ mod tests {
         create_dir(root, "src/main/java/com/example");
         create_dir(root, "contest/src/main/java/com/example");
 
-        let finder =
-            JavaSrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
+        let finder = SrcDirFinder::new(root.to_path_buf(), ExclusionStrategy::DefaultHeuristics);
         let dirs = finder.find().unwrap();
 
         assert_eq!(dirs.len(), 2);
