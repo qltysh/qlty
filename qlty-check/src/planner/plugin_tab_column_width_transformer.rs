@@ -1,4 +1,4 @@
-use crate::source_reader::SourceReader;
+use qlty_analysis::source_reader::SourceReader;
 use qlty_config::issue_transformer::IssueTransformer;
 use qlty_types::analysis::v1::Issue;
 use std::sync::Arc;
@@ -83,11 +83,10 @@ impl PluginTabColumnWidthTransformer {
 
 #[cfg(test)]
 mod test {
+    use qlty_analysis::source_reader::SourceReaderFs;
+
     use super::*;
-    use crate::{
-        parser::{shellcheck::Shellcheck, Parser},
-        source_reader::SourceReaderFs,
-    };
+    use crate::parser::{shellcheck::Shellcheck, Parser};
 
     fn transformed_issues(
         issues: Vec<Issue>,
