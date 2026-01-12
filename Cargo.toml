@@ -146,7 +146,7 @@ walkdir = "2.5.0"
 webbrowser = "1.0.4"
 whoami = "1.5.2"
 xml-rs = "0.8.27"
-zip = "6.0.0"
+zip = "7.0.0"
 
 # Config for 'cargo dist'
 [workspace.metadata.dist]
