@@ -108,7 +108,7 @@ shell-escape = "0.1.5"
 similar = { version = "2.7.0", features = ["inline"] }
 supports-color = "3.0.1"
 syntect = "5.2.0"
-sysinfo = "0.31.4"
+sysinfo = "0.37.2"
 tabwriter = { version = "1.4.0", features = ["ansi_formatting"] }
 tar = "0.4.44"
 tempfile = "3.18.0"
