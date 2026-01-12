@@ -40,7 +40,7 @@ flate2 = "1.1.4"
 fork = "0.2.0"
 fs_extra = "=1.3.0"
 fslock = "0.2.1"
-git2 = { version = "0.19.0", features = [
+git2 = { version = "0.20.3", features = [
     "vendored-libgit2",
     "vendored-openssl",
 ] }
