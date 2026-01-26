@@ -86,7 +86,7 @@ regex = "1.12.2"
 rust-embed = { version = "8.9.0", features = ["include-exclude"] }
 rustls = "0.23.31"
 rustls-platform-verifier = "0.5.3"
-schemars = "1.0.4"
+schemars = "1.2.0"
 semver = "1.0.27"
 sentry = { version = "0.34.0", default-features = false, features = [
     "backtrace",
