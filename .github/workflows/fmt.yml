@@ -18,7 +18,7 @@ jobs:
           app-id: ${{ vars.QLTY_APP_ID }}
           private-key: ${{ secrets.QLTY_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: ${{ github.head_ref }}
       - uses: qltysh/qlty-action/fmt@a19242102d17e497f437d7466aa01b528537e899
