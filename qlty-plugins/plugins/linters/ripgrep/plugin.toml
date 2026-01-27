@@ -33,8 +33,8 @@ strip_components = 1
 [plugins.definitions.ripgrep]
 releases = ["ripgrep"]
 file_types = ["ripgrep"]
-latest_version = "14.1.1"
-known_good_version = "14.1.1"
+latest_version = "15.1.0"
+known_good_version = "15.1.0"
 version_command = "rg --version"
 config_files = [".ripgreprc"]
 description = "Line-oriented search tool"
