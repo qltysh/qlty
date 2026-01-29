@@ -1,5 +1,6 @@
 pub mod allocator;
 mod arguments;
+mod attestation;
 pub mod auth;
 mod commands;
 mod errors;

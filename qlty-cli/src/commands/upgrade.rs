@@ -21,6 +21,10 @@ pub struct Upgrade {
     #[arg(long)]
     dry_run: bool,
 
+    /// Verify SLSA provenance attestation before installing.
+    #[arg(long, env = "QLTY_VERIFY_ATTESTATIONS")]
+    verify_attestations: bool,
+
     #[command(subcommand)]
     command: Option<Commands>,
 }
@@ -60,7 +64,7 @@ impl Upgrade {
             return CommandSuccess::ok();
         }
 
-        release.run_upgrade_command()?;
+        release.run_upgrade_command(self.verify_attestations)?;
 
         SourceUpgrade::new().run().ok();
 
