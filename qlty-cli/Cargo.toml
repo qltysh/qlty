@@ -89,7 +89,6 @@ ureq.workspace = true
 webbrowser.workspace = true
 whoami.workspace = true
 lzma-rs.workspace = true
-sha2.workspace = true
 tar.workspace = true
 tempfile.workspace = true
 

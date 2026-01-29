@@ -2750,7 +2750,6 @@ dependencies = [
  "serde-querystring",
  "serde_json",
  "serde_yaml",
- "sha2",
  "similar",
  "supports-color",
  "syntect",

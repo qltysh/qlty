@@ -236,7 +236,7 @@ fn detect_target() -> Result<&'static str> {
 }
 
 fn download_to_file(url: &str, path: &Path) -> Result<()> {
-    let response = http::get(url)
+    let response = http::get(url)?
         .call()
         .with_context(|| format!("Failed to download from {}", url))?;
 
