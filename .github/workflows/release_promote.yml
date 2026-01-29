@@ -13,7 +13,6 @@ on:
         type: string
 permissions:
   contents: read
-  "id-token": "write"
 jobs:
   test:
     name: ${{ matrix.runner }}
@@ -35,6 +34,9 @@ jobs:
         run: ${{ matrix.command }} && ~/.qlty/bin/qlty version --no-upgrade-check
         shell: sh
   promote:
+    permissions:
+      contents: read
+      id-token: write
     needs: test
     runs-on: ubuntu-latest
     steps:

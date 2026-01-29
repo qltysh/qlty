@@ -20,12 +20,14 @@ env:
 
 permissions:
   contents: read
-  packages: write
-  attestations: write
-  id-token: write
 
 jobs:
   build:
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
@@ -107,6 +109,10 @@ jobs:
           retention-days: 1
 
   merge:
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'pull_request' }}
     needs:

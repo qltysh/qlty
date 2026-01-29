@@ -15,10 +15,12 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
-  attestations: write
-  id-token: write
 jobs:
   compile:
+    permissions:
+      contents: read
+      attestations: write
+      id-token: write
     if: github.event.commits && github.event.commits[0] && github.event.commits[0].author.name == 'qlty-releases[bot]' && startsWith(github.event.commits[0].message, 'Release ')
     strategy:
       fail-fast: false

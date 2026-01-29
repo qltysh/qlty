@@ -7,14 +7,15 @@ on:
     paths:
       - installer/install.*
 permissions:
-  actions: write
-  attestations: write
   contents: read
-  id-token: write
 jobs:
   test:
     uses: ./.github/workflows/installer_test.yml
   release:
+    permissions:
+      contents: read
+      attestations: write
+      id-token: write
     needs: test
     runs-on: ubuntu-latest
     steps:
