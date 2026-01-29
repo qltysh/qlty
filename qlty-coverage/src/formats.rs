@@ -17,6 +17,7 @@ pub enum Formats {
     Lcov,
     Jacoco,
     Qlty,
+    XccovJson,
 }
 
 impl std::fmt::Display for Formats {
@@ -30,6 +31,7 @@ impl std::fmt::Display for Formats {
             Formats::Lcov => write!(f, "lcov"),
             Formats::Jacoco => write!(f, "jacoco"),
             Formats::Qlty => write!(f, "qlty"),
+            Formats::XccovJson => write!(f, "xccov-json"),
         }
     }
 }
@@ -81,6 +83,7 @@ impl FromStr for Formats {
             "lcov" => Ok(Formats::Lcov),
             "jacoco" => Ok(Formats::Jacoco),
             "qlty" => Ok(Formats::Qlty),
+            "xccov-json" => Ok(Formats::XccovJson),
             _ => bail!("Unsupported coverage report format: {}", s),
         }
     }
@@ -96,6 +99,7 @@ pub fn parser_for(&format: &Formats) -> Box<dyn Parser> {
         Formats::Lcov => Box::new(parser::Lcov::new()),
         Formats::Jacoco => Box::new(parser::Jacoco::new()),
         Formats::Qlty => Box::new(parser::Qlty::new()),
+        Formats::XccovJson => Box::new(parser::XccovJson::new()),
     }
 }
 

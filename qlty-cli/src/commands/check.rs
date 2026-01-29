@@ -19,11 +19,23 @@ use std::io::{self, Read};
 use std::path::PathBuf;
 use std::thread;
 use tracing::debug;
+use tracing::info;
 use tracing::warn;
 
 static LOOKING_GLASS: Emoji<'_, '_> = Emoji("🔍  ", "");
 static THINKING: Emoji<'_, '_> = Emoji("🤔  ", "");
 static FORMATTING: Emoji<'_, '_> = Emoji("📝  ", "");
+
+/// Represents stdin input for Git hook upstream computation.
+///
+/// This is separate from `--trigger=pre-push` which can be used manually without stdin.
+/// `--upstream-from-pre-push` specifically means "read upstream from Git hook stdin".
+enum GitHookStdin {
+    /// Not reading upstream from Git hook stdin
+    None,
+    /// Git hook stdin content (already validated as non-empty)
+    Content(String),
+}
 
 #[derive(Args, Clone, Debug)]
 pub struct Check {
@@ -136,7 +148,19 @@ impl Check {
         let workspace = Workspace::require_initialized()?;
         workspace.fetch_sources()?;
 
-        let settings = self.build_settings(&workspace)?;
+        let git_hook_stdin = if self.upstream_from_pre_push {
+            match Self::read_pre_push_stdin()? {
+                Some(content) => GitHookStdin::Content(content),
+                None => {
+                    info!("No commits to push, skipping checks");
+                    return CommandSuccess::ok();
+                }
+            }
+        } else {
+            GitHookStdin::None
+        };
+
+        let settings = self.build_settings(&workspace, git_hook_stdin)?;
 
         let mut counter = 0;
         let mut dirty = true;
@@ -282,7 +306,11 @@ impl Check {
         Ok(())
     }
 
-    fn build_settings(&self, workspace: &Workspace) -> Result<Settings> {
+    fn build_settings(
+        &self,
+        workspace: &Workspace,
+        git_hook_stdin: GitHookStdin,
+    ) -> Result<Settings> {
         let mut settings = Settings::default();
         settings.root = Workspace::assert_within_git_directory()?;
         settings.verbose = self.verbose as usize;
@@ -295,7 +323,7 @@ impl Check {
         settings.progress = !self.no_progress;
         settings.formatters = !self.no_formatters;
         settings.filters = CheckFilter::from_optional_list(self.filter.clone());
-        settings.upstream = self.compute_upstream(workspace)?;
+        settings.upstream = self.compute_upstream(workspace, git_hook_stdin)?;
         settings.level = self.level;
         settings.fail_level = if self.no_fail {
             None
@@ -322,43 +350,56 @@ impl Check {
         Ok(settings)
     }
 
-    fn compute_upstream(&self, workspace: &Workspace) -> Result<Option<String>> {
-        if self.upstream_from_pre_push {
-            let mut buffer = String::new();
-            io::stdin().read_to_string(&mut buffer)?;
+    fn compute_upstream(
+        &self,
+        workspace: &Workspace,
+        git_hook_stdin: GitHookStdin,
+    ) -> Result<Option<String>> {
+        match git_hook_stdin {
+            GitHookStdin::None => Ok(self.upstream.clone()),
+            GitHookStdin::Content(buffer) => {
+                // https://git-scm.com/docs/githooks#_pre_push
+                //
+                // <local-ref> SP <local-object-name> SP <remote-ref> SP <remote-object-name> LF
+                let parts: Vec<&str> = buffer.split_whitespace().collect();
+                let remote_commit_id = parts.get(3).unwrap_or(&"");
 
-            // https://git-scm.com/docs/githooks#_pre_push
-            //
-            // <local-ref> SP <local-object-name> SP <remote-ref> SP <remote-object-name> LF
-            let parts: Vec<&str> = buffer.split_whitespace().collect();
-            let remote_commit_id = parts.get(3).unwrap_or(&"");
+                if remote_commit_id.is_empty() {
+                    bail!("Missing remote commit ID from Git pre-push input")
+                }
 
-            if remote_commit_id.is_empty() {
-                bail!("Missing remote commit ID from Git pre-push input")
-            }
-
-            // When pushing a new branch, the remote object name is 40 zeros.
-            // In this case, revert to the upstream branch.
-            if remote_commit_id.chars().all(|c| c == '0') {
-                Ok(self.upstream.clone())
-            } else {
-                // Check if the remote commit ID exists in the repository
-                let remote_commit_present_locally =
-                    workspace.repo()?.revparse_single(remote_commit_id).is_ok();
-
-                // If the remote commit ID is not present locally, revert to the upstream branch.
-                if remote_commit_present_locally {
-                    Ok(Some(remote_commit_id.to_string()))
-                } else {
-                    warn!(
-                        "Remote commit ID {} is not present locally, reverting to upstream branch",
-                        remote_commit_id
-                    );
+                // When pushing a new branch, the remote object name is 40 zeros.
+                // In this case, revert to the upstream branch.
+                if remote_commit_id.chars().all(|c| c == '0') {
                     Ok(self.upstream.clone())
+                } else {
+                    // Check if the remote commit ID exists in the repository
+                    let remote_commit_present_locally =
+                        workspace.repo()?.revparse_single(remote_commit_id).is_ok();
+
+                    // If the remote commit ID is not present locally, revert to the upstream branch.
+                    if remote_commit_present_locally {
+                        Ok(Some(remote_commit_id.to_string()))
+                    } else {
+                        warn!(
+                            "Remote commit ID {} is not present locally, reverting to upstream branch",
+                            remote_commit_id
+                        );
+                        Ok(self.upstream.clone())
+                    }
                 }
             }
+        }
+    }
+
+    fn read_pre_push_stdin() -> Result<Option<String>> {
+        let mut buffer = String::new();
+        io::stdin().read_to_string(&mut buffer)?;
+
+        if buffer.trim().is_empty() {
+            Ok(None)
         } else {
-            Ok(self.upstream.clone())
+            Ok(Some(buffer))
         }
     }
 

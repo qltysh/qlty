@@ -16,7 +16,7 @@ A "Code Quality Service" is a commercial offering that allows third parties (oth
 
 A "Artificial Intelligence Coding Service" is a commercial offering that allows third parties (other than your employees and contractors) to generate, edit, or review software code using machine learning or large language model technology.
 
-Change Date: 2028-01-22
+Change Date: 2028-12-10
 
 Change License: GNU General Public License, Version 3
 

@@ -19,3 +19,6 @@ from source import Bar
 
 def bad_foo(bar: Bar) -> str:
   return bar.a + bar.b
+
+def bad_generator() -> int:
+    yield 1

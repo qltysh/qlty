@@ -8,7 +8,7 @@ strip_components = 0
 [plugins.definitions.dotenv-linter]
 releases = ["dotenv-linter"]
 file_types = ["dotenv"]
-latest_version = "3.3.0"
+latest_version = "4.0.0"
 known_good_version = "3.3.0"
 version_command = "dotenv-linter --version"
 description = "Dotenv file linter"
