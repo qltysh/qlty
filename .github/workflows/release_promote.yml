@@ -47,6 +47,7 @@ jobs:
       - name: Upload to S3
         run: |
           VERSION="${INPUTS_VERSION}"
-          aws s3 cp --recursive ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/v${VERSION#v}/ ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/latest/
+          aws s3 cp --recursive ${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/v${VERSION#v}/ ${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/latest/
         env:
           INPUTS_VERSION: ${{ inputs.version }}
+          VARS_QLTY_RELEASE_AWS_S3_DESTINATION: ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}

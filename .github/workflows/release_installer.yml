@@ -22,6 +22,7 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Generate attestations for installer scripts
         uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a
         with:
@@ -37,5 +38,7 @@ jobs:
       - name: Upload to S3
         working-directory: installer
         run: |
-          aws s3 cp install.ps1 ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/installer/
-          aws s3 cp install.sh ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/installer/
+          aws s3 cp install.ps1 ${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/installer/
+          aws s3 cp install.sh ${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/installer/
+        env:
+          VARS_QLTY_RELEASE_AWS_S3_DESTINATION: ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}
