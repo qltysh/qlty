@@ -46,5 +46,7 @@ jobs:
           aws-region: ${{ vars.QLTY_RELEASE_AWS_REGION }}
       - name: Upload to S3
         run: |
-          VERSION="${{ inputs.version }}"
+          VERSION="${INPUTS_VERSION}"
           aws s3 cp --recursive ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/v${VERSION#v}/ ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/latest/
+        env:
+          INPUTS_VERSION: ${{ inputs.version }}
