@@ -18,6 +18,7 @@ const VERSION_CHECK_INTERVAL: u64 = 24 * 60 * 60; // 24 hours
 const DEFAULT_MANIFEST_LOCATION_URL: &str =
     "https://qlty-releases.s3.amazonaws.com/qlty/latest/dist-manifest.json";
 const DEFAULT_INSTALL_URL: &str = "https://qlty.sh";
+const RELEASES_URL: &str = "https://qlty-releases.s3.amazonaws.com/qlty";
 
 #[derive(Debug, Clone)]
 pub struct QltyRelease {
@@ -105,10 +106,7 @@ impl QltyRelease {
         };
 
         let response = http::get(&url)?
-            .set(
-                "User-Agent",
-                &format!("{}/{}", USER_AGENT_PREFIX, QLTY_VERSION),
-            )
+            .set("User-Agent", &format!("{USER_AGENT_PREFIX}/{QLTY_VERSION}"))
             .call()
             .with_context(|| format!("Unable to get URL: {}", &url))?;
 
@@ -158,12 +156,9 @@ impl QltyRelease {
     }
 
     fn run_verified_upgrade(&self) -> Result<()> {
-        let target = detect_target()?;
-        let archive_name = format!("qlty-{}.tar.xz", target);
-        let url = format!(
-            "https://qlty-releases.s3.amazonaws.com/qlty/v{}/{}",
-            self.version, archive_name
-        );
+        let target = detect_target();
+        let archive_name = format!("qlty-{target}.tar.xz");
+        let url = format!("{RELEASES_URL}/v{}/{archive_name}", self.version);
 
         eprintln!("Downloading qlty v{}...", self.version);
 
@@ -178,7 +173,7 @@ impl QltyRelease {
         let bin_path = exe_path
             .parent()
             .context("Could not determine binary directory")?;
-        extract_tarxz(&archive_path, bin_path, target)?;
+        extract_tarxz(&archive_path, bin_path, &target)?;
 
         Ok(())
     }
@@ -203,7 +198,7 @@ impl QltyRelease {
             "curl"
         };
 
-        format!("{}/{}-{}", prefix, USER_AGENT_PREFIX, QLTY_VERSION)
+        format!("{prefix}/{USER_AGENT_PREFIX}-{QLTY_VERSION}")
     }
 
     fn download_installer() -> Result<String> {
@@ -222,23 +217,96 @@ struct DistManifest {
     announcement_tag: String,
 }
 
-fn detect_target() -> Result<&'static str> {
+fn detect_target() -> String {
     let os = std::env::consts::OS;
     let arch = std::env::consts::ARCH;
 
-    match (os, arch) {
-        ("macos", "x86_64") => Ok("x86_64-apple-darwin"),
-        ("macos", "aarch64") => Ok("aarch64-apple-darwin"),
-        ("linux", "x86_64") => Ok("x86_64-unknown-linux-gnu"),
-        ("linux", "aarch64") => Ok("aarch64-unknown-linux-gnu"),
-        _ => bail!("Unsupported platform: {}-{}", os, arch),
+    match os {
+        "macos" => detect_macos_target(arch),
+        "linux" => detect_linux_target(arch),
+        // Fall back to x86_64-unknown-linux-gnu for unknown platforms, matching install.sh
+        _ => "x86_64-unknown-linux-gnu".to_string(),
     }
+}
+
+fn detect_macos_target(arch: &str) -> String {
+    match arch {
+        "x86_64" => {
+            if is_running_in_rosetta() {
+                eprintln!("Detected Rosetta 2. Downloading qlty for aarch64-apple-darwin instead.");
+                "aarch64-apple-darwin".to_string()
+            } else {
+                "x86_64-apple-darwin".to_string()
+            }
+        }
+        "aarch64" | "arm64" => "aarch64-apple-darwin".to_string(),
+        // Fall back to x86_64 for unknown macOS architectures
+        _ => "x86_64-apple-darwin".to_string(),
+    }
+}
+
+fn is_running_in_rosetta() -> bool {
+    std::process::Command::new("sysctl")
+        .args(["-n", "sysctl.proc_translated"])
+        .output()
+        .map(|output| {
+            output.status.success() && String::from_utf8_lossy(&output.stdout).trim() == "1"
+        })
+        .unwrap_or(false)
+}
+
+fn detect_linux_target(arch: &str) -> String {
+    let base_target = match arch {
+        "x86_64" => "x86_64-unknown-linux",
+        "aarch64" | "arm64" => "aarch64-unknown-linux",
+        _ => "x86_64-unknown-linux",
+    };
+
+    let libc_suffix = detect_linux_libc();
+    format!("{base_target}-{libc_suffix}")
+}
+
+fn detect_linux_libc() -> &'static str {
+    let ldd_output = std::process::Command::new("ldd").arg("--version").output();
+
+    let output_str = match ldd_output {
+        Ok(output) => {
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            format!("{stdout}{stderr}")
+        }
+        Err(_) => return "musl",
+    };
+
+    if output_str.contains("musl") {
+        return "musl";
+    }
+
+    let glibc_version = parse_glibc_version(&output_str).unwrap_or((0, 0));
+    if glibc_version < (2, 32) {
+        return "musl";
+    }
+
+    "gnu"
+}
+
+fn parse_glibc_version(ldd_output: &str) -> Option<(u32, u32)> {
+    for line in ldd_output.lines() {
+        if line.contains("ldd") {
+            let version_str = line.split_whitespace().last()?;
+            let mut version_parts = version_str.split('.');
+            let major = version_parts.next()?.parse::<u32>().ok()?;
+            let minor = version_parts.next()?.parse::<u32>().ok()?;
+            return Some((major, minor));
+        }
+    }
+    None
 }
 
 fn download_to_file(url: &str, path: &Path) -> Result<()> {
     let response = http::get(url)?
         .call()
-        .with_context(|| format!("Failed to download from {}", url))?;
+        .with_context(|| format!("Failed to download from {url}"))?;
 
     let mut file =
         File::create(path).with_context(|| format!("Failed to create {}", path.display()))?;
@@ -259,7 +327,7 @@ fn extract_tarxz(archive_path: &Path, dest_dir: &Path, target: &str) -> Result<(
     let cursor = Cursor::new(tar_data);
     let mut archive = Archive::new(cursor);
 
-    let expected_binary = format!("qlty-{}/qlty", target);
+    let expected_binary = format!("qlty-{target}/qlty");
 
     for entry in archive
         .entries()
@@ -270,22 +338,124 @@ fn extract_tarxz(archive_path: &Path, dest_dir: &Path, target: &str) -> Result<(
         let path_str = path.to_string_lossy();
 
         if path_str == expected_binary {
+            // Extract to a named temp file in the same directory, then atomically
+            // rename to avoid corrupting the existing binary if extraction fails.
+            // Using persist() ensures the temp file is cleaned up on error.
             let dest_path = dest_dir.join("qlty");
-            let mut dest_file = File::create(&dest_path)
-                .with_context(|| format!("Failed to create {}", dest_path.display()))?;
-            std::io::copy(&mut entry, &mut dest_file).context("Failed to extract binary")?;
+            let mut temp_file = tempfile::Builder::new()
+                .prefix(".qlty-upgrade-")
+                .tempfile_in(dest_dir)
+                .context("Failed to create temporary file")?;
+
+            std::io::copy(&mut entry, temp_file.as_file_mut())
+                .context("Failed to extract binary")?;
 
             #[cfg(unix)]
             {
                 use std::os::unix::fs::PermissionsExt;
-                let mut perms = dest_file.metadata()?.permissions();
+                let mut perms = temp_file.as_file().metadata()?.permissions();
                 perms.set_mode(0o755);
-                std::fs::set_permissions(&dest_path, perms)?;
+                temp_file.as_file().set_permissions(perms)?;
             }
+
+            temp_file
+                .persist(&dest_path)
+                .with_context(|| format!("Failed to install binary to {}", dest_path.display()))?;
 
             return Ok(());
         }
     }
 
-    bail!("Binary not found in archive: {}", expected_binary)
+    bail!("Binary not found in archive: {expected_binary}")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_glibc_version_standard_format() {
+        let output = "ldd (GNU libc) 2.31";
+        assert_eq!(parse_glibc_version(output), Some((2, 31)));
+    }
+
+    #[test]
+    fn parse_glibc_version_ubuntu_format() {
+        let output = "ldd (Ubuntu GLIBC 2.35-0ubuntu3.1) 2.35";
+        assert_eq!(parse_glibc_version(output), Some((2, 35)));
+    }
+
+    #[test]
+    fn parse_glibc_version_multiline() {
+        let output = "ldd (GNU libc) 2.32\nCopyright (C) 2020 Free Software Foundation";
+        assert_eq!(parse_glibc_version(output), Some((2, 32)));
+    }
+
+    #[test]
+    fn parse_glibc_version_no_match() {
+        let output = "some random output";
+        assert_eq!(parse_glibc_version(output), None);
+    }
+
+    #[test]
+    fn parse_glibc_version_empty() {
+        assert_eq!(parse_glibc_version(""), None);
+    }
+
+    #[test]
+    fn parse_glibc_version_invalid_number() {
+        let output = "ldd (GNU libc) abc.def";
+        assert_eq!(parse_glibc_version(output), None);
+    }
+
+    #[test]
+    fn detect_macos_target_x86() {
+        let target = detect_macos_target("x86_64");
+        assert!(
+            target == "x86_64-apple-darwin" || target == "aarch64-apple-darwin",
+            "Expected darwin target, got: {}",
+            target
+        );
+    }
+
+    #[test]
+    fn detect_macos_target_arm() {
+        assert_eq!(detect_macos_target("aarch64"), "aarch64-apple-darwin");
+        assert_eq!(detect_macos_target("arm64"), "aarch64-apple-darwin");
+    }
+
+    #[test]
+    fn detect_macos_target_unknown_falls_back() {
+        assert_eq!(detect_macos_target("unknown"), "x86_64-apple-darwin");
+    }
+
+    #[test]
+    fn detect_linux_target_x86() {
+        let target = detect_linux_target("x86_64");
+        assert!(
+            target.starts_with("x86_64-unknown-linux-"),
+            "Expected x86_64 linux target, got: {}",
+            target
+        );
+    }
+
+    #[test]
+    fn detect_linux_target_arm() {
+        let target = detect_linux_target("aarch64");
+        assert!(
+            target.starts_with("aarch64-unknown-linux-"),
+            "Expected aarch64 linux target, got: {}",
+            target
+        );
+    }
+
+    #[test]
+    fn detect_linux_target_unknown_falls_back() {
+        let target = detect_linux_target("unknown");
+        assert!(
+            target.starts_with("x86_64-unknown-linux-"),
+            "Expected x86_64 linux fallback, got: {}",
+            target
+        );
+    }
 }
