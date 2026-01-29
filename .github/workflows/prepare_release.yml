@@ -49,9 +49,11 @@ jobs:
           cargo release version \
             --execute \
             --no-confirm \
-            ${{ inputs.increment == 'version' && inputs.version || inputs.increment || 'minor' }}
+            "${RELEASE_VERSION}"
 
           echo "version=$(cargo metadata --format-version 1 | jq -r ".workspace_members[0]" | cut -d# -f2)" >> "$GITHUB_OUTPUT"
+        env:
+          RELEASE_VERSION: ${{ inputs.increment == 'version' && inputs.version || inputs.increment || 'minor' }}
       - name: Commit changes
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
         with:
