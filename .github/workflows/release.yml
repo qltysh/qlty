@@ -5,6 +5,11 @@ on:
       workflow_run_id:
         required: true
         type: string
+    secrets:
+      QLTY_APP_PRIVATE_KEY:
+        required: true
+      QLTY_RELEASE_AWS_ROLE_ARN:
+        required: true
 permissions:
   contents: read
   "id-token": "write"
@@ -122,4 +127,5 @@ jobs:
     uses: ./.github/workflows/release_promote.yml
     with:
       version: ${{ needs.release.outputs.tag }}
-    secrets: inherit
+    secrets:
+      QLTY_RELEASE_AWS_ROLE_ARN: ${{ secrets.QLTY_RELEASE_AWS_ROLE_ARN }}
