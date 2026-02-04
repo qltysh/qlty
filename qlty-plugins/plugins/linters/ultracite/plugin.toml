@@ -1,0 +1,33 @@
+config_version = "0"
+
+[plugins.definitions.ultracite]
+runtime = "node"
+package = "ultracite"
+file_types = ["typescript", "javascript", "jsx", "tsx"]
+config_files = ["biome.json", "biome.jsonc", "eslint.config.js", "eslint.config.mjs", "eslint.config.ts"]
+affects_cache = ["package.json"]
+latest_version = "7.1.3"
+known_good_version = "7.1.3"
+version_command = "ultracite --version"
+description = "A highly opinionated, zero-configuration linter and formatter"
+package_file_candidate = "package.json"
+package_file_candidate_filters = ["ultracite"]
+
+[plugins.definitions.ultracite.drivers.lint]
+script = "ultracite check --reporter=json ${target}"
+success_codes = [0, 1]
+output = "stdout"
+output_format = "biome"
+batch = true
+cache_results = true
+suggested = "config"
+output_missing = "parse"
+
+[plugins.definitions.ultracite.drivers.format]
+script = "ultracite fix ${target}"
+success_codes = [0, 1]
+output = "rewrite"
+batch = true
+cache_results = true
+driver_type = "formatter"
+suggested = "config"
