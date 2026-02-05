@@ -1,5 +1,5 @@
 use crate::commands::*;
-use crate::commands::{auth, cache, config, plugins};
+use crate::commands::{auth, cache, config, plugins, sources};
 use crate::{CommandError, CommandSuccess};
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -92,6 +92,9 @@ pub enum Commands {
     /// Find code smells like duplication and complexity
     Smells(Smells),
 
+    /// Manage plugin sources
+    Sources(sources::Arguments),
+
     /// Send telemetry
     #[command(hide = true)]
     Telemetry(Telemetry),
@@ -136,6 +139,7 @@ impl Arguments {
             Commands::Patch(command) => command.execute(self),
             Commands::Plugins(command) => command.execute(self),
             Commands::Smells(command) => command.execute(self),
+            Commands::Sources(command) => command.execute(self),
             Commands::Telemetry(command) => command.execute(self),
             Commands::Upgrade(command) => command.execute(self),
             Commands::Validate(command) => command.execute(self),

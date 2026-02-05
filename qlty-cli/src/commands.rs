@@ -19,6 +19,7 @@ mod parse;
 mod patch;
 pub mod plugins;
 mod smells;
+pub mod sources;
 mod telemetry;
 mod upgrade;
 mod validate;
