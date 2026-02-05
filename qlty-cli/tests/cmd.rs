@@ -49,6 +49,11 @@ fn smells_tests() {
 }
 
 #[test]
+fn sources_tests() {
+    setup_and_run_test_cases("tests/cmd/sources/**/*.toml");
+}
+
+#[test]
 fn coverage_tests() {
     setup_and_run_test_cases("tests/cmd/coverage/**/*.toml");
 }
