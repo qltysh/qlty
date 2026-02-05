@@ -188,6 +188,9 @@ jobs:
   release:
     needs: [compile, extra]
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.commits[0].author.name == 'qlty-releases[bot]' && startsWith(github.event.commits[0].message, 'Release ') }}
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/release.yml
     with:
       workflow_run_id: ${{ github.event.workflow_run.id }}
