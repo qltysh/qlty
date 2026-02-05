@@ -139,6 +139,10 @@ pub struct Check {
     /// Install tools only, do not run checks
     #[arg(long)]
     install_only: bool,
+
+    /// Skip fetching sources before running checks
+    #[arg(long)]
+    skip_source_fetch: bool,
 }
 
 impl Check {
@@ -146,7 +150,10 @@ impl Check {
         self.validate_options()?;
 
         let workspace = Workspace::require_initialized()?;
-        workspace.fetch_sources()?;
+
+        if !self.skip_source_fetch {
+            workspace.fetch_sources()?;
+        }
 
         let git_hook_stdin = if self.upstream_from_pre_push {
             match Self::read_pre_push_stdin()? {
