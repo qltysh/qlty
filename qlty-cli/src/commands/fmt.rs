@@ -54,6 +54,10 @@ pub struct Fmt {
 
     /// Files to analyze
     pub paths: Vec<PathBuf>,
+
+    /// Skip fetching sources before formatting
+    #[arg(long)]
+    skip_source_fetch: bool,
 }
 
 impl Fmt {
@@ -61,7 +65,10 @@ impl Fmt {
         self.validate_options()?;
 
         let workspace = Workspace::require_initialized()?;
-        workspace.fetch_sources()?;
+
+        if !self.skip_source_fetch {
+            workspace.fetch_sources()?;
+        }
 
         let settings = self.build_settings()?;
         let plan = Planner::new(ExecutionVerb::Fmt, &settings)?.compute()?;
