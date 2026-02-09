@@ -204,6 +204,17 @@ impl Tool for PhpPackage {
             "COMPOSER_VENDOR_DIR".to_string(),
             path_to_native_string(PathBuf::from(format!("{}/vendor", self.directory()))),
         );
+        env.insert(
+            "COMPOSER_HOME".to_string(),
+            path_to_native_string(PathBuf::from(format!("{}/.composer", self.directory()))),
+        );
+        env.insert(
+            "COMPOSER_CACHE_DIR".to_string(),
+            path_to_native_string(PathBuf::from(format!(
+                "{}/.composer-cache",
+                self.directory()
+            ))),
+        );
         Ok(env)
     }
 }
