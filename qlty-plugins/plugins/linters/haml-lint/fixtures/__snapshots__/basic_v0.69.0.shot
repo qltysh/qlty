@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`linter=haml-lint fixture=basic version=0.68.0 1`] = `
+exports[`linter=haml-lint fixture=basic version=0.69.0 1`] = `
 {
   "issues": [
     {
