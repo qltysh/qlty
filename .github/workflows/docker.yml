@@ -7,12 +7,6 @@ on:
   push:
     branches: ["main"]
     tags: ["v*.*.*"]
-  pull_request:
-    branches: ["main"]
-    paths:
-      - "qlty-*/**"
-      - "Cargo.*"
-      - ".github/workflows/docker.yml"
 
 env:
   REGISTRY: ghcr.io
@@ -48,13 +42,11 @@ jobs:
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
 
       - name: Checkout repository
-        if: ${{ github.event_name != 'pull_request' }}
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
         with:
           persist-credentials: false
 
       - name: Log into registry ${{ env.REGISTRY }}
-        if: ${{ github.event_name != 'pull_request' }}
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772
         with:
           registry: ${{ env.REGISTRY }}
@@ -71,7 +63,6 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Build and push by digest
-        if: github.event_name != 'pull_request'
         id: build
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
         with:
@@ -82,7 +73,6 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Generate Artifact Attestation
-        if: github.event_name != 'pull_request'
         uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
@@ -90,7 +80,6 @@ jobs:
           push-to-registry: true
 
       - name: Export digest
-        if: ${{ github.event_name != 'pull_request' }}
         run: |
           mkdir -p ${{ runner.temp }}/digests
           digest="${STEPS_BUILD_OUTPUTS_DIGEST}"
@@ -99,7 +88,6 @@ jobs:
           STEPS_BUILD_OUTPUTS_DIGEST: ${{ steps.build.outputs.digest }}
 
       - name: Upload digest
-        if: ${{ github.event_name != 'pull_request' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: digests-${{ env.PLATFORM_PAIR }}
@@ -113,7 +101,6 @@ jobs:
       packages: write
       id-token: write
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'pull_request' }}
     needs:
       - build
     steps:
@@ -141,7 +128,6 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch
-            type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 
