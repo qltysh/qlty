@@ -71,6 +71,8 @@ jobs:
           outputs: type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          provenance: false
+          sbom: false
 
       - name: Generate Artifact Attestation
         uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a
