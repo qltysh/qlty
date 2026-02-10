@@ -1,8 +1,12 @@
 use anyhow::{bail, Context, Result};
 use std::path::Path;
 use std::process::Command;
+use std::thread;
+use std::time::Duration;
 
 const QLTY_OWNER: &str = "qltysh";
+const MAX_RETRIES: u32 = 3;
+const RETRY_DELAY: Duration = Duration::from_secs(2);
 
 pub fn verify_attestation(archive_path: &Path) -> Result<()> {
     if !is_gh_available() {
@@ -12,18 +16,27 @@ pub fn verify_attestation(archive_path: &Path) -> Result<()> {
 
     eprintln!("Verifying provenance...");
 
-    let output = Command::new("gh")
-        .args([
-            "attestation",
-            "verify",
-            &archive_path.to_string_lossy(),
-            "--owner",
-            QLTY_OWNER,
-        ])
-        .output()
-        .context("Failed to run gh attestation verify")?;
+    for attempt in 1..=MAX_RETRIES {
+        let output = Command::new("gh")
+            .args([
+                "attestation",
+                "verify",
+                &archive_path.to_string_lossy(),
+                "--owner",
+                QLTY_OWNER,
+            ])
+            .output()
+            .context("Failed to run gh attestation verify")?;
 
-    if !output.status.success() {
+        if output.status.success() {
+            eprintln!(
+                "  {} Verified SLSA provenance from github.com/{}",
+                console::style("OK").green().bold(),
+                QLTY_OWNER
+            );
+            return Ok(());
+        }
+
         let exit_code = output.status.code();
 
         if exit_code == Some(4) {
@@ -33,6 +46,17 @@ pub fn verify_attestation(archive_path: &Path) -> Result<()> {
 
         let stderr = String::from_utf8_lossy(&output.stderr);
         let stdout = String::from_utf8_lossy(&output.stdout);
+
+        let combined_output = format!("{}{}", stderr, stdout);
+        if is_transient_error(&combined_output) && attempt < MAX_RETRIES {
+            eprintln!(
+                "  Transient error during verification (attempt {}/{}), retrying...",
+                attempt, MAX_RETRIES
+            );
+            thread::sleep(RETRY_DELAY * attempt);
+            continue;
+        }
+
         let mut message = "Provenance verification failed".to_string();
         if !stderr.is_empty() {
             message.push_str(&format!(": {}", stderr.trim()));
@@ -42,12 +66,11 @@ pub fn verify_attestation(archive_path: &Path) -> Result<()> {
         bail!(message);
     }
 
-    eprintln!(
-        "  {} Verified SLSA provenance from github.com/{}",
-        console::style("OK").green().bold(),
-        QLTY_OWNER
-    );
-    Ok(())
+    unreachable!()
+}
+
+fn is_transient_error(output: &str) -> bool {
+    output.contains("HTTP 5") || output.contains("connection reset")
 }
 
 fn is_gh_available() -> bool {
