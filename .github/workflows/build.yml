@@ -119,7 +119,7 @@ jobs:
         run: sha256sum ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }} > ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }}.sha256
 
       - name: Generate binary attestation
-        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a
+        uses: actions/attest-build-provenance@96278af6caaf10aea03fd8d33a09a777ca52d62f
         with:
           subject-path: ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }}
 
