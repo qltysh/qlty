@@ -1,11 +1,11 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 use std::{
     env, fs,
     path::{Path, PathBuf},
 };
-use tracing::error;
+use tracing::warn;
 use walkdir::WalkDir;
 
 #[derive(Debug, Clone)]
@@ -254,29 +254,44 @@ impl Library {
     }
 
     fn try_symlink_if_missing(&self, target: &Path, link: &Path) -> Result<()> {
-        if !link.exists() {
-            #[cfg(unix)]
-            {
-                if std::os::unix::fs::symlink(target, link).is_err() {
-                    error!(
-                        "Failed to create symlink from {} to {}",
-                        target.display(),
-                        link.display()
-                    );
+        if let Ok(metadata) = fs::symlink_metadata(link) {
+            if metadata.file_type().is_symlink() {
+                if let Ok(existing_target) = fs::read_link(link) {
+                    if !existing_target.exists() {
+                        warn!(
+                            "Removing broken symlink {} -> {}",
+                            link.display(),
+                            existing_target.display()
+                        );
+                        fs::remove_file(link).with_context(|| {
+                            format!("Failed to remove broken symlink {}", link.display())
+                        })?;
+                    } else {
+                        return Ok(());
+                    }
                 }
-            }
-
-            #[cfg(windows)]
-            {
-                if std::os::windows::fs::symlink_dir(target, link).is_err() {
-                    error!(
-                        "Failed to create symlink from {} to {}",
-                        target.display(),
-                        link.display()
-                    );
-                }
+            } else {
+                return Ok(());
             }
         }
+
+        #[cfg(unix)]
+        std::os::unix::fs::symlink(target, link).with_context(|| {
+            format!(
+                "Failed to create symlink from {} to {}",
+                target.display(),
+                link.display()
+            )
+        })?;
+
+        #[cfg(windows)]
+        std::os::windows::fs::symlink_dir(target, link).with_context(|| {
+            format!(
+                "Failed to create symlink from {} to {}",
+                target.display(),
+                link.display()
+            )
+        })?;
 
         Ok(())
     }
@@ -304,5 +319,75 @@ impl Library {
         }
 
         Ok(existing_dirs)
+    }
+}
+
+#[cfg(test)]
+#[cfg(unix)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    fn make_library(dir: &Path) -> Library {
+        Library {
+            local_root: dir.to_path_buf(),
+            tmp_dir: dir.join("tmp"),
+        }
+    }
+
+    #[test]
+    fn broken_symlink_is_repaired() {
+        let dir = TempDir::new().unwrap();
+        let target = dir.path().join("target_dir");
+        let link = dir.path().join("my_link");
+
+        fs::create_dir_all(&target).unwrap();
+        std::os::unix::fs::symlink(&target, &link).unwrap();
+        fs::remove_dir_all(&target).unwrap();
+
+        assert!(fs::symlink_metadata(&link).is_ok());
+        assert!(!link.exists());
+
+        let new_target = dir.path().join("new_target");
+        fs::create_dir_all(&new_target).unwrap();
+
+        let lib = make_library(dir.path());
+        lib.try_symlink_if_missing(&new_target, &link).unwrap();
+
+        assert!(link.exists());
+        assert_eq!(fs::read_link(&link).unwrap(), new_target);
+    }
+
+    #[test]
+    fn valid_symlink_is_left_alone() {
+        let dir = TempDir::new().unwrap();
+        let target = dir.path().join("target_dir");
+        let link = dir.path().join("my_link");
+
+        fs::create_dir_all(&target).unwrap();
+        std::os::unix::fs::symlink(&target, &link).unwrap();
+
+        let other_target = dir.path().join("other_target");
+        fs::create_dir_all(&other_target).unwrap();
+
+        let lib = make_library(dir.path());
+        lib.try_symlink_if_missing(&other_target, &link).unwrap();
+
+        assert_eq!(fs::read_link(&link).unwrap(), target);
+    }
+
+    #[test]
+    fn missing_symlink_is_created() {
+        let dir = TempDir::new().unwrap();
+        let target = dir.path().join("target_dir");
+        let link = dir.path().join("my_link");
+
+        fs::create_dir_all(&target).unwrap();
+
+        let lib = make_library(dir.path());
+        lib.try_symlink_if_missing(&target, &link).unwrap();
+
+        assert!(link.exists());
+        assert_eq!(fs::read_link(&link).unwrap(), target);
     }
 }
