@@ -154,6 +154,7 @@ pub trait Source: SourceFetch {
             .parse::<toml::Value>()
             .with_context(|| format!("Could not parse {}", source_file.path.display()))?;
         self.add_context_to_exported_config_paths(&mut contents_toml, source_file);
+        self.add_context_to_install_script(&mut contents_toml, source_file);
 
         Builder::validate_toml(&source_file.path, contents_toml.clone())
             .with_context(|| SOURCE_PARSE_ERROR)?;
@@ -190,6 +191,33 @@ pub trait Source: SourceFetch {
                         }
                     }
                 });
+        }
+
+        Some(())
+    }
+
+    fn add_context_to_install_script(
+        &self,
+        toml: &mut toml::Value,
+        source_file: &SourceFile,
+    ) -> Option<()> {
+        for (_, plugin) in toml
+            .as_table_mut()?
+            .get_mut("plugins")?
+            .as_table_mut()?
+            .get_mut("definitions")?
+            .as_table_mut()?
+            .iter_mut()
+        {
+            if let Some(value) = plugin.get_mut("install_script") {
+                if let Some(value_str) = value.as_str() {
+                    if let Some(parent) = source_file.path.parent() {
+                        let resolved = parent.join(value_str);
+                        let absolute = std::fs::canonicalize(&resolved).unwrap_or(resolved);
+                        *value = Value::String(absolute.to_string_lossy().to_string());
+                    }
+                }
+            }
         }
 
         Some(())
