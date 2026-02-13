@@ -61,44 +61,69 @@ impl Tool for Python {
 }
 
 impl Python {
+    fn release_tag(&self) -> &str {
+        match self.version.as_str() {
+            "3.8.18" | "3.9.18" | "3.10.13" | "3.11.7" | "3.12.1" => "20240107",
+            _ => "20260211",
+        }
+    }
+
+    fn windows_suffix(&self) -> &str {
+        match self.release_tag() {
+            "20240107" => "msvc-shared-install_only",
+            _ => "msvc-install_only",
+        }
+    }
+
     fn download(&self) -> Download {
+        let tag = self.release_tag();
+        let win = self.windows_suffix();
+
         Download::new(
             &DownloadDef {
                 systems: vec![
                     System {
-                        url: "https://github.com/indygreg/python-build-standalone/releases/download/20240107/cpython-${version}+20240107-x86_64-apple-darwin-install_only.tar.gz"
-                            .to_string(),
+                        url: format!(
+                            "https://github.com/indygreg/python-build-standalone/releases/download/{tag}/cpython-${{version}}+{tag}-x86_64-apple-darwin-install_only.tar.gz"
+                        ),
                         cpu: Cpu::X86_64,
                         os: OperatingSystem::MacOS,
                     },
                     System {
-                        url: "https://github.com/indygreg/python-build-standalone/releases/download/20240107/cpython-${version}+20240107-aarch64-apple-darwin-install_only.tar.gz"
-                            .to_string(),
+                        url: format!(
+                            "https://github.com/indygreg/python-build-standalone/releases/download/{tag}/cpython-${{version}}+{tag}-aarch64-apple-darwin-install_only.tar.gz"
+                        ),
                         cpu: Cpu::Aarch64,
                         os: OperatingSystem::MacOS,
                     },
                     System {
-                        url: "https://github.com/indygreg/python-build-standalone/releases/download/20240107/cpython-${version}+20240107-x86_64-unknown-linux-gnu-install_only.tar.gz"
-                            .to_string(),
+                        url: format!(
+                            "https://github.com/indygreg/python-build-standalone/releases/download/{tag}/cpython-${{version}}+{tag}-x86_64-unknown-linux-gnu-install_only.tar.gz"
+                        ),
                         cpu: Cpu::X86_64,
                         os: OperatingSystem::Linux,
                     },
                     System {
-                        url: "https://github.com/indygreg/python-build-standalone/releases/download/20240107/cpython-${version}+20240107-aarch64-unknown-linux-gnu-install_only.tar.gz"
-                            .to_string(),
+                        url: format!(
+                            "https://github.com/indygreg/python-build-standalone/releases/download/{tag}/cpython-${{version}}+{tag}-aarch64-unknown-linux-gnu-install_only.tar.gz"
+                        ),
                         cpu: Cpu::Aarch64,
                         os: OperatingSystem::Linux,
                     },
-                    System{
-                        url: "https://github.com/indygreg/python-build-standalone/releases/download/20240107/cpython-${version}+20240107-x86_64-pc-windows-msvc-shared-install_only.tar.gz".to_string(),
+                    System {
+                        url: format!(
+                            "https://github.com/indygreg/python-build-standalone/releases/download/{tag}/cpython-${{version}}+{tag}-x86_64-pc-windows-{win}.tar.gz"
+                        ),
                         cpu: Cpu::X86_64,
                         os: OperatingSystem::Windows,
                     },
-                    System{
-                        url: "https://github.com/indygreg/python-build-standalone/releases/download/20240107/cpython-${version}+20240107-aarch64-pc-windows-msvc-shared-install_only.tar.gz".to_string(),
+                    System {
+                        url: format!(
+                            "https://github.com/indygreg/python-build-standalone/releases/download/{tag}/cpython-${{version}}+{tag}-aarch64-pc-windows-{win}.tar.gz"
+                        ),
                         cpu: Cpu::Aarch64,
                         os: OperatingSystem::Windows,
-                    }
+                    },
                 ],
                 ..Default::default()
             },
@@ -231,7 +256,7 @@ impl PipVenvPackage {
 
 #[cfg(test)]
 mod test {
-    use super::PipVenvPackage;
+    use super::{PipVenvPackage, Python};
     use crate::{
         tool::{
             command_builder::test::{reroute_tools_root, stub_cmd, ENV_LOCK},
@@ -352,6 +377,55 @@ mod test {
             );
             Ok(())
         });
+    }
+
+    #[test]
+    fn test_release_tag_old_versions() {
+        let old_versions = ["3.8.18", "3.9.18", "3.10.13", "3.11.7", "3.12.1"];
+        for version in old_versions {
+            let python = Python {
+                version: version.to_string(),
+            };
+            assert_eq!(python.release_tag(), "20240107");
+            assert_eq!(python.windows_suffix(), "msvc-shared-install_only");
+        }
+    }
+
+    #[test]
+    fn test_release_tag_new_versions() {
+        let new_versions = ["3.10.19", "3.11.14", "3.12.12", "3.13.12", "3.14.3"];
+        for version in new_versions {
+            let python = Python {
+                version: version.to_string(),
+            };
+            assert_eq!(python.release_tag(), "20260211");
+            assert_eq!(python.windows_suffix(), "msvc-install_only");
+        }
+    }
+
+    #[test]
+    fn test_release_tag_unknown_version_defaults_to_newest() {
+        let python = Python {
+            version: "3.16.0".to_string(),
+        };
+        assert_eq!(python.release_tag(), "20260211");
+    }
+
+    #[test]
+    fn test_download_url_contains_correct_release_tag() {
+        let old = Python {
+            version: "3.12.1".to_string(),
+        };
+        let url = old.download().url().unwrap();
+        assert!(url.contains("/20240107/"));
+        assert!(url.contains("+20240107-"));
+
+        let new = Python {
+            version: "3.13.12".to_string(),
+        };
+        let url = new.download().url().unwrap();
+        assert!(url.contains("/20260211/"));
+        assert!(url.contains("+20260211-"));
     }
 
     #[test]
