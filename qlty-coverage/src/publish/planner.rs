@@ -115,10 +115,10 @@ impl Planner {
 
         // Add PrependSrcDir transformer if Java src dirs were discovered
         // This runs after path normalization so it receives clean relative paths
-        if !self.settings.java_src_dirs.is_empty() {
+        if !self.settings.src_search_dirs.is_empty() {
             transformers.push(Box::new(PrependSrcDir::new(
                 self.settings.root.clone(),
-                self.settings.java_src_dirs.clone(),
+                self.settings.src_search_dirs.clone(),
             )));
         }
 
