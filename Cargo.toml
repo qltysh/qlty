@@ -122,7 +122,7 @@ time = { version = "0.3.44", features = [
 tiny_http = "0.12.0"
 toml = "0.8.23"
 toml_edit = "0.22.26"
-tracing = "0.1.41"
+tracing = "0.1.44"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
 tracing-test = "0.2.5"
