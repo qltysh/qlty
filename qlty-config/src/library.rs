@@ -257,22 +257,24 @@ impl Library {
         if !link.exists() {
             #[cfg(unix)]
             {
-                if std::os::unix::fs::symlink(target, link).is_err() {
+                if let Err(err) = std::os::unix::fs::symlink(target, link) {
                     error!(
-                        "Failed to create symlink from {} to {}",
+                        "Failed to create symlink from {} to {}: {}",
                         target.display(),
-                        link.display()
+                        link.display(),
+                        err
                     );
                 }
             }
 
             #[cfg(windows)]
             {
-                if std::os::windows::fs::symlink_dir(target, link).is_err() {
+                if let Err(err) = std::os::windows::fs::symlink_dir(target, link) {
                     error!(
-                        "Failed to create symlink from {} to {}",
+                        "Failed to create symlink from {} to {}: {}",
                         target.display(),
-                        link.display()
+                        link.display(),
+                        err
                     );
                 }
             }
