@@ -18,6 +18,12 @@ pub struct Report {
     #[serde(skip_serializing)]
     pub missing_files: HashSet<String>,
 
+    #[serde(skip_serializing)]
+    pub untracked_files: HashSet<String>,
+
+    #[serde(skip_serializing)]
+    pub git_repo_path: Option<String>,
+
     pub totals: CoverageMetrics,
     pub excluded_files_count: usize,
 

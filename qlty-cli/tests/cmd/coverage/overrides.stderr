@@ -31,6 +31,8 @@ WARNING: --transform-add-prefix is deprecated, use --add-prefix instead
 
  COVERAGE DATA 
 
+    Git Repository: [CWD]/
+
     1 unique code file path
     1 path is missing on disk (100.0%)
 

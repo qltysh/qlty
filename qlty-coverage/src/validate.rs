@@ -94,15 +94,15 @@ mod tests {
     use std::fs::{self, File};
     use tempfile::tempdir;
 
-    // Helper function to create a test Report instance
     fn create_test_report(file_coverages: Vec<FileCoverage>) -> Report {
-        // Create a minimal valid Report
         Report {
             metadata: CoverageMetadata::default(),
             report_files: vec![ReportFile::default()],
             file_coverages,
             found_files: HashSet::new(),
             missing_files: HashSet::new(),
+            untracked_files: HashSet::new(),
+            git_repo_path: None,
             totals: Default::default(),
             excluded_files_count: 0,
             auto_path_fixing_enabled: false,
