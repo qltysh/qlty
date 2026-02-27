@@ -1,1 +1,7 @@
 config_version = "0"
+
+[[triage]]
+match.plugins = ["qlty"]
+match.rules = ["return-statements"]
+set.mode = "comment"
+set.level = "low"

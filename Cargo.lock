@@ -2778,10 +2778,12 @@ version = "0.614.0"
 dependencies = [
  "anyhow",
  "config",
+ "console",
  "git2",
  "glob",
  "globset",
  "ignore",
+ "indoc",
  "insta",
  "itertools 0.14.0",
  "lazy_static",

@@ -1,7 +1,6 @@
 pub mod cache;
 mod command;
 pub mod executor;
-mod issue_muter;
 pub mod llm;
 pub mod parser;
 mod patch_builder;
@@ -11,7 +10,6 @@ mod processor;
 pub mod report;
 pub mod results;
 mod settings;
-pub mod source_reader;
 pub mod tool;
 pub mod ui;
 mod utils;

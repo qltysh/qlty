@@ -6,8 +6,8 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tracing::{debug, error, trace};
 
-use crate::source_reader::{SourceReader, SourceReaderFs};
 use crate::utils::generate_random_id;
+use qlty_analysis::source_reader::{SourceReader, SourceReaderFs};
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Eq, PartialEq)]
