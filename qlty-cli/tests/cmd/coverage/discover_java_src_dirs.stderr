@@ -12,7 +12,7 @@ https://qlty.sh/d/coverage
 
     discover-java-src-dirs: true
 
-    Discovered Java source directories:
+    Source search directories:
       src/main/java
 
  METADATA 
