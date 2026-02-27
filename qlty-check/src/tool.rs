@@ -5,13 +5,13 @@ pub mod go;
 mod installations;
 pub mod java;
 pub mod node;
-pub mod null_tool;
 pub mod php;
 pub mod python;
 pub mod ruby;
 mod ruby_source;
 mod runnable_archive;
 pub mod rust;
+pub mod shell_tool;
 pub mod tool_builder;
 
 use crate::tool::download::Download;
@@ -120,7 +120,7 @@ pub enum ToolType {
     Download,
     RuntimePackage,
     GitHubRelease,
-    NullTool,
+    ShellTool,
 }
 
 pub trait Tool: Debug + Sync + Send {
