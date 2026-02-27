@@ -48,3 +48,4 @@ https://qlty.sh/d/coverage
    ERROR   
 
  > Coverage validation failed: Only 50.00% of files are present (threshold: 90.00%)
+ >   - 1 file missing on disk

@@ -3,6 +3,7 @@ use serde::Serialize;
 use std::path::PathBuf;
 
 use crate::publish::Report;
+use crate::utils::is_path_within_workspace;
 
 const DEFAULT_THRESHOLD: f64 = 90.0;
 
@@ -10,21 +11,24 @@ const DEFAULT_THRESHOLD: f64 = 90.0;
 #[derive(Debug, Clone)]
 pub struct Validator {
     threshold: f64,
+    workspace_root: Option<PathBuf>,
 }
 
 impl Default for Validator {
     fn default() -> Self {
         Self {
             threshold: DEFAULT_THRESHOLD,
+            workspace_root: None,
         }
     }
 }
 
 impl Validator {
-    /// Creates a new validator with the given threshold.
-    pub fn new(threshold: Option<f64>) -> Self {
+    /// Creates a new validator with the given threshold and workspace root.
+    pub fn new(threshold: Option<f64>, workspace_root: Option<PathBuf>) -> Self {
         Self {
             threshold: threshold.unwrap_or(DEFAULT_THRESHOLD),
+            workspace_root,
         }
     }
 
@@ -36,15 +40,24 @@ impl Validator {
         };
 
         report.file_coverages.iter().for_each(|file| {
-            if PathBuf::from(&file.path).exists() {
-                validation_result.files_present += 1;
-            } else {
+            let path = PathBuf::from(&file.path);
+
+            if !path.exists() {
                 validation_result.files_missing += 1;
+                return;
             }
+
+            if !is_path_within_workspace(&path, self.workspace_root.as_ref()) {
+                validation_result.files_outside_workspace += 1;
+                return;
+            }
+
+            validation_result.files_present += 1;
         });
 
-        validation_result.total_files =
-            validation_result.files_present + validation_result.files_missing;
+        validation_result.total_files = validation_result.files_present
+            + validation_result.files_missing
+            + validation_result.files_outside_workspace;
 
         if validation_result.total_files == 0 {
             validation_result.status = ValidationStatus::NoCoverageData;
@@ -79,6 +92,7 @@ pub enum ValidationStatus {
 pub struct ValidationResult {
     pub files_present: usize,
     pub files_missing: usize,
+    pub files_outside_workspace: usize,
     pub total_files: usize,
     pub coverage_percentage: f64,
     pub threshold: f64,
@@ -103,6 +117,7 @@ mod tests {
             file_coverages,
             found_files: HashSet::new(),
             missing_files: HashSet::new(),
+            outside_workspace_files: HashSet::new(),
             totals: Default::default(),
             excluded_files_count: 0,
             auto_path_fixing_enabled: false,
@@ -127,7 +142,7 @@ mod tests {
             ..Default::default()
         }]);
 
-        let validator = Validator::new(Some(90.0));
+        let validator = Validator::new(Some(90.0), None);
         let result = validator.validate(&report).unwrap();
 
         assert_eq!(result.files_present, 1);
@@ -153,7 +168,7 @@ mod tests {
             },
         ]);
 
-        let validator = Validator::new(Some(80.0));
+        let validator = Validator::new(Some(80.0), None);
         let result = validator.validate(&report).unwrap();
 
         assert_eq!(result.files_present, 1);
@@ -165,7 +180,7 @@ mod tests {
     fn test_no_coverage_data() {
         let report = create_test_report(vec![]);
 
-        let validator = Validator::new(Some(80.0));
+        let validator = Validator::new(Some(80.0), None);
         let result = validator.validate(&report).unwrap();
 
         assert_eq!(result.total_files, 0);
@@ -195,12 +210,12 @@ mod tests {
         ]);
 
         // With 33.33% files present and threshold of 30%, should be valid
-        let validator_lenient = Validator::new(Some(30.0));
+        let validator_lenient = Validator::new(Some(30.0), None);
         let result_lenient = validator_lenient.validate(&report).unwrap();
         assert_eq!(result_lenient.status, ValidationStatus::Valid);
 
         // With 33.33% files present and threshold of 50%, should be invalid
-        let validator_strict = Validator::new(Some(50.0));
+        let validator_strict = Validator::new(Some(50.0), None);
         let result_strict = validator_strict.validate(&report).unwrap();
         assert_eq!(result_strict.status, ValidationStatus::Invalid);
     }
@@ -231,5 +246,105 @@ mod tests {
         assert_eq!(result.files_missing, 1);
         assert_eq!(result.threshold, DEFAULT_THRESHOLD);
         assert_eq!(result.status, ValidationStatus::Invalid);
+    }
+
+    #[test]
+    fn test_file_inside_workspace() {
+        let workspace_dir = tempdir().expect("Failed to create workspace dir");
+        let file_path = workspace_dir.path().join("src/file.rs");
+
+        create_dummy_file(&file_path);
+
+        let report = create_test_report(vec![FileCoverage {
+            path: path_to_string(&file_path),
+            ..Default::default()
+        }]);
+
+        let validator = Validator::new(Some(90.0), Some(workspace_dir.path().to_path_buf()));
+        let result = validator.validate(&report).unwrap();
+
+        assert_eq!(result.files_present, 1);
+        assert_eq!(result.files_missing, 0);
+        assert_eq!(result.files_outside_workspace, 0);
+        assert_eq!(result.status, ValidationStatus::Valid);
+    }
+
+    #[test]
+    fn test_file_outside_workspace() {
+        let workspace_dir = tempdir().expect("Failed to create workspace dir");
+        let outside_dir = tempdir().expect("Failed to create outside dir");
+        let outside_file = outside_dir.path().join("external.rs");
+
+        create_dummy_file(&outside_file);
+
+        let report = create_test_report(vec![FileCoverage {
+            path: path_to_string(&outside_file),
+            ..Default::default()
+        }]);
+
+        let validator = Validator::new(Some(90.0), Some(workspace_dir.path().to_path_buf()));
+        let result = validator.validate(&report).unwrap();
+
+        assert_eq!(result.files_present, 0);
+        assert_eq!(result.files_missing, 0);
+        assert_eq!(result.files_outside_workspace, 1);
+        assert_eq!(result.status, ValidationStatus::Invalid);
+    }
+
+    #[test]
+    fn test_mixed_inside_outside_missing() {
+        let workspace_dir = tempdir().expect("Failed to create workspace dir");
+        let outside_dir = tempdir().expect("Failed to create outside dir");
+
+        let inside_file = workspace_dir.path().join("src/inside.rs");
+        let outside_file = outside_dir.path().join("external.rs");
+
+        create_dummy_file(&inside_file);
+        create_dummy_file(&outside_file);
+
+        let report = create_test_report(vec![
+            FileCoverage {
+                path: path_to_string(&inside_file),
+                ..Default::default()
+            },
+            FileCoverage {
+                path: path_to_string(&outside_file),
+                ..Default::default()
+            },
+            FileCoverage {
+                path: "nonexistent/missing.rs".to_string(),
+                ..Default::default()
+            },
+        ]);
+
+        let validator = Validator::new(Some(30.0), Some(workspace_dir.path().to_path_buf()));
+        let result = validator.validate(&report).unwrap();
+
+        assert_eq!(result.files_present, 1);
+        assert_eq!(result.files_missing, 1);
+        assert_eq!(result.files_outside_workspace, 1);
+        assert_eq!(result.total_files, 3);
+        assert!((result.coverage_percentage - 33.33).abs() < 0.1);
+        assert_eq!(result.status, ValidationStatus::Valid);
+    }
+
+    #[test]
+    fn test_no_workspace_root_allows_all_existing_files() {
+        let temp_dir = tempdir().expect("Failed to create temp dir");
+        let file_path = temp_dir.path().join("file.rs");
+
+        create_dummy_file(&file_path);
+
+        let report = create_test_report(vec![FileCoverage {
+            path: path_to_string(&file_path),
+            ..Default::default()
+        }]);
+
+        let validator = Validator::new(Some(90.0), None);
+        let result = validator.validate(&report).unwrap();
+
+        assert_eq!(result.files_present, 1);
+        assert_eq!(result.files_outside_workspace, 0);
+        assert_eq!(result.status, ValidationStatus::Valid);
     }
 }
