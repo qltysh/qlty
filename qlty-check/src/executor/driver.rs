@@ -308,7 +308,11 @@ impl Driver {
             .invocation_directory
             .strip_prefix(path_to_string(&plan.target_root))
         {
-            Some(path.to_path_buf())
+            if path.as_os_str().is_empty() {
+                None
+            } else {
+                Some(path.to_path_buf())
+            }
         } else {
             None
         }
@@ -833,6 +837,76 @@ pub mod test {
 
         let expected_target_list = workspace_dir.join("basic.py");
         assert_eq!(target_list, path_to_native_string(expected_target_list));
+    }
+
+    fn build_plan_with_directories(
+        target_root: PathBuf,
+        invocation_directory: PathBuf,
+        kind: InvocationDirectoryType,
+    ) -> InvocationPlan {
+        InvocationPlan {
+            target_root,
+            workspace_entries: Arc::new(vec![]),
+            invocation_id: "".to_string(),
+            verb: ExecutionVerb::Check,
+            workspace: Workspace::new().unwrap(),
+            settings: Default::default(),
+            runtime: None,
+            runtime_version: None,
+            plugin_name: "test".to_string(),
+            plugin: PluginDef::default(),
+            tool: Ruby::new_tool(""),
+            driver_name: "test".to_string(),
+            driver: build_driver(vec![], vec![]),
+            plugin_configs: vec![],
+            targets: vec![],
+            invocation_directory,
+            invocation_directory_def: InvocationDirectoryDef { kind, path: None },
+        }
+    }
+
+    #[test]
+    fn test_get_path_prefix_root_kind_returns_none() {
+        let driver = build_driver(vec![], vec![]);
+        let plan = build_plan_with_directories(
+            PathBuf::from("/repo"),
+            PathBuf::from("/repo/subdir"),
+            InvocationDirectoryType::Root,
+        );
+        assert_eq!(driver.get_path_prefix(&plan), None);
+    }
+
+    #[test]
+    fn test_get_path_prefix_equal_dirs_returns_none() {
+        let driver = build_driver(vec![], vec![]);
+        let plan = build_plan_with_directories(
+            PathBuf::from("/repo"),
+            PathBuf::from("/repo"),
+            InvocationDirectoryType::TargetDirectory,
+        );
+        assert_eq!(driver.get_path_prefix(&plan), None);
+    }
+
+    #[test]
+    fn test_get_path_prefix_subdir_returns_relative_path() {
+        let driver = build_driver(vec![], vec![]);
+        let plan = build_plan_with_directories(
+            PathBuf::from("/repo"),
+            PathBuf::from("/repo/subdir"),
+            InvocationDirectoryType::TargetDirectory,
+        );
+        assert_eq!(driver.get_path_prefix(&plan), Some(PathBuf::from("subdir")));
+    }
+
+    #[test]
+    fn test_get_path_prefix_unrelated_dir_returns_none() {
+        let driver = build_driver(vec![], vec![]);
+        let plan = build_plan_with_directories(
+            PathBuf::from("/repo"),
+            PathBuf::from("/other"),
+            InvocationDirectoryType::TargetDirectory,
+        );
+        assert_eq!(driver.get_path_prefix(&plan), None);
     }
 
     #[test]

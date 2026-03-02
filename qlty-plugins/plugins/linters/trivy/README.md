@@ -24,7 +24,7 @@ trivy = "X.Y.Z"
 
 ## Auto-enabling
 
-Trivy will be automatically enabled by `qlty init` if a `trivy.yaml` configuration file is present.
+Trivy will not be automatically enabled by `qlty init`
 
 ## Configuration files
 
