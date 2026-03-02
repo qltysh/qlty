@@ -1,0 +1,257 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=spectral fixture=openapi version=6.15.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "openapi.in.yaml",
+        "range": {
+          "endColumn": 61,
+          "endLine": 13,
+          "startColumn": 1,
+          "startLine": 1,
+        },
+      },
+      "message": "Info object must have "contact" object.",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "info-contact",
+      "snippet": "openapi: 3.0.0
+components:
+  requestBodies:
+    TestRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    TestSchema:
+      title: TestSchema
+      allOf:
+        - $ref: '#/components/requestBodies/TestRequestBody'",
+      "snippetWithContext": "openapi: 3.0.0
+components:
+  requestBodies:
+    TestRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    TestSchema:
+      title: TestSchema
+      allOf:
+        - $ref: '#/components/requestBodies/TestRequestBody'",
+      "tool": "spectral",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "openapi.in.yaml",
+        "range": {
+          "endColumn": 61,
+          "endLine": 13,
+          "startColumn": 1,
+          "startLine": 1,
+        },
+      },
+      "message": "Info "description" must be present and non-empty string.",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "info-description",
+      "snippet": "openapi: 3.0.0
+components:
+  requestBodies:
+    TestRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    TestSchema:
+      title: TestSchema
+      allOf:
+        - $ref: '#/components/requestBodies/TestRequestBody'",
+      "snippetWithContext": "openapi: 3.0.0
+components:
+  requestBodies:
+    TestRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    TestSchema:
+      title: TestSchema
+      allOf:
+        - $ref: '#/components/requestBodies/TestRequestBody'",
+      "tool": "spectral",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "openapi.in.yaml",
+        "range": {
+          "endColumn": 61,
+          "endLine": 13,
+          "startColumn": 1,
+          "startLine": 1,
+        },
+      },
+      "message": "OpenAPI "servers" must be present and non-empty array.",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "oas3-api-servers",
+      "snippet": "openapi: 3.0.0
+components:
+  requestBodies:
+    TestRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    TestSchema:
+      title: TestSchema
+      allOf:
+        - $ref: '#/components/requestBodies/TestRequestBody'",
+      "snippetWithContext": "openapi: 3.0.0
+components:
+  requestBodies:
+    TestRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    TestSchema:
+      title: TestSchema
+      allOf:
+        - $ref: '#/components/requestBodies/TestRequestBody'",
+      "tool": "spectral",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "openapi.in.yaml",
+        "range": {
+          "endColumn": 61,
+          "endLine": 13,
+          "startColumn": 1,
+          "startLine": 1,
+        },
+      },
+      "message": "must have required property "info".",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "oas3-schema",
+      "snippet": "openapi: 3.0.0
+components:
+  requestBodies:
+    TestRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    TestSchema:
+      title: TestSchema
+      allOf:
+        - $ref: '#/components/requestBodies/TestRequestBody'",
+      "snippetWithContext": "openapi: 3.0.0
+components:
+  requestBodies:
+    TestRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    TestSchema:
+      title: TestSchema
+      allOf:
+        - $ref: '#/components/requestBodies/TestRequestBody'",
+      "tool": "spectral",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "openapi.in.yaml",
+        "range": {
+          "endColumn": 61,
+          "endLine": 13,
+          "startColumn": 1,
+          "startLine": 1,
+        },
+      },
+      "message": "must have required property "paths".",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "oas3-schema",
+      "snippet": "openapi: 3.0.0
+components:
+  requestBodies:
+    TestRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    TestSchema:
+      title: TestSchema
+      allOf:
+        - $ref: '#/components/requestBodies/TestRequestBody'",
+      "snippetWithContext": "openapi: 3.0.0
+components:
+  requestBodies:
+    TestRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    TestSchema:
+      title: TestSchema
+      allOf:
+        - $ref: '#/components/requestBodies/TestRequestBody'",
+      "tool": "spectral",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "openapi.in.yaml",
+        "range": {
+          "endColumn": 61,
+          "endLine": 13,
+          "startColumn": 16,
+          "startLine": 10,
+        },
+      },
+      "message": "Potentially unused component has been detected.",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "oas3-unused-component",
+      "snippet": "    TestSchema:
+      title: TestSchema
+      allOf:
+        - $ref: '#/components/requestBodies/TestRequestBody'",
+      "snippetWithContext": "openapi: 3.0.0
+components:
+  requestBodies:
+    TestRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    TestSchema:
+      title: TestSchema
+      allOf:
+        - $ref: '#/components/requestBodies/TestRequestBody'",
+      "tool": "spectral",
+    },
+  ],
+}
+`;
