@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`linter=trivy fixture=basic_dockerfile version=0.57.1 1`] = `
+exports[`linter=trivy fixture=basic_dockerfile version=0.69.2 1`] = `
 Child Object Structure: {
   "tool": "string",
   "ruleKey": "string",
