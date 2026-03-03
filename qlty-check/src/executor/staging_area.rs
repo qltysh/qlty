@@ -406,10 +406,11 @@ mod test {
         std::fs::write(&config_file, "repository_config_content").unwrap();
 
         let workspace = Workspace::for_root(paths.source.path()).unwrap();
-        let result = load_config_file_from_repository(&config_file, &workspace, paths.dest.path());
-        assert!(result.is_ok());
+        let result =
+            load_config_file_from_repository(&config_file, &workspace, paths.dest.path()).unwrap();
 
         let dest_file = paths.dest.path().join("abc").join("conf.yml");
+        assert_eq!(result.unwrap(), dest_file.display().to_string());
         assert!(dest_file.exists());
 
         let content = std::fs::read_to_string(&dest_file).unwrap();
@@ -424,10 +425,10 @@ mod test {
         create_dir_all(config_file.parent().unwrap()).unwrap();
         std::fs::write(&config_file, "source_config_content").unwrap();
 
-        let result = load_config_file_from_source(&config_file, paths.dest.path());
-        assert!(result.is_ok());
+        let result = load_config_file_from_source(&config_file, paths.dest.path()).unwrap();
 
         let dest_file = paths.dest.path().join("conf.yml");
+        assert_eq!(result.unwrap(), dest_file.display().to_string());
         assert!(dest_file.exists());
 
         let content = std::fs::read_to_string(&dest_file).unwrap();
@@ -445,10 +446,11 @@ mod test {
         std::fs::write(&config_file, "qlty_dir_config_content").unwrap();
 
         let workspace = Workspace::for_root(mock_workspace_path.path()).unwrap();
-        let result = load_config_file_from_qlty_dir("conf.yml", &workspace, paths.dest.path());
-        assert!(result.is_ok());
+        let result =
+            load_config_file_from_qlty_dir("conf.yml", &workspace, paths.dest.path()).unwrap();
 
         let dest_file = paths.dest.path().join("conf.yml");
+        assert_eq!(result.unwrap(), dest_file.display().to_string());
         assert!(dest_file.exists());
 
         let content = std::fs::read_to_string(&dest_file).unwrap();
@@ -492,9 +494,10 @@ mod test {
         let dest_parent = dest_file.parent().unwrap();
 
         let workspace = Workspace::for_root(paths.source.path()).unwrap();
-        let result = load_config_file_from_repository(&config_file, &workspace, paths.dest.path());
-        assert!(result.is_ok());
+        let result =
+            load_config_file_from_repository(&config_file, &workspace, paths.dest.path()).unwrap();
 
+        assert_eq!(result.unwrap(), dest_file.display().to_string());
         assert!(dest_parent.exists());
         assert!(dest_file.exists());
         let content = std::fs::read_to_string(&dest_file).unwrap();
