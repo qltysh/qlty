@@ -318,22 +318,19 @@ impl Executor {
         for config_file in &exported_config_paths {
             if self.plan.workspace.root != self.plan.staging_area.destination_directory {
                 // for formatters
-                let loaded_config_file = load_config_file_from_source(
+                if let Some(path) = load_config_file_from_source(
                     config_file,
                     &self.plan.staging_area.destination_directory,
-                )?;
-
-                if !loaded_config_file.is_empty() {
-                    loaded_config_files.push(loaded_config_file);
+                )? {
+                    loaded_config_files.push(path);
                 }
             }
 
             // for linters
-            let loaded_config_file =
-                load_config_file_from_source(config_file, &self.plan.workspace.root)?;
-
-            if !loaded_config_file.is_empty() {
-                loaded_config_files.push(loaded_config_file);
+            if let Some(path) =
+                load_config_file_from_source(config_file, &self.plan.workspace.root)?
+            {
+                loaded_config_files.push(path);
             }
         }
 
@@ -353,26 +350,22 @@ impl Executor {
         for config_file in &config_file_names {
             if self.plan.workspace.root != self.plan.staging_area.destination_directory {
                 // for formatters
-                let loaded_config_file = load_config_file_from_qlty_dir(
+                if let Some(path) = load_config_file_from_qlty_dir(
                     config_file,
                     &self.plan.workspace,
                     &self.plan.staging_area.destination_directory,
-                )?;
-
-                if !loaded_config_file.is_empty() {
-                    loaded_config_files.push(loaded_config_file);
+                )? {
+                    loaded_config_files.push(path);
                 }
             }
 
             // for linters
-            let loaded_config_file = load_config_file_from_qlty_dir(
+            if let Some(path) = load_config_file_from_qlty_dir(
                 config_file,
                 &self.plan.workspace,
                 &self.plan.workspace.root,
-            )?;
-
-            if !loaded_config_file.is_empty() {
-                loaded_config_files.push(loaded_config_file);
+            )? {
+                loaded_config_files.push(path);
             }
         }
 
