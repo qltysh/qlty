@@ -4,7 +4,7 @@ use std::fs::Permissions;
 use std::fs::{copy, create_dir_all};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use tracing::{debug, error, trace};
+use tracing::{debug, error, trace, warn};
 
 use crate::source_reader::{SourceReader, SourceReaderFs};
 use crate::utils::generate_random_id;
@@ -221,7 +221,7 @@ pub fn load_config_file_from_repository(
     config_file: impl AsRef<Path>,
     workspace: &Workspace,
     destination: impl AsRef<Path>,
-) -> Result<String> {
+) -> Result<Option<String>> {
     let to = destination
         .as_ref()
         .join(config_file.as_ref().strip_prefix(&workspace.root).unwrap());
@@ -232,7 +232,7 @@ pub fn load_config_file_from_repository(
 pub fn load_config_file_from_source(
     config_file: impl AsRef<Path>,
     destination: impl AsRef<Path>,
-) -> Result<String> {
+) -> Result<Option<String>> {
     load_config_file_from(
         &config_file,
         destination
@@ -245,7 +245,7 @@ pub fn load_config_file_from_qlty_dir(
     config_file: impl AsRef<Path>,
     workspace: &Workspace,
     destination: impl AsRef<Path>,
-) -> Result<String> {
+) -> Result<Option<String>> {
     let config_file_name = config_file.as_ref().file_name().unwrap();
     let from = workspace.library()?.configs_dir().join(config_file_name);
     let to = destination.as_ref().join(config_file_name);
@@ -272,14 +272,15 @@ fn ensure_parent_exists(to: impl AsRef<Path>) -> Result<()> {
     Ok(())
 }
 
-fn load_config_file_from(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<String> {
+fn load_config_file_from(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<Option<String>> {
     let from = from.as_ref();
     let to = to.as_ref();
     if !from.exists() {
-        return Ok("".to_string());
+        warn!("Config file does not exist: {:?}", from);
+        return Ok(None);
     } else if to.exists() {
         debug!("Config file already exists in workspace: {:?}", to);
-        return Ok(to.display().to_string());
+        return Ok(None);
     }
 
     ensure_parent_exists(to)?;
@@ -294,7 +295,7 @@ fn load_config_file_from(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result
         )
     })?;
 
-    Ok(to.display().to_string())
+    Ok(Some(to.display().to_string()))
 }
 
 #[cfg(windows)]
@@ -405,10 +406,11 @@ mod test {
         std::fs::write(&config_file, "repository_config_content").unwrap();
 
         let workspace = Workspace::for_root(paths.source.path()).unwrap();
-        let result = load_config_file_from_repository(&config_file, &workspace, paths.dest.path());
-        assert!(result.is_ok());
+        let result =
+            load_config_file_from_repository(&config_file, &workspace, paths.dest.path()).unwrap();
 
         let dest_file = paths.dest.path().join("abc").join("conf.yml");
+        assert_eq!(result.unwrap(), dest_file.display().to_string());
         assert!(dest_file.exists());
 
         let content = std::fs::read_to_string(&dest_file).unwrap();
@@ -423,10 +425,10 @@ mod test {
         create_dir_all(config_file.parent().unwrap()).unwrap();
         std::fs::write(&config_file, "source_config_content").unwrap();
 
-        let result = load_config_file_from_source(&config_file, paths.dest.path());
-        assert!(result.is_ok());
+        let result = load_config_file_from_source(&config_file, paths.dest.path()).unwrap();
 
         let dest_file = paths.dest.path().join("conf.yml");
+        assert_eq!(result.unwrap(), dest_file.display().to_string());
         assert!(dest_file.exists());
 
         let content = std::fs::read_to_string(&dest_file).unwrap();
@@ -444,10 +446,11 @@ mod test {
         std::fs::write(&config_file, "qlty_dir_config_content").unwrap();
 
         let workspace = Workspace::for_root(mock_workspace_path.path()).unwrap();
-        let result = load_config_file_from_qlty_dir("conf.yml", &workspace, paths.dest.path());
-        assert!(result.is_ok());
+        let result =
+            load_config_file_from_qlty_dir("conf.yml", &workspace, paths.dest.path()).unwrap();
 
         let dest_file = paths.dest.path().join("conf.yml");
+        assert_eq!(result.unwrap(), dest_file.display().to_string());
         assert!(dest_file.exists());
 
         let content = std::fs::read_to_string(&dest_file).unwrap();
@@ -460,8 +463,7 @@ mod test {
         let nonexistent_file = paths.source.path().join("conf.yml");
         let result = load_config_file_from(&nonexistent_file, paths.dest.path().join("conf.yml"));
 
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), "");
+        assert!(result.unwrap().is_none());
     }
 
     #[test]
@@ -474,8 +476,7 @@ mod test {
         std::fs::write(&dest_file, "destination_content").unwrap();
 
         let result = load_config_file_from(&source_file, &dest_file);
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), dest_file.display().to_string());
+        assert!(result.unwrap().is_none());
 
         let content = std::fs::read_to_string(&dest_file).unwrap();
         assert_eq!(content, "destination_content");
@@ -493,9 +494,10 @@ mod test {
         let dest_parent = dest_file.parent().unwrap();
 
         let workspace = Workspace::for_root(paths.source.path()).unwrap();
-        let result = load_config_file_from_repository(&config_file, &workspace, paths.dest.path());
-        assert!(result.is_ok());
+        let result =
+            load_config_file_from_repository(&config_file, &workspace, paths.dest.path()).unwrap();
 
+        assert_eq!(result.unwrap(), dest_file.display().to_string());
         assert!(dest_parent.exists());
         assert!(dest_file.exists());
         let content = std::fs::read_to_string(&dest_file).unwrap();
