@@ -4,7 +4,7 @@ use std::fs::Permissions;
 use std::fs::{copy, create_dir_all};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use tracing::{debug, error, trace};
+use tracing::{debug, error, trace, warn};
 
 use crate::source_reader::{SourceReader, SourceReaderFs};
 use crate::utils::generate_random_id;
@@ -276,7 +276,7 @@ fn load_config_file_from(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result
     let from = from.as_ref();
     let to = to.as_ref();
     if !from.exists() {
-        error!("Config file does not exist: {:?}", from);
+        warn!("Config file does not exist: {:?}", from);
         return Ok(None);
     } else if to.exists() {
         debug!("Config file already exists in workspace: {:?}", to);
