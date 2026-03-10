@@ -214,6 +214,10 @@ impl Planner {
                 ),
             };
 
+            if language_plan.issue_mode == IssueMode::Disabled {
+                continue;
+            }
+
             languages.insert(name.to_string(), language_plan);
         }
 
