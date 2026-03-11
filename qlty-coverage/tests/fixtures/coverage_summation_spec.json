@@ -1,6 +1,6 @@
 {
   "description": "Test vectors for coverage array summation. Each entry defines input arrays and the expected merged output. Implementations must: (1) truncate all arrays to the minimum length, (2) for each position, return min if min < 0, else return sum.",
-  "note": "This spec is shared between the client (qlty CLI) and the server (this repo) to ensure both implementations produce identical results when summing coverage arrays. Changes here must be validated against both repositories.",
+  "note": "This spec is shared between the client (qlty CLI) and the server to ensure both implementations produce identical results when summing coverage arrays. Changes here must be validated against both repositories.",
   "expectations": [
     {
       "id": "single_array",
