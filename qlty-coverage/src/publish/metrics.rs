@@ -13,6 +13,37 @@ pub struct CoverageMetrics {
 
 impl CoverageMetrics {
     pub fn calculate(file_coverages: &[FileCoverage]) -> Self {
+        if std::env::var("QLTY_COVERAGE_CLIENT_SIDE_SUMMING").is_ok() {
+            return Self::calculate_deduplicated(file_coverages);
+        }
+
+        Self::calculate_with_combining(file_coverages)
+    }
+
+    // Data is already deduplicated by sum_file_coverages, so just count hits directly.
+    // When QLTY_COVERAGE_CLIENT_SIDE_SUMMING becomes the default, this replaces
+    // calculate_with_combining entirely.
+    fn calculate_deduplicated(file_coverages: &[FileCoverage]) -> Self {
+        let mut covered_lines = 0;
+        let mut uncovered_lines = 0;
+        let mut omitted_lines = 0;
+
+        for fc in file_coverages {
+            for &hit in &fc.hits {
+                if hit > 0 {
+                    covered_lines += 1;
+                } else if hit == 0 {
+                    uncovered_lines += 1;
+                } else {
+                    omitted_lines += 1;
+                }
+            }
+        }
+
+        Self::from_counts(covered_lines, uncovered_lines, omitted_lines)
+    }
+
+    fn calculate_with_combining(file_coverages: &[FileCoverage]) -> Self {
         // Group file coverages by path
         let mut path_hits_map: HashMap<String, Vec<Vec<i64>>> = HashMap::new();
 
@@ -65,6 +96,10 @@ impl CoverageMetrics {
             }
         }
 
+        Self::from_counts(covered_lines, uncovered_lines, omitted_lines)
+    }
+
+    fn from_counts(covered_lines: u64, uncovered_lines: u64, omitted_lines: u64) -> Self {
         let total_lines = covered_lines + uncovered_lines + omitted_lines;
         let coverable_lines = covered_lines + uncovered_lines;
 
