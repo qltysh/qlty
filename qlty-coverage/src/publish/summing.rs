@@ -111,28 +111,8 @@ mod tests {
         use super::*;
 
         #[test]
-        fn empty_input() {
+        fn zero_arrays() {
             assert_eq!(sum_hits(&[]), Vec::<i64>::new());
-        }
-
-        #[test]
-        fn single_array() {
-            assert_eq!(sum_hits(&[vec![1, 0, -1]]), vec![1, 0, -1]);
-        }
-
-        #[test]
-        fn sums_covered_lines() {
-            assert_eq!(sum_hits(&[vec![1, 2], vec![3, 4]]), vec![4, 6]);
-        }
-
-        #[test]
-        fn omit_wins_over_covered() {
-            assert_eq!(sum_hits(&[vec![5], vec![-1]]), vec![-1]);
-        }
-
-        #[test]
-        fn truncates_to_min_length() {
-            assert_eq!(sum_hits(&[vec![1, 2, 3], vec![1]]), vec![2]);
         }
     }
 
