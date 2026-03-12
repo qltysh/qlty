@@ -1,3 +1,4 @@
+use crate::publish::summing::DeduplicatedCoverages;
 use qlty_types::tests::v1::FileCoverage;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -12,23 +13,12 @@ pub struct CoverageMetrics {
 }
 
 impl CoverageMetrics {
-    pub fn calculate(file_coverages: &[FileCoverage]) -> Self {
-        if std::env::var("QLTY_COVERAGE_CLIENT_SIDE_SUMMING").is_ok() {
-            return Self::calculate_deduplicated(file_coverages);
-        }
-
-        Self::calculate_with_combining(file_coverages)
-    }
-
-    // Data is already deduplicated by sum_file_coverages, so just count hits directly.
-    // When QLTY_COVERAGE_CLIENT_SIDE_SUMMING becomes the default, this replaces
-    // calculate_with_combining entirely.
-    fn calculate_deduplicated(file_coverages: &[FileCoverage]) -> Self {
+    pub fn from_deduplicated(coverages: &DeduplicatedCoverages) -> Self {
         let mut covered_lines = 0;
         let mut uncovered_lines = 0;
         let mut omitted_lines = 0;
 
-        for fc in file_coverages {
+        for fc in coverages.as_slice() {
             for &hit in &fc.hits {
                 if hit > 0 {
                     covered_lines += 1;
@@ -43,7 +33,7 @@ impl CoverageMetrics {
         Self::from_counts(covered_lines, uncovered_lines, omitted_lines)
     }
 
-    fn calculate_with_combining(file_coverages: &[FileCoverage]) -> Self {
+    pub fn calculate_with_combining(file_coverages: &[FileCoverage]) -> Self {
         // Group file coverages by path
         let mut path_hits_map: HashMap<String, Vec<Vec<i64>>> = HashMap::new();
 
@@ -125,7 +115,7 @@ mod tests {
 
     #[test]
     fn test_empty_coverage() {
-        let metrics = CoverageMetrics::calculate(&[]);
+        let metrics = CoverageMetrics::calculate_with_combining(&[]);
 
         assert_eq!(metrics.covered_lines, 0);
         assert_eq!(metrics.uncovered_lines, 0);
@@ -142,7 +132,7 @@ mod tests {
             ..Default::default()
         };
 
-        let metrics = CoverageMetrics::calculate(&[file_coverage]);
+        let metrics = CoverageMetrics::calculate_with_combining(&[file_coverage]);
 
         assert_eq!(metrics.covered_lines, 2);
         assert_eq!(metrics.uncovered_lines, 1);
@@ -165,7 +155,7 @@ mod tests {
             ..Default::default()
         };
 
-        let metrics = CoverageMetrics::calculate(&[file_coverage1, file_coverage2]);
+        let metrics = CoverageMetrics::calculate_with_combining(&[file_coverage1, file_coverage2]);
 
         assert_eq!(metrics.covered_lines, 3);
         assert_eq!(metrics.uncovered_lines, 3);
@@ -188,7 +178,7 @@ mod tests {
             ..Default::default()
         };
 
-        let metrics = CoverageMetrics::calculate(&[file_coverage1, file_coverage2]);
+        let metrics = CoverageMetrics::calculate_with_combining(&[file_coverage1, file_coverage2]);
 
         assert_eq!(metrics.covered_lines, 3);
         assert_eq!(metrics.uncovered_lines, 0);
@@ -211,7 +201,7 @@ mod tests {
             ..Default::default()
         };
 
-        let metrics = CoverageMetrics::calculate(&[file_coverage1, file_coverage2]);
+        let metrics = CoverageMetrics::calculate_with_combining(&[file_coverage1, file_coverage2]);
 
         assert_eq!(metrics.covered_lines, 4);
         assert_eq!(metrics.uncovered_lines, 1);
@@ -228,7 +218,7 @@ mod tests {
             ..Default::default()
         };
 
-        let metrics = CoverageMetrics::calculate(&[file_coverage]);
+        let metrics = CoverageMetrics::calculate_with_combining(&[file_coverage]);
 
         assert_eq!(metrics.covered_lines, 0);
         assert_eq!(metrics.uncovered_lines, 0);

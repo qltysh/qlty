@@ -65,16 +65,18 @@ impl Processor {
             }
         }
 
-        let transformed_file_coverages =
-            if std::env::var("QLTY_COVERAGE_CLIENT_SIDE_SUMMING").is_ok() {
-                sum_file_coverages(transformed_file_coverages)
-            } else {
-                transformed_file_coverages
-            };
-
-        let totals = CoverageMetrics::calculate(&transformed_file_coverages);
         let ignored_paths_count =
             pre_transform_file_coverages_count - transformed_file_coverages.len();
+
+        let (totals, transformed_file_coverages) =
+            if std::env::var("QLTY_COVERAGE_CLIENT_SIDE_SUMMING").is_ok() {
+                let deduped = sum_file_coverages(transformed_file_coverages);
+                let totals = CoverageMetrics::from_deduplicated(&deduped);
+                (totals, deduped.into_inner())
+            } else {
+                let totals = CoverageMetrics::calculate_with_combining(&transformed_file_coverages);
+                (totals, transformed_file_coverages)
+            };
 
         Ok(Report {
             metadata: self.plan.metadata.clone(),

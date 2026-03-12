@@ -1,6 +1,22 @@
 use qlty_types::tests::v1::{CoverageSummary, FileCoverage};
 use std::collections::HashMap;
 
+pub struct DeduplicatedCoverages(Vec<FileCoverage>);
+
+impl DeduplicatedCoverages {
+    pub fn as_slice(&self) -> &[FileCoverage] {
+        &self.0
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn into_inner(self) -> Vec<FileCoverage> {
+        self.0
+    }
+}
+
 fn merge_hits(existing: &mut Vec<i64>, other: &[i64]) {
     let min_len = existing.len().min(other.len());
     existing.truncate(min_len);
@@ -35,7 +51,7 @@ fn compute_summary(hits: &[i64]) -> CoverageSummary {
     }
 }
 
-pub fn sum_file_coverages(file_coverages: Vec<FileCoverage>) -> Vec<FileCoverage> {
+pub fn sum_file_coverages(file_coverages: Vec<FileCoverage>) -> DeduplicatedCoverages {
     let mut map: HashMap<String, FileCoverage> = HashMap::new();
 
     for fc in file_coverages {
@@ -49,12 +65,14 @@ pub fn sum_file_coverages(file_coverages: Vec<FileCoverage>) -> Vec<FileCoverage
         }
     }
 
-    map.into_values()
-        .map(|mut fc| {
-            fc.summary = Some(compute_summary(&fc.hits));
-            fc
-        })
-        .collect()
+    DeduplicatedCoverages(
+        map.into_values()
+            .map(|mut fc| {
+                fc.summary = Some(compute_summary(&fc.hits));
+                fc
+            })
+            .collect(),
+    )
 }
 
 #[cfg(test)]
@@ -131,7 +149,7 @@ mod tests {
         fn no_duplicates_passes_through() {
             let input = vec![make_fc("a.rs", vec![1, 0, -1]), make_fc("b.rs", vec![0, 1])];
 
-            let result = sum_file_coverages(input);
+            let result = sum_file_coverages(input).into_inner();
             assert_eq!(result.len(), 2);
 
             let a = result.iter().find(|fc| fc.path == "a.rs").unwrap();
@@ -148,7 +166,7 @@ mod tests {
                 make_fc("a.rs", vec![2, 1, -1]),
             ];
 
-            let result = sum_file_coverages(input);
+            let result = sum_file_coverages(input).into_inner();
             assert_eq!(result.len(), 1);
             assert_eq!(result[0].hits, vec![3, 1, -1]);
         }
@@ -160,7 +178,7 @@ mod tests {
                 make_fc("a.rs", vec![0, 1, -1, 0]),
             ];
 
-            let result = sum_file_coverages(input);
+            let result = sum_file_coverages(input).into_inner();
             let summary = result[0].summary.unwrap();
             assert_eq!(summary.covered, 2);
             assert_eq!(summary.missed, 1);
@@ -176,7 +194,7 @@ mod tests {
 
             let fc2 = make_fc("a.rs", vec![2]);
 
-            let result = sum_file_coverages(vec![fc1, fc2]);
+            let result = sum_file_coverages(vec![fc1, fc2]).into_inner();
             assert_eq!(result[0].build_id, "build-1");
             assert_eq!(result[0].commit_sha, Some("abc123".to_string()));
         }
@@ -189,7 +207,7 @@ mod tests {
                 make_fc("a.rs", vec![0, 1]),
             ];
 
-            let result = sum_file_coverages(input);
+            let result = sum_file_coverages(input).into_inner();
             assert_eq!(result.len(), 2);
 
             let a = result.iter().find(|fc| fc.path == "a.rs").unwrap();
