@@ -1,4 +1,6 @@
-use crate::publish::{metrics::CoverageMetrics, Plan, Report, Results};
+use crate::publish::{
+    metrics::CoverageMetrics, summing::sum_file_coverages, Plan, Report, Results,
+};
 use anyhow::Result;
 use qlty_types::tests::v1::FileCoverage;
 use std::collections::HashSet;
@@ -63,9 +65,18 @@ impl Processor {
             }
         }
 
-        let totals = CoverageMetrics::calculate(&transformed_file_coverages);
         let ignored_paths_count =
             pre_transform_file_coverages_count - transformed_file_coverages.len();
+
+        let (totals, transformed_file_coverages) =
+            if std::env::var("QLTY_COVERAGE_CLIENT_SIDE_SUMMING").is_ok() {
+                let deduped = sum_file_coverages(transformed_file_coverages);
+                let totals = CoverageMetrics::from_deduplicated(&deduped);
+                (totals, deduped.into_inner())
+            } else {
+                let totals = CoverageMetrics::calculate_with_combining(&transformed_file_coverages);
+                (totals, transformed_file_coverages)
+            };
 
         Ok(Report {
             metadata: self.plan.metadata.clone(),
