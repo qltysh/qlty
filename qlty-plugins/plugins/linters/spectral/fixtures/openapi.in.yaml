@@ -1,0 +1,13 @@
+openapi: 3.0.0
+components:
+  requestBodies:
+    TestRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    TestSchema:
+      title: TestSchema
+      allOf:
+        - $ref: '#/components/requestBodies/TestRequestBody'
