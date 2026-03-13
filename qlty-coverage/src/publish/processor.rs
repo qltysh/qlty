@@ -1,3 +1,4 @@
+use crate::git::get_git_tracking_info;
 use crate::publish::{metrics::CoverageMetrics, Plan, Report, Results};
 use anyhow::Result;
 use qlty_types::tests::v1::FileCoverage;
@@ -34,14 +35,23 @@ impl Processor {
             .filter_map(|file_coverage| self.transform(file_coverage.to_owned()))
             .collect::<Vec<_>>();
 
+        let git_tracking = get_git_tracking_info();
+        let git_repo_path = git_tracking.as_ref().map(|info| info.repo_root.clone());
+
         let mut found_files = HashSet::new();
         let mut missing_files = HashSet::new();
+        let mut untracked_files = HashSet::new();
 
         if self.plan.skip_missing_files {
             transformed_file_coverages.retain(|file_coverage| {
                 match PathBuf::from(&file_coverage.path).try_exists() {
                     Ok(true) => {
                         found_files.insert(file_coverage.path.clone());
+                        if let Some(ref tracking) = git_tracking {
+                            if !tracking.is_tracked(&file_coverage.path) {
+                                untracked_files.insert(file_coverage.path.clone());
+                            }
+                        }
                         true
                     }
                     _ => {
@@ -55,6 +65,11 @@ impl Processor {
                 match PathBuf::from(&file_coverage.path).try_exists() {
                     Ok(true) => {
                         found_files.insert(file_coverage.path.clone());
+                        if let Some(ref tracking) = git_tracking {
+                            if !tracking.is_tracked(&file_coverage.path) {
+                                untracked_files.insert(file_coverage.path.clone());
+                            }
+                        }
                     }
                     _ => {
                         missing_files.insert(file_coverage.path.clone());
@@ -74,6 +89,8 @@ impl Processor {
             totals,
             missing_files,
             found_files,
+            untracked_files,
+            git_repo_path,
             excluded_files_count: ignored_paths_count,
             auto_path_fixing_enabled: self.plan.auto_path_fixing_enabled,
         })
