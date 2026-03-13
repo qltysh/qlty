@@ -13,7 +13,10 @@ const OIDC_REGEX: &str = r"^([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_
 
 pub fn load_config() -> QltyConfig {
     Workspace::new()
-        .and_then(|workspace| workspace.config())
+        .and_then(|workspace| {
+            workspace.fetch_sources()?;
+            workspace.config()
+        })
         .unwrap_or_default()
 }
 
