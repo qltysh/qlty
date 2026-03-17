@@ -10,20 +10,64 @@ exports[`linter=golangci-lint fixture=basic_new version=2.0.2 1`] = `
         "path": "basic.go",
         "range": {
           "startColumn": 12,
-          "startLine": 8,
+          "startLine": 12,
         },
       },
       "message": "Error return value of \`time.Parse\` is not checked",
       "mode": "MODE_COMMENT",
       "ruleKey": "errcheck",
       "snippet": "	time.Parse("asdf", "")",
-      "snippetWithContext": "package main
-
-import "time"
+      "snippetWithContext": "
+import (
+	"time"
+	"fmt"
+)
 
 // ✋✋✋✋
 // this is the main function 🏃
 func main() {
+	fmt.Println("hello")
+	time.Parse("asdf", "")
+}",
+      "tool": "golangci-lint",
+    },
+    {
+      "category": "CATEGORY_STYLE",
+      "level": "LEVEL_FMT",
+      "location": {
+        "path": "basic.go",
+      },
+      "message": "Incorrect formatting, autoformat by running \`qlty fmt\`.",
+      "mode": "MODE_COMMENT",
+      "onAddedLine": true,
+      "ruleKey": "fmt",
+      "tool": "golangci-lint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.go",
+        "range": {
+          "startColumn": 1,
+          "startLine": 8,
+        },
+      },
+      "message": "Comment should end in a period",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "godot",
+      "snippet": "// ✋✋✋✋",
+      "snippetWithContext": "package main
+
+import (
+	"time"
+	"fmt"
+)
+
+// ✋✋✋✋
+// this is the main function 🏃
+func main() {
+	fmt.Println("hello")
 	time.Parse("asdf", "")
 }",
       "tool": "golangci-lint",
@@ -35,20 +79,24 @@ func main() {
         "path": "basic.go",
         "range": {
           "startColumn": 1,
-          "startLine": 5,
+          "startLine": 4,
         },
       },
-      "message": "Comment should end in a period",
+      "message": "File is not properly formatted",
       "mode": "MODE_COMMENT",
-      "ruleKey": "godot",
-      "snippet": "// ✋✋✋✋",
+      "ruleKey": "goimports",
+      "snippet": "	"time"",
       "snippetWithContext": "package main
 
-import "time"
+import (
+	"time"
+	"fmt"
+)
 
 // ✋✋✋✋
 // this is the main function 🏃
 func main() {
+	fmt.Println("hello")
 	time.Parse("asdf", "")
 }",
       "tool": "golangci-lint",

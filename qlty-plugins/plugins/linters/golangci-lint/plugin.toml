@@ -44,6 +44,16 @@ output_format = "golangci_lint"
 suggested = "targets"
 output_missing = "parse"
 
+[[plugins.definitions.golangci-lint.drivers.format.version]]
+version_matcher = ">=2.0.0"
+script = "golangci-lint fmt ${target}"
+target = { type = "literal", path = "./..." }
+runs_from = { type = "root_or_parent_with", path = "go.mod" }
+success_codes = [0]
+output = "rewrite"
+driver_type = "formatter"
+suggested = "config"
+
 [[plugins.definitions.golangci-lint.environment]]
 name = "PATH"
 list = ["${linter}", "${runtime}/bin", "${env.PATH}"]
