@@ -290,7 +290,18 @@ impl InvocationResult {
     fn handle_output_rewrite(&mut self) -> Result<()> {
         let mut formatted = vec![];
 
-        for target_path in self.invocation.target_paths.iter() {
+        let paths_to_check: Vec<String> =
+            if self.plan.driver.target.target_type == TargetType::Literal {
+                self.plan
+                    .workspace_entries
+                    .iter()
+                    .map(|e| e.path_string())
+                    .collect()
+            } else {
+                self.invocation.target_paths.clone()
+            };
+
+        for target_path in paths_to_check.iter() {
             let prefixed_target_path = self.prefixed_file_path(target_path);
 
             let workspace_path = self.plan.workspace.root.join(&prefixed_target_path);
@@ -374,8 +385,15 @@ impl InvocationResult {
     fn create_file_result_for_autofmts(&self) -> Result<Vec<FileResult>> {
         let mut file_results: Vec<FileResult> = Vec::new();
 
-        for target in self.plan.targets.iter() {
-            let staged_path = self.plan.target_root.join(&target.path);
+        let entries_to_check: Vec<_> = if self.plan.driver.target.target_type == TargetType::Literal
+        {
+            self.plan.workspace_entries.iter().collect()
+        } else {
+            self.plan.targets.iter().collect()
+        };
+
+        for entry in entries_to_check {
+            let staged_path = self.plan.target_root.join(&entry.path);
             let staged_contents = match std::fs::read_to_string(&staged_path) {
                 Ok(content) => content,
                 Err(_) => {
@@ -384,7 +402,7 @@ impl InvocationResult {
                 }
             };
 
-            let prefixed_target_path = self.prefixed_file_path(&target.path_string());
+            let prefixed_target_path = self.prefixed_file_path(&entry.path_string());
 
             let workspace_path = self.plan.workspace.root.join(&prefixed_target_path);
             let workspace_contents = std::fs::read_to_string(&workspace_path)?;
