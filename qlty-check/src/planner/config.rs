@@ -123,6 +123,12 @@ fn configure_plugin(
 
         plugin_def.version = Some(enabled_plugin.version.clone());
 
+        if !enabled_plugin.drivers.contains(&ALL.to_string()) {
+            plugin_def
+                .drivers
+                .retain(|driver_name, _| enabled_plugin.drivers.contains(driver_name));
+        }
+
         let mut unmatched_drivers = vec![];
 
         for (driver_name, driver) in plugin_def.drivers.iter_mut() {
@@ -200,11 +206,6 @@ fn configure_plugin(
             .affects_cache
             .extend(enabled_plugin.affects_cache.clone());
 
-        if !enabled_plugin.drivers.contains(&ALL.to_string()) {
-            plugin_def
-                .drivers
-                .retain(|driver_name, _| enabled_plugin.drivers.contains(driver_name));
-        }
         if let Some(TargetMode::UpstreamDiff(_)) = &planner.target_mode {
             if enabled_plugin.skip_upstream.is_none() || enabled_plugin.skip_upstream.unwrap() {
                 plugin_def.drivers.retain(|driver_name, driver| {
