@@ -290,16 +290,16 @@ impl InvocationResult {
     fn handle_output_rewrite(&mut self) -> Result<()> {
         let mut formatted = vec![];
 
-        let paths_to_check: Vec<String> =
-            if self.plan.driver.target.target_type == TargetType::Literal {
-                self.plan
-                    .workspace_entries
-                    .iter()
-                    .map(|e| e.path_string())
-                    .collect()
-            } else {
-                self.invocation.target_paths.clone()
-            };
+        let paths_to_check: Vec<String> = if self.plan.driver.target.target_type != TargetType::File
+        {
+            self.plan
+                .workspace_entries
+                .iter()
+                .map(|e| e.path_string())
+                .collect()
+        } else {
+            self.invocation.target_paths.clone()
+        };
 
         for target_path in paths_to_check.iter() {
             let prefixed_target_path = self.prefixed_file_path(target_path);
@@ -385,8 +385,7 @@ impl InvocationResult {
     fn create_file_result_for_autofmts(&self) -> Result<Vec<FileResult>> {
         let mut file_results: Vec<FileResult> = Vec::new();
 
-        let entries_to_check: Vec<_> = if self.plan.driver.target.target_type == TargetType::Literal
-        {
+        let entries_to_check: Vec<_> = if self.plan.driver.target.target_type != TargetType::File {
             self.plan.workspace_entries.iter().collect()
         } else {
             self.plan.targets.iter().collect()
