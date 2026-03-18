@@ -1,7 +1,7 @@
 config_version = "0"
 
 [plugins.releases.vale]
-github = "errata-ai/vale"
+github = "vale-cli/vale"
 download_type = "targz"
 strip_components = 0
 
