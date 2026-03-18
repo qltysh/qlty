@@ -262,21 +262,7 @@ impl GitSource {
     }
 
     fn fetch(&self, origin: &mut Remote, branches: &[&str]) -> Result<()> {
-        let mut fetch_options = self.create_fetch_options()?;
-        let resolved_origin = self
-            .resolve_url(&self.origin)
-            .unwrap_or_else(|_| self.origin.clone());
-
-        // Per libgit2, passing an empty array of refspecs fetches base refspecs
-        origin
-            .fetch(branches, Some(&mut fetch_options), None)
-            .with_context(|| {
-                if branches.is_empty() {
-                    format!("Failed to fetch base refspecs from remote origin {resolved_origin}")
-                } else {
-                    format!("Failed to fetch branches {branches:?} from remote origin {resolved_origin}")
-                }
-            })
+        self.fetch_with_options(origin, branches)
     }
 
     fn global_origin_path(&self) -> Result<PathBuf> {
@@ -321,7 +307,12 @@ impl GitSource {
         }
     }
 
-    fn create_fetch_options(&self) -> Result<FetchOptions<'_>> {
+    fn fetch_with_options(&self, origin: &mut Remote, branches: &[&str]) -> Result<()> {
+        let config = git2::Config::open_default()
+            .map_err(|e| anyhow::anyhow!("Failed to open Git configuration: {e}"))?;
+        let authenticator = GitAuthenticator::default();
+        let mut credential_fn = authenticator.credentials(&config);
+
         let mut fetch_options = FetchOptions::new();
 
         let mut proxy_options = git2::ProxyOptions::new();
@@ -330,18 +321,23 @@ impl GitSource {
 
         let mut callbacks = RemoteCallbacks::new();
 
-        callbacks.credentials(|url, username, allowed| {
-            let config = git2::Config::open_default().map_err(|e| {
-                git2::Error::from_str(&format!("Failed to open Git configuration: {e}"))
-            })?;
-            let authenticator = GitAuthenticator::default();
-            let mut credential_fn = authenticator.credentials(&config);
-            credential_fn(url, username, allowed)
-        });
+        callbacks.credentials(move |url, username, allowed| credential_fn(url, username, allowed));
 
         fetch_options.remote_callbacks(callbacks);
 
-        Ok(fetch_options)
+        let resolved_origin = self
+            .resolve_url(&self.origin)
+            .unwrap_or_else(|_| self.origin.clone());
+
+        origin
+            .fetch(branches, Some(&mut fetch_options), None)
+            .with_context(|| {
+                if branches.is_empty() {
+                    format!("Failed to fetch base refspecs from remote origin {resolved_origin}")
+                } else {
+                    format!("Failed to fetch branches {branches:?} from remote origin {resolved_origin}")
+                }
+            })
     }
 }
 
