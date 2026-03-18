@@ -8,14 +8,11 @@ const CLASSIC_METHOD_COMPLEXITY_DEFAULT_THRESHOLD: i64 = 5;
 const CLASSIC_RETURN_STATEMENTS_DEFAULT_THRESHOLD: i64 = 4;
 const CLASSIC_NESTED_CONTROL_FLOW_DEFAULT_THRESHOLD: i64 = 4;
 const CLASSIC_FILE_LINES_DEFAULT_THRESHOLD: i64 = 250;
-const DUPLICATION_DEFAULT_THRESHOLD: i64 = 20;
+const DUPLICATION_DEFAULT_THRESHOLD: i64 = 15;
 
 const LEEWAY_THRESHOLD_MULTIPLER: f64 = 1.1;
 const DEFAULT_THRESHOLD_MULTIPLIER: f64 = 1.0;
 const FILE_COMPLEXITY_THRESHOLD_MULTIPLER: f64 = 0.22;
-
-const WEIGHTED_DUPLICATION_DEFAULT_THRESHOLD: i64 =
-    (DUPLICATION_DEFAULT_THRESHOLD as f64 * LEEWAY_THRESHOLD_MULTIPLER) as i64;
 
 const ALL_QLTY_STRUCTURE_CHECKS: [QltyStructureChecks; 6] = [
     QltyStructureChecks::BooleanLogic,
@@ -146,40 +143,27 @@ impl CheckMigration {
     }
 
     fn migrate_duplication_check(smells_table: &mut Table, checks: &Checks) {
-        let duplication_table = smells_table
-            .entry("duplication")
+        let identical_code_table = smells_table
+            .entry("identical_code")
             .or_insert(table())
             .as_table_mut()
             .unwrap();
 
-        let similar_code_enabled = check_enabled(&checks.similar_code).unwrap_or(true);
-        let identical_code_enabled = check_enabled(&checks.identical_code).unwrap_or(true);
-
-        // disable only if both are disabled
-        if !similar_code_enabled && !identical_code_enabled {
-            duplication_table["enabled"] = value(false);
-            return;
-        } else {
-            duplication_table["enabled"] = value(true);
+        if let Some(enabled) = check_enabled(&checks.identical_code) {
+            identical_code_table["enabled"] = value(enabled);
         }
+        identical_code_table["threshold"] = value(DUPLICATION_DEFAULT_THRESHOLD);
 
-        let identical_code_threshold = checks
-            .identical_code
-            .as_ref()
-            .and_then(|check| check.config.as_ref())
-            .and_then(|config| config.threshold)
-            .unwrap_or(DUPLICATION_DEFAULT_THRESHOLD);
+        let similar_code_table = smells_table
+            .entry("similar_code")
+            .or_insert(table())
+            .as_table_mut()
+            .unwrap();
 
-        let similar_code_threshold = checks
-            .similar_code
-            .as_ref()
-            .and_then(|check| check.config.as_ref())
-            .and_then(|config| config.threshold)
-            .unwrap_or(DUPLICATION_DEFAULT_THRESHOLD);
-
-        let threshold = (identical_code_threshold + similar_code_threshold) / 2;
-
-        duplication_table["threshold"] = value(threshold);
+        if let Some(enabled) = check_enabled(&checks.similar_code) {
+            similar_code_table["enabled"] = value(enabled);
+        }
+        similar_code_table["threshold"] = value(DUPLICATION_DEFAULT_THRESHOLD);
     }
 
     fn migrate_defaults(smells_table: &mut Table) -> Result<()> {
@@ -195,8 +179,14 @@ impl CheckMigration {
 
         Self::migrate_default(
             smells_table,
-            "duplication",
-            WEIGHTED_DUPLICATION_DEFAULT_THRESHOLD,
+            "identical_code",
+            DUPLICATION_DEFAULT_THRESHOLD,
+        );
+
+        Self::migrate_default(
+            smells_table,
+            "similar_code",
+            DUPLICATION_DEFAULT_THRESHOLD,
         );
 
         Ok(())
@@ -272,16 +262,36 @@ mod test {
             );
         }
 
-        let duplication_table = smells_table.get("duplication").unwrap().as_table().unwrap();
+        let identical_code_table = smells_table
+            .get("identical_code")
+            .unwrap()
+            .as_table()
+            .unwrap();
         assert_eq!(
-            duplication_table
+            identical_code_table
                 .get("threshold")
                 .unwrap()
                 .as_value()
                 .unwrap()
                 .as_integer()
                 .unwrap(),
-            WEIGHTED_DUPLICATION_DEFAULT_THRESHOLD
+            DUPLICATION_DEFAULT_THRESHOLD
+        );
+
+        let similar_code_table = smells_table
+            .get("similar_code")
+            .unwrap()
+            .as_table()
+            .unwrap();
+        assert_eq!(
+            similar_code_table
+                .get("threshold")
+                .unwrap()
+                .as_value()
+                .unwrap()
+                .as_integer()
+                .unwrap(),
+            DUPLICATION_DEFAULT_THRESHOLD
         );
 
         Ok(())
@@ -404,20 +414,23 @@ mod test {
             &classic_config.checks.as_ref().unwrap(),
         );
 
-        // Validate the duplication check
-        let duplication_table = smells_table.get("duplication").unwrap().as_table().unwrap();
+        let identical_code_table = smells_table
+            .get("identical_code")
+            .unwrap()
+            .as_table()
+            .unwrap();
         assert_eq!(
-            duplication_table
+            identical_code_table
                 .get("threshold")
                 .unwrap()
                 .as_value()
                 .unwrap()
                 .as_integer()
                 .unwrap(),
-            40 // Average of 30 and 50
+            DUPLICATION_DEFAULT_THRESHOLD
         );
         assert_eq!(
-            duplication_table
+            identical_code_table
                 .get("enabled")
                 .unwrap()
                 .as_value()
@@ -425,6 +438,32 @@ mod test {
                 .as_bool()
                 .unwrap(),
             true
+        );
+
+        let similar_code_table = smells_table
+            .get("similar_code")
+            .unwrap()
+            .as_table()
+            .unwrap();
+        assert_eq!(
+            similar_code_table
+                .get("threshold")
+                .unwrap()
+                .as_value()
+                .unwrap()
+                .as_integer()
+                .unwrap(),
+            DUPLICATION_DEFAULT_THRESHOLD
+        );
+        assert_eq!(
+            similar_code_table
+                .get("enabled")
+                .unwrap()
+                .as_value()
+                .unwrap()
+                .as_bool()
+                .unwrap(),
+            false
         );
 
         Ok(())
@@ -523,26 +562,56 @@ mod test {
             );
         }
 
-        let duplication_table = smells_table.get("duplication").unwrap().as_table().unwrap();
+        let identical_code_table = smells_table
+            .get("identical_code")
+            .unwrap()
+            .as_table()
+            .unwrap();
         assert_eq!(
-            duplication_table
+            identical_code_table
                 .get("threshold")
                 .unwrap()
                 .as_value()
                 .unwrap()
                 .as_integer()
                 .unwrap(),
-            (30 + 40) / 2 // Average of similar_code and identical_code thresholds
+            DUPLICATION_DEFAULT_THRESHOLD
         );
         assert_eq!(
-            duplication_table
+            identical_code_table
                 .get("enabled")
                 .unwrap()
                 .as_value()
                 .unwrap()
                 .as_bool()
                 .unwrap(),
-            true // Enabled since at least one of similar_code or identical_code is enabled
+            true
+        );
+
+        let similar_code_table = smells_table
+            .get("similar_code")
+            .unwrap()
+            .as_table()
+            .unwrap();
+        assert_eq!(
+            similar_code_table
+                .get("threshold")
+                .unwrap()
+                .as_value()
+                .unwrap()
+                .as_integer()
+                .unwrap(),
+            DUPLICATION_DEFAULT_THRESHOLD
+        );
+        assert_eq!(
+            similar_code_table
+                .get("enabled")
+                .unwrap()
+                .as_value()
+                .unwrap()
+                .as_bool()
+                .unwrap(),
+            false
         );
 
         Ok(())
@@ -583,16 +652,36 @@ mod test {
             );
         }
 
-        let duplication_table = smells_table.get("duplication").unwrap().as_table().unwrap();
+        let identical_code_table = smells_table
+            .get("identical_code")
+            .unwrap()
+            .as_table()
+            .unwrap();
         assert_eq!(
-            duplication_table
+            identical_code_table
                 .get("threshold")
                 .unwrap()
                 .as_value()
                 .unwrap()
                 .as_integer()
                 .unwrap(),
-            WEIGHTED_DUPLICATION_DEFAULT_THRESHOLD
+            DUPLICATION_DEFAULT_THRESHOLD
+        );
+
+        let similar_code_table = smells_table
+            .get("similar_code")
+            .unwrap()
+            .as_table()
+            .unwrap();
+        assert_eq!(
+            similar_code_table
+                .get("threshold")
+                .unwrap()
+                .as_value()
+                .unwrap()
+                .as_integer()
+                .unwrap(),
+            DUPLICATION_DEFAULT_THRESHOLD
         );
 
         Ok(())

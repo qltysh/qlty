@@ -123,6 +123,14 @@ fn configure_plugin(
 
         plugin_def.version = Some(enabled_plugin.version.clone());
 
+        if !enabled_plugin.drivers.contains(&ALL.to_string()) {
+            plugin_def
+                .drivers
+                .retain(|driver_name, _| enabled_plugin.drivers.contains(driver_name));
+        }
+
+        let mut unmatched_drivers = vec![];
+
         for (driver_name, driver) in plugin_def.drivers.iter_mut() {
             // if driver has multiple versions, we need to find the one that matches the active plugin version
             if !driver.version.is_empty() {
@@ -137,14 +145,19 @@ fn configure_plugin(
                     );
                     *driver = enabled_driver;
                 } else {
-                    bail!(
-                        "No matching driver version found for plugin {} driver {} version {}",
+                    warn!(
+                        "No matching driver version found for plugin {} driver {} version {}, skipping",
                         name,
                         driver_name,
                         enabled_version
                     );
+                    unmatched_drivers.push(driver_name.clone());
                 }
             }
+        }
+
+        for driver_name in &unmatched_drivers {
+            plugin_def.drivers.remove(driver_name);
         }
 
         if let Some(package_file) = &enabled_plugin.package_file {
@@ -193,11 +206,6 @@ fn configure_plugin(
             .affects_cache
             .extend(enabled_plugin.affects_cache.clone());
 
-        if !enabled_plugin.drivers.contains(&ALL.to_string()) {
-            plugin_def
-                .drivers
-                .retain(|driver_name, _| enabled_plugin.drivers.contains(driver_name));
-        }
         if let Some(TargetMode::UpstreamDiff(_)) = &planner.target_mode {
             if enabled_plugin.skip_upstream.is_none() || enabled_plugin.skip_upstream.unwrap() {
                 plugin_def.drivers.retain(|driver_name, driver| {
@@ -641,5 +649,116 @@ mod test {
             enabled_plugin.plugin.package_file,
             Some(package_file_path.to_str().unwrap().to_string())
         );
+    }
+
+    #[test]
+    fn test_unmatched_driver_version_is_skipped() {
+        let mut plugin_defs = HashMap::new();
+        plugin_defs.insert(
+            "test_plugin".to_string(),
+            PluginDef {
+                drivers: vec![
+                    (
+                        "lint".to_string(),
+                        DriverDef {
+                            version: vec![
+                                DriverDef {
+                                    version_matcher: Some("<2.0.0".to_string()),
+                                    script: "lint-v1".to_string(),
+                                    ..Default::default()
+                                },
+                                DriverDef {
+                                    version_matcher: Some(">=2.0.0".to_string()),
+                                    script: "lint-v2".to_string(),
+                                    ..Default::default()
+                                },
+                            ],
+                            ..Default::default()
+                        },
+                    ),
+                    (
+                        "format".to_string(),
+                        DriverDef {
+                            version: vec![DriverDef {
+                                version_matcher: Some(">=2.0.0".to_string()),
+                                script: "fmt".to_string(),
+                                ..Default::default()
+                            }],
+                            ..Default::default()
+                        },
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+                ..Default::default()
+            },
+        );
+
+        let planner = build_planner(QltyConfig {
+            plugin: vec![EnabledPlugin {
+                name: "test_plugin".to_string(),
+                version: "1.0.0".to_string(),
+                drivers: vec![ALL.to_string()],
+                ..Default::default()
+            }],
+            plugins: PluginsConfig {
+                downloads: HashMap::new(),
+                releases: HashMap::new(),
+                definitions: plugin_defs,
+            },
+            ..Default::default()
+        });
+
+        let plugins = enabled_plugins(&planner).unwrap();
+
+        let plugin = plugins.iter().find(|p| p.name == "test_plugin").unwrap();
+        assert_eq!(plugin.plugin.drivers.len(), 1);
+        assert_eq!(plugin.plugin.drivers["lint"].script, "lint-v1");
+        assert!(!plugin.plugin.drivers.contains_key("format"));
+    }
+
+    #[test]
+    fn test_matched_driver_version_is_kept() {
+        let mut plugin_defs = HashMap::new();
+        plugin_defs.insert(
+            "test_plugin".to_string(),
+            PluginDef {
+                drivers: vec![(
+                    "format".to_string(),
+                    DriverDef {
+                        version: vec![DriverDef {
+                            version_matcher: Some(">=2.0.0".to_string()),
+                            script: "fmt".to_string(),
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    },
+                )]
+                .into_iter()
+                .collect(),
+                ..Default::default()
+            },
+        );
+
+        let planner = build_planner(QltyConfig {
+            plugin: vec![EnabledPlugin {
+                name: "test_plugin".to_string(),
+                version: "2.1.0".to_string(),
+                drivers: vec![ALL.to_string()],
+                ..Default::default()
+            }],
+            plugins: PluginsConfig {
+                downloads: HashMap::new(),
+                releases: HashMap::new(),
+                definitions: plugin_defs,
+            },
+            ..Default::default()
+        });
+
+        let plugins = enabled_plugins(&planner).unwrap();
+
+        let plugin = plugins.iter().find(|p| p.name == "test_plugin").unwrap();
+        assert_eq!(plugin.plugin.drivers.len(), 1);
+        assert_eq!(plugin.plugin.drivers["format"].script, "fmt");
     }
 }

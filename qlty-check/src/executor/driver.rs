@@ -308,7 +308,11 @@ impl Driver {
             .invocation_directory
             .strip_prefix(path_to_string(&plan.target_root))
         {
-            Some(path.to_path_buf())
+            if path.as_os_str().is_empty() {
+                None
+            } else {
+                Some(path.to_path_buf())
+            }
         } else {
             None
         }
@@ -319,11 +323,12 @@ impl Driver {
         issues_by_path: &std::collections::HashMap<Option<PathBuf>, Vec<Issue>>,
         path_prefix: &Option<PathBuf>,
     ) -> Option<FileResult> {
-        if self.target.target_type == TargetType::ParentWith && path_prefix.is_some() {
-            let parent_path = path_prefix
-                .as_ref()
-                .unwrap()
-                .join(self.target.path.as_ref().unwrap());
+        if self.target.target_type == TargetType::ParentWith {
+            let target_path = PathBuf::from(self.target.path.as_ref().unwrap());
+            let parent_path = match path_prefix {
+                Some(prefix) => prefix.join(&target_path),
+                None => target_path,
+            };
 
             debug!("Parent path: {:?}", parent_path);
             let parent_issues = issues_by_path
@@ -563,7 +568,9 @@ pub mod test {
     use crate::{executor::plan_target_list, planner::target::Target, tool::ruby::Ruby};
     use qlty_analysis::{utils::fs::path_to_string, WorkspaceEntry, WorkspaceEntryKind};
     use qlty_config::{
-        config::{DriverType, InvocationDirectoryDef, OutputDestination, PluginDef},
+        config::{
+            DriverType, InvocationDirectoryDef, OutputDestination, PluginDef, TargetDef, TargetType,
+        },
         Workspace,
     };
     use qlty_types::analysis::v1::{ExecutionVerb, Location, Range};
@@ -833,6 +840,127 @@ pub mod test {
 
         let expected_target_list = workspace_dir.join("basic.py");
         assert_eq!(target_list, path_to_native_string(expected_target_list));
+    }
+
+    fn build_plan_with_directories(
+        target_root: PathBuf,
+        invocation_directory: PathBuf,
+        kind: InvocationDirectoryType,
+    ) -> InvocationPlan {
+        InvocationPlan {
+            target_root,
+            workspace_entries: Arc::new(vec![]),
+            invocation_id: "".to_string(),
+            verb: ExecutionVerb::Check,
+            workspace: Workspace::new().unwrap(),
+            settings: Default::default(),
+            runtime: None,
+            runtime_version: None,
+            plugin_name: "test".to_string(),
+            plugin: PluginDef::default(),
+            tool: Ruby::new_tool(""),
+            driver_name: "test".to_string(),
+            driver: build_driver(vec![], vec![]),
+            plugin_configs: vec![],
+            targets: vec![],
+            invocation_directory,
+            invocation_directory_def: InvocationDirectoryDef { kind, path: None },
+        }
+    }
+
+    fn build_parent_with_driver(target_path: &str) -> Driver {
+        Driver {
+            def: DriverDef {
+                script: String::from("mock_script"),
+                output: OutputDestination::Stdout,
+                output_format: OutputFormat::Knip,
+                driver_type: DriverType::Linter,
+                target: TargetDef {
+                    target_type: TargetType::ParentWith,
+                    path: Some(target_path.to_string()),
+                },
+                ..Default::default()
+            },
+        }
+    }
+
+    fn make_issue(path: &str) -> Issue {
+        Issue {
+            location: Some(Location {
+                path: path.to_string(),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn test_parent_with_file_issues_no_prefix() {
+        let driver = build_parent_with_driver("package.json");
+        let issues_by_path = std::collections::HashMap::from([(
+            Some(PathBuf::from("package.json")),
+            vec![make_issue("package.json")],
+        )]);
+        let result = driver.parent_with_file_issues(&issues_by_path, &None);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().path, "package.json");
+    }
+
+    #[test]
+    fn test_parent_with_file_issues_with_prefix() {
+        let driver = build_parent_with_driver("package.json");
+        let issues_by_path = std::collections::HashMap::from([(
+            Some(PathBuf::from("subdir/package.json")),
+            vec![make_issue("subdir/package.json")],
+        )]);
+        let result =
+            driver.parent_with_file_issues(&issues_by_path, &Some(PathBuf::from("subdir")));
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().path, "subdir/package.json");
+    }
+
+    #[test]
+    fn test_get_path_prefix_root_kind_returns_none() {
+        let driver = build_driver(vec![], vec![]);
+        let plan = build_plan_with_directories(
+            PathBuf::from("/repo"),
+            PathBuf::from("/repo/subdir"),
+            InvocationDirectoryType::Root,
+        );
+        assert_eq!(driver.get_path_prefix(&plan), None);
+    }
+
+    #[test]
+    fn test_get_path_prefix_equal_dirs_returns_none() {
+        let driver = build_driver(vec![], vec![]);
+        let plan = build_plan_with_directories(
+            PathBuf::from("/repo"),
+            PathBuf::from("/repo"),
+            InvocationDirectoryType::TargetDirectory,
+        );
+        assert_eq!(driver.get_path_prefix(&plan), None);
+    }
+
+    #[test]
+    fn test_get_path_prefix_subdir_returns_relative_path() {
+        let driver = build_driver(vec![], vec![]);
+        let plan = build_plan_with_directories(
+            PathBuf::from("/repo"),
+            PathBuf::from("/repo/subdir"),
+            InvocationDirectoryType::TargetDirectory,
+        );
+        assert_eq!(driver.get_path_prefix(&plan), Some(PathBuf::from("subdir")));
+    }
+
+    #[test]
+    fn test_get_path_prefix_unrelated_dir_returns_none() {
+        let driver = build_driver(vec![], vec![]);
+        let plan = build_plan_with_directories(
+            PathBuf::from("/repo"),
+            PathBuf::from("/other"),
+            InvocationDirectoryType::TargetDirectory,
+        );
+        assert_eq!(driver.get_path_prefix(&plan), None);
     }
 
     #[test]

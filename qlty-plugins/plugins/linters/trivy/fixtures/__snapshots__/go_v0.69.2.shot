@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`linter=trivy fixture=basic_py version=0.57.1 1`] = `
+exports[`linter=trivy fixture=go version=0.69.2 1`] = `
 Child Object Structure: {
   "tool": "string",
   "ruleKey": "string",
@@ -9,6 +9,7 @@ Child Object Structure: {
   "category": "string",
   "snippet": "string",
   "snippetWithContext": "string",
+  "documentationUrl": "string",
   "location": {
     "path": "string",
     "range": {

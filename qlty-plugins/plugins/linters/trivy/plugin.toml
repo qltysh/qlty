@@ -8,8 +8,8 @@ strip_components = 0
 [plugins.definitions.trivy]
 releases = ["trivy"]
 config_files = ["trivy.yaml", "trivy-secret.yaml"]
-latest_version = "0.67.2"
-known_good_version = "0.67.2"
+latest_version = "0.69.2"
+known_good_version = "0.69.2"
 version_command = "trivy --version"
 description = "Comprehensive and versatile security scanner"
 security = true
@@ -26,7 +26,6 @@ output = "stdout"
 output_format = "trivy_sarif"
 cache_results = true
 batch = false
-suggested = "targets"
 output_missing = "parse"
 
 [plugins.definitions.trivy.drivers.fs-secret]
@@ -54,7 +53,6 @@ output = "stdout"
 output_format = "trivy_sarif"
 cache_results = true
 batch = false
-suggested = "targets"
 output_missing = "parse"
 
 [[plugins.definitions.trivy.environment]]
