@@ -18,5 +18,4 @@ output = "stdout"
 output_format = "regex"
 output_regex = '::(?P<severity>[^ ]+) title=(?P<code>[^,]+),file=(?P<path>[^,]+),col=(?P<col>\d+),endColumn=(?P<end_col>\d+),line=(?P<line>\d+),endLine=(?P<end_line>\d+)::(?P<message>.+)'
 cache_results = true
-suggested = "targets"
 output_missing = "parse"
