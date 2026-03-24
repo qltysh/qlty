@@ -60,10 +60,12 @@ impl Parser for AstGrep {
             let location = Some(Location {
                 path: ast_grep_issue.file.clone(),
                 range: Some(Range {
-                    start_line: ast_grep_issue.range.start.line,
-                    start_column: ast_grep_issue.range.start.column,
-                    end_line: ast_grep_issue.range.end.line,
-                    end_column: ast_grep_issue.range.end.column,
+                    // ast-grep outputs 0-indexed line/column numbers,
+                    // but qlty expects 1-indexed values.
+                    start_line: ast_grep_issue.range.start.line + 1,
+                    start_column: ast_grep_issue.range.start.column + 1,
+                    end_line: ast_grep_issue.range.end.line + 1,
+                    end_column: ast_grep_issue.range.end.column + 1,
                     ..Default::default()
                 }),
             });
@@ -103,6 +105,40 @@ impl Parser for AstGrep {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn parse_line_numbers_are_one_indexed() {
+        // ast-grep outputs 0-indexed line/column numbers.
+        // qlty expects 1-indexed. Verify the parser converts correctly.
+        let input = r#"[{
+            "text": "argument :foo, String",
+            "range": {
+                "byteOffset": { "start": 0, "end": 20 },
+                "start": { "line": 0, "column": 0 },
+                "end": { "line": 0, "column": 20 }
+            },
+            "file": "test.rb",
+            "lines": "argument :foo, String",
+            "charCount": { "leading": 0, "trailing": 0 },
+            "language": "Ruby",
+            "metaVariables": { "single": {}, "multi": {}, "transformed": {} },
+            "ruleId": "test-rule",
+            "severity": "error",
+            "note": null,
+            "message": "test message",
+            "labels": []
+        }]"#;
+
+        let issues = AstGrep::default().parse("ast-grep", input).unwrap();
+        assert_eq!(issues.len(), 1);
+
+        let range = issues[0].location.as_ref().unwrap().range.as_ref().unwrap();
+        // Line 0 in ast-grep should become line 1 in qlty
+        assert_eq!(range.start_line, 1, "start_line should be 1-indexed");
+        assert_eq!(range.end_line, 1, "end_line should be 1-indexed");
+        assert_eq!(range.start_column, 1, "start_column should be 1-indexed");
+        assert_eq!(range.end_column, 21, "end_column should be 1-indexed");
+    }
 
     #[test]
     fn parse() {
@@ -210,9 +246,10 @@ mod test {
           location:
             path: sample.ts
             range:
-              startLine: 2
-              endLine: 2
-              endColumn: 26
+              startLine: 3
+              startColumn: 1
+              endLine: 3
+              endColumn: 27
         "#);
     }
 }
