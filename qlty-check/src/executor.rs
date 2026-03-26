@@ -314,7 +314,20 @@ impl Executor {
 
         let mut loaded_config_files = vec![];
 
-        // load exported config paths before anything else
+        // load repository config files first so that workspace files take
+        // precedence over exported configs in the staging area
+        for config_file in &repository_config_files {
+            if let Err(err) = load_config_file_from_repository(
+                config_file,
+                &self.plan.workspace,
+                &self.plan.staging_area.destination_directory,
+            ) {
+                error!("Failed to load config file from repository: {:?}", err);
+            }
+        }
+
+        // load exported config paths — these are skipped if the file already
+        // exists in the destination (e.g. from a workspace config file above)
         for config_file in &exported_config_paths {
             if self.plan.workspace.root != self.plan.staging_area.destination_directory {
                 // for formatters
@@ -336,16 +349,6 @@ impl Executor {
 
         self.check_and_copy_configs_into_tool_install(&mut loaded_config_files)?;
         self.plan_plugins_fetch(&mut loaded_config_files)?;
-
-        for config_file in &repository_config_files {
-            if let Err(err) = load_config_file_from_repository(
-                config_file,
-                &self.plan.workspace,
-                &self.plan.staging_area.destination_directory,
-            ) {
-                error!("Failed to load config file from repository: {:?}", err);
-            }
-        }
 
         for config_file in &config_file_names {
             if self.plan.workspace.root != self.plan.staging_area.destination_directory {
