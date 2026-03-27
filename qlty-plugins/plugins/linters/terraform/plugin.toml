@@ -38,7 +38,7 @@ description = "Validator and formatter for terraform"
 script = "terraform validate -json"
 success_codes = [0, 1]
 output = "stdout"
-target = { type = "parent" }
+target = { type = "parent_with", path = ".terraform.lock.hcl" }
 runs_from = { type = "target_directory" }
 output_format = "terraform"
 cache_results = true
