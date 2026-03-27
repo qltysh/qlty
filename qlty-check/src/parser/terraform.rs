@@ -1,5 +1,6 @@
 use super::Parser;
 use anyhow::Result;
+use std::collections::HashMap;
 use qlty_types::analysis::v1::{Category, Issue, Level, Location, Range};
 use serde::{Deserialize, Serialize};
 #[derive(Debug, Deserialize)]
