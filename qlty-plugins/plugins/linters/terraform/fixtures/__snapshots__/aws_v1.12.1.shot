@@ -27,7 +27,7 @@ exports[`linter=terraform fixture=aws version=1.12.1 1`] = `
           "startLine": 2,
         },
       },
-      "message": "Invalid quoted type constraints",
+      "message": "Invalid quoted type constraint",
       "mode": "MODE_BLOCK",
       "snippet": "  type = "map"",
       "snippetWithContext": " variable "ssl_certificates" {
