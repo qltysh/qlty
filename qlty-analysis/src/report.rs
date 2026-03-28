@@ -1,6 +1,6 @@
-use crate::utils::fs::path_to_string;
+use crate::{basic_transformations::BasicTransformations, utils::fs::path_to_string};
 use pbjson_types::Timestamp;
-use qlty_config::issue_transformer::IssueTransformer;
+use qlty_config::{issue_transformer::IssueTransformer, QltyConfig};
 use qlty_types::analysis::v1::{
     AnalysisResult, ComponentType, Invocation, Issue, Message, Metadata, Stats,
 };
@@ -196,6 +196,20 @@ impl Report {
         Timestamp {
             seconds: now.unix_timestamp(),
             nanos: now.nanosecond() as i32,
+        }
+    }
+}
+
+impl BasicTransformations for Report {
+    fn apply_basic_issue_transformations(
+        &mut self,
+        workspace_root: &Path,
+        qlty_config: &QltyConfig,
+    ) {
+        let transformers = self.compute_transformers(workspace_root, qlty_config);
+
+        for transformer in transformers {
+            self.issues = transformer.transform_batch(&self.issues);
         }
     }
 }

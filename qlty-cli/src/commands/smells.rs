@@ -6,6 +6,7 @@ use anyhow::{Context, Result};
 use clap::Args;
 use console::{style, Emoji};
 use itertools::Itertools;
+use qlty_analysis::basic_transformations::BasicTransformations;
 use qlty_analysis::code::File;
 use qlty_analysis::git::compute_upstream;
 use qlty_analysis::workspace_entries::TargetMode;
@@ -102,6 +103,7 @@ impl Smells {
             report.merge(&self.run_duplication(&target_mode, &config, &files)?);
         }
 
+        report.apply_basic_issue_transformations(&workspace.root, &config);
         report.relativeize_paths(&workspace.root);
 
         steps.start(SPARKLES, "Reporting... ");
