@@ -49,7 +49,7 @@ jobs:
         run: npm run update-linter-versions
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore: Update linter versions"
