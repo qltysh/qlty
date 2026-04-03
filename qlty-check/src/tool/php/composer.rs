@@ -264,10 +264,7 @@ impl Composer {
 
             let link = sandbox_dir.join(relative_path);
             if link.symlink_metadata().is_ok() {
-                debug!(
-                    "Skipping autoload symlink, path already exists: {:?}",
-                    link
-                );
+                debug!("Skipping autoload symlink, path already exists: {:?}", link);
                 continue;
             }
 
@@ -291,54 +288,55 @@ impl Composer {
         let mut paths = vec![];
 
         for section in &["autoload", "autoload-dev"] {
-            if let Some(autoload) = composer_json.get(section) {
-                for key in &["psr-4", "psr-0"] {
-                    if let Some(mappings) = autoload.get(key).and_then(|v| v.as_object()) {
-                        for (_, path_value) in mappings {
-                            match path_value {
-                                Value::String(s) if !s.is_empty() => {
-                                    paths.push(s.trim_end_matches('/').to_string());
-                                }
-                                Value::Array(arr) => {
-                                    for v in arr {
-                                        if let Some(s) = v.as_str() {
-                                            if !s.is_empty() {
-                                                paths.push(
-                                                    s.trim_end_matches('/').to_string(),
-                                                );
-                                            }
-                                        }
-                                    }
-                                }
-                                _ => {}
-                            }
-                        }
-                    }
-                }
+            let Some(autoload) = composer_json.get(section) else {
+                continue;
+            };
 
-                if let Some(classmap) = autoload.get("classmap").and_then(|v| v.as_array()) {
-                    for v in classmap {
-                        if let Some(s) = v.as_str() {
-                            if !s.is_empty() {
-                                paths.push(s.trim_end_matches('/').to_string());
-                            }
-                        }
-                    }
-                }
-
-                if let Some(files) = autoload.get("files").and_then(|v| v.as_array()) {
-                    for v in files {
-                        if let Some(s) = v.as_str() {
-                            if !s.is_empty() {
-                                paths.push(s.to_string());
-                            }
-                        }
+            for key in &["psr-4", "psr-0"] {
+                if let Some(mappings) = autoload.get(key).and_then(|v| v.as_object()) {
+                    for (_, path_value) in mappings {
+                        Self::collect_psr_paths(path_value, &mut paths);
                     }
                 }
             }
+
+            Self::collect_string_array_paths(autoload.get("classmap"), &mut paths);
+            Self::collect_string_array_paths(autoload.get("files"), &mut paths);
         }
 
         paths
+    }
+
+    fn collect_psr_paths(path_value: &Value, paths: &mut Vec<String>) {
+        match path_value {
+            Value::String(s) if !s.is_empty() => {
+                paths.push(s.trim_end_matches('/').to_string());
+            }
+            Value::Array(arr) => {
+                for s in arr
+                    .iter()
+                    .filter_map(|v| v.as_str())
+                    .filter(|s| !s.is_empty())
+                {
+                    paths.push(s.trim_end_matches('/').to_string());
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn collect_string_array_paths(value: Option<&Value>, paths: &mut Vec<String>) {
+        let Some(arr) = value.and_then(|v| v.as_array()) else {
+            return;
+        };
+
+        for s in arr
+            .iter()
+            .filter_map(|v| v.as_str())
+            .filter(|s| !s.is_empty())
+        {
+            paths.push(s.trim_end_matches('/').to_string());
+        }
     }
 }
 
@@ -802,8 +800,18 @@ pub mod test {
             Composer::create_autoload_symlinks(pkg)?;
 
             let sandbox_dir = PathBuf::from(pkg.directory());
-            assert!(sandbox_dir.join("app").symlink_metadata().unwrap().file_type().is_symlink());
-            assert!(sandbox_dir.join("tests").symlink_metadata().unwrap().file_type().is_symlink());
+            assert!(sandbox_dir
+                .join("app")
+                .symlink_metadata()
+                .unwrap()
+                .file_type()
+                .is_symlink());
+            assert!(sandbox_dir
+                .join("tests")
+                .symlink_metadata()
+                .unwrap()
+                .file_type()
+                .is_symlink());
             assert_eq!(
                 std::fs::read_link(sandbox_dir.join("app"))?,
                 project_dir.join("app")
@@ -878,7 +886,12 @@ pub mod test {
             Composer::create_autoload_symlinks(pkg)?;
 
             let sandbox_dir = PathBuf::from(pkg.directory());
-            assert!(sandbox_dir.join("app").symlink_metadata().unwrap().file_type().is_symlink());
+            assert!(sandbox_dir
+                .join("app")
+                .symlink_metadata()
+                .unwrap()
+                .file_type()
+                .is_symlink());
             assert!(!sandbox_dir.join("does-not-exist").exists());
 
             Ok(())
