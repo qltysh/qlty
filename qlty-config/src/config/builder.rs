@@ -466,6 +466,7 @@ fn merge_enabled_plugins(existing: &EnabledPlugin, new: &EnabledPlugin) -> Enabl
         triggers: prioritize_new_array(&existing.triggers, &new.triggers),
         fetch: prioritize_new_array(&existing.fetch, &new.fetch),
         package_filters: prioritize_new_array(&existing.package_filters, &new.package_filters),
+        preserve_autoload: new.preserve_autoload || existing.preserve_autoload,
         affects_cache: prioritize_new_array(&existing.affects_cache, &new.affects_cache),
         extra_packages: prioritize_new_array(&existing.extra_packages, &new.extra_packages),
         drivers: prioritize_new_array(&existing.drivers, &new.drivers),
@@ -788,6 +789,7 @@ mod test {
                 path: "path1".to_string(),
             }],
             package_filters: vec!["filter1".to_string()],
+            preserve_autoload: false,
             affects_cache: vec!["cache1".to_string()],
             extra_packages: vec![ExtraPackage {
                 name: "pkg1".to_string(),
@@ -810,6 +812,7 @@ mod test {
                 path: "path2".to_string(),
             }],
             package_filters: vec!["filter2".to_string()],
+            preserve_autoload: false,
             affects_cache: vec!["cache2".to_string()],
             extra_packages: vec![ExtraPackage {
                 name: "pkg2".to_string(),
@@ -1060,6 +1063,7 @@ mod test {
                     path: "path1".to_string(),
                 }],
                 package_filters: vec!["filter1".to_string()],
+                preserve_autoload: false,
                 affects_cache: vec!["cache1".to_string()],
                 extra_packages: vec![ExtraPackage {
                     name: "pkg1".to_string(),
@@ -1081,6 +1085,7 @@ mod test {
                     path: "path2".to_string(),
                 }],
                 package_filters: vec!["filter2".to_string()],
+                preserve_autoload: false,
                 affects_cache: vec!["cache2".to_string()],
                 extra_packages: vec![ExtraPackage {
                     name: "pkg2".to_string(),

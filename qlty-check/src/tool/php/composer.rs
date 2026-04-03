@@ -10,7 +10,7 @@ use qlty_analysis::utils::fs::path_to_native_string;
 use serde_json::Value;
 use sha2::Digest;
 use std::env::split_paths;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tracing::{debug, error, info};
 
 use super::PhpPackage;
@@ -74,6 +74,7 @@ impl Composer {
     pub fn install_package_file(&self, php_package: &PhpPackage) -> Result<()> {
         info!("Installing composer package file");
         Self::update_composer_json(php_package)?;
+        Self::create_autoload_symlinks(php_package)?;
         let composer_phar = PathBuf::from(self.directory()).join("composer.phar");
         let composer_path = composer_phar.to_str().with_context(|| {
             format!(
@@ -145,8 +146,10 @@ impl Composer {
         let mut composer_json = serde_json::from_str::<Value>(&composer_file_contents)?;
         if let Some(root_object) = composer_json.as_object_mut() {
             // Remove autoloads that might be relative to project root
-            root_object.remove("autoload");
-            root_object.remove("autoload-dev");
+            if !php_package.plugin.preserve_autoload {
+                root_object.remove("autoload");
+                root_object.remove("autoload-dev");
+            }
 
             // collapse require-dev into require
             if let Some(dev_dependencies) = root_object.clone().get("require-dev") {
@@ -225,6 +228,130 @@ impl Composer {
 
         Ok(())
     }
+
+    fn create_autoload_symlinks(php_package: &PhpPackage) -> Result<()> {
+        if !php_package.plugin.preserve_autoload {
+            return Ok(());
+        }
+
+        let package_file = php_package
+            .plugin
+            .package_file
+            .as_ref()
+            .with_context(|| "Missing package_file in plugin definition")?;
+
+        let project_root = php_package
+            .plugin
+            .workspace_root
+            .as_ref()
+            .with_context(|| "Missing workspace_root in plugin definition")?;
+
+        let composer_contents = std::fs::read_to_string(package_file)?;
+        let composer_json: Value = serde_json::from_str(&composer_contents)?;
+
+        let sandbox_dir = PathBuf::from(php_package.directory());
+        let paths = Self::collect_autoload_paths(&composer_json);
+
+        for relative_path in &paths {
+            let target = project_root.join(relative_path);
+            if !target.exists() {
+                debug!(
+                    "Skipping autoload symlink, target does not exist: {:?}",
+                    target
+                );
+                continue;
+            }
+
+            let link = sandbox_dir.join(relative_path);
+            if link.symlink_metadata().is_ok() {
+                debug!("Skipping autoload symlink, path already exists: {:?}", link);
+                continue;
+            }
+
+            if let Some(parent) = link.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
+
+            debug!("Creating autoload symlink: {:?} -> {:?}", link, target);
+            create_symlink(&target, &link).with_context(|| {
+                format!(
+                    "Failed to create autoload symlink: {:?} -> {:?}",
+                    link, target
+                )
+            })?;
+        }
+
+        Ok(())
+    }
+
+    fn collect_autoload_paths(composer_json: &Value) -> Vec<String> {
+        let mut paths = vec![];
+
+        for section in &["autoload", "autoload-dev"] {
+            let Some(autoload) = composer_json.get(section) else {
+                continue;
+            };
+
+            for key in &["psr-4", "psr-0"] {
+                if let Some(mappings) = autoload.get(key).and_then(|v| v.as_object()) {
+                    for (_, path_value) in mappings {
+                        Self::collect_psr_paths(path_value, &mut paths);
+                    }
+                }
+            }
+
+            Self::collect_string_array_paths(autoload.get("classmap"), &mut paths);
+            Self::collect_string_array_paths(autoload.get("files"), &mut paths);
+        }
+
+        paths
+    }
+
+    fn collect_psr_paths(path_value: &Value, paths: &mut Vec<String>) {
+        match path_value {
+            Value::String(s) if !s.is_empty() => {
+                paths.push(s.trim_end_matches('/').to_string());
+            }
+            Value::Array(arr) => {
+                for s in arr
+                    .iter()
+                    .filter_map(|v| v.as_str())
+                    .filter(|s| !s.is_empty())
+                {
+                    paths.push(s.trim_end_matches('/').to_string());
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn collect_string_array_paths(value: Option<&Value>, paths: &mut Vec<String>) {
+        let Some(arr) = value.and_then(|v| v.as_array()) else {
+            return;
+        };
+
+        for s in arr
+            .iter()
+            .filter_map(|v| v.as_str())
+            .filter(|s| !s.is_empty())
+        {
+            paths.push(s.trim_end_matches('/').to_string());
+        }
+    }
+}
+
+#[cfg(windows)]
+fn create_symlink(target: &Path, link: &Path) -> std::io::Result<()> {
+    if target.is_dir() {
+        std::os::windows::fs::symlink_dir(target, link)
+    } else {
+        std::os::windows::fs::symlink_file(target, link)
+    }
+}
+
+#[cfg(unix)]
+fn create_symlink(target: &Path, link: &Path) -> std::io::Result<()> {
+    std::os::unix::fs::symlink(target, link)
 }
 
 #[cfg(test)]
@@ -350,6 +477,70 @@ pub mod test {
     "bar": "1.0.0",
     "foo-dev": "1.0.0",
     "bar-dev": "1.0.0"
+  }
+}"#
+        );
+    }
+
+    #[test]
+    fn test_filter_composer_preserve_autoload() {
+        let temp_path = tempdir().unwrap();
+        let list = Arc::new(Mutex::new(Vec::<Vec<String>>::new()));
+
+        let package = PhpPackage {
+            cmd: stub_cmd(list.clone()),
+            name: "tool".into(),
+            plugin: PluginDef {
+                package: Some("test".to_string()),
+                version: Some("1.0.0".to_string()),
+                package_file: Some(format!(
+                    "{}/composer.json",
+                    temp_path.path().to_str().unwrap()
+                )),
+                package_filters: vec!["foo".to_string()],
+                preserve_autoload: true,
+                ..Default::default()
+            },
+            runtime: Php {
+                version: "1.0.0".to_string(),
+            },
+        };
+
+        let composer_file = temp_path.path().join("composer.json");
+        std::fs::write(
+            composer_file,
+            r#"
+            {
+                "autoload": {
+                    "random": "value"
+                },
+                "autoload-dev": {
+                    "random": "value"
+                },
+                "require": {
+                    "foo": "1.0.0",
+                    "bar": "1.0.0"
+                },
+                "require-dev": {
+                    "foo-dev": "1.0.0",
+                    "bar-dev": "1.0.0"
+                }
+            }"#,
+        )
+        .unwrap();
+
+        assert_eq!(
+            Composer::filter_composer(&package).unwrap(),
+            r#"{
+  "autoload": {
+    "random": "value"
+  },
+  "autoload-dev": {
+    "random": "value"
+  },
+  "require": {
+    "foo": "1.0.0",
+    "foo-dev": "1.0.0"
   }
 }"#
         );
@@ -506,6 +697,202 @@ pub mod test {
                 !staged_lock_file.exists(),
                 "Lock file was copied but should not have been"
             );
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_collect_autoload_paths() {
+        let composer_json: Value = serde_json::from_str(
+            r#"{
+                "autoload": {
+                    "psr-4": {
+                        "App\\": "app/",
+                        "Database\\": ["database/factories/", "database/seeders/"]
+                    },
+                    "classmap": ["legacy/"],
+                    "files": ["helpers/functions.php"]
+                },
+                "autoload-dev": {
+                    "psr-4": {
+                        "Tests\\": "tests/"
+                    }
+                }
+            }"#,
+        )
+        .unwrap();
+
+        let paths = Composer::collect_autoload_paths(&composer_json);
+        assert_eq!(
+            paths,
+            vec![
+                "app",
+                "database/factories",
+                "database/seeders",
+                "legacy",
+                "helpers/functions.php",
+                "tests",
+            ]
+        );
+    }
+
+    #[test]
+    fn test_collect_autoload_paths_empty() {
+        let composer_json: Value = serde_json::from_str(r#"{"require": {"foo": "1.0"}}"#).unwrap();
+
+        let paths = Composer::collect_autoload_paths(&composer_json);
+        assert!(paths.is_empty());
+    }
+
+    #[test]
+    fn test_collect_autoload_paths_skips_empty_strings() {
+        let composer_json: Value = serde_json::from_str(
+            r#"{
+                "autoload": {
+                    "psr-4": {
+                        "": "",
+                        "App\\": "app/"
+                    }
+                }
+            }"#,
+        )
+        .unwrap();
+
+        let paths = Composer::collect_autoload_paths(&composer_json);
+        assert_eq!(paths, vec!["app"]);
+    }
+
+    #[test]
+    fn test_create_autoload_symlinks() {
+        with_php_package(|pkg, tempdir, _| {
+            let project_dir = tempdir.path().join("project");
+            std::fs::create_dir_all(&project_dir)?;
+
+            std::fs::create_dir_all(project_dir.join("app"))?;
+            std::fs::create_dir_all(project_dir.join("tests"))?;
+
+            let config_dir = project_dir.join(".qlty/configs");
+            std::fs::create_dir_all(&config_dir)?;
+
+            let composer_file = config_dir.join("composer.json");
+            std::fs::write(
+                &composer_file,
+                r#"{
+                    "autoload": {
+                        "psr-4": {
+                            "App\\": "app/"
+                        }
+                    },
+                    "autoload-dev": {
+                        "psr-4": {
+                            "Tests\\": "tests/"
+                        }
+                    }
+                }"#,
+            )?;
+
+            pkg.plugin.package_file = Some(path_to_string(&composer_file));
+            pkg.plugin.preserve_autoload = true;
+            pkg.plugin.workspace_root = Some(project_dir.clone());
+            reroute_tools_root(tempdir, pkg);
+
+            Composer::create_autoload_symlinks(pkg)?;
+
+            let sandbox_dir = PathBuf::from(pkg.directory());
+            assert!(sandbox_dir
+                .join("app")
+                .symlink_metadata()
+                .unwrap()
+                .file_type()
+                .is_symlink());
+            assert!(sandbox_dir
+                .join("tests")
+                .symlink_metadata()
+                .unwrap()
+                .file_type()
+                .is_symlink());
+            assert_eq!(
+                std::fs::read_link(sandbox_dir.join("app"))?,
+                project_dir.join("app")
+            );
+            assert_eq!(
+                std::fs::read_link(sandbox_dir.join("tests"))?,
+                project_dir.join("tests")
+            );
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_create_autoload_symlinks_skips_when_disabled() {
+        with_php_package(|pkg, tempdir, _| {
+            let project_dir = tempdir.path().join("project");
+            std::fs::create_dir_all(&project_dir)?;
+            std::fs::create_dir_all(project_dir.join("app"))?;
+
+            let composer_file = project_dir.join("composer.json");
+            std::fs::write(
+                &composer_file,
+                r#"{
+                    "autoload": {
+                        "psr-4": {
+                            "App\\": "app/"
+                        }
+                    }
+                }"#,
+            )?;
+
+            pkg.plugin.package_file = Some(path_to_string(&composer_file));
+            pkg.plugin.workspace_root = Some(project_dir.clone());
+            reroute_tools_root(tempdir, pkg);
+
+            Composer::create_autoload_symlinks(pkg)?;
+
+            let sandbox_dir = PathBuf::from(pkg.directory());
+            assert!(!sandbox_dir.join("app").exists());
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_create_autoload_symlinks_skips_nonexistent_targets() {
+        with_php_package(|pkg, tempdir, _| {
+            let project_dir = tempdir.path().join("project");
+            std::fs::create_dir_all(&project_dir)?;
+
+            let composer_file = project_dir.join("composer.json");
+            std::fs::write(
+                &composer_file,
+                r#"{
+                    "autoload": {
+                        "psr-4": {
+                            "App\\": "app/",
+                            "Missing\\": "does-not-exist/"
+                        }
+                    }
+                }"#,
+            )?;
+
+            std::fs::create_dir_all(project_dir.join("app"))?;
+
+            pkg.plugin.package_file = Some(path_to_string(&composer_file));
+            pkg.plugin.preserve_autoload = true;
+            pkg.plugin.workspace_root = Some(project_dir.clone());
+            reroute_tools_root(tempdir, pkg);
+
+            Composer::create_autoload_symlinks(pkg)?;
+
+            let sandbox_dir = PathBuf::from(pkg.directory());
+            assert!(sandbox_dir
+                .join("app")
+                .symlink_metadata()
+                .unwrap()
+                .file_type()
+                .is_symlink());
+            assert!(!sandbox_dir.join("does-not-exist").exists());
 
             Ok(())
         });
