@@ -1,0 +1,46 @@
+config_version = "0"
+
+[plugins.downloads.editorconfig-checker]
+strip_components = 0
+
+[[plugins.downloads.editorconfig-checker.system]]
+cpu = "x86_64"
+os = "linux"
+url = "https://github.com/editorconfig-checker/editorconfig-checker/releases/download/v${version}/ec-linux-amd64.tar.gz"
+
+[[plugins.downloads.editorconfig-checker.system]]
+cpu = "aarch64"
+os = "linux"
+url = "https://github.com/editorconfig-checker/editorconfig-checker/releases/download/v${version}/ec-linux-arm64.tar.gz"
+
+[[plugins.downloads.editorconfig-checker.system]]
+cpu = "x86_64"
+os = "macos"
+url = "https://github.com/editorconfig-checker/editorconfig-checker/releases/download/v${version}/ec-darwin-amd64.tar.gz"
+
+[[plugins.downloads.editorconfig-checker.system]]
+cpu = "aarch64"
+os = "macos"
+url = "https://github.com/editorconfig-checker/editorconfig-checker/releases/download/v${version}/ec-darwin-arm64.tar.gz"
+
+[plugins.definitions.editorconfig-checker]
+downloads = ["editorconfig-checker"]
+file_types = ["ALL"]
+config_files = [".editorconfig"]
+latest_version = "3.6.1"
+known_good_version = "3.6.1"
+version_command = "\"${linter}\"/bin/ec-* --version"
+description = "Validates files against .editorconfig rules"
+affects_cache = [".editorconfig"]
+suggested_mode = "comment"
+supported_platforms = ["linux", "macos"]
+
+[plugins.definitions.editorconfig-checker.drivers.lint]
+script = "\"${linter}\"/bin/ec-* -format codeclimate --no-color ${target}"
+success_codes = [0, 1]
+output = "stdout"
+output_format = "editorconfig_checker"
+cache_results = true
+batch = true
+suggested = "config"
+output_missing = "parse"

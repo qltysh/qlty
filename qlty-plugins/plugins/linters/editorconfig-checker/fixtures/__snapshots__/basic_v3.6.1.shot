@@ -1,0 +1,67 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=editorconfig-checker fixture=basic version=3.6.1 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.py",
+        "range": {
+          "startLine": 2,
+        },
+      },
+      "message": "Wrong amount of left-padding spaces(want multiple of 4)",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "indent_size",
+      "snippet": "  x = 1   ",
+      "snippetWithContext": "def hello():
+  x = 1   
+	if True:
+		pass",
+      "tool": "editorconfig-checker",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.py",
+        "range": {
+          "endLine": 4,
+          "startLine": 3,
+        },
+      },
+      "message": "Wrong indent style found (tabs instead of spaces)",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "indent_style",
+      "snippet": "	if True:
+		pass",
+      "snippetWithContext": "def hello():
+  x = 1   
+	if True:
+		pass",
+      "tool": "editorconfig-checker",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.py",
+        "range": {
+          "startLine": 2,
+        },
+      },
+      "message": "Trailing whitespace",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "trim_trailing_whitespace",
+      "snippet": "  x = 1   ",
+      "snippetWithContext": "def hello():
+  x = 1   
+	if True:
+		pass",
+      "tool": "editorconfig-checker",
+    },
+  ],
+}
+`;
