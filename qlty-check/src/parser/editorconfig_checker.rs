@@ -46,10 +46,13 @@ impl Parser for EditorconfigChecker {
 
         for message in messages {
             let rule_key = derive_rule_key(&message.description);
+            // editorconfig-checker's codeclimate formatter sets `end` to
+            // AdditionalIdenticalErrorCount (a relative count) rather than
+            // an absolute line number, so we compute: begin + end
             let end_line = if message.location.lines.end > 0 {
                 message.location.lines.begin + message.location.lines.end
             } else {
-                0
+                message.location.lines.begin
             };
 
             let issue = Issue {
@@ -104,8 +107,7 @@ fn severity_to_level(severity: &str) -> Level {
     match severity {
         "blocker" | "critical" => Level::High,
         "major" => Level::Medium,
-        "minor" => Level::Medium,
-        "info" => Level::Low,
+        "info" | "minor" => Level::Low,
         _ => Level::Medium,
     }
 }
@@ -125,25 +127,27 @@ mod test {
         - tool: editorconfig-checker
           ruleKey: trim_trailing_whitespace
           message: Trailing whitespace
-          level: LEVEL_MEDIUM
+          level: LEVEL_LOW
           category: CATEGORY_LINT
           location:
             path: test.py
             range:
               startLine: 2
+              endLine: 2
         - tool: editorconfig-checker
           ruleKey: indent_size
           message: Wrong amount of left-padding spaces(want multiple of 4)
-          level: LEVEL_MEDIUM
+          level: LEVEL_LOW
           category: CATEGORY_LINT
           location:
             path: test.py
             range:
               startLine: 2
+              endLine: 2
         - tool: editorconfig-checker
           ruleKey: indent_style
           message: Wrong indent style found (tabs instead of spaces)
-          level: LEVEL_MEDIUM
+          level: LEVEL_LOW
           category: CATEGORY_LINT
           location:
             path: test.py

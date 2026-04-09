@@ -5,10 +5,11 @@ exports[`linter=editorconfig-checker fixture=basic version=3.6.1 1`] = `
   "issues": [
     {
       "category": "CATEGORY_LINT",
-      "level": "LEVEL_MEDIUM",
+      "level": "LEVEL_LOW",
       "location": {
         "path": "basic.in.py",
         "range": {
+          "endLine": 2,
           "startLine": 2,
         },
       },
@@ -24,7 +25,7 @@ exports[`linter=editorconfig-checker fixture=basic version=3.6.1 1`] = `
     },
     {
       "category": "CATEGORY_LINT",
-      "level": "LEVEL_MEDIUM",
+      "level": "LEVEL_LOW",
       "location": {
         "path": "basic.in.py",
         "range": {
@@ -45,10 +46,11 @@ exports[`linter=editorconfig-checker fixture=basic version=3.6.1 1`] = `
     },
     {
       "category": "CATEGORY_LINT",
-      "level": "LEVEL_MEDIUM",
+      "level": "LEVEL_LOW",
       "location": {
         "path": "basic.in.py",
         "range": {
+          "endLine": 2,
           "startLine": 2,
         },
       },
