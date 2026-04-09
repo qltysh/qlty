@@ -395,6 +395,9 @@ pub struct PluginDef {
     pub package_filters: Vec<String>,
 
     #[serde(default)]
+    pub preserve_autoload: bool,
+
+    #[serde(default)]
     pub package_file_candidate: Option<PackageFileCandidate>,
 
     #[serde(default)]
@@ -402,6 +405,9 @@ pub struct PluginDef {
 
     #[serde(default)]
     pub prefix: Option<String>,
+
+    #[serde(skip)]
+    pub workspace_root: Option<PathBuf>,
 
     #[serde(default)]
     pub supported_platforms: Vec<Platform>,
@@ -698,6 +704,9 @@ pub struct EnabledPlugin {
     pub package_filters: Vec<String>,
 
     #[serde(default)]
+    pub preserve_autoload: bool,
+
+    #[serde(default)]
     pub prefix: Option<String>,
 }
 
@@ -719,6 +728,13 @@ impl EnabledPlugin {
         if !self.package_filters.is_empty() && self.package_file.is_none() {
             return Err(anyhow::anyhow!(
                 "Plugin '{}' has 'package_filters' configured but no 'package_file'. The 'package_filters' option requires 'package_file' to be specified.",
+                self.name
+            ));
+        }
+
+        if self.preserve_autoload && self.package_file.is_none() {
+            return Err(anyhow::anyhow!(
+                "Plugin '{}' has 'preserve_autoload' configured but no 'package_file'. The 'preserve_autoload' option requires 'package_file' to be specified.",
                 self.name
             ));
         }
@@ -1026,6 +1042,37 @@ mod tests {
         let error_message = result.unwrap_err().to_string();
         assert!(error_message.contains("test-plugin"));
         assert!(error_message.contains("package_filters"));
+        assert!(error_message.contains("package_file"));
+        assert!(error_message.contains("requires"));
+    }
+
+    #[test]
+    fn test_enabled_plugin_validate_success_with_preserve_autoload_and_package_file() {
+        let plugin = EnabledPlugin {
+            name: "test-plugin".to_string(),
+            package_file: Some("composer.json".to_string()),
+            preserve_autoload: true,
+            ..Default::default()
+        };
+
+        assert!(plugin.validate().is_ok());
+    }
+
+    #[test]
+    fn test_enabled_plugin_validate_failure_with_preserve_autoload_but_no_package_file() {
+        let plugin = EnabledPlugin {
+            name: "test-plugin".to_string(),
+            package_file: None,
+            preserve_autoload: true,
+            ..Default::default()
+        };
+
+        let result = plugin.validate();
+        assert!(result.is_err());
+
+        let error_message = result.unwrap_err().to_string();
+        assert!(error_message.contains("test-plugin"));
+        assert!(error_message.contains("preserve_autoload"));
         assert!(error_message.contains("package_file"));
         assert!(error_message.contains("requires"));
     }
