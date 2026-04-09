@@ -518,6 +518,8 @@ pub enum OutputFormat {
     Clippy,
     #[serde(rename = "coffeelint")]
     Coffeelint,
+    #[serde(rename = "editorconfig_checker")]
+    EditorconfigChecker,
     #[serde(rename = "eslint")]
     Eslint,
     #[serde(rename = "golangci_lint")]
@@ -577,6 +579,7 @@ impl std::fmt::Display for OutputFormat {
             OutputFormat::Biome => write!(f, "biome"),
             OutputFormat::Clippy => write!(f, "clippy"),
             OutputFormat::Coffeelint => write!(f, "coffeelint"),
+            OutputFormat::EditorconfigChecker => write!(f, "editorconfig_checker"),
             OutputFormat::Eslint => write!(f, "eslint"),
             OutputFormat::GolangciLint => write!(f, "golangci_lint"),
             OutputFormat::Hadolint => write!(f, "hadolint"),

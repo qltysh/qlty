@@ -7,6 +7,7 @@ pub mod bandit;
 pub mod biome;
 pub mod clippy;
 pub mod coffeelint;
+pub mod editorconfig_checker;
 pub mod eslint;
 pub mod golangci_lint;
 pub mod hadolint;

@@ -6,6 +6,7 @@ use crate::parser::bandit::Bandit;
 use crate::parser::biome::Biome;
 use crate::parser::clippy::Clippy;
 use crate::parser::coffeelint::Coffeelint;
+use crate::parser::editorconfig_checker::EditorconfigChecker;
 use crate::parser::eslint::Eslint;
 use crate::parser::golangci_lint::GolangciLint;
 use crate::parser::hadolint::Hadolint;
@@ -427,6 +428,7 @@ impl Driver {
             OutputFormat::Biome => Box::new(Biome {}),
             OutputFormat::Clippy => Box::<Clippy>::default(),
             OutputFormat::Coffeelint => Box::new(Coffeelint {}),
+            OutputFormat::EditorconfigChecker => Box::new(EditorconfigChecker {}),
             OutputFormat::Eslint => Box::<Eslint>::default(),
             OutputFormat::GolangciLint => Box::new(GolangciLint {}),
             OutputFormat::Hadolint => Box::new(Hadolint {}),

@@ -12,7 +12,14 @@ Debug.inspectOpts!.hideDate = true;
 
 // Currently unsupported tools on Windows
 const SKIP_LINTERS = {
-  win32: ["semgrep", "swiftlint", "dockerfmt", "swiftformat", "stringslint"],
+  win32: [
+    "editorconfig-checker",
+    "semgrep",
+    "swiftlint",
+    "dockerfmt",
+    "swiftformat",
+    "stringslint",
+  ],
   linux: ["stringslint", "swiftformat", "swiftlint"],
 } as { [key in NodeJS.Platform]: string[] };
 
