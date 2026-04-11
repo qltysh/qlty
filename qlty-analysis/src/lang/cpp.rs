@@ -15,10 +15,22 @@ const CLASS_QUERY: &str = r#"
 "#;
 
 const FUNCTION_DECLARATION_QUERY: &str = r#"
-(function_definition
-    declarator: (function_declarator
-        declarator: (_) @name
-        parameters: (_) @parameters)) @definition.function
+[
+    (function_definition
+        declarator: (function_declarator
+            declarator: (_) @name
+            parameters: (_) @parameters))
+    (function_definition
+        declarator: (pointer_declarator
+            declarator: (function_declarator
+                declarator: (_) @name
+                parameters: (_) @parameters)))
+    (function_definition
+        declarator: (reference_declarator
+            (function_declarator
+                declarator: (_) @name
+                parameters: (_) @parameters)))
+] @definition.function
 "#;
 
 const FIELD_QUERY: &str = r#"
@@ -32,38 +44,36 @@ pub struct Cpp {
     pub field_query: tree_sitter::Query,
 }
 
-pub const IF: &str = "if_statement";
-pub const FOR: &str = "for_statement";
-pub const FOR_RANGE_LOOP: &str = "for_range_loop";
-pub const WHILE: &str = "while_statement";
-pub const DO: &str = "do_statement";
-pub const SWITCH: &str = "switch_statement";
-pub const CASE: &str = "case_statement";
-pub const BREAK: &str = "break_statement";
-pub const CONTINUE: &str = "continue_statement";
-pub const RETURN: &str = "return_statement";
-pub const GOTO: &str = "goto_statement";
-pub const BINARY: &str = "binary_expression";
-pub const CONDITIONAL: &str = "conditional_expression";
-pub const CALL: &str = "call_expression";
-pub const FUNCTION_DEFINITION: &str = "function_definition";
-pub const FIELD_DECLARATION: &str = "field_declaration";
-pub const COMPOUND_STATEMENT: &str = "compound_statement";
-pub const TRANSLATION_UNIT: &str = "translation_unit";
-pub const STRING_LITERAL: &str = "string_literal";
-pub const RAW_STRING: &str = "raw_string_literal";
-pub const COMMENT: &str = "comment";
-pub const AND: &str = "&&";
-pub const OR: &str = "||";
-pub const FIELD_EXPRESSION: &str = "field_expression";
-pub const CLASS_SPECIFIER: &str = "class_specifier";
-pub const STRUCT_SPECIFIER: &str = "struct_specifier";
-pub const LAMBDA: &str = "lambda_expression";
-pub const TRY: &str = "try_statement";
-pub const CATCH: &str = "catch_clause";
-pub const THROW: &str = "throw_statement";
-pub const NAMESPACE: &str = "namespace_definition";
-pub const USING_DECLARATION: &str = "using_declaration";
+impl Cpp {
+    pub const IF: &'static str = "if_statement";
+    pub const FOR: &'static str = "for_statement";
+    pub const FOR_RANGE_LOOP: &'static str = "for_range_loop";
+    pub const WHILE: &'static str = "while_statement";
+    pub const DO: &'static str = "do_statement";
+    pub const SWITCH: &'static str = "switch_statement";
+    pub const CASE: &'static str = "case_statement";
+    pub const BREAK: &'static str = "break_statement";
+    pub const CONTINUE: &'static str = "continue_statement";
+    pub const RETURN: &'static str = "return_statement";
+    pub const GOTO: &'static str = "goto_statement";
+    pub const BINARY: &'static str = "binary_expression";
+    pub const CONDITIONAL: &'static str = "conditional_expression";
+    pub const CALL: &'static str = "call_expression";
+    pub const FUNCTION_DEFINITION: &'static str = "function_definition";
+    pub const FIELD_DECLARATION: &'static str = "field_declaration";
+    pub const COMPOUND_STATEMENT: &'static str = "compound_statement";
+    pub const TRANSLATION_UNIT: &'static str = "translation_unit";
+    pub const STRING_LITERAL: &'static str = "string_literal";
+    pub const RAW_STRING: &'static str = "raw_string_literal";
+    pub const COMMENT: &'static str = "comment";
+    pub const AND: &'static str = "&&";
+    pub const OR: &'static str = "||";
+    pub const FIELD_EXPRESSION: &'static str = "field_expression";
+    pub const LAMBDA: &'static str = "lambda_expression";
+    pub const TRY: &'static str = "try_statement";
+    pub const CATCH: &'static str = "catch_clause";
+    pub const ELSE_CLAUSE: &'static str = "else_clause";
+}
 
 impl Default for Cpp {
     fn default() -> Self {
@@ -103,11 +113,15 @@ impl Language for Cpp {
     }
 
     fn if_nodes(&self) -> Vec<&str> {
-        vec![IF]
+        vec![Self::IF]
+    }
+
+    fn else_nodes(&self) -> Vec<&str> {
+        vec![Self::ELSE_CLAUSE]
     }
 
     fn block_nodes(&self) -> Vec<&str> {
-        vec![COMPOUND_STATEMENT]
+        vec![Self::COMPOUND_STATEMENT]
     }
 
     fn conditional_assignment_nodes(&self) -> Vec<&str> {
@@ -115,71 +129,71 @@ impl Language for Cpp {
     }
 
     fn invisible_container_nodes(&self) -> Vec<&str> {
-        vec![TRANSLATION_UNIT]
+        vec![Self::TRANSLATION_UNIT]
     }
 
     fn switch_nodes(&self) -> Vec<&str> {
-        vec![SWITCH]
+        vec![Self::SWITCH]
     }
 
     fn case_nodes(&self) -> Vec<&str> {
-        vec![CASE]
+        vec![Self::CASE]
     }
 
     fn ternary_nodes(&self) -> Vec<&str> {
-        vec![CONDITIONAL]
+        vec![Self::CONDITIONAL]
     }
 
     fn loop_nodes(&self) -> Vec<&str> {
-        vec![FOR, WHILE, DO, FOR_RANGE_LOOP]
+        vec![Self::FOR, Self::WHILE, Self::DO, Self::FOR_RANGE_LOOP]
     }
 
     fn except_nodes(&self) -> Vec<&str> {
-        vec![CATCH]
+        vec![Self::CATCH]
     }
 
     fn try_expression_nodes(&self) -> Vec<&str> {
-        vec![TRY]
+        vec![Self::TRY]
     }
 
     fn jump_nodes(&self) -> Vec<&str> {
-        vec![BREAK, CONTINUE, GOTO]
+        vec![Self::BREAK, Self::CONTINUE, Self::GOTO]
     }
 
     fn return_nodes(&self) -> Vec<&str> {
-        vec![RETURN]
+        vec![Self::RETURN]
     }
 
     fn binary_nodes(&self) -> Vec<&str> {
-        vec![BINARY]
+        vec![Self::BINARY]
     }
 
     fn boolean_operator_nodes(&self) -> Vec<&str> {
-        vec![AND, OR]
+        vec![Self::AND, Self::OR]
     }
 
     fn field_nodes(&self) -> Vec<&str> {
-        vec![FIELD_DECLARATION]
+        vec![Self::FIELD_DECLARATION]
     }
 
     fn call_nodes(&self) -> Vec<&str> {
-        vec![CALL]
+        vec![Self::CALL]
     }
 
     fn function_nodes(&self) -> Vec<&str> {
-        vec![FUNCTION_DEFINITION]
+        vec![Self::FUNCTION_DEFINITION]
     }
 
     fn closure_nodes(&self) -> Vec<&str> {
-        vec![LAMBDA]
+        vec![Self::LAMBDA]
     }
 
     fn comment_nodes(&self) -> Vec<&str> {
-        vec![COMMENT]
+        vec![Self::COMMENT]
     }
 
     fn string_nodes(&self) -> Vec<&str> {
-        vec![STRING_LITERAL, RAW_STRING]
+        vec![Self::STRING_LITERAL, Self::RAW_STRING]
     }
 
     fn has_labeled_jumps(&self) -> bool {
@@ -196,10 +210,10 @@ impl Language for Cpp {
 
     fn call_identifiers(&self, source_file: &File, node: &Node) -> (Option<String>, String) {
         match node.kind() {
-            CALL => {
+            Self::CALL => {
                 let function_node = node.child_by_field_name("function").unwrap();
 
-                if function_node.kind() == FIELD_EXPRESSION {
+                if function_node.kind() == Self::FIELD_EXPRESSION {
                     let object_node = function_node.child_by_field_name("argument").unwrap();
                     let object_source = node_source(&object_node, source_file);
 
@@ -209,7 +223,7 @@ impl Language for Cpp {
                     (Some(object_source), method_name)
                 } else {
                     let function_name = node_source(&function_node, source_file);
-                    (Some("this".to_string()), function_name)
+                    (None, function_name)
                 }
             }
             _ => (Some("<UNKNOWN>".to_string()), "<UNKNOWN>".to_string()),
@@ -217,7 +231,7 @@ impl Language for Cpp {
     }
 
     fn field_identifiers(&self, source_file: &File, node: &Node) -> (String, String) {
-        if node.kind() == FIELD_EXPRESSION {
+        if node.kind() == Self::FIELD_EXPRESSION {
             let object_node = node.child_by_field_name("argument").unwrap();
             let object_source = node_source(&object_node, source_file);
 
@@ -282,7 +296,7 @@ mod test {
 
         assert_eq!(
             language.call_identifiers(&source_file, &call),
-            (Some("this".to_string()), "foo".to_string())
+            (None, "foo".to_string())
         );
     }
 

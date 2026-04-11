@@ -10,10 +10,17 @@ const CLASS_QUERY: &str = r#"
 "#;
 
 const FUNCTION_DECLARATION_QUERY: &str = r#"
-(function_definition
-    declarator: (function_declarator
-        declarator: (identifier) @name
-        parameters: (parameter_list) @parameters)) @definition.function
+[
+    (function_definition
+        declarator: (function_declarator
+            declarator: (identifier) @name
+            parameters: (parameter_list) @parameters))
+    (function_definition
+        declarator: (pointer_declarator
+            declarator: (function_declarator
+                declarator: (identifier) @name
+                parameters: (parameter_list) @parameters)))
+] @definition.function
 "#;
 
 const FIELD_QUERY: &str = r#"
@@ -52,6 +59,7 @@ impl C {
     pub const OR: &'static str = "||";
     pub const FIELD_EXPRESSION: &'static str = "field_expression";
     pub const IDENTIFIER: &'static str = "identifier";
+    pub const ELSE_CLAUSE: &'static str = "else_clause";
 }
 
 impl Default for C {
@@ -93,6 +101,10 @@ impl Language for C {
 
     fn if_nodes(&self) -> Vec<&str> {
         vec![Self::IF]
+    }
+
+    fn else_nodes(&self) -> Vec<&str> {
+        vec![Self::ELSE_CLAUSE]
     }
 
     fn switch_nodes(&self) -> Vec<&str> {
