@@ -30,14 +30,14 @@ config_files = [
   "prettier.config.cjs",
   "prettier.config.js",
 ]
-affects_cache = ["package.json", ".editorconfig", ".prettierignore"]
+affects_cache = ["package.json", ".editorconfig", ".gitignore", ".prettierignore"]
 description = "JS, CSS, HTML, JSON, TS, GraphQL, MD and YML formatter"
 package_file_candidate = "package.json"
 package_file_candidate_filters = ["prettier"]
 
 [plugins.definitions.prettier.drivers.format]
 script = "prettier --config ${config_file} -w ${target}"
-runs_from = { type = "tool_directory" }
+runs_from = { type = "root" }
 batch_by = "config_file"
 success_codes = [0] # https://prettier.io/docs/cli#exit-codes
 cache_results = true
