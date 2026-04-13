@@ -44,7 +44,8 @@
 - Create `vendor/tree-sitter-vbnet/Cargo.toml`
 - Create `vendor/tree-sitter-vbnet/build.rs`
 - Create `vendor/tree-sitter-vbnet/bindings/rust/lib.rs`
-  Create these only if no published crate is compatible with the workspace `tree-sitter` version.
+- Create `vendor/tree-sitter-vbnet/src/parser.c`
+  Create the local binding crate files, plus the vendored upstream grammar sources that crate needs, only if no published crate is compatible with the workspace `tree-sitter` version.
 - Modify `qlty-config/default.toml`
   Add `[language.vbnet]` with `globs = ["*.vb"]` and an `Imports` duplication filter that matches the real VB.NET grammar node.
 - Modify `qlty-types/src/lib.rs`
@@ -95,6 +96,7 @@ The feature direction is correct, but the earlier task split was wrong. A "skele
 ### Task 1: Register VB.NET And Implement The Real Language Contract
 
 **Files:**
+
 - Modify: `Cargo.toml`
 - Modify: `Cargo.lock`
 - Modify: `qlty-analysis/Cargo.toml`
@@ -106,6 +108,7 @@ The feature direction is correct, but the earlier task split was wrong. A "skele
 - Create: `vendor/tree-sitter-vbnet/Cargo.toml`
 - Create: `vendor/tree-sitter-vbnet/build.rs`
 - Create: `vendor/tree-sitter-vbnet/bindings/rust/lib.rs`
+- Create: `vendor/tree-sitter-vbnet/src/parser.c`
 
 - [ ] **Step 1: Identify or write the failing test**
 
@@ -114,6 +117,7 @@ Write the smallest red tests that prove the registration and parser contract the
 - Create `qlty-types/tests/language_enum.rs` asserting `language_enum_from_name("vbnet") == analysis::v1::Language::Vbdotnet`.
 - Extend `qlty-analysis/src/lang.rs` `language_names()` so `from_str("vbnet")` must resolve.
 - Add focused `qlty-analysis/src/lang/vbnet.rs` unit tests for:
+
   - class query capture on a simple `Class ... End Class`
   - function query capture on `Sub`, `Function`, and `Sub New`
   - `constructor_names()` recognizing `New`
@@ -144,6 +148,7 @@ Implement the real VB.NET language contract, not a placeholder:
 - Add `[language.vbnet]` with `globs = ["*.vb"]` and the real `Imports` duplication filter node in `qlty-config/default.toml`.
 - Map `"vbnet"` to `analysis::v1::Language::Vbdotnet` in `qlty-types/src/lib.rs`.
 - Implement `qlty-analysis/src/lang/vbnet.rs` with the grammar's real node names:
+
   - `name() == "vbnet"`
   - `self_keyword() == Some("Me")`
   - class/function/field queries with captures `@definition.class`, `@definition.function`, `@field`, `@name`, and `@parameters`
@@ -172,9 +177,10 @@ Do not move on until the parser/query contract is clean and stable:
 - Confirm any non-obvious node-kind string against the actual grammar before leaving it in the module.
 - Keep the implementation aligned with the existing language-module style.
 
+Run: `qlty fmt`
+Run: `qlty check --level=low --fix`
 Run: `cargo check`
-Run: `cargo test -p qlty-analysis`
-Run: `cargo test -p qlty-types`
+Run: `cargo test`
 Expected: all PASS
 
 - [ ] **Step 6: Commit**
@@ -189,6 +195,7 @@ If no local binding crate was needed, omit `vendor/tree-sitter-vbnet` from `git 
 ### Task 2: Add Generic Case-Insensitive Identifier Handling For VB.NET Metrics
 
 **Files:**
+
 - Modify: `qlty-analysis/src/lang.rs`
 - Modify: `qlty-analysis/src/lang/vbnet.rs`
 - Modify: `qlty-smells/src/metrics/metrics/lcom.rs`
@@ -197,7 +204,7 @@ If no local binding crate was needed, omit `vendor/tree-sitter-vbnet` from `git 
 
 - [ ] **Step 1: Identify or write the failing test**
 
-Add focused red tests around the shared metrics seams that currently assume case-sensitive identifiers:
+Add focused red tests around the shared metrics seams that currently assume case-sensitive identifiers. Put them under `mod vbnet` blocks so `cargo test -p qlty-smells vbnet` runs the new coverage directly:
 
 - Add a red test in `qlty-smells/src/metrics/metrics/lcom.rs` proving a VB.NET `Sub New` or mixed-case `sub new` is still treated as a constructor.
 - Add a red test in `qlty-smells/src/metrics/metrics/lcom.rs` proving a method group still connects when one method calls `Me.dothing()` and the declaration is `DoThing`.
@@ -232,10 +239,10 @@ Expected: PASS
 
 Keep the shared seams minimal and make sure existing case-sensitive languages still behave the same:
 
+Run: `qlty fmt`
+Run: `qlty check --level=low --fix`
 Run: `cargo check`
-Run: `cargo test -p qlty-smells`
-Run: `cargo test -p qlty-analysis`
-Run: `cargo test -p qlty-types`
+Run: `cargo test`
 Expected: all PASS
 
 - [ ] **Step 6: Commit**
@@ -248,6 +255,7 @@ git commit -m "feat: normalize vbnet identifiers in shared metrics"
 ### Task 3: Prove End-To-End VB.NET Maintainability Through The CLI And Update Docs
 
 **Files:**
+
 - Modify: `qlty-cli/tests/lang.rs`
 - Create: `qlty-cli/tests/lang/vbnet/basic.toml`
 - Create: `qlty-cli/tests/lang/vbnet/basic.stdout`
@@ -329,9 +337,9 @@ Run: `cargo test -p qlty --test integration swift_tests`
 
 If `c_tests` and `cpp_tests` exist in `qlty-cli/tests/lang.rs` when this task is executed, run them here too because those changes overlap the same registration files.
 
-Run: `cargo check`
 Run: `qlty fmt`
 Run: `qlty check --level=low --fix`
+Run: `cargo check`
 Run: `cargo test`
 Expected: all PASS
 
