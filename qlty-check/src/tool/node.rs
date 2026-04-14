@@ -137,6 +137,11 @@ impl Tool for NodePackage {
         self.name.clone()
     }
 
+    fn directory(&self) -> String {
+        self.system_install_directory()
+            .unwrap_or_else(|| self.cache_directory())
+    }
+
     fn tool_type(&self) -> ToolType {
         ToolType::RuntimePackage
     }
@@ -167,17 +172,35 @@ impl Tool for NodePackage {
         let node_modules_path = std::path::PathBuf::from(&self.directory()).join("node_modules");
         std::fs::create_dir_all(node_modules_path)?;
 
+        if self.plugin.system {
+            let package = format!("{name}@{version}");
+            return self.run_command(self.cmd.build(
+                NPM_COMMAND,
+                vec![
+                    "install",
+                    "--no-save",
+                    "--package-lock=false",
+                    "--force",
+                    package.as_str(),
+                ],
+            ));
+        }
+
         self.run_command(self.cmd.build(
             NPM_COMMAND,
-            vec![
-                "install",
-                "--force",
-                format!("{}@{}", name, version).as_str(),
-            ],
+            vec!["install", "--force", &format!("{name}@{version}")],
         ))
     }
 
     fn package_file_install(&self, task: &ProgressTask) -> Result<()> {
+        if self.plugin.system {
+            task.set_dim_message(&format!("{NPM_COMMAND} install"));
+            return self.run_command(
+                self.cmd
+                    .build(NPM_COMMAND, vec!["install", "--force", "--no-package-lock"]),
+            );
+        }
+
         self.update_package_json(&self.name, &self.plugin.package_file)?;
         task.set_dim_message(
             format!(
@@ -419,6 +442,69 @@ pub mod test {
                 json_contents,
                 json!({"dependencies":{"tool_dep":"1.0.0","test":"1.0.0"}})
             );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn node_package_system_mode_installs_in_workspace() {
+        with_node_package(|pkg, temp_path, list| {
+            let pkg_root = temp_path.path().join("frontend");
+            let pkg_file = pkg_root.join("package.json");
+            std::fs::create_dir_all(&pkg_root)?;
+            std::fs::write(&pkg_file, r#"{"name":"frontend"}"#)?;
+
+            pkg.plugin.system = true;
+            pkg.plugin.package_file = Some(pkg_file.to_str().unwrap().to_string());
+
+            assert_eq!(pkg.directory(), pkg_root.to_str().unwrap());
+
+            pkg.install(&new_task())?;
+            assert_eq!(
+                list.lock().unwrap().clone(),
+                vec![
+                    vec![
+                        NPM_COMMAND,
+                        "install",
+                        "--no-save",
+                        "--package-lock=false",
+                        "--force",
+                        "test@1.0.0"
+                    ],
+                    vec![NPM_COMMAND, "install", "--force", "--no-package-lock"]
+                ]
+            );
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn node_package_system_mode_fingerprint_changes_with_package_file() {
+        with_node_package(|pkg, temp_path, _| {
+            let pkg_root = temp_path.path().join("frontend");
+            let pkg_file = pkg_root.join("package.json");
+            std::fs::create_dir_all(&pkg_root)?;
+            std::fs::write(&pkg_file, r#"{"name":"frontend"}"#)?;
+
+            pkg.plugin.system = true;
+            pkg.plugin.package_file = Some(pkg_file.to_str().unwrap().to_string());
+            reroute_tools_root(&temp_path, pkg);
+
+            let fingerprint_before = pkg.fingerprint();
+            let donefile_before = pkg.donefile_path();
+
+            std::fs::write(
+                &pkg_file,
+                r#"{"name":"frontend","dependencies":{"eslint":"9.0.0"}}"#,
+            )?;
+
+            let fingerprint_after = pkg.fingerprint();
+            let donefile_after = pkg.donefile_path();
+
+            assert_ne!(fingerprint_before, fingerprint_after);
+            assert_ne!(donefile_before, donefile_after);
+
             Ok(())
         });
     }

@@ -128,6 +128,10 @@ pub trait Tool: Debug + Sync + Send {
     fn version(&self) -> Option<String>;
 
     fn directory(&self) -> String {
+        self.cache_directory()
+    }
+
+    fn cache_directory(&self) -> String {
         path_to_string(PathBuf::from(self.parent_directory()).join(self.directory_name()))
     }
 
@@ -140,7 +144,7 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn debug_files_directory(&self) -> String {
-        format!("{}-installation-debug-files", self.directory())
+        format!("{}-installation-debug-files", self.cache_directory())
     }
 
     fn runtime(&self) -> Option<Box<dyn Tool>> {
@@ -166,6 +170,12 @@ pub trait Tool: Debug + Sync + Send {
         }
 
         if let Some(plugin) = self.plugin() {
+            sha.update(plugin.system.to_string());
+
+            if let Some(system_install_directory) = self.system_install_directory() {
+                sha.update(system_install_directory);
+            }
+
             if let Some(package) = plugin.package {
                 sha.update(&package);
             }
@@ -206,6 +216,10 @@ pub trait Tool: Debug + Sync + Send {
 
     fn setup(&self, task: &ProgressTask) -> Result<()> {
         std::fs::create_dir_all(self.parent_directory())?;
+
+        if self.directory() != self.cache_directory() {
+            std::fs::create_dir_all(self.directory())?;
+        }
 
         task.set_dim_message(&format!("Waiting for lock for {}", self.name()));
 
@@ -329,11 +343,11 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn donefile_path(&self) -> PathBuf {
-        PathBuf::from(format!("{}.done", self.directory()))
+        PathBuf::from(format!("{}.done", self.cache_directory()))
     }
 
     fn lockfile_path(&self) -> PathBuf {
-        PathBuf::from(format!("{}.lock", self.directory()))
+        PathBuf::from(format!("{}.lock", self.cache_directory()))
     }
 
     fn exists(&self) -> bool {
@@ -661,10 +675,7 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn install_log_path(&self) -> String {
-        join_path_string!(
-            self.parent_directory(),
-            format!("{}-install.log", self.directory_name())
-        )
+        format!("{}-install.log", self.cache_directory())
     }
 
     fn clone_box(&self) -> Box<dyn Tool>;
@@ -716,6 +727,27 @@ pub trait Tool: Debug + Sync + Send {
 
     fn plugin(&self) -> Option<PluginDef> {
         None
+    }
+
+    fn system_install_directory(&self) -> Option<String> {
+        let plugin = self.plugin()?;
+        if !plugin.system {
+            return None;
+        }
+
+        // package_file is already resolved to an absolute path that includes
+        // the prefix (see configure_plugin in planner/config.rs), so its
+        // parent directory inherently reflects the prefixed workspace root.
+        if let Some(package_file) = plugin.package_file.as_deref() {
+            let package_file = PathBuf::from(package_file);
+            if let Some(parent) = package_file.parent() {
+                return Some(path_to_string(parent));
+            }
+        }
+
+        plugin
+            .workspace_root
+            .map(|root| path_to_string(root.join(plugin.prefix.as_deref().unwrap_or_default())))
     }
 
     fn env_paths(&self) -> Result<Vec<String>> {
@@ -1103,7 +1135,8 @@ mod test {
             ..Default::default()
         };
 
-        let hash = "[runtime_package]V[package]V[extra_package1]V[extra_package2]V[package_file]";
+        let hash =
+            "false[runtime_package]Vfalse[package]V[extra_package1]V[extra_package2]V[package_file]";
         let mut hasher = sha2::Sha256::new();
         hasher.update(hash);
         assert_eq!(tool.fingerprint(), format!("{:x}", hasher.finalize())[..12]);
@@ -1140,6 +1173,55 @@ mod test {
             ))
         );
         assert_eq!(env.get("TEST"), Some(&"test".to_string()));
+    }
+
+    #[test]
+    fn test_tool_system_install_directory_uses_package_file_parent() {
+        let tempdir = tempdir().unwrap();
+        let package_file = tempdir.path().join("frontend").join("package.json");
+        std::fs::create_dir_all(package_file.parent().unwrap()).unwrap();
+        std::fs::write(&package_file, "{}").unwrap();
+
+        let tool = TestTool {
+            plugin: Some(PluginDef {
+                system: true,
+                package_file: Some(path_to_string(&package_file)),
+                workspace_root: Some(tempdir.path().to_path_buf()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        assert_eq!(
+            tool.system_install_directory(),
+            Some(path_to_string(package_file.parent().unwrap()))
+        );
+    }
+
+    #[test]
+    fn test_tool_fingerprint_changes_for_system_mode() {
+        let tempdir = tempdir().unwrap();
+        let base_plugin = PluginDef {
+            package: Some("test".to_string()),
+            version: Some("1.0.0".to_string()),
+            workspace_root: Some(tempdir.path().to_path_buf()),
+            prefix: Some("frontend".to_string()),
+            ..Default::default()
+        };
+
+        let isolated = TestTool {
+            plugin: Some(base_plugin.clone()),
+            ..Default::default()
+        };
+        let system = TestTool {
+            plugin: Some(PluginDef {
+                system: true,
+                ..base_plugin
+            }),
+            ..Default::default()
+        };
+
+        assert_ne!(isolated.fingerprint(), system.fingerprint());
     }
 
     #[test]

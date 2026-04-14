@@ -461,6 +461,7 @@ fn merge_enabled_plugins(existing: &EnabledPlugin, new: &EnabledPlugin) -> Enabl
         prefix: existing.prefix.clone(),
         mode: Some(merged_mode),
         version,
+        system: existing.system || new.system,
         skip_upstream: new.skip_upstream.or(existing.skip_upstream),
         package_file: new.package_file.clone().or(existing.package_file.clone()),
         triggers: prioritize_new_array(&existing.triggers, &new.triggers),
@@ -780,6 +781,7 @@ mod test {
             prefix: Some("prefix1".to_string()),
             mode: Some(IssueMode::Block),
             version: "1.0.0".to_string(),
+            system: false,
             triggers: vec![CheckTrigger::Manual],
             skip_upstream: Some(true),
             package_file: Some("package1".to_string()),
@@ -802,6 +804,7 @@ mod test {
             prefix: Some("prefix2".to_string()),
             mode: Some(IssueMode::Disabled),
             version: "2.0.0".to_string(),
+            system: true,
             triggers: vec![CheckTrigger::PreCommit],
             skip_upstream: Some(false),
             package_file: Some("package2".to_string()),
@@ -825,6 +828,7 @@ mod test {
         assert_eq!(merged.prefix, Some("prefix1".to_string()));
         assert_eq!(merged.mode, Some(IssueMode::Disabled));
         assert_eq!(merged.version, "2.0.0");
+        assert!(merged.system);
         assert_eq!(merged.triggers, vec![CheckTrigger::PreCommit]);
         assert_eq!(merged.skip_upstream, Some(false));
         assert_eq!(merged.package_file, Some("package2".to_string()));
@@ -1052,6 +1056,7 @@ mod test {
                 prefix: Some("shared".to_string()),
                 mode: Some(IssueMode::Block),
                 version: "1.0.0".to_string(),
+                system: false,
                 triggers: vec![CheckTrigger::Manual],
                 skip_upstream: Some(true),
                 package_file: Some("package1".to_string()),
@@ -1073,6 +1078,7 @@ mod test {
                 prefix: Some("shared".to_string()),
                 mode: Some(IssueMode::Disabled),
                 version: "2.0.0".to_string(),
+                system: true,
                 triggers: vec![CheckTrigger::PreCommit],
                 skip_upstream: Some(false),
                 package_file: Some("package2".to_string()),

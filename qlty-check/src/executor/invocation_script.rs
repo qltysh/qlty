@@ -93,7 +93,7 @@ fn get_config_file_paths(plan: &InvocationPlan) -> Vec<String> {
     plan.plugin_configs
         .iter()
         .map(|config| {
-            if plan.driver.copy_configs_into_tool_install {
+            if plan.driver.copy_configs_into_tool_install && !plan.plugin.system {
                 let config_file_name = config.path.file_name().unwrap().to_str().unwrap();
                 let config_file = path_to_native_string(join_path_string!(
                     plan.tool.directory(),
