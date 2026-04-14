@@ -30,6 +30,7 @@ impl CI for TravisCI {
     fn branch(&self) -> String {
         self.env
             .var("TRAVIS_PULL_REQUEST_BRANCH")
+            .filter(|b| !b.is_empty())
             .or_else(|| self.env.var("TRAVIS_BRANCH"))
             .unwrap_or_default()
     }
@@ -149,6 +150,19 @@ mod test {
             env: Box::new(HashMapEnv::new(env)),
         };
         assert_eq!(&ci.branch(), "feature-branch");
+    }
+
+    #[test]
+    fn branch_push_build_with_empty_pr_branch() {
+        let mut env: HashMap<String, String> = HashMap::default();
+        env.insert("TRAVIS_BRANCH".to_string(), "main".to_string());
+        env.insert("TRAVIS_PULL_REQUEST_BRANCH".to_string(), "".to_string());
+        env.insert("TRAVIS_PULL_REQUEST".to_string(), "false".to_string());
+
+        let ci = TravisCI {
+            env: Box::new(HashMapEnv::new(env)),
+        };
+        assert_eq!(&ci.branch(), "main");
     }
 
     #[test]
