@@ -735,9 +735,9 @@ pub trait Tool: Debug + Sync + Send {
             return None;
         }
 
-        // package_file is already resolved to an absolute path that includes
-        // the prefix (see configure_plugin in planner/config.rs), so its
-        // parent directory inherently reflects the prefixed workspace root.
+        // When set via user config, package_file is resolved to an absolute
+        // prefix-aware path in configure_plugin (planner/config.rs).
+        // Plugin-defined values may not be absolute.
         if let Some(package_file) = plugin.package_file.as_deref() {
             let package_file = PathBuf::from(package_file);
             if let Some(parent) = package_file.parent() {

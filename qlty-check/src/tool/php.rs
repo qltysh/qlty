@@ -356,7 +356,10 @@ pub mod test {
                 cmd: stub_cmd(list.clone()),
             };
 
-            assert_eq!(pkg.directory(), pkg_root.to_str().unwrap());
+            assert_eq!(
+                pkg.directory(),
+                pkg_root.to_str().unwrap().replace('\\', "/")
+            );
             assert_eq!(
                 pkg.extra_env_paths()?,
                 vec![pkg_root

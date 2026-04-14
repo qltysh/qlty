@@ -457,7 +457,10 @@ pub mod test {
             pkg.plugin.system = true;
             pkg.plugin.package_file = Some(pkg_file.to_str().unwrap().to_string());
 
-            assert_eq!(pkg.directory(), pkg_root.to_str().unwrap());
+            assert_eq!(
+                pkg.directory(),
+                pkg_root.to_str().unwrap().replace('\\', "/")
+            );
 
             pkg.install(&new_task())?;
             assert_eq!(
