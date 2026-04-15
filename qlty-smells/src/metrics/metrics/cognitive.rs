@@ -110,19 +110,16 @@ impl Visitor for CognitiveComplexity<'_> {
 
     fn visit_function(&mut self, cursor: &mut TreeCursor) {
         let node = cursor.node();
-        let name = self.source_file.language().function_name_node(&node);
+        let lang = self.source_file.language();
+        let name_string = lang.function_name_from_node(self.source_file, &node);
+        let normalized = lang.normalize_identifier(&name_string);
 
-        let name_string = name
-            .utf8_text(self.source_file.contents.as_bytes())
-            .unwrap()
-            .to_string();
+        let decorator = lang.is_decorator_function(&node);
 
-        let decorator = self.source_file.language().is_decorator_function(&node);
-
-        self.functions.push(name_string.clone());
+        self.functions.push(normalized.clone());
 
         if !decorator {
-            self.counted_functions.push(name_string);
+            self.counted_functions.push(normalized);
         }
 
         if self.counted_functions.len() > 1 {
@@ -173,14 +170,16 @@ impl<'a> CognitiveComplexity<'a> {
     }
 
     fn is_recursive_call(&self, node: &Node) -> bool {
-        let (receiver, function_name) = self
-            .source_file
-            .language()
-            .call_identifiers(self.source_file, node);
+        let lang = self.source_file.language();
+        let (receiver, function_name) = lang.call_identifiers(self.source_file, node);
 
-        receiver.as_deref() == self.language().self_keyword()
+        let normalized_receiver = receiver.as_deref().map(|r| lang.normalize_identifier(r));
+        let normalized_self = lang.self_keyword().map(|s| lang.normalize_identifier(s));
+        let normalized_fn = lang.normalize_identifier(&function_name);
+
+        normalized_receiver == normalized_self
             && !self.functions.is_empty()
-            && function_name == *self.functions.last().unwrap()
+            && normalized_fn == *self.functions.last().unwrap()
     }
 
     fn process_binary_child_node(&mut self, cursor: &mut TreeCursor) {

@@ -1,4 +1,6 @@
-use qlty_analysis::code::{capture_by_name, capture_source, File, NodeFilter, Visitor};
+use qlty_analysis::code::{
+    capture_by_name, capture_by_name_option, capture_source, node_source, File, NodeFilter, Visitor,
+};
 use qlty_analysis::Language;
 use std::collections::HashSet;
 use tree_sitter::{Node, TreeCursor};
@@ -69,14 +71,20 @@ fn count_groups<'a>(
             continue;
         }
 
-        let name = capture_source(function_query, "name", &function_match, source_file);
+        let name =
+            match capture_by_name_option(function_query, "name", &function_match) {
+                Some(capture) => node_source(&capture.node, source_file),
+                None => language.function_name_from_node(source_file, &function_capture.node),
+            };
 
         if is_constructor(language, class_name, &name) {
             continue;
         }
 
         let mut group = Group::default();
-        group.functions.insert(name);
+        group
+            .functions
+            .insert(language.normalize_identifier(&name));
         group.merge(&NamedReferences::process(
             source_file,
             &function_capture.node,
@@ -114,17 +122,33 @@ fn is_constructor(
     class_name: &str,
     function_name: &str,
 ) -> bool {
-    if language.constructor_names().contains(&function_name)
-        || language.destructor_names().contains(&function_name)
-        || class_name == function_name
+    let norm_fn = language.normalize_identifier(function_name);
+    let norm_class = language.normalize_identifier(class_name);
+
+    if language
+        .constructor_names()
+        .iter()
+        .any(|cn| language.normalize_identifier(cn) == norm_fn)
     {
+        return true;
+    }
+
+    if language
+        .destructor_names()
+        .iter()
+        .any(|dn| language.normalize_identifier(dn) == norm_fn)
+    {
+        return true;
+    }
+
+    if norm_class == norm_fn {
         return true;
     }
 
     language
         .constructor_names()
         .iter()
-        .any(|constructor_name| function_name.starts_with(constructor_name))
+        .any(|constructor_name| norm_fn.starts_with(&language.normalize_identifier(constructor_name)))
 }
 
 pub struct NamedReferences<'a> {
@@ -161,9 +185,14 @@ impl<'a> Visitor for NamedReferences<'a> {
 
     fn visit_call(&mut self, cursor: &mut TreeCursor) {
         let (receiver, name) = self.call_identifiers(&cursor.node());
+        let lang = self.language();
+        let normalized_receiver = receiver.as_deref().map(|r| lang.normalize_identifier(r));
+        let normalized_self = lang.self_keyword().map(|s| lang.normalize_identifier(s));
 
-        if receiver.as_deref() == self.language().self_keyword() {
-            self.group.functions.insert(name);
+        if normalized_receiver == normalized_self {
+            self.group
+                .functions
+                .insert(lang.normalize_identifier(&name));
         }
 
         self.process_children(cursor);
@@ -171,11 +200,12 @@ impl<'a> Visitor for NamedReferences<'a> {
 
     fn visit_field(&mut self, cursor: &mut TreeCursor) {
         let (receiver, name) = self.field_identifiers(&cursor.node());
+        let lang = self.language();
 
-        if self.language().self_keyword().is_some()
-            && receiver == self.language().self_keyword().unwrap()
-        {
-            self.group.fields.insert(name);
+        if let Some(self_kw) = lang.self_keyword() {
+            if lang.normalize_identifier(&receiver) == lang.normalize_identifier(self_kw) {
+                self.group.fields.insert(lang.normalize_identifier(&name));
+            }
         }
 
         self.process_children(cursor);

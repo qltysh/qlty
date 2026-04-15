@@ -174,6 +174,7 @@ qlty plugins enable <NAME>
 | Swift          | [swiftlint](https://realm.github.io/SwifLint/)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | Terraform      | [checkov](https://www.checkov.io/), [osv-scanner](https://google.github.io/osv-scanner/), [radarlint](https://github.com/qltysh/radarlint), [tflint](https://github.com/terraform-linters/tflint), [trivy](https://trivy.dev)                                                                                                                                                                                                                                                                                                                      |
 | TypeScript     | [biome](https://biomejs.dev/), [complexity](https://github.com/qltysh/qlty/tree/main/qlty-smells), [duplication](https://github.com/qltysh/qlty/tree/main/qlty-smells), [eslint](https://eslint.org/), [knip](https://knip.dev/), [oxc](https://oxc.rs/), [prettier](https://prettier.io/)                                                                                                                                                                                                                                                         |
+| VB.NET         | [complexity](https://github.com/qltysh/qlty/tree/main/qlty-smells), [duplication](https://github.com/qltysh/qlty/tree/main/qlty-smells)                                                                                                                                                                                                                                                                                                                                                                                                            |
 | YAML           | [prettier](https://prettier.io/), [trivy](https://trivy.dev), [yamllint](https://github.com/adrienverge/yamllint)                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 The [full list of plugins](https://github.com/qltysh/qlty/tree/main/qlty-plugins/plugins/linters) is available on GitHub.
@@ -334,7 +335,7 @@ The Qlty CLI calculates a variety of code quality metrics which are available th
   </tbody>
 </table>
 
-Quality metrics are available for C#, Go, Java, JavaScript, Kotlin, PHP, Python, Ruby, Rust, and TypeScript.
+Quality metrics are available for C, C++, C#, Go, Java, JavaScript, Kotlin, PHP, Python, Ruby, Rust, Swift, TypeScript, and VB.NET.
 
 ---
 

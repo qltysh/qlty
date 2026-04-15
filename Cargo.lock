@@ -2813,6 +2813,7 @@ dependencies = [
  "tree-sitter-rust",
  "tree-sitter-swift",
  "tree-sitter-typescript",
+ "tree-sitter-vb-dotnet",
 ]
 
 [[package]]
@@ -4491,6 +4492,14 @@ name = "tree-sitter-typescript"
 version = "0.21.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ecb35d98a688378e56c18c9c159824fd16f730ccbea19aacf4f206e5d5438ed9"
+dependencies = [
+ "cc",
+ "tree-sitter",
+]
+
+[[package]]
+name = "tree-sitter-vb-dotnet"
+version = "0.1.0"
 dependencies = [
  "cc",
  "tree-sitter",

@@ -1,0 +1,17 @@
+[package]
+name = "tree-sitter-vb-dotnet"
+version = "0.1.0"
+edition = "2021"
+description = "Local VB.NET tree-sitter grammar binding compatible with tree-sitter 0.22"
+license = "MIT"
+build = "build.rs"
+
+[lib]
+name = "tree_sitter_vb_dotnet"
+path = "bindings/rust/lib.rs"
+
+[dependencies]
+tree-sitter = ">=0.21.0"
+
+[build-dependencies]
+cc = "~1.0.90"

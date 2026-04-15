@@ -22,6 +22,7 @@ pub fn count<'a>(source_file: &'a File, node: &Node<'a>, filter: &NodeFilter) ->
 
     for field_match in all_matches {
         let name = capture_source(query, "name", &field_match, source_file);
+        let normalized_name = language.normalize_identifier(&name);
         let field_capture = capture_by_name(query, "field", &field_match);
 
         if filter.exclude(&field_capture.node) {
@@ -29,21 +30,16 @@ pub fn count<'a>(source_file: &'a File, node: &Node<'a>, filter: &NodeFilter) ->
         }
 
         if let Some(parent) = field_capture.node.parent() {
-            // In some languages, field nodes appear within call nodes. We don't want to count those.
             if !language.call_nodes().contains(&parent.kind()) {
                 if deduplicate {
-                    // For languages that deduplicate (field accesses), deduplicate by name
-                    fields.insert(name);
+                    fields.insert(normalized_name);
                 } else {
-                    // For languages that don't deduplicate (field declarations), count each declaration individually
                     field_count += 1;
                 }
             }
         } else if deduplicate {
-            // For languages that deduplicate (field accesses), deduplicate by name
-            fields.insert(name);
+            fields.insert(normalized_name);
         } else {
-            // For languages that don't deduplicate (field declarations), count each declaration individually
             field_count += 1;
         }
     }
