@@ -4,6 +4,7 @@ use itertools::Itertools;
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_analysis::{join_path_string, utils::fs::path_to_native_string};
 use qlty_config::config::InvocationDirectoryType;
+use std::path::{Path, PathBuf};
 use tracing::{error, trace};
 
 #[cfg(unix)]
@@ -18,6 +19,7 @@ pub fn compute_invocation_script(plan: &InvocationPlan) -> Result<String> {
     // Autoload script first in case it has variables that need to be interpolated
     base_script = replace_autoload_script(plan, base_script);
     base_script = replace_config_script(plan, base_script);
+    base_script = replace_ignore_paths(plan, base_script);
     base_script = plan.tool.interpolate_variables(&base_script);
     base_script = replace_target_variable(plan, base_script);
     base_script = replace_tmpfile_variable(plan, base_script);
@@ -51,6 +53,22 @@ fn replace_config_script(plan: &InvocationPlan, script: String) -> String {
     } else {
         script
     }
+}
+
+fn replace_ignore_paths(plan: &InvocationPlan, script: String) -> String {
+    if !script.contains("${ignore_paths}") {
+        return script;
+    }
+
+    let ignore_paths = get_ignore_paths(plan)
+        .into_iter()
+        .map(|path| {
+            let escaped = escape(path_to_native_string(path).into()).into_owned();
+            format!("--ignore-path={escaped}")
+        })
+        .join(" ");
+
+    script.replace("${ignore_paths}", &ignore_paths)
 }
 
 fn replace_target_variable(plan: &InvocationPlan, script: String) -> String {
@@ -108,6 +126,39 @@ fn get_config_file_paths(plan: &InvocationPlan) -> Vec<String> {
         .collect()
 }
 
+fn get_ignore_paths(plan: &InvocationPlan) -> Vec<PathBuf> {
+    let search_directory = ignore_search_directory(plan);
+
+    plan.driver
+        .ignore_files
+        .iter()
+        .map(|ignore_file| search_directory.join(ignore_file))
+        .filter(|ignore_path| ignore_path.exists())
+        .collect()
+}
+
+fn ignore_search_directory(plan: &InvocationPlan) -> PathBuf {
+    plan.plugin_configs
+        .first()
+        .and_then(|config| effective_config_directory(plan, &config.path))
+        .unwrap_or_else(|| plan.target_root.clone())
+}
+
+fn effective_config_directory(plan: &InvocationPlan, config_path: &Path) -> Option<PathBuf> {
+    if plan.target_root == plan.workspace.root {
+        return config_path.parent().map(Path::to_path_buf);
+    }
+
+    let relative_path = config_path.strip_prefix(&plan.workspace.root).ok()?;
+    Some(
+        plan.target_root
+            .join(relative_path)
+            .parent()
+            .unwrap()
+            .to_path_buf(),
+    )
+}
+
 pub fn plan_target_list(plan: &InvocationPlan) -> String {
     plan.targets
         .iter()
@@ -152,7 +203,8 @@ mod test {
         Workspace,
     };
     use qlty_types::analysis::v1::ExecutionVerb;
-    use std::{path::PathBuf, sync::Arc, time::SystemTime};
+    use std::{fs, path::PathBuf, sync::Arc, time::SystemTime};
+    use tempfile::tempdir;
 
     #[test]
     fn test_target_list() {
@@ -331,5 +383,111 @@ mod test {
         let script = replace_autoload_script(&plan, script);
 
         assert_eq!(script, "autoload_script: autoload.php");
+    }
+
+    #[test]
+    fn test_replace_ignore_paths_uses_root_ignore_files_without_config() {
+        let temp_dir = tempdir().unwrap();
+        let workspace_root = temp_dir.path().to_path_buf();
+
+        fs::write(workspace_root.join(".prettierignore"), "ignored.js\n").unwrap();
+        fs::write(workspace_root.join(".gitignore"), "build/\n").unwrap();
+
+        let mut driver = build_driver(vec![], vec![]);
+        driver.ignore_files = vec![
+            PathBuf::from(".prettierignore"),
+            PathBuf::from(".gitignore"),
+        ];
+
+        let plan = InvocationPlan {
+            target_root: workspace_root.clone(),
+            workspace_entries: Arc::new(vec![]),
+            invocation_id: "".to_string(),
+            verb: ExecutionVerb::Check,
+            workspace: Workspace {
+                root: workspace_root.clone(),
+            },
+            settings: Default::default(),
+            runtime: None,
+            runtime_version: None,
+            plugin_name: "prettier".to_string(),
+            plugin: PluginDef::default(),
+            tool: Ruby::new_tool(""),
+            driver_name: "format".to_string(),
+            driver,
+            plugin_configs: vec![],
+            targets: vec![],
+            invocation_directory: PathBuf::from("/tool"),
+            invocation_directory_def: InvocationDirectoryDef {
+                kind: InvocationDirectoryType::ToolDir,
+                path: None,
+            },
+        };
+
+        let script = replace_ignore_paths(&plan, "prettier ${ignore_paths} ${target}".to_string());
+
+        assert!(script.contains("--ignore-path="));
+        assert!(script.contains(".prettierignore"));
+        assert!(script.contains(".gitignore"));
+    }
+
+    #[test]
+    fn test_replace_ignore_paths_uses_staged_config_directory() {
+        let workspace_dir = tempdir().unwrap();
+        let staging_dir = tempdir().unwrap();
+        let workspace_root = workspace_dir.path().to_path_buf();
+        let target_root = staging_dir.path().to_path_buf();
+        let config_path = workspace_root.join("packages/app/.prettierrc");
+
+        fs::create_dir_all(config_path.parent().unwrap()).unwrap();
+        fs::create_dir_all(target_root.join("packages/app")).unwrap();
+        fs::write(&config_path, "{}\n").unwrap();
+        fs::write(
+            target_root.join("packages/app/.prettierignore"),
+            "ignored.js\n",
+        )
+        .unwrap();
+        fs::write(target_root.join("packages/app/.gitignore"), "dist/\n").unwrap();
+        fs::write(target_root.join(".prettierignore"), "wrong.js\n").unwrap();
+
+        let mut driver = build_driver(vec![], vec![]);
+        driver.ignore_files = vec![
+            PathBuf::from(".prettierignore"),
+            PathBuf::from(".gitignore"),
+        ];
+
+        let plan = InvocationPlan {
+            target_root,
+            workspace_entries: Arc::new(vec![]),
+            invocation_id: "".to_string(),
+            verb: ExecutionVerb::Check,
+            workspace: Workspace {
+                root: workspace_root,
+            },
+            settings: Default::default(),
+            runtime: None,
+            runtime_version: None,
+            plugin_name: "prettier".to_string(),
+            plugin: PluginDef::default(),
+            tool: Ruby::new_tool(""),
+            driver_name: "format".to_string(),
+            driver,
+            plugin_configs: vec![crate::planner::config_files::PluginConfigFile {
+                path: config_path,
+                contents: "{}".to_string(),
+            }],
+            targets: vec![],
+            invocation_directory: PathBuf::from("/tool"),
+            invocation_directory_def: InvocationDirectoryDef {
+                kind: InvocationDirectoryType::ToolDir,
+                path: None,
+            },
+        };
+
+        let script = replace_ignore_paths(&plan, "prettier ${ignore_paths} ${target}".to_string());
+
+        assert!(script.contains("packages/app/.prettierignore"));
+        assert!(script.contains("packages/app/.gitignore"));
+        assert!(!script.contains("wrong.js"));
     }
 }

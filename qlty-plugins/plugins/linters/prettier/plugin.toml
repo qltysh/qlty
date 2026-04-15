@@ -36,8 +36,9 @@ package_file_candidate = "package.json"
 package_file_candidate_filters = ["prettier"]
 
 [plugins.definitions.prettier.drivers.format]
-script = "prettier --config ${config_file} -w ${target}"
-runs_from = { type = "root" }
+script = "prettier ${ignore_paths} --config ${config_file} -w ${target}"
+runs_from = { type = "tool_directory" }
+ignore_files = [".prettierignore", ".gitignore"]
 batch_by = "config_file"
 success_codes = [0] # https://prettier.io/docs/cli#exit-codes
 cache_results = true
