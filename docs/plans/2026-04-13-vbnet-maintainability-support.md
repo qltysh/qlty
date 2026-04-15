@@ -8,6 +8,10 @@
 
 **Tech Stack:** Rust workspace, tree-sitter, VB.NET grammar binding compatible with `tree-sitter = 0.22.6`, trycmd CLI snapshots, `cargo test`, `qlty fmt`, `qlty check`
 
+## Prerequisites
+
+This branch was cut before C and C++ maintainability support merged on `main` (`a56a8f32` / PR #2746). Before executing Task 1, rebase this branch onto `origin/main`. The C/C++ merge touches the same shared registration files this plan modifies (`qlty-analysis/src/lang.rs`, `qlty-types/src/lib.rs`, `qlty-config/default.toml`, `qlty-cli/tests/lang.rs`), but only as alphabetical insertions, so rebase conflicts should be trivial. The C/C++ merge also confirmed that a published `tree-sitter-*` grammar crate at `"0.21"` works against the workspace `tree-sitter = "0.22.6"`, which is the path Task 1 should try first.
+
 ---
 
 ## Desired End State
@@ -332,10 +336,12 @@ Expected: PASS
 This is the completion gate for the whole feature. Before the final commit, run the repo-required checks and the shared regression surfaces:
 
 Run: `cargo test -p qlty --test integration vbnet_tests`
+Run: `cargo test -p qlty --test integration c_tests`
+Run: `cargo test -p qlty --test integration cpp_tests`
 Run: `cargo test -p qlty --test integration csharp_tests`
 Run: `cargo test -p qlty --test integration swift_tests`
 
-If `c_tests` and `cpp_tests` exist in `qlty-cli/tests/lang.rs` when this task is executed, run them here too because those changes overlap the same registration files.
+`c_tests` and `cpp_tests` now exist in `qlty-cli/tests/lang.rs` (merged in `a56a8f32`), so they are required here because those changes overlap the same registration files.
 
 Run: `qlty fmt`
 Run: `qlty check --level=low --fix`
