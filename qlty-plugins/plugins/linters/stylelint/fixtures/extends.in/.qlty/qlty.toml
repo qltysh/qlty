@@ -1,0 +1,12 @@
+config_version = "0"
+
+[[source]]
+name = "default"
+default = true
+
+[[plugin]]
+name = "stylelint"
+version = "17.3.0"
+package_file = "package.json"
+package_filters = ["stylelint"]
+config_files = [".stylelintrc.json"]

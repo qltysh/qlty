@@ -34,7 +34,7 @@ package_file_candidate_filters = ["stylelint"]
 
 [[plugins.definitions.stylelint.drivers.lint.version]]
 version_matcher = "<16.0.0"
-script = "stylelint --formatter json ${target}"
+script = 'stylelint --config-basedir "${linter}" --formatter json ${target}'
 success_codes = [0, 2]
 error_codes = [1, 78]
 output = "stdout"
@@ -47,7 +47,7 @@ output_missing = "error"
 
 [[plugins.definitions.stylelint.drivers.lint.version]]
 version_matcher = ">=16.0.0"
-script = "stylelint --formatter json ${target}"
+script = 'stylelint --config-basedir "${linter}" --formatter json ${target}'
 success_codes = [0, 2]
 error_codes = [1, 78]
 output = "stderr"
@@ -59,7 +59,7 @@ suggested = "config"
 output_missing = "error"
 
 [plugins.definitions.stylelint.drivers.format]
-script = "stylelint --fix ${target}"
+script = 'stylelint --config-basedir "${linter}" --fix ${target}'
 success_codes = [0, 2]
 error_codes = [1, 78]
 cache_results = true
