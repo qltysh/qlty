@@ -486,8 +486,12 @@ mod test {
 
         let script = replace_ignore_paths(&plan, "prettier ${ignore_paths} ${target}".to_string());
 
-        assert!(script.contains("packages/app/.prettierignore"));
-        assert!(script.contains("packages/app/.gitignore"));
+        assert!(script.contains(&path_to_native_string(
+            plan.target_root.join("packages/app/.prettierignore")
+        )));
+        assert!(script.contains(&path_to_native_string(
+            plan.target_root.join("packages/app/.gitignore")
+        )));
         assert!(!script.contains("wrong.js"));
     }
 }
