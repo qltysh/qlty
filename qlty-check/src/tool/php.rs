@@ -10,6 +10,7 @@ use anyhow::{bail, Context, Result};
 use composer::Composer;
 use duct::cmd;
 use itertools::Itertools;
+use qlty_analysis::join_path_string;
 use qlty_analysis::utils::fs::path_to_native_string;
 use qlty_config::config::PluginDef;
 use sha2::Digest;
@@ -208,11 +209,7 @@ impl Tool for PhpPackage {
 
     fn extra_env_paths(&self) -> Result<Vec<String>> {
         if self.plugin.system {
-            Ok(vec![PathBuf::from(self.directory())
-                .join("vendor")
-                .join("bin")
-                .to_string_lossy()
-                .to_string()])
+            Ok(vec![join_path_string!(self.directory(), "vendor", "bin")])
         } else {
             Ok(vec![self.directory()])
         }
@@ -362,11 +359,11 @@ pub mod test {
             );
             assert_eq!(
                 pkg.extra_env_paths()?,
-                vec![pkg_root
-                    .join("vendor")
-                    .join("bin")
-                    .to_string_lossy()
-                    .to_string()]
+                vec![qlty_analysis::join_path_string!(
+                    pkg_root.to_str().unwrap(),
+                    "vendor",
+                    "bin"
+                )]
             );
             assert!(pkg.extra_env_vars()?.is_empty());
 
