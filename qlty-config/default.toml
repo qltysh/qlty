@@ -316,7 +316,7 @@ globs = ["*.coffee"]
 globs = ["*.swift"]
 
 [file_types.openapi]
-globs = ["openapi.yaml", "openapi.*.yaml"]
+globs = ["**/openapi.yaml", "**/openapi.*.yaml"]
 
 [file_types.scala]
 globs = ["*.scala"]
