@@ -1,0 +1,1070 @@
+{
+  "metadata": {
+    "id": "[..]",
+    "buildId": "[..]",
+    "result": "ANALYSIS_RESULT_SUCCESS",
+    "filesAnalyzed": 7,
+    "startTime": "[..]",
+    "finishTime": "[..]",
+    "commitMessage": "initial/n",
+    "committedAt": "2024-01-01T00:00:00+00:00",
+    "committerEmail": "test@codeclimate.com",
+    "committerName": "TEST",
+    "authorEmail": "test@codeclimate.com",
+    "authorName": "TEST",
+    "authoredAt": "2024-01-01T00:00:00+00:00",
+    "generatedAt": "[..]",
+    "time": "[..]"
+  },
+  "messages": [],
+  "invocations": [],
+  "issues": [
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "duplication",
+      "ruleKey": "similar-code",
+      "message": "Found 22 lines of similar code in 2 locations (mass = 125)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_DUPLICATION",
+      "snippet": "double compute_stats1(double *numbers, int count) {/n    double sum = 0;/n    for (int i = 0; i < count; i++) {/n        sum += numbers[i];/n    }/n    double mean = sum / count;/n/n    double *sorted = malloc(count * sizeof(double));/n    for (int i = 0; i < count; i++) {/n        sorted[i] = numbers[i];/n    }/n/n    double median;/n    if (count % 2 == 0) {/n        median = (sorted[count / 2 - 1] + sorted[count / 2]) / 2.0;/n    } else {/n        median = sorted[count / 2];/n    }/n/n    free(sorted);/n    return mean + median;/n}",
+      "snippetWithContext": "#include <stdlib.h>/n/ndouble compute_stats1(double *numbers, int count) {/n    double sum = 0;/n    for (int i = 0; i < count; i++) {/n        sum += numbers[i];/n    }/n    double mean = sum / count;/n/n    double *sorted = malloc(count * sizeof(double));/n    for (int i = 0; i < count; i++) {/n        sorted[i] = numbers[i];/n    }/n/n    double median;/n    if (count % 2 == 0) {/n        median = (sorted[count / 2 - 1] + sorted[count / 2]) / 2.0;/n    } else {/n        median = sorted[count / 2];/n    }/n/n    free(sorted);/n    return mean + median;/n}/n/ndouble compute_stats2(double *numbers, int count) {/n    double sum = 0;/n    for (int i = 0; i < count; i++) {/n        sum += numbers[i];/n    }/n    double mean = sum / count;/n/n    double *sorted = malloc(count * sizeof(double));/n    for (int i = 0; i < count; i++) {/n        sorted[i] = numbers[i];",
+      "effortMinutes": 45,
+      "value": 22,
+      "valueDelta": 7,
+      "location": {
+        "path": "identical.c",
+        "range": {
+          "startLine": 3,
+          "endLine": 24,
+          "startByte": 21,
+          "endByte": 540
+        }
+      },
+      "otherLocations": [
+        {
+          "path": "identical.c",
+          "range": {
+            "startLine": 26,
+            "endLine": 47
+          }
+        }
+      ],
+      "properties": {
+        [..]
+        [..]
+        [..]
+        [..]
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "duplication",
+      "ruleKey": "similar-code",
+      "message": "Found 22 lines of similar code in 2 locations (mass = 125)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_DUPLICATION",
+      "snippet": "double compute_stats2(double *numbers, int count) {/n    double sum = 0;/n    for (int i = 0; i < count; i++) {/n        sum += numbers[i];/n    }/n    double mean = sum / count;/n/n    double *sorted = malloc(count * sizeof(double));/n    for (int i = 0; i < count; i++) {/n        sorted[i] = numbers[i];/n    }/n/n    double median;/n    if (count % 2 == 0) {/n        median = (sorted[count / 2 - 1] + sorted[count / 2]) / 2.0;/n    } else {/n        median = sorted[count / 2];/n    }/n/n    free(sorted);/n    return mean + median;/n}",
+      "snippetWithContext": "        median = (sorted[count / 2 - 1] + sorted[count / 2]) / 2.0;/n    } else {/n        median = sorted[count / 2];/n    }/n/n    free(sorted);/n    return mean + median;/n}/n/ndouble compute_stats2(double *numbers, int count) {/n    double sum = 0;/n    for (int i = 0; i < count; i++) {/n        sum += numbers[i];/n    }/n    double mean = sum / count;/n/n    double *sorted = malloc(count * sizeof(double));/n    for (int i = 0; i < count; i++) {/n        sorted[i] = numbers[i];/n    }/n/n    double median;/n    if (count % 2 == 0) {/n        median = (sorted[count / 2 - 1] + sorted[count / 2]) / 2.0;/n    } else {/n        median = sorted[count / 2];/n    }/n/n    free(sorted);/n    return mean + median;/n}",
+      "effortMinutes": 45,
+      "value": 22,
+      "valueDelta": 7,
+      "location": {
+        "path": "identical.c",
+        "range": {
+          "startLine": 26,
+          "endLine": 47,
+          "startByte": 542,
+          "endByte": 1061
+        }
+      },
+      "otherLocations": [
+        {
+          "path": "identical.c",
+          "range": {
+            "startLine": 3,
+            "endLine": 24
+          }
+        }
+      ],
+      "properties": {
+        [..]
+        [..]
+        [..]
+        [..]
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "boolean-logic",
+      "message": "Complex binary expression",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "b->foo && b->bar && b->baz",
+      "snippetWithContext": "    int qux;/n    int zoo;/n    int woo;/n};/n/nvoid f0(void) {/n    int x = 1 - 2 + 3;/n}/n/nvoid f1(struct BooleanLogic *b) {/n    if (b->foo && b->bar && b->baz && b->qux && b->zoo && b->woo) {/n        return;/n    }/n}/n/nvoid f2(struct BooleanLogic *b) {/n    if (b->foo || b->bar || b->baz || b->qux || b->zoo || b->woo) {/n        printf(/"check passed//n/");/n    }/n}",
+      "effortMinutes": 10,
+      "value": 4,
+      "location": {
+        "path": "boolean_logic.c",
+        "range": {
+          "startLine": 17,
+          "startColumn": 9,
+          "endLine": 17,
+          "endColumn": 35,
+          "startByte": 208,
+          "endByte": 234
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "boolean-logic",
+      "message": "Complex binary expression",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "b->foo || b->bar || b->baz",
+      "snippetWithContext": "    int x = 1 - 2 + 3;/n}/n/nvoid f1(struct BooleanLogic *b) {/n    if (b->foo && b->bar && b->baz && b->qux && b->zoo && b->woo) {/n        return;/n    }/n}/n/nvoid f2(struct BooleanLogic *b) {/n    if (b->foo || b->bar || b->baz || b->qux || b->zoo || b->woo) {/n        printf(/"check passed//n/");/n    }/n}",
+      "effortMinutes": 10,
+      "value": 4,
+      "location": {
+        "path": "boolean_logic.c",
+        "range": {
+          "startLine": 23,
+          "startColumn": 9,
+          "endLine": 23,
+          "endColumn": 35,
+          "startByte": 335,
+          "endByte": 361
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "file-complexity",
+      "message": "High total complexity (count = 169)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "#include <stdio.h>/n/nvoid func1(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func2(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func3(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/n",
+      "snippetWithContext": "#include <stdio.h>/n/nvoid func1(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func2(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func3(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n",
+      "effortMinutes": 2430,
+      "value": 169,
+      "valueDelta": 119,
+      "location": {
+        "path": "file_complexity.c",
+        "range": {
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 146,
+          "endColumn": 1,
+          "startByte": 0,
+          "endByte": 3310
+        }
+      },
+      "partialFingerprints": {
+        "file.path": "file_complexity.c"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 21): func1",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "void func1(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippetWithContext": "#include <stdio.h>/n/nvoid func1(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func2(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }",
+      "effortMinutes": 25,
+      "value": 21,
+      "valueDelta": 3,
+      "location": {
+        "path": "file_complexity.c",
+        "range": {
+          "startLine": 3,
+          "startColumn": 1,
+          "endLine": 17,
+          "endColumn": 2,
+          "startByte": 20,
+          "endByte": 367
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "func1"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 21): func2",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "void func2(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippetWithContext": "                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func2(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func3(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }",
+      "effortMinutes": 25,
+      "value": 21,
+      "valueDelta": 3,
+      "location": {
+        "path": "file_complexity.c",
+        "range": {
+          "startLine": 19,
+          "startColumn": 1,
+          "endLine": 33,
+          "endColumn": 2,
+          "startByte": 369,
+          "endByte": 716
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "func2"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 21): func3",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "void func3(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippetWithContext": "                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func3(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func4(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }",
+      "effortMinutes": 25,
+      "value": 21,
+      "valueDelta": 3,
+      "location": {
+        "path": "file_complexity.c",
+        "range": {
+          "startLine": 35,
+          "startColumn": 1,
+          "endLine": 49,
+          "endColumn": 2,
+          "startByte": 718,
+          "endByte": 1065
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "func3"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 21): func4",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "void func4(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippetWithContext": "                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func4(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func5(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }",
+      "effortMinutes": 25,
+      "value": 21,
+      "valueDelta": 3,
+      "location": {
+        "path": "file_complexity.c",
+        "range": {
+          "startLine": 51,
+          "startColumn": 1,
+          "endLine": 65,
+          "endColumn": 2,
+          "startByte": 1067,
+          "endByte": 1414
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "func4"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 21): func5",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "void func5(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippetWithContext": "                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func5(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func6(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }",
+      "effortMinutes": 25,
+      "value": 21,
+      "valueDelta": 3,
+      "location": {
+        "path": "file_complexity.c",
+        "range": {
+          "startLine": 67,
+          "startColumn": 1,
+          "endLine": 81,
+          "endColumn": 2,
+          "startByte": 1416,
+          "endByte": 1763
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "func5"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 21): func6",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "void func6(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippetWithContext": "                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func6(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func7(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }",
+      "effortMinutes": 25,
+      "value": 21,
+      "valueDelta": 3,
+      "location": {
+        "path": "file_complexity.c",
+        "range": {
+          "startLine": 83,
+          "startColumn": 1,
+          "endLine": 97,
+          "endColumn": 2,
+          "startByte": 1765,
+          "endByte": 2112
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "func6"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 21): func7",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "void func7(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippetWithContext": "                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func7(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func8(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }",
+      "effortMinutes": 25,
+      "value": 21,
+      "valueDelta": 3,
+      "location": {
+        "path": "file_complexity.c",
+        "range": {
+          "startLine": 99,
+          "startColumn": 1,
+          "endLine": 113,
+          "endColumn": 2,
+          "startByte": 2114,
+          "endByte": 2461
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "func7"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 21): func8",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "void func8(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippetWithContext": "                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func8(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func9(int x) {/n    switch (x) {/n        case 1: printf(/"one//n/"); break;/n        case 2: printf(/"two//n/"); break;/n        case 3: printf(/"three//n/"); break;/n        case 4: printf(/"four//n/"); break;/n        case 5: printf(/"five//n/"); break;/n        case 6: printf(/"six//n/"); break;/n        case 7: printf(/"seven//n/"); break;",
+      "effortMinutes": 25,
+      "value": 21,
+      "valueDelta": 3,
+      "location": {
+        "path": "file_complexity.c",
+        "range": {
+          "startLine": 115,
+          "startColumn": 1,
+          "endLine": 129,
+          "endColumn": 2,
+          "startByte": 2463,
+          "endByte": 2810
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "func8"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 27): complex_func",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "const char* complex_func(int bar) {/n    if (bar > 0) {/n        if (bar > 10) {/n            if (bar < 20) {/n                return /"teens/";/n            } else if (bar < 30) {/n                return /"twenties/";/n            } else if (bar < 40) {/n                return /"thirties/";/n            }/n        } else if (bar > 5) {/n            switch (bar) {/n                case 6: return /"six/";/n                case 7: return /"seven/";/n                case 8: return /"eight/";/n                case 9: return /"nine/";/n                case 10: return /"ten/";/n                default: return /"other/";/n            }/n        }/n    } else if (bar < -100) {/n        return /"very negative/";/n    } else if (bar < -50) {/n        return /"negative/";/n    } else if (bar < -10) {/n        for (int i = bar; i < 0; i++) {/n            if (i % 2 == 0) {/n                printf(/"%d//n/", i);/n            } else if (i % 3 == 0) {/n                printf(/"div3//n/");/n            }/n        }/n        return /"slightly negative/";/n    } else {/n        while (bar < 0) {/n            bar++;/n            if (bar == -5) {/n                break;/n            }/n        }/n        return /"near zero/";/n    }/n    return /"unknown/";/n}",
+      "snippetWithContext": "#include <stdio.h>/n/nvoid simple(void) {/n}/n/nconst char* complex_func(int bar) {/n    if (bar > 0) {/n        if (bar > 10) {/n            if (bar < 20) {/n                return /"teens/";/n            } else if (bar < 30) {/n                return /"twenties/";/n            } else if (bar < 40) {/n                return /"thirties/";/n            }/n        } else if (bar > 5) {/n            switch (bar) {/n                case 6: return /"six/";/n                case 7: return /"seven/";/n                case 8: return /"eight/";/n                case 9: return /"nine/";/n                case 10: return /"ten/";/n                default: return /"other/";/n            }/n        }/n    } else if (bar < -100) {/n        return /"very negative/";/n    } else if (bar < -50) {/n        return /"negative/";/n    } else if (bar < -10) {/n        for (int i = bar; i < 0; i++) {/n            if (i % 2 == 0) {/n                printf(/"%d//n/", i);/n            } else if (i % 3 == 0) {/n                printf(/"div3//n/");/n            }/n        }/n        return /"slightly negative/";/n    } else {/n        while (bar < 0) {/n            bar++;/n            if (bar == -5) {/n                break;/n            }/n        }/n        return /"near zero/";/n    }/n    return /"unknown/";/n}",
+      "effortMinutes": 55,
+      "value": 27,
+      "valueDelta": 9,
+      "location": {
+        "path": "function_complexity.c",
+        "range": {
+          "startLine": 6,
+          "startColumn": 1,
+          "endLine": 49,
+          "endColumn": 2,
+          "startByte": 43,
+          "endByte": 1225
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "complex_func"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 21): deeply_nested",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "void deeply_nested(int a, int b, int c, int d) {/n    if (a) {/n        for (int i = 0; i < 10; i++) {/n            if (b) {/n                if (c) {/n                    for (int j = 0; j < 3; j++) {/n                        if (d) {/n                            printf(/"deep: %d//n/", j);/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippetWithContext": "/nvoid not_nested(const char *foo, const char *bar) {/n    if ((strcmp(foo, /"cat/") == 0 && strcmp(bar, /"dog/") == 0) ||/n        (strcmp(foo, /"dog/") == 0 && strcmp(bar, /"cat/") == 0)) {/n        printf(/"Got a cat and a dog!//n/");/n    } else {/n        printf(/"Got nothing//n/");/n    }/n}/n/nvoid deeply_nested(int a, int b, int c, int d) {/n    if (a) {/n        for (int i = 0; i < 10; i++) {/n            if (b) {/n                if (c) {/n                    for (int j = 0; j < 3; j++) {/n                        if (d) {/n                            printf(/"deep: %d//n/", j);/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "effortMinutes": 25,
+      "value": 21,
+      "valueDelta": 3,
+      "location": {
+        "path": "nested_control.c",
+        "range": {
+          "startLine": 13,
+          "startColumn": 1,
+          "endLine": 27,
+          "endColumn": 2,
+          "startByte": 317,
+          "endByte": 697
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "deeply_nested"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-parameters",
+      "message": "Function with many parameters (count = 6): f2",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "(int a, int b, int c, int d, int e, int f)",
+      "snippetWithContext": "void f0(void) {/n}/n/nvoid f1(int dog, int cat) {/n}/n/nvoid f2(int a, int b, int c, int d, int e, int f) {/n}/n/nint bar(int a, int b, int c, int d) {/n    return a + b + c + d;/n}/n/nvoid f3(void) {/n    int foo = bar(1, 2, 3, 4);/n}",
+      "effortMinutes": 15,
+      "value": 6,
+      "location": {
+        "path": "parameters.c",
+        "range": {
+          "startLine": 7,
+          "startColumn": 8,
+          "endLine": 7,
+          "endColumn": 50,
+          "startByte": 57,
+          "endByte": 99
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }",
+      "snippetWithContext": "#include <stdio.h>/n/nvoid func1(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func2(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "file_complexity.c",
+        "range": {
+          "startLine": 8,
+          "startColumn": 21,
+          "endLine": 12,
+          "endColumn": 22,
+          "startByte": 159,
+          "endByte": 317
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }",
+      "snippetWithContext": "            }/n        }/n    }/n}/n/nvoid func2(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func3(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "file_complexity.c",
+        "range": {
+          "startLine": 24,
+          "startColumn": 21,
+          "endLine": 28,
+          "endColumn": 22,
+          "startByte": 508,
+          "endByte": 666
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }",
+      "snippetWithContext": "            }/n        }/n    }/n}/n/nvoid func3(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func4(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "file_complexity.c",
+        "range": {
+          "startLine": 40,
+          "startColumn": 21,
+          "endLine": 44,
+          "endColumn": 22,
+          "startByte": 857,
+          "endByte": 1015
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }",
+      "snippetWithContext": "            }/n        }/n    }/n}/n/nvoid func4(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func5(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "file_complexity.c",
+        "range": {
+          "startLine": 56,
+          "startColumn": 21,
+          "endLine": 60,
+          "endColumn": 22,
+          "startByte": 1206,
+          "endByte": 1364
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }",
+      "snippetWithContext": "            }/n        }/n    }/n}/n/nvoid func5(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func6(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "file_complexity.c",
+        "range": {
+          "startLine": 72,
+          "startColumn": 21,
+          "endLine": 76,
+          "endColumn": 22,
+          "startByte": 1555,
+          "endByte": 1713
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }",
+      "snippetWithContext": "            }/n        }/n    }/n}/n/nvoid func6(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func7(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "file_complexity.c",
+        "range": {
+          "startLine": 88,
+          "startColumn": 21,
+          "endLine": 92,
+          "endColumn": 22,
+          "startByte": 1904,
+          "endByte": 2062
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }",
+      "snippetWithContext": "            }/n        }/n    }/n}/n/nvoid func7(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func8(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "file_complexity.c",
+        "range": {
+          "startLine": 104,
+          "startColumn": 21,
+          "endLine": 108,
+          "endColumn": 22,
+          "startByte": 2253,
+          "endByte": 2411
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }",
+      "snippetWithContext": "            }/n        }/n    }/n}/n/nvoid func8(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            printf(/"divisible//n/");/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func9(int x) {/n    switch (x) {/n        case 1: printf(/"one//n/"); break;/n        case 2: printf(/"two//n/"); break;",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "file_complexity.c",
+        "range": {
+          "startLine": 120,
+          "startColumn": 21,
+          "endLine": 124,
+          "endColumn": 22,
+          "startByte": 2602,
+          "endByte": 2760
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "for (int j = 0; j < 3; j++) {/n                        if (d) {/n                            printf(/"deep: %d//n/", j);/n                        }/n                    }",
+      "snippetWithContext": "    } else {/n        printf(/"Got nothing//n/");/n    }/n}/n/nvoid deeply_nested(int a, int b, int c, int d) {/n    if (a) {/n        for (int i = 0; i < 10; i++) {/n            if (b) {/n                if (c) {/n                    for (int j = 0; j < 3; j++) {/n                        if (d) {/n                            printf(/"deep: %d//n/", j);/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "nested_control.c",
+        "range": {
+          "startLine": 18,
+          "startColumn": 21,
+          "endLine": 22,
+          "endColumn": 22,
+          "startByte": 484,
+          "endByte": 647
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "return-statements",
+      "message": "Function with many returns (count = 14): complex_func",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "const char* complex_func(int bar) {/n    if (bar > 0) {/n        if (bar > 10) {/n            if (bar < 20) {/n                return /"teens/";/n            } else if (bar < 30) {/n                return /"twenties/";/n            } else if (bar < 40) {/n                return /"thirties/";/n            }/n        } else if (bar > 5) {/n            switch (bar) {/n                case 6: return /"six/";/n                case 7: return /"seven/";/n                case 8: return /"eight/";/n                case 9: return /"nine/";/n                case 10: return /"ten/";/n                default: return /"other/";/n            }/n        }/n    } else if (bar < -100) {/n        return /"very negative/";/n    } else if (bar < -50) {/n        return /"negative/";/n    } else if (bar < -10) {/n        for (int i = bar; i < 0; i++) {/n            if (i % 2 == 0) {/n                printf(/"%d//n/", i);/n            } else if (i % 3 == 0) {/n                printf(/"div3//n/");/n            }/n        }/n        return /"slightly negative/";/n    } else {/n        while (bar < 0) {/n            bar++;/n            if (bar == -5) {/n                break;/n            }/n        }/n        return /"near zero/";/n    }/n    return /"unknown/";/n}",
+      "snippetWithContext": "#include <stdio.h>/n/nvoid simple(void) {/n}/n/nconst char* complex_func(int bar) {/n    if (bar > 0) {/n        if (bar > 10) {/n            if (bar < 20) {/n                return /"teens/";/n            } else if (bar < 30) {/n                return /"twenties/";/n            } else if (bar < 40) {/n                return /"thirties/";/n            }/n        } else if (bar > 5) {/n            switch (bar) {/n                case 6: return /"six/";/n                case 7: return /"seven/";/n                case 8: return /"eight/";/n                case 9: return /"nine/";/n                case 10: return /"ten/";/n                default: return /"other/";/n            }/n        }/n    } else if (bar < -100) {/n        return /"very negative/";/n    } else if (bar < -50) {/n        return /"negative/";/n    } else if (bar < -10) {/n        for (int i = bar; i < 0; i++) {/n            if (i % 2 == 0) {/n                printf(/"%d//n/", i);/n            } else if (i % 3 == 0) {/n                printf(/"div3//n/");/n            }/n        }/n        return /"slightly negative/";/n    } else {/n        while (bar < 0) {/n            bar++;/n            if (bar == -5) {/n                break;/n            }/n        }/n        return /"near zero/";/n    }/n    return /"unknown/";/n}",
+      "effortMinutes": 55,
+      "value": 14,
+      "valueDelta": 8,
+      "location": {
+        "path": "function_complexity.c",
+        "range": {
+          "startLine": 6,
+          "startColumn": 1,
+          "endLine": 49,
+          "endColumn": 2,
+          "startByte": 43,
+          "endByte": 1225
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "return-statements",
+      "message": "Function with many returns (count = 8): f2",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "const char* f2(int x) {/n    if (x == 1) {/n        return /"one/";/n    } else if (x == 2) {/n        return /"two/";/n    } else if (x == 3) {/n        return /"three/";/n    } else if (x == 4) {/n        return /"four/";/n    } else if (x == 5) {/n        return /"five/";/n    } else if (x == 6) {/n        return /"six/";/n    } else if (x == 7) {/n        return /"seven/";/n    }/n    return /"other/";/n}",
+      "snippetWithContext": "void f0(void) {/n}/n/nvoid f1(void) {/n    return;/n}/n/nconst char* f2(int x) {/n    if (x == 1) {/n        return /"one/";/n    } else if (x == 2) {/n        return /"two/";/n    } else if (x == 3) {/n        return /"three/";/n    } else if (x == 4) {/n        return /"four/";/n    } else if (x == 5) {/n        return /"five/";/n    } else if (x == 6) {/n        return /"six/";/n    } else if (x == 7) {/n        return /"seven/";/n    }/n    return /"other/";/n}",
+      "effortMinutes": 25,
+      "value": 8,
+      "valueDelta": 2,
+      "location": {
+        "path": "returns.c",
+        "range": {
+          "startLine": 8,
+          "startColumn": 1,
+          "endLine": 25,
+          "endColumn": 2,
+          "startByte": 50,
+          "endByte": 429
+        }
+      },
+      "mode": "MODE_BLOCK"
+    }
+  ],
+  "stats": [
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "boolean_logic.c",
+      "fullyQualifiedName": "boolean_logic.c",
+      "path": "boolean_logic.c",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C",
+      "files": 1,
+      "classes": 1,
+      "functions": 3,
+      "fields": 6,
+      "lines": 26,
+      "codeLines": 23,
+      "commentLines": 0,
+      "blankLines": 3,
+      "complexity": 4,
+      "cyclomatic": 15,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "file_complexity.c",
+      "fullyQualifiedName": "file_complexity.c",
+      "path": "file_complexity.c",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C",
+      "files": 1,
+      "classes": 0,
+      "functions": 9,
+      "fields": 0,
+      "lines": 145,
+      "codeLines": 137,
+      "commentLines": 0,
+      "blankLines": 8,
+      "complexity": 169,
+      "cyclomatic": 132,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "function_complexity.c",
+      "fullyQualifiedName": "function_complexity.c",
+      "path": "function_complexity.c",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C",
+      "files": 1,
+      "classes": 0,
+      "functions": 2,
+      "fields": 0,
+      "lines": 49,
+      "codeLines": 48,
+      "commentLines": 0,
+      "blankLines": 1,
+      "complexity": 27,
+      "cyclomatic": 37,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "identical.c",
+      "fullyQualifiedName": "identical.c",
+      "path": "identical.c",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C",
+      "files": 1,
+      "classes": 0,
+      "functions": 2,
+      "fields": 0,
+      "lines": 47,
+      "codeLines": 40,
+      "commentLines": 0,
+      "blankLines": 7,
+      "complexity": 8,
+      "cyclomatic": 33,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "nested_control.c",
+      "fullyQualifiedName": "nested_control.c",
+      "path": "nested_control.c",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C",
+      "files": 1,
+      "classes": 0,
+      "functions": 2,
+      "fields": 0,
+      "lines": 27,
+      "codeLines": 26,
+      "commentLines": 0,
+      "blankLines": 1,
+      "complexity": 26,
+      "cyclomatic": 17,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "parameters.c",
+      "fullyQualifiedName": "parameters.c",
+      "path": "parameters.c",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C",
+      "files": 1,
+      "classes": 0,
+      "functions": 5,
+      "fields": 0,
+      "lines": 16,
+      "codeLines": 12,
+      "commentLines": 0,
+      "blankLines": 4,
+      "complexity": 0,
+      "cyclomatic": 4,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "returns.c",
+      "fullyQualifiedName": "returns.c",
+      "path": "returns.c",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C",
+      "files": 1,
+      "classes": 0,
+      "functions": 3,
+      "fields": 0,
+      "lines": 25,
+      "codeLines": 23,
+      "commentLines": 0,
+      "blankLines": 2,
+      "complexity": 7,
+      "cyclomatic": 15,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    }
+  ]
+}

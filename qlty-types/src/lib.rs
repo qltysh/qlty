@@ -301,6 +301,8 @@ impl clap::ValueEnum for analysis::v1::Level {
 
 pub fn language_enum_from_name(name: &str) -> analysis::v1::Language {
     match name {
+        "c" => analysis::v1::Language::C,
+        "cpp" => analysis::v1::Language::CPlusPlus,
         "csharp" => analysis::v1::Language::CSharp,
         "go" => analysis::v1::Language::Go,
         "java" => analysis::v1::Language::Java,

@@ -32,6 +32,12 @@ exclude_patterns = [
 [file_types.ALL]
 globs = ["*.*"]
 
+[file_types.c]
+globs = ["*.c"]
+
+[file_types.cpp]
+globs = ["*.cpp", "*.hpp", "*.cc", "*.cxx", "*.c++", "*.h", "*.h++", "*.hh", "*.hxx"]
+
 [file_types.csharp]
 globs = ["*.cs"]
 
@@ -460,6 +466,12 @@ smells.duplication.filter_patterns = ["(import_statement _)"]
 
 [language.tsx]
 globs = ["*.tsx", "*.mtsx", "*.ctsx"]
+
+[language.c]
+globs = ["*.c"]
+
+[language.cpp]
+globs = ["*.cpp", "*.hpp", "*.cc", "*.cxx", "*.c++", "*.h", "*.h++", "*.hh", "*.hxx"]
 
 [language.csharp]
 globs = ["*.cs"]

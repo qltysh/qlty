@@ -51,6 +51,16 @@ fn go_tests() {
 }
 
 #[test]
+fn c_tests() {
+    setup_and_run_test_cases("tests/lang/c/**/*.toml");
+}
+
+#[test]
+fn cpp_tests() {
+    setup_and_run_test_cases("tests/lang/cpp/**/*.toml");
+}
+
+#[test]
 fn csharp_tests() {
     setup_and_run_test_cases("tests/lang/csharp/**/*.toml");
 }

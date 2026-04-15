@@ -1,0 +1,1100 @@
+{
+  "metadata": {
+    "id": "[..]",
+    "buildId": "[..]",
+    "result": "ANALYSIS_RESULT_SUCCESS",
+    "filesAnalyzed": 7,
+    "startTime": "[..]",
+    "finishTime": "[..]",
+    "commitMessage": "initial/n",
+    "committedAt": "2024-01-01T00:00:00+00:00",
+    "committerEmail": "test@codeclimate.com",
+    "committerName": "TEST",
+    "authorEmail": "test@codeclimate.com",
+    "authorName": "TEST",
+    "authoredAt": "2024-01-01T00:00:00+00:00",
+    "generatedAt": "[..]",
+    "time": "[..]"
+  },
+  "messages": [],
+  "invocations": [],
+  "issues": [
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "duplication",
+      "ruleKey": "similar-code",
+      "message": "Found 20 lines of similar code in 2 locations (mass = 122)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_DUPLICATION",
+      "snippet": "double computeStats1(vector<double>& numbers) {/n    double sum = 0;/n    for (auto& num : numbers) {/n        sum += num;/n    }/n    double mean = sum / numbers.size();/n/n    vector<double> sorted(numbers);/n    sort(sorted.begin(), sorted.end());/n/n    double median;/n    MyInt length = sorted.size();/n    if (length % 2 == 0) {/n        median = (sorted[length / 2 - 1] + sorted[length / 2]) / 2.0;/n    } else {/n        median = sorted[length / 2];/n    }/n/n    return mean + median;/n}",
+      "snippetWithContext": "#include <iostream>/n#include <vector>/n#include <algorithm>/n/nusing namespace std;/nusing MyInt = int;/n/ndouble computeStats1(vector<double>& numbers) {/n    double sum = 0;/n    for (auto& num : numbers) {/n        sum += num;/n    }/n    double mean = sum / numbers.size();/n/n    vector<double> sorted(numbers);/n    sort(sorted.begin(), sorted.end());/n/n    double median;/n    MyInt length = sorted.size();/n    if (length % 2 == 0) {/n        median = (sorted[length / 2 - 1] + sorted[length / 2]) / 2.0;/n    } else {/n        median = sorted[length / 2];/n    }/n/n    return mean + median;/n}/n/ndouble computeStats2(vector<double>& numbers) {/n    double sum = 0;/n    for (auto& num : numbers) {/n        sum += num;/n    }/n    double mean = sum / numbers.size();/n/n    vector<double> sorted(numbers);/n    sort(sorted.begin(), sorted.end());/n",
+      "effortMinutes": 35,
+      "value": 20,
+      "valueDelta": 5,
+      "location": {
+        "path": "Identical.cpp",
+        "range": {
+          "startLine": 8,
+          "endLine": 27,
+          "startByte": 101,
+          "endByte": 579
+        }
+      },
+      "otherLocations": [
+        {
+          "path": "Identical.cpp",
+          "range": {
+            "startLine": 29,
+            "endLine": 48
+          }
+        }
+      ],
+      "properties": {
+        [..]
+        [..]
+        [..]
+        [..]
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "duplication",
+      "ruleKey": "similar-code",
+      "message": "Found 20 lines of similar code in 2 locations (mass = 122)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_DUPLICATION",
+      "snippet": "double computeStats2(vector<double>& numbers) {/n    double sum = 0;/n    for (auto& num : numbers) {/n        sum += num;/n    }/n    double mean = sum / numbers.size();/n/n    vector<double> sorted(numbers);/n    sort(sorted.begin(), sorted.end());/n/n    double median;/n    MyInt length = sorted.size();/n    if (length % 2 == 0) {/n        median = (sorted[length / 2 - 1] + sorted[length / 2]) / 2.0;/n    } else {/n        median = sorted[length / 2];/n    }/n/n    return mean + median;/n}",
+      "snippetWithContext": "    if (length % 2 == 0) {/n        median = (sorted[length / 2 - 1] + sorted[length / 2]) / 2.0;/n    } else {/n        median = sorted[length / 2];/n    }/n/n    return mean + median;/n}/n/ndouble computeStats2(vector<double>& numbers) {/n    double sum = 0;/n    for (auto& num : numbers) {/n        sum += num;/n    }/n    double mean = sum / numbers.size();/n/n    vector<double> sorted(numbers);/n    sort(sorted.begin(), sorted.end());/n/n    double median;/n    MyInt length = sorted.size();/n    if (length % 2 == 0) {/n        median = (sorted[length / 2 - 1] + sorted[length / 2]) / 2.0;/n    } else {/n        median = sorted[length / 2];/n    }/n/n    return mean + median;/n}",
+      "effortMinutes": 35,
+      "value": 20,
+      "valueDelta": 5,
+      "location": {
+        "path": "Identical.cpp",
+        "range": {
+          "startLine": 29,
+          "endLine": 48,
+          "startByte": 581,
+          "endByte": 1059
+        }
+      },
+      "otherLocations": [
+        {
+          "path": "Identical.cpp",
+          "range": {
+            "startLine": 8,
+            "endLine": 27
+          }
+        }
+      ],
+      "properties": {
+        [..]
+        [..]
+        [..]
+        [..]
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "boolean-logic",
+      "message": "Complex binary expression",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "foo && bar && baz",
+      "snippetWithContext": "    bool baz;/n    bool qux;/n    bool zoo;/n    bool woo;/n/n    void f0() {/n        int x = 1 - 2 + 3;/n    }/n/n    void f1() {/n        if (foo && bar && baz && qux && zoo && woo) {/n            return;/n        }/n    }/n/n    void f2() {/n        auto check = [this]() {/n            return foo || bar || baz || qux || zoo || woo;/n        };/n        if (check()) {/n            std::cout << /"lambda check passed/" << std::endl;",
+      "effortMinutes": 10,
+      "value": 4,
+      "location": {
+        "path": "BooleanLogic.cpp",
+        "range": {
+          "startLine": 17,
+          "startColumn": 13,
+          "endLine": 17,
+          "endColumn": 30,
+          "startByte": 213,
+          "endByte": 230
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "boolean-logic",
+      "message": "Complex binary expression",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "foo || bar || baz",
+      "snippetWithContext": "    }/n/n    void f1() {/n        if (foo && bar && baz && qux && zoo && woo) {/n            return;/n        }/n    }/n/n    void f2() {/n        auto check = [this]() {/n            return foo || bar || baz || qux || zoo || woo;/n        };/n        if (check()) {/n            std::cout << /"lambda check passed/" << std::endl;/n        }/n    }/n};",
+      "effortMinutes": 10,
+      "value": 4,
+      "location": {
+        "path": "BooleanLogic.cpp",
+        "range": {
+          "startLine": 24,
+          "startColumn": 20,
+          "endLine": 24,
+          "endColumn": 37,
+          "startByte": 359,
+          "endByte": 376
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "file-complexity",
+      "message": "High total complexity (count = 169)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "#include <iostream>/n#include <string>/n/nvoid func1(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func2(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func3(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n",
+      "snippetWithContext": "#include <iostream>/n#include <string>/n/nvoid func1(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func2(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func3(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "effortMinutes": 2430,
+      "value": 169,
+      "valueDelta": 119,
+      "location": {
+        "path": "FileComplexity.cpp",
+        "range": {
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 147,
+          "endColumn": 1,
+          "startByte": 0,
+          "endByte": 3633
+        }
+      },
+      "partialFingerprints": {
+        "file.path": "FileComplexity.cpp"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 21): func1",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "void func1(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippetWithContext": "#include <iostream>/n#include <string>/n/nvoid func1(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func2(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }",
+      "effortMinutes": 25,
+      "value": 21,
+      "valueDelta": 3,
+      "location": {
+        "path": "FileComplexity.cpp",
+        "range": {
+          "startLine": 4,
+          "startColumn": 1,
+          "endLine": 18,
+          "endColumn": 2,
+          "startByte": 39,
+          "endByte": 402
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "func1"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 21): func2",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "void func2(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippetWithContext": "                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func2(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func3(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }",
+      "effortMinutes": 25,
+      "value": 21,
+      "valueDelta": 3,
+      "location": {
+        "path": "FileComplexity.cpp",
+        "range": {
+          "startLine": 20,
+          "startColumn": 1,
+          "endLine": 34,
+          "endColumn": 2,
+          "startByte": 404,
+          "endByte": 767
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "func2"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 21): func3",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "void func3(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippetWithContext": "                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func3(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func4(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }",
+      "effortMinutes": 25,
+      "value": 21,
+      "valueDelta": 3,
+      "location": {
+        "path": "FileComplexity.cpp",
+        "range": {
+          "startLine": 36,
+          "startColumn": 1,
+          "endLine": 50,
+          "endColumn": 2,
+          "startByte": 769,
+          "endByte": 1132
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "func3"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 21): func4",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "void func4(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippetWithContext": "                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func4(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func5(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }",
+      "effortMinutes": 25,
+      "value": 21,
+      "valueDelta": 3,
+      "location": {
+        "path": "FileComplexity.cpp",
+        "range": {
+          "startLine": 52,
+          "startColumn": 1,
+          "endLine": 66,
+          "endColumn": 2,
+          "startByte": 1134,
+          "endByte": 1497
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "func4"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 21): func5",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "void func5(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippetWithContext": "                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func5(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func6(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }",
+      "effortMinutes": 25,
+      "value": 21,
+      "valueDelta": 3,
+      "location": {
+        "path": "FileComplexity.cpp",
+        "range": {
+          "startLine": 68,
+          "startColumn": 1,
+          "endLine": 82,
+          "endColumn": 2,
+          "startByte": 1499,
+          "endByte": 1862
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "func5"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 21): func6",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "void func6(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippetWithContext": "                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func6(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func7(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }",
+      "effortMinutes": 25,
+      "value": 21,
+      "valueDelta": 3,
+      "location": {
+        "path": "FileComplexity.cpp",
+        "range": {
+          "startLine": 84,
+          "startColumn": 1,
+          "endLine": 98,
+          "endColumn": 2,
+          "startByte": 1864,
+          "endByte": 2227
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "func6"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 21): func7",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "void func7(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippetWithContext": "                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func7(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func8(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }",
+      "effortMinutes": 25,
+      "value": 21,
+      "valueDelta": 3,
+      "location": {
+        "path": "FileComplexity.cpp",
+        "range": {
+          "startLine": 100,
+          "startColumn": 1,
+          "endLine": 114,
+          "endColumn": 2,
+          "startByte": 2229,
+          "endByte": 2592
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "func7"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 21): func8",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "void func8(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}",
+      "snippetWithContext": "                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func8(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func9(int x) {/n    switch (x) {/n        case 1: std::cout << /"one/" << std::endl; break;/n        case 2: std::cout << /"two/" << std::endl; break;/n        case 3: std::cout << /"three/" << std::endl; break;/n        case 4: std::cout << /"four/" << std::endl; break;/n        case 5: std::cout << /"five/" << std::endl; break;/n        case 6: std::cout << /"six/" << std::endl; break;/n        case 7: std::cout << /"seven/" << std::endl; break;",
+      "effortMinutes": 25,
+      "value": 21,
+      "valueDelta": 3,
+      "location": {
+        "path": "FileComplexity.cpp",
+        "range": {
+          "startLine": 116,
+          "startColumn": 1,
+          "endLine": 130,
+          "endColumn": 2,
+          "startByte": 2594,
+          "endByte": 2957
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "func8"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 27): complex",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "std::string complex(int bar) {/n        if (bar > 0) {/n            if (bar > 10) {/n                if (bar < 20) {/n                    return /"teens/";/n                } else if (bar < 30) {/n                    return /"twenties/";/n                } else if (bar < 40) {/n                    return /"thirties/";/n                }/n            } else if (bar > 5) {/n                switch (bar) {/n                    case 6: return /"six/";/n                    case 7: return /"seven/";/n                    case 8: return /"eight/";/n                    case 9: return /"nine/";/n                    case 10: return /"ten/";/n                    default: return /"other/";/n                }/n            }/n        } else if (bar < -100) {/n            return /"very negative/";/n        } else if (bar < -50) {/n            return /"negative/";/n        } else if (bar < -10) {/n            for (int i = bar; i < 0; i++) {/n                if (i % 2 == 0) {/n                    std::cout << i << std::endl;/n                } else if (i % 3 == 0) {/n                    std::cout << /"div3/" << std::endl;/n                }/n            }/n            return /"slightly negative/";/n        } else {/n            while (bar < 0) {/n                bar++;/n                if (bar == -5) {/n                    break;/n                }/n            }/n            return /"near zero/";/n        }/n        return /"unknown/";/n    }",
+      "snippetWithContext": "#include <iostream>/n#include <string>/n/nclass FunctionComplexity {/npublic:/n    void simple() {/n    }/n/n    std::string complex(int bar) {/n        if (bar > 0) {/n            if (bar > 10) {/n                if (bar < 20) {/n                    return /"teens/";/n                } else if (bar < 30) {/n                    return /"twenties/";/n                } else if (bar < 40) {/n                    return /"thirties/";/n                }/n            } else if (bar > 5) {/n                switch (bar) {/n                    case 6: return /"six/";/n                    case 7: return /"seven/";/n                    case 8: return /"eight/";/n                    case 9: return /"nine/";/n                    case 10: return /"ten/";/n                    default: return /"other/";/n                }/n            }/n        } else if (bar < -100) {/n            return /"very negative/";/n        } else if (bar < -50) {/n            return /"negative/";/n        } else if (bar < -10) {/n            for (int i = bar; i < 0; i++) {/n                if (i % 2 == 0) {/n                    std::cout << i << std::endl;/n                } else if (i % 3 == 0) {/n                    std::cout << /"div3/" << std::endl;/n                }/n            }/n            return /"slightly negative/";/n        } else {/n            while (bar < 0) {/n                bar++;/n                if (bar == -5) {/n                    break;/n                }/n            }/n            return /"near zero/";/n        }",
+      "effortMinutes": 55,
+      "value": 27,
+      "valueDelta": 9,
+      "location": {
+        "path": "FunctionComplexity.cpp",
+        "range": {
+          "startLine": 9,
+          "startColumn": 5,
+          "endLine": 52,
+          "endColumn": 6,
+          "startByte": 105,
+          "endByte": 1480
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "complex"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 25): deeplyNested",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "static void deeplyNested(bool a, bool b, bool c, bool d, bool e, bool f) {/n        if (a) {/n            for (int i = 0; i < 10; i++) {/n                if (b) {/n                    try {/n                        if (c) {/n                            for (auto& val : std::vector<int>{1, 2, 3}) {/n                                if (d) {/n                                    std::cout << /"deep: /" << val << std::endl;/n                                }/n                            }/n                        }/n                    } catch (const std::exception& ex) {/n                        std::cout << /"error/" << std::endl;/n                    }/n                }/n            }/n        }/n    }",
+      "snippetWithContext": "class NestedControl {/npublic:/n    static void notNested(const std::string& foo, const std::string& bar) {/n        if ((foo == /"cat/" && bar == /"dog/") || (foo == /"dog/" && bar == /"cat/")) {/n            std::cout << /"Got a cat and a dog!/" << std::endl;/n        } else {/n            std::cout << /"Got nothing/" << std::endl;/n        }/n    }/n/n    static void deeplyNested(bool a, bool b, bool c, bool d, bool e, bool f) {/n        if (a) {/n            for (int i = 0; i < 10; i++) {/n                if (b) {/n                    try {/n                        if (c) {/n                            for (auto& val : std::vector<int>{1, 2, 3}) {/n                                if (d) {/n                                    std::cout << /"deep: /" << val << std::endl;/n                                }/n                            }/n                        }/n                    } catch (const std::exception& ex) {/n                        std::cout << /"error/" << std::endl;/n                    }/n                }/n            }/n        }/n    }/n};",
+      "effortMinutes": 45,
+      "value": 25,
+      "valueDelta": 7,
+      "location": {
+        "path": "NestedControl.cpp",
+        "range": {
+          "startLine": 15,
+          "startColumn": 5,
+          "endLine": 33,
+          "endColumn": 6,
+          "startByte": 399,
+          "endByte": 1087
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "deeplyNested"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-parameters",
+      "message": "Function with many parameters (count = 6): deeplyNested",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "(bool a, bool b, bool c, bool d, bool e, bool f)",
+      "snippetWithContext": "class NestedControl {/npublic:/n    static void notNested(const std::string& foo, const std::string& bar) {/n        if ((foo == /"cat/" && bar == /"dog/") || (foo == /"dog/" && bar == /"cat/")) {/n            std::cout << /"Got a cat and a dog!/" << std::endl;/n        } else {/n            std::cout << /"Got nothing/" << std::endl;/n        }/n    }/n/n    static void deeplyNested(bool a, bool b, bool c, bool d, bool e, bool f) {/n        if (a) {/n            for (int i = 0; i < 10; i++) {/n                if (b) {/n                    try {/n                        if (c) {/n                            for (auto& val : std::vector<int>{1, 2, 3}) {/n                                if (d) {/n                                    std::cout << /"deep: /" << val << std::endl;/n                                }/n                            }",
+      "effortMinutes": 15,
+      "value": 6,
+      "location": {
+        "path": "NestedControl.cpp",
+        "range": {
+          "startLine": 15,
+          "startColumn": 29,
+          "endLine": 15,
+          "endColumn": 77,
+          "startByte": 423,
+          "endByte": 471
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-parameters",
+      "message": "Function with many parameters (count = 6): f2",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "(int a, int b, int c, int d, int e, int f)",
+      "snippetWithContext": "#include <string>/n/nclass Parameters {/npublic:/n    static void f0() {/n    }/n/n    static void f1(int dog, int cat) {/n    }/n/n    static void f2(int a, int b, int c, int d, int e, int f) {/n    }/n/n    static void f3() {/n        int foo = bar(1, 2, 3, 4);/n    }/n/n    static int bar(int a, int b, int c, int d) {/n        return a + b + c + d;/n    }/n};",
+      "effortMinutes": 15,
+      "value": 6,
+      "location": {
+        "path": "parameters.cpp",
+        "range": {
+          "startLine": 11,
+          "startColumn": 19,
+          "endLine": 11,
+          "endColumn": 61,
+          "startByte": 140,
+          "endByte": 182
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }",
+      "snippetWithContext": "#include <iostream>/n#include <string>/n/nvoid func1(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func2(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "FileComplexity.cpp",
+        "range": {
+          "startLine": 9,
+          "startColumn": 21,
+          "endLine": 13,
+          "endColumn": 22,
+          "startByte": 178,
+          "endByte": 352
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }",
+      "snippetWithContext": "            }/n        }/n    }/n}/n/nvoid func2(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func3(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "FileComplexity.cpp",
+        "range": {
+          "startLine": 25,
+          "startColumn": 21,
+          "endLine": 29,
+          "endColumn": 22,
+          "startByte": 543,
+          "endByte": 717
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }",
+      "snippetWithContext": "            }/n        }/n    }/n}/n/nvoid func3(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func4(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "FileComplexity.cpp",
+        "range": {
+          "startLine": 41,
+          "startColumn": 21,
+          "endLine": 45,
+          "endColumn": 22,
+          "startByte": 908,
+          "endByte": 1082
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }",
+      "snippetWithContext": "            }/n        }/n    }/n}/n/nvoid func4(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func5(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "FileComplexity.cpp",
+        "range": {
+          "startLine": 57,
+          "startColumn": 21,
+          "endLine": 61,
+          "endColumn": 22,
+          "startByte": 1273,
+          "endByte": 1447
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }",
+      "snippetWithContext": "            }/n        }/n    }/n}/n/nvoid func5(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func6(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "FileComplexity.cpp",
+        "range": {
+          "startLine": 73,
+          "startColumn": 21,
+          "endLine": 77,
+          "endColumn": 22,
+          "startByte": 1638,
+          "endByte": 1812
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }",
+      "snippetWithContext": "            }/n        }/n    }/n}/n/nvoid func6(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func7(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "FileComplexity.cpp",
+        "range": {
+          "startLine": 89,
+          "startColumn": 21,
+          "endLine": 93,
+          "endColumn": 22,
+          "startByte": 2003,
+          "endByte": 2177
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }",
+      "snippetWithContext": "            }/n        }/n    }/n}/n/nvoid func7(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func8(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "FileComplexity.cpp",
+        "range": {
+          "startLine": 105,
+          "startColumn": 21,
+          "endLine": 109,
+          "endColumn": 22,
+          "startByte": 2368,
+          "endByte": 2542
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }",
+      "snippetWithContext": "            }/n        }/n    }/n}/n/nvoid func8(int x) {/n    if (x > 0) {/n        if (x > 10) {/n            if (x < 20) {/n                if (x % 2 == 0) {/n                    if (x % 3 == 0) {/n                        if (x % 5 == 0) {/n                            std::cout << /"divisible/" << std::endl;/n                        }/n                    }/n                }/n            }/n        }/n    }/n}/n/nvoid func9(int x) {/n    switch (x) {/n        case 1: std::cout << /"one/" << std::endl; break;/n        case 2: std::cout << /"two/" << std::endl; break;",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "FileComplexity.cpp",
+        "range": {
+          "startLine": 121,
+          "startColumn": 21,
+          "endLine": 125,
+          "endColumn": 22,
+          "startByte": 2733,
+          "endByte": 2907
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "for (auto& val : std::vector<int>{1, 2, 3}) {/n                                if (d) {/n                                    std::cout << /"deep: /" << val << std::endl;/n                                }/n                            }",
+      "snippetWithContext": "            std::cout << /"Got nothing/" << std::endl;/n        }/n    }/n/n    static void deeplyNested(bool a, bool b, bool c, bool d, bool e, bool f) {/n        if (a) {/n            for (int i = 0; i < 10; i++) {/n                if (b) {/n                    try {/n                        if (c) {/n                            for (auto& val : std::vector<int>{1, 2, 3}) {/n                                if (d) {/n                                    std::cout << /"deep: /" << val << std::endl;/n                                }/n                            }/n                        }/n                    } catch (const std::exception& ex) {/n                        std::cout << /"error/" << std::endl;/n                    }/n                }/n            }/n        }/n    }/n};",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "NestedControl.cpp",
+        "range": {
+          "startLine": 21,
+          "startColumn": 29,
+          "endLine": 25,
+          "endColumn": 30,
+          "startByte": 646,
+          "endByte": 875
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "return-statements",
+      "message": "Function with many returns (count = 14): complex",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "std::string complex(int bar) {/n        if (bar > 0) {/n            if (bar > 10) {/n                if (bar < 20) {/n                    return /"teens/";/n                } else if (bar < 30) {/n                    return /"twenties/";/n                } else if (bar < 40) {/n                    return /"thirties/";/n                }/n            } else if (bar > 5) {/n                switch (bar) {/n                    case 6: return /"six/";/n                    case 7: return /"seven/";/n                    case 8: return /"eight/";/n                    case 9: return /"nine/";/n                    case 10: return /"ten/";/n                    default: return /"other/";/n                }/n            }/n        } else if (bar < -100) {/n            return /"very negative/";/n        } else if (bar < -50) {/n            return /"negative/";/n        } else if (bar < -10) {/n            for (int i = bar; i < 0; i++) {/n                if (i % 2 == 0) {/n                    std::cout << i << std::endl;/n                } else if (i % 3 == 0) {/n                    std::cout << /"div3/" << std::endl;/n                }/n            }/n            return /"slightly negative/";/n        } else {/n            while (bar < 0) {/n                bar++;/n                if (bar == -5) {/n                    break;/n                }/n            }/n            return /"near zero/";/n        }/n        return /"unknown/";/n    }",
+      "snippetWithContext": "#include <iostream>/n#include <string>/n/nclass FunctionComplexity {/npublic:/n    void simple() {/n    }/n/n    std::string complex(int bar) {/n        if (bar > 0) {/n            if (bar > 10) {/n                if (bar < 20) {/n                    return /"teens/";/n                } else if (bar < 30) {/n                    return /"twenties/";/n                } else if (bar < 40) {/n                    return /"thirties/";/n                }/n            } else if (bar > 5) {/n                switch (bar) {/n                    case 6: return /"six/";/n                    case 7: return /"seven/";/n                    case 8: return /"eight/";/n                    case 9: return /"nine/";/n                    case 10: return /"ten/";/n                    default: return /"other/";/n                }/n            }/n        } else if (bar < -100) {/n            return /"very negative/";/n        } else if (bar < -50) {/n            return /"negative/";/n        } else if (bar < -10) {/n            for (int i = bar; i < 0; i++) {/n                if (i % 2 == 0) {/n                    std::cout << i << std::endl;/n                } else if (i % 3 == 0) {/n                    std::cout << /"div3/" << std::endl;/n                }/n            }/n            return /"slightly negative/";/n        } else {/n            while (bar < 0) {/n                bar++;/n                if (bar == -5) {/n                    break;/n                }/n            }/n            return /"near zero/";/n        }",
+      "effortMinutes": 55,
+      "value": 14,
+      "valueDelta": 8,
+      "location": {
+        "path": "FunctionComplexity.cpp",
+        "range": {
+          "startLine": 9,
+          "startColumn": 5,
+          "endLine": 52,
+          "endColumn": 6,
+          "startByte": 105,
+          "endByte": 1480
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "return-statements",
+      "message": "Function with many returns (count = 8): f2",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "std::string f2(int x) {/n        if (x == 1) {/n            return /"one/";/n        } else if (x == 2) {/n            return /"two/";/n        } else if (x == 3) {/n            return /"three/";/n        } else if (x == 4) {/n            return /"four/";/n        } else if (x == 5) {/n            return /"five/";/n        } else if (x == 6) {/n            return /"six/";/n        } else if (x == 7) {/n            return /"seven/";/n        }/n        return /"other/";/n    }",
+      "snippetWithContext": "/nclass Returns {/npublic:/n    void f0() {/n    }/n/n    void f1() {/n        return;/n    }/n/n    std::string f2(int x) {/n        if (x == 1) {/n            return /"one/";/n        } else if (x == 2) {/n            return /"two/";/n        } else if (x == 3) {/n            return /"three/";/n        } else if (x == 4) {/n            return /"four/";/n        } else if (x == 5) {/n            return /"five/";/n        } else if (x == 6) {/n            return /"six/";/n        } else if (x == 7) {/n            return /"seven/";/n        }/n        return /"other/";/n    }/n};",
+      "effortMinutes": 25,
+      "value": 8,
+      "valueDelta": 2,
+      "location": {
+        "path": "Returns.cpp",
+        "range": {
+          "startLine": 12,
+          "startColumn": 5,
+          "endLine": 29,
+          "endColumn": 6,
+          "startByte": 109,
+          "endByte": 556
+        }
+      },
+      "mode": "MODE_BLOCK"
+    }
+  ],
+  "stats": [
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "BooleanLogic.cpp",
+      "fullyQualifiedName": "BooleanLogic.cpp",
+      "path": "BooleanLogic.cpp",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "files": 1,
+      "classes": 1,
+      "functions": 3,
+      "fields": 6,
+      "lines": 30,
+      "codeLines": 27,
+      "commentLines": 0,
+      "blankLines": 3,
+      "complexity": 4,
+      "cyclomatic": 17,
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "FileComplexity.cpp",
+      "fullyQualifiedName": "FileComplexity.cpp",
+      "path": "FileComplexity.cpp",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "files": 1,
+      "classes": 0,
+      "functions": 9,
+      "fields": 0,
+      "lines": 146,
+      "codeLines": 138,
+      "commentLines": 0,
+      "blankLines": 8,
+      "complexity": 169,
+      "cyclomatic": 170,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "FunctionComplexity.cpp",
+      "fullyQualifiedName": "FunctionComplexity.cpp",
+      "path": "FunctionComplexity.cpp",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "files": 1,
+      "classes": 1,
+      "functions": 2,
+      "fields": 0,
+      "lines": 53,
+      "codeLines": 52,
+      "commentLines": 0,
+      "blankLines": 1,
+      "complexity": 27,
+      "cyclomatic": 41,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "Identical.cpp",
+      "fullyQualifiedName": "Identical.cpp",
+      "path": "Identical.cpp",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "files": 1,
+      "classes": 0,
+      "functions": 2,
+      "fields": 0,
+      "lines": 48,
+      "codeLines": 40,
+      "commentLines": 0,
+      "blankLines": 8,
+      "complexity": 6,
+      "cyclomatic": 25,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "NestedControl.cpp",
+      "fullyQualifiedName": "NestedControl.cpp",
+      "path": "NestedControl.cpp",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "files": 1,
+      "classes": 1,
+      "functions": 2,
+      "fields": 0,
+      "lines": 34,
+      "codeLines": 32,
+      "commentLines": 0,
+      "blankLines": 2,
+      "complexity": 30,
+      "cyclomatic": 27,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "Returns.cpp",
+      "fullyQualifiedName": "Returns.cpp",
+      "path": "Returns.cpp",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "files": 1,
+      "classes": 1,
+      "functions": 3,
+      "fields": 0,
+      "lines": 30,
+      "codeLines": 28,
+      "commentLines": 0,
+      "blankLines": 2,
+      "complexity": 7,
+      "cyclomatic": 15,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "parameters.cpp",
+      "fullyQualifiedName": "parameters.cpp",
+      "path": "parameters.cpp",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_C_PLUS_PLUS",
+      "files": 1,
+      "classes": 1,
+      "functions": 5,
+      "fields": 0,
+      "lines": 21,
+      "codeLines": 17,
+      "commentLines": 0,
+      "blankLines": 4,
+      "complexity": 0,
+      "cyclomatic": 4,
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    }
+  ]
+}
