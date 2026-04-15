@@ -173,7 +173,7 @@ impl Language for Cpp {
     }
 
     fn field_nodes(&self) -> Vec<&str> {
-        vec![Self::FIELD_DECLARATION]
+        vec![Self::FIELD_DECLARATION, Self::FIELD_EXPRESSION]
     }
 
     fn call_nodes(&self) -> Vec<&str> {
@@ -223,7 +223,7 @@ impl Language for Cpp {
                     (Some(object_source), method_name)
                 } else {
                     let function_name = node_source(&function_node, source_file);
-                    (None, function_name)
+                    (Some("this".to_string()), function_name)
                 }
             }
             _ => (Some("<UNKNOWN>".to_string()), "<UNKNOWN>".to_string()),
@@ -296,7 +296,7 @@ mod test {
 
         assert_eq!(
             language.call_identifiers(&source_file, &call),
-            (None, "foo".to_string())
+            (Some("this".to_string()), "foo".to_string())
         );
     }
 

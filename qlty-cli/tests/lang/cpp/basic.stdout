@@ -954,7 +954,7 @@
       "blankLines": 3,
       "complexity": 4,
       "cyclomatic": 17,
-      "lcom4": 0,
+      "lcom4": 1,
       "generatedAt": "[..]",
       "time": "[..]"
     },
@@ -1092,7 +1092,7 @@
       "blankLines": 4,
       "complexity": 0,
       "cyclomatic": 4,
-      "lcom4": 0,
+      "lcom4": 1,
       "generatedAt": "[..]",
       "time": "[..]"
     }
