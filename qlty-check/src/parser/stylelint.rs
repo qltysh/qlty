@@ -28,7 +28,8 @@ pub struct Stylelint {}
 impl Parser for Stylelint {
     fn parse(&self, _plugin_name: &str, output: &str) -> Result<Vec<Issue>> {
         let mut issues = vec![];
-        let files: Vec<StylelintFile> = serde_json::from_str(output)?;
+        let json = extract_json_array(output);
+        let files: Vec<StylelintFile> = serde_json::from_str(json)?;
 
         for file in files {
             for message in file.warnings {
@@ -59,6 +60,19 @@ impl Parser for Stylelint {
         }
 
         Ok(issues)
+    }
+}
+
+// Node emits diagnostic warnings like `(node:XXX) ExperimentalWarning: ...`
+// to stderr before stylelint's own output, and stylelint >=16 routes its
+// JSON report to stderr. Skip leading non-JSON lines so the parser works
+// regardless of Node's diagnostic chatter. We scan for the first `[`, which
+// always begins stylelint's top-level array, and fall back to the full
+// output if none is found so malformed input still surfaces as a parse error.
+fn extract_json_array(output: &str) -> &str {
+    match output.find('[') {
+        Some(idx) => &output[idx..],
+        None => output,
     }
 }
 
@@ -166,6 +180,27 @@ mod test {
               startColumn: 1
               endLine: 1
               endColumn: 4
+        "#);
+    }
+
+    #[test]
+    fn parse_strips_node_warning_prefix() {
+        let input = "(node:543) ExperimentalWarning: Importing JSON modules is an experimental feature\n(Use `node --trace-warnings ...` to show where the warning was created)\n[{\"source\":\"/src/main.css\",\"warnings\":[{\"line\":1,\"column\":3,\"endLine\":1,\"endColumn\":5,\"rule\":\"block-no-empty\",\"severity\":\"error\",\"text\":\"Unexpected empty block (block-no-empty)\"}]}]";
+
+        let issues = Stylelint::default().parse("stylelint", input);
+        insta::assert_yaml_snapshot!(issues.unwrap(), @r#"
+        - tool: stylelint
+          ruleKey: block-no-empty
+          message: Unexpected empty block (block-no-empty)
+          level: LEVEL_MEDIUM
+          category: CATEGORY_LINT
+          location:
+            path: /src/main.css
+            range:
+              startLine: 1
+              startColumn: 3
+              endLine: 1
+              endColumn: 5
         "#);
     }
 }
