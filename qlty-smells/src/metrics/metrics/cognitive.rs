@@ -237,6 +237,32 @@ impl<'a> CognitiveComplexity<'a> {
 mod test {
     use super::*;
 
+    mod vbnet {
+        use super::*;
+
+        #[test]
+        fn mixed_case_self_recursion_counts() {
+            let source_file = File::from_string(
+                "vbnet",
+                r#"
+Public Class Foo
+    Public Sub DoWork()
+        Me.dowork()
+    End Sub
+End Class
+"#,
+            );
+            assert_eq!(
+                1,
+                count(
+                    &source_file,
+                    &source_file.parse().root_node(),
+                    &NodeFilter::empty()
+                )
+            );
+        }
+    }
+
     mod java {
         use super::*;
 

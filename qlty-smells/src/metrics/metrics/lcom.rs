@@ -877,6 +877,87 @@ mod test {
     }
 
     #[test]
+    fn lcom_vbnet_sub_new_is_constructor() {
+        let source_file = File::from_string(
+            "vbnet",
+            r#"
+Public Class Foo
+    Public Sub New()
+        Me.Value = 0
+    End Sub
+
+    Public Sub DoWork()
+        Me.Value = 1
+    End Sub
+End Class
+"#,
+        );
+        assert_eq!(
+            1,
+            count(
+                &source_file,
+                &source_file.parse().root_node(),
+                &NodeFilter::empty()
+            )
+        );
+    }
+
+    #[test]
+    fn lcom_vbnet_mixed_case_method_calls_connect_groups() {
+        let source_file = File::from_string(
+            "vbnet",
+            r#"
+Public Class Foo
+    Public Sub MethodA()
+        Me.dothing()
+    End Sub
+
+    Public Sub MethodB()
+        Me.DoThing()
+    End Sub
+
+    Public Sub DoThing()
+    End Sub
+End Class
+"#,
+        );
+        assert_eq!(
+            1,
+            count(
+                &source_file,
+                &source_file.parse().root_node(),
+                &NodeFilter::empty()
+            )
+        );
+    }
+
+    #[test]
+    fn lcom_vbnet_mixed_case_fields_unify_in_same_group() {
+        let source_file = File::from_string(
+            "vbnet",
+            r#"
+Public Class Foo
+    Public Sub MethodA()
+        Dim x = Me.Value
+    End Sub
+
+    Public Sub MethodB()
+        Dim y = me.value
+    End Sub
+End Class
+"#,
+        );
+        assert_eq!(
+            1,
+            count(
+                &source_file,
+                &source_file.parse().root_node(),
+                &NodeFilter::empty()
+            )
+        );
+    }
+
+    #[test]
     fn lcom_transitive_groups_typescript() {
         let source_file = File::from_string(
             "typescript",

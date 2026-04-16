@@ -1,1 +1,509 @@
-...
+{
+  "metadata": {
+    "id": "[..]",
+    "buildId": "[..]",
+    "result": "ANALYSIS_RESULT_SUCCESS",
+    "filesAnalyzed": 9,
+    "startTime": "[..]",
+    "finishTime": "[..]",
+    "commitMessage": "initial/n",
+    "committedAt": "2024-01-01T00:00:00+00:00",
+    "committerEmail": "test@codeclimate.com",
+    "committerName": "TEST",
+    "authorEmail": "test@codeclimate.com",
+    "authorName": "TEST",
+    "authoredAt": "2024-01-01T00:00:00+00:00",
+    "generatedAt": "[..]",
+    "time": "[..]"
+  },
+  "messages": [],
+  "invocations": [],
+  "issues": [
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "duplication",
+      "ruleKey": "similar-code",
+      "message": "Found 21 lines of similar code in 2 locations (mass = 206)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_VBDOTNET",
+      "category": "CATEGORY_DUPLICATION",
+      "snippet": "Public Shared Function F0(numbers As Double()) As Double()/n        Dim sum As Double = 0/n        For Each num As Double In numbers/n            sum += num/n        Next/n        Dim mean As Double = sum / numbers.Length/n/n        Dim sortedNumbers As Double() = DirectCast(numbers.Clone(), Double())/n        Array.Sort(sortedNumbers)/n/n        Dim median As Double/n        Dim length As Integer = sortedNumbers.Length/n        If length Mod 2 = 0 Then/n            median = (sortedNumbers(length // 2 - 1) + sortedNumbers(length // 2)) / 2.0/n        Else/n            median = sortedNumbers(length // 2)/n        End If/n/n        Return New Double() {mean, median}/n    End Function/n",
+      "snippetWithContext": "Imports System/n/nPublic Class Identical/n    Public Shared Function F0(numbers As Double()) As Double()/n        Dim sum As Double = 0/n        For Each num As Double In numbers/n            sum += num/n        Next/n        Dim mean As Double = sum / numbers.Length/n/n        Dim sortedNumbers As Double() = DirectCast(numbers.Clone(), Double())/n        Array.Sort(sortedNumbers)/n/n        Dim median As Double/n        Dim length As Integer = sortedNumbers.Length/n        If length Mod 2 = 0 Then/n            median = (sortedNumbers(length // 2 - 1) + sortedNumbers(length // 2)) / 2.0/n        Else/n            median = sortedNumbers(length // 2)/n        End If/n/n        Return New Double() {mean, median}/n    End Function/n/n    Public Shared Function F1(numbers As Double()) As Double()/n        Dim sum As Double = 0/n        For Each num As Double In numbers/n            sum += num/n        Next/n        Dim mean As Double = sum / numbers.Length/n/n        Dim sortedNumbers As Double() = DirectCast(numbers.Clone(), Double())/n        Array.Sort(sortedNumbers)/n/n        Dim median As Double",
+      "effortMinutes": 40,
+      "value": 21,
+      "valueDelta": 6,
+      "location": {
+        "path": "Identical.vb",
+        "range": {
+          "startLine": 4,
+          "endLine": 24,
+          "startByte": 43,
+          "endByte": 712
+        }
+      },
+      "otherLocations": [
+        {
+          "path": "Identical.vb",
+          [..]
+          [..]
+          [..]
+          [..]
+        }
+      ],
+      "properties": {
+        [..]
+        [..]
+        [..]
+        [..]
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "duplication",
+      "ruleKey": "similar-code",
+      "message": "Found 21 lines of similar code in 2 locations (mass = 206)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_VBDOTNET",
+      "category": "CATEGORY_DUPLICATION",
+      "snippet": "Public Shared Function F1(numbers As Double()) As Double()/n        Dim sum As Double = 0/n        For Each num As Double In numbers/n            sum += num/n        Next/n        Dim mean As Double = sum / numbers.Length/n/n        Dim sortedNumbers As Double() = DirectCast(numbers.Clone(), Double())/n        Array.Sort(sortedNumbers)/n/n        Dim median As Double/n        Dim length As Integer = sortedNumbers.Length/n        If length Mod 2 = 0 Then/n            median = (sortedNumbers(length // 2 - 1) + sortedNumbers(length // 2)) / 2.0/n        Else/n            median = sortedNumbers(length // 2)/n        End If/n/n        Return New Double() {mean, median}/n    End Function/n",
+      "snippetWithContext": "        If length Mod 2 = 0 Then/n            median = (sortedNumbers(length // 2 - 1) + sortedNumbers(length // 2)) / 2.0/n        Else/n            median = sortedNumbers(length // 2)/n        End If/n/n        Return New Double() {mean, median}/n    End Function/n/n    Public Shared Function F1(numbers As Double()) As Double()/n        Dim sum As Double = 0/n        For Each num As Double In numbers/n            sum += num/n        Next/n        Dim mean As Double = sum / numbers.Length/n/n        Dim sortedNumbers As Double() = DirectCast(numbers.Clone(), Double())/n        Array.Sort(sortedNumbers)/n/n        Dim median As Double/n        Dim length As Integer = sortedNumbers.Length/n        If length Mod 2 = 0 Then/n            median = (sortedNumbers(length // 2 - 1) + sortedNumbers(length // 2)) / 2.0/n        Else/n            median = sortedNumbers(length // 2)/n        End If/n/n        Return New Double() {mean, median}/n    End Function/nEnd Class",
+      "effortMinutes": 40,
+      "value": 21,
+      "valueDelta": 6,
+      "location": {
+        "path": "Identical.vb",
+        "range": {
+          "startLine": 25,
+          "endLine": 45,
+          "startByte": 717,
+          "endByte": 1386
+        }
+      },
+      "otherLocations": [
+        {
+          "path": "Identical.vb",
+          [..]
+          [..]
+          [..]
+          [..]
+        }
+      ],
+      "properties": {
+        [..]
+        [..]
+        [..]
+        [..]
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "file-complexity",
+      "message": "High total complexity (count = 55)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_VBDOTNET",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "Imports System/n/nPublic Class FileComplexity/n    Public Shared Sub Main(args As String())/n        Dim foo As Integer = 42/n/n        If foo > 0 Then/n            If foo > 10 Then/n                If foo < 20 Then/n                    If foo Mod 2 = 0 Then/n                        If foo Mod 3 = 0 Then/n                            If foo Mod 5 = 0 Then/n                                If foo Mod 7 = 0 Then/n                                    If foo Mod 11 = 0 Then/n                                        If foo Mod 13 = 0 Then/n                                            If foo Mod 17 = 0 Then/n                                                Console.WriteLine(/"Nested!/")/n                                            End If/n                                        End If/n                                    End If/n                                End If/n                            End If/n                        End If/n                    End If/n                End If/n            End If/n        End If/n    End Sub/nEnd Class/n",
+      "snippetWithContext": "Imports System/n/nPublic Class FileComplexity/n    Public Shared Sub Main(args As String())/n        Dim foo As Integer = 42/n/n        If foo > 0 Then/n            If foo > 10 Then/n                If foo < 20 Then/n                    If foo Mod 2 = 0 Then/n                        If foo Mod 3 = 0 Then/n                            If foo Mod 5 = 0 Then/n                                If foo Mod 7 = 0 Then/n                                    If foo Mod 11 = 0 Then/n                                        If foo Mod 13 = 0 Then/n                                            If foo Mod 17 = 0 Then/n                                                Console.WriteLine(/"Nested!/")/n                                            End If/n                                        End If/n                                    End If/n                                End If/n                            End If/n                        End If/n                    End If/n                End If/n            End If/n        End If/n    End Sub/nEnd Class",
+      "effortMinutes": 150,
+      "value": 55,
+      "valueDelta": 5,
+      "location": {
+        "path": "FileComplexity.vb",
+        "range": {
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 30,
+          "endColumn": 1,
+          "startByte": 0,
+          "endByte": 1018
+        }
+      },
+      "partialFingerprints": {
+        "file.path": "FileComplexity.vb"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-complexity",
+      "message": "Function with high complexity (count = 55): Main",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_VBDOTNET",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "Public Shared Sub Main(args As String())/n        Dim foo As Integer = 42/n/n        If foo > 0 Then/n            If foo > 10 Then/n                If foo < 20 Then/n                    If foo Mod 2 = 0 Then/n                        If foo Mod 3 = 0 Then/n                            If foo Mod 5 = 0 Then/n                                If foo Mod 7 = 0 Then/n                                    If foo Mod 11 = 0 Then/n                                        If foo Mod 13 = 0 Then/n                                            If foo Mod 17 = 0 Then/n                                                Console.WriteLine(/"Nested!/")/n                                            End If/n                                        End If/n                                    End If/n                                End If/n                            End If/n                        End If/n                    End If/n                End If/n            End If/n        End If/n    End Sub/n",
+      "snippetWithContext": "Imports System/n/nPublic Class FileComplexity/n    Public Shared Sub Main(args As String())/n        Dim foo As Integer = 42/n/n        If foo > 0 Then/n            If foo > 10 Then/n                If foo < 20 Then/n                    If foo Mod 2 = 0 Then/n                        If foo Mod 3 = 0 Then/n                            If foo Mod 5 = 0 Then/n                                If foo Mod 7 = 0 Then/n                                    If foo Mod 11 = 0 Then/n                                        If foo Mod 13 = 0 Then/n                                            If foo Mod 17 = 0 Then/n                                                Console.WriteLine(/"Nested!/")/n                                            End If/n                                        End If/n                                    End If/n                                End If/n                            End If/n                        End If/n                    End If/n                End If/n            End If/n        End If/n    End Sub/nEnd Class",
+      "effortMinutes": 195,
+      "value": 55,
+      "valueDelta": 37,
+      "location": {
+        "path": "FileComplexity.vb",
+        "range": {
+          "startLine": 4,
+          "startColumn": 5,
+          "endLine": 29,
+          "endColumn": 1,
+          "startByte": 48,
+          "endByte": 1008
+        }
+      },
+      "partialFingerprints": {
+        "function.name": "Main"
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "function-parameters",
+      "message": "Function with many parameters (count = 6): F2",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_VBDOTNET",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "(a As Object, b As Object, c As Object, d As Object, e As Object, f As Object)",
+      "snippetWithContext": "Imports System/n/nPublic Class Parameters/n    Public Shared Sub F0()/n    End Sub/n/n    Public Shared Sub F1(dog As Object, cat As Object)/n    End Sub/n/n    Public Shared Sub F2(a As Object, b As Object, c As Object, d As Object, e As Object, f As Object)/n    End Sub/n/n    Public Shared Sub F3()/n        Dim foo As Object = Bar(1, 2, 3, 4)/n    End Sub/n/n    Public Shared Function Bar(a As Integer, b As Integer, c As Integer, d As Integer) As Object/n        Return New Object()/n    End Function/nEnd Class",
+      "effortMinutes": 15,
+      "value": 6,
+      "location": {
+        "path": "Parameters.vb",
+        "range": {
+          "startLine": 10,
+          "startColumn": 25,
+          "endLine": 10,
+          "endColumn": 103,
+          "startByte": 172,
+          "endByte": 250
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_VBDOTNET",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "If foo Mod 3 = 0 Then/n                            If foo Mod 5 = 0 Then/n                                If foo Mod 7 = 0 Then/n                                    If foo Mod 11 = 0 Then/n                                        If foo Mod 13 = 0 Then/n                                            If foo Mod 17 = 0 Then/n                                                Console.WriteLine(/"Nested!/")/n                                            End If/n                                        End If/n                                    End If/n                                End If/n                            End If/n                        End If/n",
+      "snippetWithContext": "Imports System/n/nPublic Class FileComplexity/n    Public Shared Sub Main(args As String())/n        Dim foo As Integer = 42/n/n        If foo > 0 Then/n            If foo > 10 Then/n                If foo < 20 Then/n                    If foo Mod 2 = 0 Then/n                        If foo Mod 3 = 0 Then/n                            If foo Mod 5 = 0 Then/n                                If foo Mod 7 = 0 Then/n                                    If foo Mod 11 = 0 Then/n                                        If foo Mod 13 = 0 Then/n                                            If foo Mod 17 = 0 Then/n                                                Console.WriteLine(/"Nested!/")/n                                            End If/n                                        End If/n                                    End If/n                                End If/n                            End If/n                        End If/n                    End If/n                End If/n            End If/n        End If/n    End Sub/nEnd Class",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "FileComplexity.vb",
+        "range": {
+          "startLine": 11,
+          "startColumn": 25,
+          "endLine": 24,
+          "endColumn": 1,
+          "startByte": 274,
+          "endByte": 912
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "nested-control-flow",
+      "message": "Deeply nested control flow (level = 5)",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_VBDOTNET",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "If bar Mod 3 = 0 Then/n                            Console.WriteLine(/"Nested!/")/n                        End If/n",
+      "snippetWithContext": "    Public Sub Simple()/n    End Sub/n/n    Public Sub Complex()/n        Dim bar As Integer = 42/n/n        If bar > 0 Then/n            If bar > 10 Then/n                If bar < 20 Then/n                    If bar Mod 2 = 0 Then/n                        If bar Mod 3 = 0 Then/n                            Console.WriteLine(/"Nested!/")/n                        End If/n                    End If/n                End If/n            End If/n        End If/n    End Sub/nEnd Class",
+      "effortMinutes": 15,
+      "value": 5,
+      "location": {
+        "path": "FunctionComplexity.vb",
+        "range": {
+          "startLine": 14,
+          "startColumn": 25,
+          "endLine": 17,
+          "endColumn": 1,
+          "startByte": 295,
+          "endByte": 405
+        }
+      },
+      "mode": "MODE_BLOCK"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
+      "tool": "qlty",
+      "driver": "structure",
+      "ruleKey": "return-statements",
+      "message": "Function with many returns (count = 10): F2",
+      "level": "LEVEL_MEDIUM",
+      "language": "LANGUAGE_VBDOTNET",
+      "category": "CATEGORY_STRUCTURE",
+      "snippet": "Public Shared Function F2(foo As Integer) As String/n        Select Case foo/n            Case 1/n                Return /"bar1/"/n            Case 2/n                Return /"bar2/"/n            Case 3/n                Return /"bar3/"/n            Case 4/n                Return /"bar4/"/n            Case 5/n                Return /"bar5/"/n            Case 6/n                Return /"bar6/"/n            Case 7/n                Return /"bar7/"/n            Case 8/n                Return /"bar8/"/n            Case 9/n                Return /"bar9/"/n            Case 10/n                Return /"bar10/"/n            Case Else/n                Throw New ArgumentException(/"Invalid foo value/")/n        End Select/n    End Function/n",
+      "snippetWithContext": "            If baz Then/n                If qux Then/n                    If quux Then/n                        Console.WriteLine(/"Not deeply nested enough!/")/n                    End If/n                End If/n            End If/n        End If/n    End Sub/n/n    Public Shared Function F2(foo As Integer) As String/n        Select Case foo/n            Case 1/n                Return /"bar1/"/n            Case 2/n                Return /"bar2/"/n            Case 3/n                Return /"bar3/"/n            Case 4/n                Return /"bar4/"/n            Case 5/n                Return /"bar5/"/n            Case 6/n                Return /"bar6/"/n            Case 7/n                Return /"bar7/"/n            Case 8/n                Return /"bar8/"/n            Case 9/n                Return /"bar9/"/n            Case 10/n                Return /"bar10/"/n            Case Else/n                Throw New ArgumentException(/"Invalid foo value/")/n        End Select/n    End Function/nEnd Class",
+      "effortMinutes": 35,
+      "value": 10,
+      "valueDelta": 4,
+      "location": {
+        "path": "NestedControl.vb",
+        "range": {
+          "startLine": 24,
+          "startColumn": 5,
+          "endLine": 50,
+          "endColumn": 1,
+          "startByte": 694,
+          "endByte": 1385
+        }
+      },
+      "mode": "MODE_BLOCK"
+    }
+  ],
+  "stats": [
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "BooleanLogic.vb",
+      "fullyQualifiedName": "BooleanLogic.vb",
+      "path": "BooleanLogic.vb",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_VBDOTNET",
+      "files": 1,
+      "classes": 2,
+      "functions": 2,
+      "fields": 0,
+      "lines": 22,
+      "codeLines": 20,
+      "commentLines": 0,
+      "blankLines": 2,
+      "complexity": 1,
+      "cyclomatic": 8,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "FileComplexity.vb",
+      "fullyQualifiedName": "FileComplexity.vb",
+      "path": "FileComplexity.vb",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_VBDOTNET",
+      "files": 1,
+      "classes": 1,
+      "functions": 1,
+      "fields": 0,
+      "lines": 29,
+      "codeLines": 27,
+      "commentLines": 0,
+      "blankLines": 2,
+      "complexity": 55,
+      "cyclomatic": 28,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "FunctionComplexity.vb",
+      "fullyQualifiedName": "FunctionComplexity.vb",
+      "path": "FunctionComplexity.vb",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_VBDOTNET",
+      "files": 1,
+      "classes": 1,
+      "functions": 2,
+      "fields": 0,
+      "lines": 22,
+      "codeLines": 19,
+      "commentLines": 0,
+      "blankLines": 3,
+      "complexity": 15,
+      "cyclomatic": 13,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "Identical.vb",
+      "fullyQualifiedName": "Identical.vb",
+      "path": "Identical.vb",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_VBDOTNET",
+      "files": 1,
+      "classes": 1,
+      "functions": 2,
+      "fields": 2,
+      "lines": 45,
+      "codeLines": 44,
+      "commentLines": 0,
+      "blankLines": 1,
+      "complexity": 6,
+      "cyclomatic": 27,
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "Lines.vb",
+      "fullyQualifiedName": "Lines.vb",
+      "path": "Lines.vb",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_VBDOTNET",
+      "files": 1,
+      "classes": 1,
+      "functions": 5,
+      "fields": 1,
+      "lines": 45,
+      "codeLines": 31,
+      "commentLines": 5,
+      "blankLines": 9,
+      "complexity": 0,
+      "cyclomatic": 2,
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "Members.vb",
+      "fullyQualifiedName": "Members.vb",
+      "path": "Members.vb",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_VBDOTNET",
+      "files": 1,
+      "classes": 2,
+      "functions": 8,
+      "fields": 1,
+      "lines": 44,
+      "codeLines": 35,
+      "commentLines": 0,
+      "blankLines": 9,
+      "complexity": 0,
+      "cyclomatic": 4,
+      "lcom4": 2,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "NestedControl.vb",
+      "fullyQualifiedName": "NestedControl.vb",
+      "path": "NestedControl.vb",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_VBDOTNET",
+      "files": 1,
+      "classes": 1,
+      "functions": 3,
+      "fields": 0,
+      "lines": 50,
+      "codeLines": 48,
+      "commentLines": 0,
+      "blankLines": 2,
+      "complexity": 13,
+      "cyclomatic": 23,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "Parameters.vb",
+      "fullyQualifiedName": "Parameters.vb",
+      "path": "Parameters.vb",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_VBDOTNET",
+      "files": 1,
+      "classes": 1,
+      "functions": 5,
+      "fields": 0,
+      "lines": 20,
+      "codeLines": 15,
+      "commentLines": 0,
+      "blankLines": 5,
+      "complexity": 0,
+      "cyclomatic": 1,
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    },
+    {
+      "analysisId": "[..]",
+      "buildId": "[..]",
+      "analyzedAt": "[..]",
+      "name": "Returns.vb",
+      "fullyQualifiedName": "Returns.vb",
+      "path": "Returns.vb",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_VBDOTNET",
+      "files": 1,
+      "classes": 1,
+      "functions": 5,
+      "fields": 0,
+      "lines": 40,
+      "codeLines": 38,
+      "commentLines": 0,
+      "blankLines": 2,
+      "complexity": 9,
+      "cyclomatic": 7,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
+    }
+  ]
+}

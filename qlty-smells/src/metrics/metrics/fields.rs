@@ -30,16 +30,21 @@ pub fn count<'a>(source_file: &'a File, node: &Node<'a>, filter: &NodeFilter) ->
         }
 
         if let Some(parent) = field_capture.node.parent() {
+            // In some languages, field nodes appear within call nodes. We don't want to count those.
             if !language.call_nodes().contains(&parent.kind()) {
                 if deduplicate {
+                    // For languages that deduplicate (field accesses), deduplicate by name
                     fields.insert(normalized_name);
                 } else {
+                    // For languages that don't deduplicate (field declarations), count each declaration individually
                     field_count += 1;
                 }
             }
         } else if deduplicate {
+            // For languages that deduplicate (field accesses), deduplicate by name
             fields.insert(normalized_name);
         } else {
+            // For languages that don't deduplicate (field declarations), count each declaration individually
             field_count += 1;
         }
     }
@@ -54,6 +59,33 @@ pub fn count<'a>(source_file: &'a File, node: &Node<'a>, filter: &NodeFilter) ->
 #[cfg(test)]
 mod test {
     use super::*;
+
+    mod vbnet {
+        use super::*;
+
+        #[test]
+        fn mixed_case_fields_deduplicate_after_normalization() {
+            let source_file = File::from_string(
+                "vbnet",
+                r#"
+Public Class Foo
+    Public Sub DoWork()
+        Dim x = Me.Foo
+        Dim y = Me.foo
+    End Sub
+End Class
+"#,
+            );
+            assert_eq!(
+                1,
+                count(
+                    &source_file,
+                    &source_file.parse().root_node(),
+                    &NodeFilter::empty()
+                )
+            );
+        }
+    }
 
     mod rust {
         use super::*;

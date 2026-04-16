@@ -216,10 +216,6 @@ pub trait Language {
     fn normalize_identifier(&self, name: &str) -> String {
         name.to_string()
     }
-
-    fn is_case_insensitive(&self) -> bool {
-        false
-    }
 }
 
 impl fmt::Display for dyn Language {
@@ -250,5 +246,13 @@ mod test {
     #[test]
     fn language_parser() {
         crate::lang::Rust::default().parser();
+    }
+
+    #[test]
+    fn default_normalize_identifier_is_noop() {
+        let rust = crate::lang::Rust::default();
+        assert_eq!(rust.normalize_identifier("Foo"), "Foo");
+        assert_eq!(rust.normalize_identifier("bar"), "bar");
+        assert_eq!(rust.normalize_identifier("BazQux"), "BazQux");
     }
 }

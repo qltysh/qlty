@@ -304,10 +304,6 @@ impl Language for VBNet {
     fn normalize_identifier(&self, name: &str) -> String {
         name.to_lowercase()
     }
-
-    fn is_case_insensitive(&self) -> bool {
-        true
-    }
 }
 
 fn get_node_source_or_default(node: Option<Node>, source_file: &File) -> String {
