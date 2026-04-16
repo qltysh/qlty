@@ -1,4 +1,4 @@
-use qlty_analysis::code::{capture_by_name, capture_source};
+use qlty_analysis::code::{capture_by_name, capture_by_name_option, node_source};
 use qlty_analysis::code::{File, NodeCounter};
 use qlty_types::analysis::v1::{Issue, Level};
 use qlty_types::calculate_effort_minutes;
@@ -42,7 +42,11 @@ pub fn check(threshold: usize, source_file: Arc<File>, tree: &Tree) -> Vec<Issue
             let message = format!(
                 "Function with many returns (count = {}): {}",
                 return_count,
-                capture_source(function_query, "name", &function_match, &source_file)
+                match capture_by_name_option(function_query, "name", &function_match) {
+                    Some(capture) => node_source(&capture.node, &source_file),
+                    None => language
+                        .function_name_from_node(&source_file, &function_capture.node),
+                }
             );
 
             issues.push(Issue {

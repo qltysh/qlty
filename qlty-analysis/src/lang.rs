@@ -18,10 +18,11 @@ mod swift;
 mod tsx;
 mod typescript;
 mod typescript_common;
+mod vbnet;
 
 pub use {
     c::*, cpp::*, csharp::*, go::*, java::*, javascript::*, kotlin::*, php::*, python::*, ruby::*,
-    rust::*, swift::*, tsx::*, typescript::*,
+    rust::*, swift::*, tsx::*, typescript::*, vbnet::*,
 };
 
 #[allow(clippy::borrowed_box)]
@@ -48,6 +49,7 @@ lazy_static! {
             Box::<swift::Swift>::default(),
             Box::<typescript::TypeScript>::default(),
             Box::<tsx::TSX>::default(),
+            Box::<vbnet::VBNet>::default(),
         ]
     };
 }
@@ -167,9 +169,12 @@ pub trait Language {
 
     fn sanitize_parameter_name(&self, parameter_name: String) -> Option<String> {
         if let Some(self_keyword) = self.self_keyword() {
-            if parameter_name != self_keyword
-                && parameter_name != format!("&{}", self_keyword)
-                && parameter_name != format!("&mut {}", self_keyword)
+            let normalized_param = self.normalize_identifier(&parameter_name);
+            let normalized_self = self.normalize_identifier(self_keyword);
+            if normalized_param != normalized_self
+                && normalized_param != self.normalize_identifier(&format!("&{}", self_keyword))
+                && normalized_param
+                    != self.normalize_identifier(&format!("&mut {}", self_keyword))
             {
                 Some(parameter_name)
             } else {
@@ -202,6 +207,15 @@ pub trait Language {
     fn function_name_node<'a>(&'a self, node: &'a Node) -> Node<'a> {
         node.child_by_field_name("name").unwrap()
     }
+
+    fn function_name_from_node(&self, source_file: &File, node: &Node) -> String {
+        let name_node = self.function_name_node(node);
+        node_source(&name_node, source_file)
+    }
+
+    fn normalize_identifier(&self, name: &str) -> String {
+        name.to_string()
+    }
 }
 
 impl fmt::Display for dyn Language {
@@ -232,5 +246,13 @@ mod test {
     #[test]
     fn language_parser() {
         crate::lang::Rust::default().parser();
+    }
+
+    #[test]
+    fn default_normalize_identifier_is_noop() {
+        let rust = crate::lang::Rust::default();
+        assert_eq!(rust.normalize_identifier("Foo"), "Foo");
+        assert_eq!(rust.normalize_identifier("bar"), "bar");
+        assert_eq!(rust.normalize_identifier("BazQux"), "BazQux");
     }
 }
