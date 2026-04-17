@@ -417,7 +417,7 @@ impl Executor {
         loaded_config_files: &mut Vec<String>,
     ) -> Result<()> {
         for invocation in self.plan.invocations.iter() {
-            if invocation.driver.copy_configs_into_tool_install {
+            if invocation.driver.copy_configs_into_tool_install && !invocation.plugin.system {
                 for config_file in &invocation.plugin_configs {
                     if let Some(config_file) = Self::copy_configs_into_tool_install(
                         &config_file.path,

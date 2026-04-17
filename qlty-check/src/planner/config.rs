@@ -2,7 +2,7 @@ use super::{ActivePlugin, Planner};
 use anyhow::bail;
 use anyhow::{anyhow, Result};
 use qlty_analysis::workspace_entries::TargetMode;
-use qlty_config::config::{DriverDef, EnabledPlugin, IssueMode, Platform, PluginDef};
+use qlty_config::config::{DriverDef, EnabledPlugin, IssueMode, Platform, PluginDef, Runtime};
 use semver::{Version, VersionReq};
 use std::path::{Path, PathBuf};
 use tracing::{debug, trace, warn};
@@ -122,6 +122,15 @@ fn configure_plugin(
         let mut plugin_def = plugin_def.clone();
 
         plugin_def.version = Some(enabled_plugin.version.clone());
+        plugin_def.system = enabled_plugin.system;
+        plugin_def.workspace_root = Some(planner.workspace.root.clone());
+
+        if enabled_plugin.system {
+            match plugin_def.runtime {
+                Some(Runtime::Node) | Some(Runtime::Php) => {}
+                _ => bail!("system = true is only supported for node and php plugins"),
+            }
+        }
 
         if !enabled_plugin.drivers.contains(&ALL.to_string()) {
             plugin_def
@@ -267,7 +276,10 @@ mod test {
 
     fn build_planner(config: QltyConfig) -> Planner {
         let workspace = Workspace::default();
-        let settings = Settings::default();
+        let settings = Settings {
+            cache: false,
+            ..Default::default()
+        };
         let cache = Planner::build_cache(&workspace, &settings).unwrap();
 
         Planner {
@@ -760,5 +772,38 @@ mod test {
         let plugin = plugins.iter().find(|p| p.name == "test_plugin").unwrap();
         assert_eq!(plugin.plugin.drivers.len(), 1);
         assert_eq!(plugin.plugin.drivers["format"].script, "fmt");
+    }
+
+    #[test]
+    fn test_system_plugin_rejects_unsupported_runtime() {
+        let mut plugin_defs = HashMap::new();
+        plugin_defs.insert(
+            "test_plugin".to_string(),
+            PluginDef {
+                runtime: Some(Runtime::Ruby),
+                drivers: vec![("lint".to_string(), DriverDef::default())]
+                    .into_iter()
+                    .collect(),
+                ..Default::default()
+            },
+        );
+
+        let planner = build_planner(QltyConfig {
+            plugin: vec![EnabledPlugin {
+                name: "test_plugin".to_string(),
+                system: true,
+                ..Default::default()
+            }],
+            plugins: PluginsConfig {
+                downloads: HashMap::new(),
+                releases: HashMap::new(),
+                definitions: plugin_defs,
+            },
+            ..Default::default()
+        });
+
+        let err = enabled_plugins(&planner).unwrap_err().to_string();
+        assert!(err.contains("system = true"));
+        assert!(err.contains("node and php"));
     }
 }
