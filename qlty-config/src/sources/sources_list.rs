@@ -34,7 +34,8 @@ impl SourcesList {
         for source in &self.sources {
             if !source.is_cached() {
                 bail!(
-                    "Source is not available locally. Run without --skip-source-fetch, or run `qlty sources fetch` first."
+                    "Source {:?} is not available locally. Run without --skip-source-fetch, or run `qlty sources fetch` first.",
+                    source
                 );
             }
         }
