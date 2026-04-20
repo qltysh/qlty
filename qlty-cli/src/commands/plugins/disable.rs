@@ -55,7 +55,7 @@ impl ConfigDocument {
 impl Disable {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
         let workspace = Workspace::require_initialized()?;
-        workspace.fetch_sources()?;
+        workspace.load_config(false)?;
 
         let mut config = ConfigDocument::new(&workspace)?;
 

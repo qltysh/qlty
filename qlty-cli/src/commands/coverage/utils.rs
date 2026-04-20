@@ -11,12 +11,9 @@ const COVERAGE_TOKEN_WORKSPACE_PREFIX: &str = "qltcw_";
 const COVERAGE_TOKEN_PROJECT_PREFIX: &str = "qltcp_";
 const OIDC_REGEX: &str = r"^([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+)$";
 
-pub fn load_config() -> QltyConfig {
+pub fn load_config(skip_source_fetch: bool) -> QltyConfig {
     Workspace::new()
-        .and_then(|workspace| {
-            workspace.fetch_sources()?;
-            workspace.config()
-        })
+        .and_then(|workspace| workspace.load_config(skip_source_fetch))
         .unwrap_or_default()
 }
 

@@ -53,6 +53,23 @@ impl Workspace {
         self.sources_list()?.fetch()
     }
 
+    pub fn prepare_sources(&self, skip_source_fetch: bool) -> Result<()> {
+        let sources_list = self.sources_list()?;
+
+        if skip_source_fetch {
+            sources_list.validate_sources_cached()?;
+        } else {
+            sources_list.fetch()?;
+        }
+
+        Ok(())
+    }
+
+    pub fn load_config(&self, skip_source_fetch: bool) -> Result<QltyConfig> {
+        self.prepare_sources(skip_source_fetch)?;
+        self.config()
+    }
+
     pub fn config_exists(&self) -> Result<bool> {
         Ok(self.config_path()?.exists())
     }
