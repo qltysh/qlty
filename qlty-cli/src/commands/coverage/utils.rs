@@ -272,6 +272,9 @@ mod tests {
 
         assert_eq!(config.config_version, None);
         assert!(config.plugin.is_empty());
+        assert!(config.exclude_patterns.is_empty());
+        assert_eq!(config.coverage.paths, None);
+        assert_eq!(config.coverage.ignores, None);
     }
 
     #[test]
