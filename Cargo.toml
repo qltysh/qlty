@@ -13,7 +13,7 @@ include = ["/*.md"]
 
 [workspace]
 resolver = "2"
-members = ["qlty*", "vendor/tree-sitter-vbnet"]
+members = ["qlty*"]
 
 [workspace.dependencies]
 actix-web = "4.9.0"
@@ -140,7 +140,7 @@ tree-sitter-ruby = "0.21.0"
 tree-sitter-rust = "0.21.2"
 tree-sitter-swift = "0.5.0"
 tree-sitter-typescript = "0.21.2"
-tree-sitter-vb-dotnet = { path = "vendor/tree-sitter-vbnet" }
+tree-sitter-vb-dotnet = { git = "https://github.com/davehenton/tree-sitter-vb-dotnet", rev = "f8be17908ce2f445b9a034eb0d3d4191231ccca3" }
 trycmd = "0.15.8"
 ureq = { version = "2.12.1", features = ["json", "proxy-from-env"] }
 url = "2.5.7"

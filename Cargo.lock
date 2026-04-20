@@ -4500,6 +4500,7 @@ dependencies = [
 [[package]]
 name = "tree-sitter-vb-dotnet"
 version = "0.1.0"
+source = "git+https://github.com/davehenton/tree-sitter-vb-dotnet?rev=f8be17908ce2f445b9a034eb0d3d4191231ccca3#f8be17908ce2f445b9a034eb0d3d4191231ccca3"
 dependencies = [
  "cc",
  "tree-sitter",
