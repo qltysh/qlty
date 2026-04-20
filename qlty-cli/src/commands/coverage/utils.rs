@@ -11,10 +11,26 @@ const COVERAGE_TOKEN_WORKSPACE_PREFIX: &str = "qltcw_";
 const COVERAGE_TOKEN_PROJECT_PREFIX: &str = "qltcp_";
 const OIDC_REGEX: &str = r"^([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+)$";
 
-pub fn load_config(skip_source_fetch: bool) -> QltyConfig {
-    Workspace::new()
-        .and_then(|workspace| workspace.load_config(skip_source_fetch))
-        .unwrap_or_default()
+/// Loads the workspace config, falling back to `QltyConfig::default()` when
+/// there is no workspace (e.g. not inside a git repo) or no `.qlty/qlty.toml`.
+/// Any other failure — e.g. fetch errors, or missing source cache when
+/// `skip_source_fetch` is true — is surfaced to the caller.
+pub fn load_config_or_default(skip_source_fetch: bool) -> Result<QltyConfig> {
+    let Ok(workspace) = Workspace::new() else {
+        return Ok(QltyConfig::default());
+    };
+    load_config_or_default_for(&workspace, skip_source_fetch)
+}
+
+fn load_config_or_default_for(
+    workspace: &Workspace,
+    skip_source_fetch: bool,
+) -> Result<QltyConfig> {
+    if !workspace.config_exists()? {
+        return Ok(QltyConfig::default());
+    }
+
+    workspace.load_config(skip_source_fetch)
 }
 
 pub fn print_initial_messages(quiet: bool) {
@@ -232,4 +248,79 @@ pub fn print_minimal_metadata(metadata: &CoverageMetadata, quiet: bool) {
     }
 
     eprintln!();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use qlty_test_utilities::git::sample_repo;
+    use std::fs;
+
+    fn write_qlty_toml(root: &std::path::Path, contents: &str) {
+        fs::create_dir_all(root.join(".qlty")).unwrap();
+        fs::write(root.join(".qlty/qlty.toml"), contents).unwrap();
+    }
+
+    #[test]
+    fn test_load_config_or_default_when_qlty_toml_missing() {
+        let (temp_dir, _) = sample_repo();
+        let workspace = Workspace {
+            root: temp_dir.path().to_path_buf(),
+        };
+
+        let config = load_config_or_default_for(&workspace, false).unwrap();
+
+        assert_eq!(config.config_version, None);
+        assert!(config.plugin.is_empty());
+    }
+
+    #[test]
+    fn test_load_config_or_default_when_qlty_toml_present_loads() {
+        let (temp_dir, _) = sample_repo();
+        write_qlty_toml(
+            temp_dir.path(),
+            r#"
+config_version = "0"
+
+[[source]]
+name = "default"
+default = true
+"#,
+        );
+        let workspace = Workspace {
+            root: temp_dir.path().to_path_buf(),
+        };
+
+        let config = load_config_or_default_for(&workspace, false).unwrap();
+
+        assert_eq!(config.config_version, Some("0".to_string()));
+    }
+
+    #[test]
+    fn test_load_config_or_default_errors_when_skip_and_git_source_not_cached() {
+        let (temp_dir, _) = sample_repo();
+        write_qlty_toml(
+            temp_dir.path(),
+            r#"
+config_version = "0"
+
+[[source]]
+name = "custom"
+repository = "https://github.com/qltysh/plugins"
+tag = "v99.99.99"
+"#,
+        );
+        let workspace = Workspace {
+            root: temp_dir.path().to_path_buf(),
+        };
+
+        let result = load_config_or_default_for(&workspace, true);
+
+        assert!(result.is_err());
+        let error_message = format!("{:#}", result.unwrap_err());
+        assert!(
+            error_message.contains("not available locally"),
+            "unexpected error: {error_message}"
+        );
+    }
 }

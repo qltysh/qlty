@@ -1,6 +1,6 @@
 use super::utils::{
-    load_config, print_authentication_info, print_initial_messages, print_metadata, print_settings,
-    validate_metadata,
+    load_config_or_default, print_authentication_info, print_initial_messages, print_metadata,
+    print_settings, validate_metadata,
 };
 use crate::{CommandError, CommandSuccess};
 use anyhow::{bail, Result};
@@ -182,7 +182,7 @@ impl Publish {
             load_auth_token(&self.token, self.project.as_deref())?
         };
 
-        let config = load_config(self.skip_source_fetch);
+        let config = load_config_or_default(self.skip_source_fetch)?;
         let plan = Planner::new(&config, &settings).compute()?;
 
         self.validate_plan(&plan)?;
@@ -259,7 +259,7 @@ impl Publish {
         let incomplete: bool = self.incomplete || self.total_parts_count.unwrap_or(1) > 1;
 
         let root = std::env::current_dir()?;
-        let config = load_config(self.skip_source_fetch);
+        let config = load_config_or_default(self.skip_source_fetch)?;
         let java_src_dirs = if self.discover_java_src_dirs {
             let exclusion_strategy = if config.exclude_patterns.is_empty() {
                 ExclusionStrategy::DefaultHeuristics
