@@ -196,11 +196,21 @@ default = true
 
 #[cfg(test)]
 mod test {
-    use crate::Workspace;
+    use crate::{QltyConfig, Workspace};
 
     #[test]
     fn default() {
         let workspace = Workspace::new().unwrap();
         workspace.load_config(false).unwrap();
+    }
+
+    #[test]
+    fn qlty_config_default_is_empty() {
+        let config = QltyConfig::default();
+        assert_eq!(config.config_version, None);
+        assert!(config.plugin.is_empty());
+        assert!(config.exclude_patterns.is_empty());
+        assert_eq!(config.coverage.paths, None);
+        assert_eq!(config.coverage.ignores, None);
     }
 }
