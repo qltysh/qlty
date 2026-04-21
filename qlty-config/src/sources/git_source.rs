@@ -26,6 +26,10 @@ pub enum GitSourceReference {
 }
 
 impl Source for GitSource {
+    fn is_cached(&self) -> bool {
+        self.local_origin_ref_path(&self.library).exists()
+    }
+
     fn paths(&self) -> Result<Vec<PathBuf>> {
         let local_source = self.local_source();
         local_source.paths()
