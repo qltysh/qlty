@@ -1,5 +1,152 @@
 # Changelog
 
+## v0.623.0 (2026-04-20)
+
+### New
+
+- Centralize config loading with `--skip-source-fetch` support (#2762)
+
+## v0.622.0 (2026-04-16)
+
+### Fixed
+
+- Resolve Stylelint `extends` and `plugins` against the tool install directory (#2757)
+- Tag outbound TruffleHog verification calls with a `qlty` user-agent suffix (#2758)
+
+## v0.621.0 (2026-04-15)
+
+### New
+
+- Add C and C++ language support (#2746)
+
+### Fixed
+
+- Update OpenAPI globs to support nested paths (#2750) — thanks @cussiol!
+
+## v0.620.0 (2026-04-15)
+
+### Fixed
+
+- Detect branch on Travis CI push builds (#2753)
+
+## v0.619.0 (2026-04-09)
+
+### New
+
+- Add `editorconfig-checker` plugin (#2747)
+- Add `spectral` linter plugin (#2705) — thanks @cussiol!
+
+### Fixed
+
+- Fix off-by-one error in ast-grep parsing by converting 0-indexed line/column numbers to 1-indexed (#2738) — thanks @samwightt!
+
+## v0.618.0 (2026-03-18)
+
+### New
+
+- Add golangci-lint format driver for v2+ (#2733)
+
+### Changed
+
+- Fetch sources before loading config in `coverage publish` (#2698). **Behavior change:** previously, `qlty coverage publish` would silently swallow errors when loading `qlty.toml` — including failures to fetch shared private sources — and continue. It now fails fast if `qlty.toml` is invalid or if private sources cannot be fetched. Most users should be unaffected, since an invalid `qlty.toml` is typically surfaced earlier by local or cloud `qlty check` runs. If you hit this, either fix the underlying configuration or source-fetch issue, or remove `qlty.toml` if it is not in use.
+
+### Fixed
+
+- Preserve Git auth state across credential callback invocations (#2734)
+- Support literal targets in formatter rewrite diff (#2732)
+- Skip unmatched driver versions instead of failing (#2730)
+
+## v0.617.0 (2026-03-17)
+
+### New
+
+- Add client-side coverage summing before upload (#2722)
+
+### Fixed
+
+- Write duplication migration settings to both `identical_code` and `similar_code` (#2721)
+
+## v0.616.0 (2026-03-05)
+
+### Fixed
+
+- Prevent deletion of pre-existing config files during cleanup (#2710)
+- Return `None` when `invocation_directory` equals `target_root` (#2709)
+
+## v0.615.0 (2026-03-02)
+
+### Improved
+
+- Bump Trivy to v0.69.2 (#2706)
+
+### Fixed
+
+- Remove `suggested` arg from Trivy drivers (#2707)
+
+## v0.614.0 (2026-02-26)
+
+### Fixed
+
+- Include underlying error in symlink failure log messages (#2702)
+
+## v0.613.0 (2026-02-14)
+
+### New
+
+- Add multi-release support for the Python runtime to enable 3.13+ (#2694)
+
+## v0.612.0 (2026-02-11)
+
+No changes. (Release was triggered by internal improvements.)
+
+## v0.611.0 (2026-02-10)
+
+### Fixed
+
+- Update `haml-lint` to version 0.69.0 (#2678)
+
+## v0.610.0 (2026-02-10)
+
+### Fixed
+
+- Isolate Composer cache per tool to prevent race conditions in PHP plugins (#2677)
+
+## v0.609.0 (2026-02-06)
+
+### New
+
+- Add `--skip-source-fetch` flag to `fmt` command (#2672)
+
+## v0.608.0 (2026-02-05)
+
+### New
+
+- Add `--skip-source-fetch` flag to `check` command (#2670)
+
+## v0.607.0 (2026-02-05)
+
+### New
+
+- Add `qlty sources fetch` command (#2667)
+- Verify SLSA provenance with the `gh` CLI during upgrade (#2547)
+- Require HTTPS for all outgoing HTTP requests (#2517)
+
+### Fixed
+
+- Change `zizmor` suggested setting from config to targets (#2575)
+- Disable `radarlint-js` auto-suggestion (#2574)
+- Handle empty stdin in pre-push hook gracefully (#2548)
+
+## v0.606.0 (2025-12-30)
+
+### Improved
+
+- Move temp data to `$HOME/.qlty/tmp` (#2516)
+
+### Fixed
+
+- Block auto-downgrades (#2515)
+
 ## v0.605.0 (2025-12-26)
 
 ### New
