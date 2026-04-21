@@ -32,7 +32,7 @@ impl Migrate {
 
         let migration_settings = MigrationSettings::new(
             &workspace.root,
-            workspace.load_config(false)?,
+            workspace.config()?,
             &workspace.config_path()?,
             &classic_config_path,
             self.dry_run,
