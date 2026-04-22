@@ -63,7 +63,9 @@ impl Smells {
         self.run_assertions()?;
 
         let workspace = Workspace::new()?;
-        let config = workspace.load_config(false)?;
+        workspace.fetch_sources()?;
+
+        let config = workspace.config()?;
 
         let mut steps_count = 2;
 

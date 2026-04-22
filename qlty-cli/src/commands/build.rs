@@ -60,7 +60,12 @@ pub struct Build {
 impl Build {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
         let workspace = Workspace::require_initialized()?;
-        let config = workspace.load_config(!self.fetch_sources)?;
+
+        if self.fetch_sources {
+            workspace.fetch_sources()?;
+        }
+
+        let config = workspace.config()?;
 
         let mut report = Report {
             metadata: self.build_metadata(&config),
