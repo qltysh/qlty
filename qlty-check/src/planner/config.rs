@@ -175,11 +175,13 @@ fn configure_plugin(
             }
 
             plugin_def.package_file = Some(package_file.to_str().unwrap_or_default().to_string());
+            plugin_def.workspace_root = Some(prefixed_root);
         }
 
         // This is becoming a weird pattern, we should probably refactor this?
         plugin_def.fetch = enabled_plugin.fetch.clone();
         plugin_def.package_filters = enabled_plugin.package_filters.clone();
+        plugin_def.preserve_autoload = enabled_plugin.preserve_autoload;
         plugin_def.prefix = enabled_plugin.prefix.clone();
 
         plugin_def
