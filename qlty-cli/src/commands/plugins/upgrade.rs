@@ -84,7 +84,7 @@ impl ConfigDocument {
 impl Upgrade {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
         let workspace = Workspace::require_initialized()?;
-        workspace.load_config(false)?;
+        workspace.fetch_sources()?;
 
         let mut config = ConfigDocument::new(&workspace)?;
 

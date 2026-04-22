@@ -201,6 +201,7 @@ mod test {
     #[test]
     fn default() {
         let workspace = Workspace::new().unwrap();
-        workspace.load_config(false).unwrap();
+        workspace.fetch_sources().unwrap();
+        workspace.config().unwrap();
     }
 }

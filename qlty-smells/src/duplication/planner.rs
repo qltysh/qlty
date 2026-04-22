@@ -201,7 +201,8 @@ mod test {
     #[test]
     fn test_javascript_language_contains_filter_patterns_by_default() {
         let workspace = Workspace::new().unwrap();
-        let config = workspace.load_config(false).unwrap();
+        workspace.fetch_sources().unwrap();
+        let config = workspace.config().unwrap();
         assert!(!&config.language["javascript"]
             .smells
             .as_ref()

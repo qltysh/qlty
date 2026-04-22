@@ -10,7 +10,8 @@ pub struct List {}
 impl List {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
         let workspace = Workspace::require_initialized()?;
-        let config = workspace.load_config(false)?;
+        workspace.fetch_sources()?;
+        let config = workspace.config()?;
 
         let mut available_plugin_names = config
             .plugins
