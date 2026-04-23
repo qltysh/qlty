@@ -2908,6 +2908,7 @@ dependencies = [
  "serde_with",
  "serde_yaml",
  "tempfile",
+ "thiserror 2.0.16",
  "toml 0.8.23",
  "toml_edit 0.22.27",
  "tracing",

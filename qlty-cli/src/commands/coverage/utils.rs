@@ -1,7 +1,7 @@
 use anyhow::{bail, Result};
 use chrono::{DateTime, Utc};
 use console::style;
-use qlty_config::{version::LONG_VERSION, QltyConfig, Workspace};
+use qlty_config::{version::LONG_VERSION, DeprecatedDefaultSourceError, QltyConfig, Workspace};
 use qlty_coverage::publish::Settings;
 use qlty_types::tests::v1::{CoverageMetadata, ReferenceType};
 use regex::Regex;
@@ -36,11 +36,13 @@ fn load_config_for(workspace: &Workspace, skip_source_fetch: bool) -> QltyConfig
                 "Failed to load qlty config for coverage publish: {}",
                 message
             );
-            eprintln!(
-                "{} {}",
-                style("warning:").bold().yellow(),
-                style(format!("Failed to load qlty config: {}", message)).yellow()
-            );
+            if !error.is::<DeprecatedDefaultSourceError>() {
+                eprintln!(
+                    "{} {}",
+                    style("warning:").bold().yellow(),
+                    style(format!("Failed to load qlty config: {}", message)).yellow()
+                );
+            }
             eprintln!(
                 "{}",
                 style("Proceeding with default configuration.").yellow()

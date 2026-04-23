@@ -39,11 +39,17 @@ use crate::sources::SourcesList;
 use crate::version::QLTY_VERSION;
 use crate::Library;
 use anyhow::{bail, Result};
+use console::style;
 use schemars::JsonSchema;
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use thiserror::Error;
 use tracing::{debug, warn};
+
+#[derive(Debug, Error)]
+#[error("qlty.toml default source is using a deprecated, repository-based format")]
+pub struct DeprecatedDefaultSourceError;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default, JsonSchema)]
 pub struct QltyConfig {
@@ -169,9 +175,19 @@ impl QltyConfig {
                         .starts_with(OLD_DEFAULT_SOURCE_REPOSITORY)
                 {
                     warn!("qlty.toml default source is a repository-style reference to qltysh.");
-                    bail!(
-                        "qlty.toml is using a deprecated, repository-based, default source.\n\nPlease change the default source in your qlty.toml to:\n\n[[source]]\nname = \"default\"\ndefault = true"
+                    eprintln!(
+                        r#"
+{} Warning: qlty.toml is using a deprecated, repository-based, default source.
+
+Please change the default source in your qlty.toml to:
+
+[[source]]
+name = "default"
+default = true
+"#,
+                        style("⚠").yellow()
                     );
+                    return Err(DeprecatedDefaultSourceError.into());
                 }
             }
             None => {
