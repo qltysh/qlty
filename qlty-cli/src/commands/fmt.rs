@@ -65,10 +65,7 @@ impl Fmt {
         self.validate_options()?;
 
         let workspace = Workspace::require_initialized()?;
-
-        if !self.skip_source_fetch {
-            workspace.fetch_sources()?;
-        }
+        workspace.prepare_sources(self.skip_source_fetch)?;
 
         let settings = self.build_settings()?;
         let plan = Planner::new(ExecutionVerb::Fmt, &settings)?.compute()?;
