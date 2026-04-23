@@ -149,6 +149,10 @@ pub struct Publish {
     /// The server will merge the uploads into a single report when qlty coverage complete is called.
     pub incomplete: bool,
 
+    /// Skip fetching sources before publishing. Requires sources to be cached locally.
+    #[arg(long)]
+    pub skip_source_fetch: bool,
+
     // Paths to coverage reports
     pub paths: Vec<String>,
 }
@@ -165,7 +169,8 @@ impl Publish {
         print_initial_messages(self.quiet);
         self.print_deprecation_warnings();
 
-        let settings = self.build_settings()?;
+        let config = load_config(self.skip_source_fetch);
+        let settings = self.build_settings(&config)?;
         self.print_settings_warnings(&settings);
 
         self.print_section_header(" SETTINGS ");
@@ -178,7 +183,6 @@ impl Publish {
             load_auth_token(&self.token, self.project.as_deref())?
         };
 
-        let config = load_config();
         let plan = Planner::new(&config, &settings).compute()?;
 
         self.validate_plan(&plan)?;
@@ -247,7 +251,7 @@ impl Publish {
         eprintln!();
     }
 
-    fn build_settings(&self) -> Result<Settings> {
+    fn build_settings(&self, config: &QltyConfig) -> Result<Settings> {
         let format = Self::coalesce_args(&self.format, &self.report_format);
         let add_prefix = Self::coalesce_args(&self.add_prefix, &self.transform_add_prefix);
         let strip_prefix = Self::coalesce_args(&self.strip_prefix, &self.transform_strip_prefix);
@@ -255,12 +259,11 @@ impl Publish {
         let incomplete: bool = self.incomplete || self.total_parts_count.unwrap_or(1) > 1;
 
         let root = std::env::current_dir()?;
-        let config = load_config();
         let java_src_dirs = if self.discover_java_src_dirs {
             let exclusion_strategy = if config.exclude_patterns.is_empty() {
                 ExclusionStrategy::DefaultHeuristics
             } else {
-                ExclusionStrategy::UserDefined(config.exclude_patterns)
+                ExclusionStrategy::UserDefined(config.exclude_patterns.clone())
             };
             let finder = JavaSrcDirFinder::new(root.clone(), exclusion_strategy);
             finder.find()?

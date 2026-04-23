@@ -1,23 +1,55 @@
 use anyhow::{bail, Result};
 use chrono::{DateTime, Utc};
 use console::style;
-use qlty_config::{version::LONG_VERSION, QltyConfig, Workspace};
+use qlty_config::{version::LONG_VERSION, DeprecatedDefaultSourceError, QltyConfig, Workspace};
 use qlty_coverage::publish::Settings;
 use qlty_types::tests::v1::{CoverageMetadata, ReferenceType};
 use regex::Regex;
 use std::path::PathBuf;
+use tracing::{info, warn};
 
 const COVERAGE_TOKEN_WORKSPACE_PREFIX: &str = "qltcw_";
 const COVERAGE_TOKEN_PROJECT_PREFIX: &str = "qltcp_";
 const OIDC_REGEX: &str = r"^([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+)$";
 
-pub fn load_config() -> QltyConfig {
-    Workspace::new()
-        .and_then(|workspace| {
-            workspace.fetch_sources()?;
-            workspace.config()
-        })
-        .unwrap_or_default()
+pub fn load_config(skip_source_fetch: bool) -> QltyConfig {
+    let Ok(workspace) = Workspace::new() else {
+        return QltyConfig::default();
+    };
+    load_config_for(&workspace, skip_source_fetch)
+}
+
+fn load_config_for(workspace: &Workspace, skip_source_fetch: bool) -> QltyConfig {
+    if !matches!(workspace.config_exists(), Ok(true)) {
+        return QltyConfig::default();
+    }
+
+    if let Ok(path) = workspace.config_path() {
+        info!("Reading qlty config from {}", path.display());
+    }
+
+    match workspace.load_config(skip_source_fetch) {
+        Ok(config) => config,
+        Err(error) => {
+            let message = format!("{:#}", error);
+            warn!(
+                "Failed to load qlty config for coverage publish: {}",
+                message
+            );
+            if !error.is::<DeprecatedDefaultSourceError>() {
+                eprintln!(
+                    "{} {}",
+                    style("warning:").bold().yellow(),
+                    style(format!("Failed to load qlty config: {}", message)).yellow()
+                );
+            }
+            eprintln!(
+                "{}",
+                style("Proceeding with default configuration.").yellow()
+            );
+            QltyConfig::default()
+        }
+    }
 }
 
 pub fn print_initial_messages(quiet: bool) {
@@ -235,4 +267,78 @@ pub fn print_minimal_metadata(metadata: &CoverageMetadata, quiet: bool) {
     }
 
     eprintln!();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use qlty_test_utilities::git::sample_repo;
+    use std::fs;
+
+    fn write_qlty_toml(root: &std::path::Path, contents: &str) {
+        fs::create_dir_all(root.join(".qlty")).unwrap();
+        fs::write(root.join(".qlty/qlty.toml"), contents).unwrap();
+    }
+
+    #[test]
+    fn test_load_config_when_qlty_toml_missing() {
+        let (temp_dir, _) = sample_repo();
+        let workspace = Workspace {
+            root: temp_dir.path().to_path_buf(),
+        };
+
+        let config = load_config_for(&workspace, false);
+
+        assert_eq!(config.config_version, None);
+        assert!(config.plugin.is_empty());
+        assert!(config.exclude_patterns.is_empty());
+        assert_eq!(config.coverage.paths, None);
+        assert_eq!(config.coverage.ignores, None);
+    }
+
+    #[test]
+    fn test_load_config_when_qlty_toml_present_loads() {
+        let (temp_dir, _) = sample_repo();
+        write_qlty_toml(
+            temp_dir.path(),
+            r#"
+config_version = "0"
+
+[[source]]
+name = "default"
+default = true
+"#,
+        );
+        let workspace = Workspace {
+            root: temp_dir.path().to_path_buf(),
+        };
+
+        let config = load_config_for(&workspace, false);
+
+        assert_eq!(config.config_version, Some("0".to_string()));
+    }
+
+    #[test]
+    fn test_load_config_falls_back_to_default_when_skip_and_git_source_not_cached() {
+        let (temp_dir, _) = sample_repo();
+        write_qlty_toml(
+            temp_dir.path(),
+            r#"
+config_version = "0"
+
+[[source]]
+name = "custom"
+repository = "https://github.com/qltysh/plugins"
+tag = "v99.99.99"
+"#,
+        );
+        let workspace = Workspace {
+            root: temp_dir.path().to_path_buf(),
+        };
+
+        let config = load_config_for(&workspace, true);
+
+        assert_eq!(config.config_version, None);
+        assert!(config.plugin.is_empty());
+    }
 }
