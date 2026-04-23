@@ -39,11 +39,11 @@ fn load_config_for(workspace: &Workspace, skip_source_fetch: bool) -> QltyConfig
             eprintln!(
                 "{} {}",
                 style("warning:").bold().yellow(),
-                style(format!(
-                    "Failed to load qlty config: {}. Proceeding with default configuration.",
-                    message
-                ))
-                .yellow()
+                style(format!("Failed to load qlty config: {}", message)).yellow()
+            );
+            eprintln!(
+                "{}",
+                style("Proceeding with default configuration.").yellow()
             );
             QltyConfig::default()
         }

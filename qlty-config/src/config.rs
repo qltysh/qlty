@@ -18,7 +18,6 @@ pub use self::ignore::{Ignore, ALL_WILDCARD};
 pub use self::overrides::Override;
 use self::smells::Smells;
 pub use builder::Builder;
-use console::style;
 pub use coverage::Coverage;
 pub use download::{Cpu, DownloadDef, DownloadFileType, OperatingSystem, System};
 pub use exclude::Exclude;
@@ -170,19 +169,9 @@ impl QltyConfig {
                         .starts_with(OLD_DEFAULT_SOURCE_REPOSITORY)
                 {
                     warn!("qlty.toml default source is a repository-style reference to qltysh.");
-                    eprintln!(
-                        r#"
-{} Warning: qlty.toml is using a deprecated, repository-based, default source.
-
-Please change the default source in your qlty.toml to:
-
-[[source]]
-name = "default"
-default = true
-"#,
-                        style("⚠").yellow()
+                    bail!(
+                        "qlty.toml is using a deprecated, repository-based, default source.\n\nPlease change the default source in your qlty.toml to:\n\n[[source]]\nname = \"default\"\ndefault = true"
                     );
-                    bail!("Please update your qlty.toml to use the new source format.");
                 }
             }
             None => {

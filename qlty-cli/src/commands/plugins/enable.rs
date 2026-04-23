@@ -186,7 +186,7 @@ impl Enable {
         let workspace = Workspace::new()?;
 
         if workspace.config_exists()? {
-            workspace.load_config(false)?;
+            workspace.fetch_sources()?;
         } else {
             let library = workspace.library()?;
             library.create()?;
