@@ -48,7 +48,7 @@ use thiserror::Error;
 use tracing::{debug, warn};
 
 #[derive(Debug, Error)]
-#[error("qlty.toml default source is using a deprecated, repository-based format")]
+#[error("Please update your qlty.toml to use the new source format.")]
 pub struct DeprecatedDefaultSourceError;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default, JsonSchema)]

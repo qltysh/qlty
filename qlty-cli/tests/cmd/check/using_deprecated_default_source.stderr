@@ -10,4 +10,4 @@ default = true
 
    ERROR   
 
- > qlty.toml default source is using a deprecated, repository-based format
+ > Please update your qlty.toml to use the new source format.
