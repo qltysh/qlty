@@ -59,10 +59,6 @@ pub struct Check {
     #[arg(long)]
     pub r#unsafe: bool,
 
-    /// Disable formatter checks
-    #[arg(long)]
-    pub no_formatters: bool,
-
     /// Disable progress bar
     #[arg(long)]
     pub no_progress: bool,
@@ -221,11 +217,7 @@ impl Check {
                 } else {
                     return Ok(CommandSuccess {
                         trigger: Some(self.trigger),
-                        unformatted_count: if self.no_formatters {
-                            None
-                        } else {
-                            Some(report.unformatted_count())
-                        },
+                        unformatted_count: Some(report.unformatted_count()),
                         issues_count: Some(report.counts.total_issues),
                         security_issues_count: Some(report.counts.total_security_issues),
                         fixed_count: report.fixed.len(),
@@ -328,7 +320,7 @@ impl Check {
         settings.r#unsafe = self.r#unsafe;
         settings.jobs = self.jobs;
         settings.progress = !self.no_progress;
-        settings.formatters = !self.no_formatters;
+        settings.formatters = true;
         settings.filters = CheckFilter::from_optional_list(self.filter.clone());
         settings.upstream = self.compute_upstream(workspace, git_hook_stdin)?;
         settings.level = self.level;
