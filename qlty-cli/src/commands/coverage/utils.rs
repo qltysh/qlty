@@ -6,7 +6,7 @@ use qlty_coverage::publish::Settings;
 use qlty_types::tests::v1::{CoverageMetadata, ReferenceType};
 use regex::Regex;
 use std::path::PathBuf;
-use tracing::warn;
+use tracing::{info, warn};
 
 const COVERAGE_TOKEN_WORKSPACE_PREFIX: &str = "qltcw_";
 const COVERAGE_TOKEN_PROJECT_PREFIX: &str = "qltcp_";
@@ -20,39 +20,34 @@ pub fn load_config(skip_source_fetch: bool) -> QltyConfig {
 }
 
 fn load_config_for(workspace: &Workspace, skip_source_fetch: bool) -> QltyConfig {
-    match workspace.config_exists() {
-        Ok(false) => return QltyConfig::default(),
-        Err(error) => {
-            warn_config_load_failure(&error);
-            return QltyConfig::default();
-        }
-        Ok(true) => {}
+    if !matches!(workspace.config_exists(), Ok(true)) {
+        return QltyConfig::default();
+    }
+
+    if let Ok(path) = workspace.config_path() {
+        info!("Reading qlty config from {}", path.display());
     }
 
     match workspace.load_config(skip_source_fetch) {
         Ok(config) => config,
         Err(error) => {
-            warn_config_load_failure(&error);
+            let message = format!("{:#}", error);
+            warn!(
+                "Failed to load qlty config for coverage publish: {}",
+                message
+            );
+            eprintln!(
+                "{} {}",
+                style("warning:").bold().yellow(),
+                style(format!(
+                    "Failed to load qlty config: {}. Proceeding with default configuration.",
+                    message
+                ))
+                .yellow()
+            );
             QltyConfig::default()
         }
     }
-}
-
-fn warn_config_load_failure(error: &anyhow::Error) {
-    let message = format!("{:#}", error);
-    warn!(
-        "Failed to load qlty config for coverage publish: {}",
-        message
-    );
-    eprintln!(
-        "{} {}",
-        style("warning:").bold().yellow(),
-        style(format!(
-            "Failed to load qlty config: {}. Proceeding with default configuration.",
-            message
-        ))
-        .yellow()
-    );
 }
 
 pub fn print_initial_messages(quiet: bool) {
