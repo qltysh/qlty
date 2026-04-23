@@ -111,10 +111,6 @@ pub struct Publish {
     /// Print coverage
     pub print: bool,
 
-    #[arg(long)]
-    /// Verbose
-    pub verbose: bool,
-
     #[arg(long, hide = true, requires = "print")]
     /// JSON output
     pub json: bool,
@@ -494,11 +490,7 @@ impl Publish {
                 .bold()
             );
 
-            let (paths_to_show, show_all) = if self.verbose {
-                (missing_files.len(), true)
-            } else {
-                (std::cmp::min(20, missing_files.len()), false)
-            };
+            let (paths_to_show, show_all) = (std::cmp::min(20, missing_files.len()), false);
 
             eprintln!("\n    {}\n", style("Missing code files:").bold().yellow());
 
