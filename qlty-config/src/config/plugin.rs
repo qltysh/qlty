@@ -404,6 +404,12 @@ pub struct PluginDef {
     pub prefix: Option<String>,
 
     #[serde(default)]
+    pub system: bool,
+
+    #[serde(skip)]
+    pub workspace_root: Option<PathBuf>,
+
+    #[serde(default)]
     pub supported_platforms: Vec<Platform>,
 
     #[serde(default)]
@@ -699,6 +705,9 @@ pub struct EnabledPlugin {
 
     #[serde(default)]
     pub prefix: Option<String>,
+
+    #[serde(default)]
+    pub system: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, JsonSchema)]
@@ -719,6 +728,13 @@ impl EnabledPlugin {
         if !self.package_filters.is_empty() && self.package_file.is_none() {
             return Err(anyhow::anyhow!(
                 "Plugin '{}' has 'package_filters' configured but no 'package_file'. The 'package_filters' option requires 'package_file' to be specified.",
+                self.name
+            ));
+        }
+
+        if self.system && !self.package_filters.is_empty() {
+            return Err(anyhow::anyhow!(
+                "Plugin '{}' has both 'system' and 'package_filters' configured. Workspace installs do not support package_filters.",
                 self.name
             ));
         }
@@ -1028,5 +1044,24 @@ mod tests {
         assert!(error_message.contains("package_filters"));
         assert!(error_message.contains("package_file"));
         assert!(error_message.contains("requires"));
+    }
+
+    #[test]
+    fn test_enabled_plugin_validate_failure_with_system_and_package_filters() {
+        let plugin = EnabledPlugin {
+            name: "test-plugin".to_string(),
+            system: true,
+            package_file: Some("package.json".to_string()),
+            package_filters: vec!["some-filter".to_string()],
+            ..Default::default()
+        };
+
+        let result = plugin.validate();
+        assert!(result.is_err());
+
+        let error_message = result.unwrap_err().to_string();
+        assert!(error_message.contains("test-plugin"));
+        assert!(error_message.contains("system"));
+        assert!(error_message.contains("package_filters"));
     }
 }
