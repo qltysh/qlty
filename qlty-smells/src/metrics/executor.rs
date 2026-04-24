@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use super::{metrics, MetricsMode, Plan, Results};
 use qlty_analysis::{
-    code::{capture_by_name, capture_source, File},
+    code::{capture_by_name, capture_by_name_option, capture_source, node_source, File},
     utils::fs::path_to_string,
 };
 use qlty_types::{
@@ -152,7 +152,10 @@ impl Executor {
                 continue;
             }
 
-            let name = capture_source(function_query, "name", &function_match, source_file);
+            let name = match capture_by_name_option(function_query, "name", &function_match) {
+                Some(capture) => node_source(&capture.node, source_file),
+                None => language.function_name_from_node(source_file, &node),
+            };
 
             let operator = match language.is_instance_method(source_file, &function_capture.node) {
                 true => "#",

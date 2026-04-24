@@ -1,4 +1,4 @@
-use qlty_analysis::code::{capture_by_name_option, capture_source, File};
+use qlty_analysis::code::{capture_by_name, capture_by_name_option, node_source, File};
 use qlty_types::analysis::v1::{Issue, Level};
 use qlty_types::calculate_effort_minutes;
 use std::sync::Arc;
@@ -24,6 +24,8 @@ pub fn check(threshold: usize, source_file: Arc<File>, tree: &Tree) -> Vec<Issue
         query_cursor.matches(query, tree.root_node(), source_file.contents.as_bytes());
 
     for function_match in all_matches {
+        let function_capture =
+            capture_by_name(query, "definition.function", &function_match);
         let parameters_capture = capture_by_name_option(query, "parameters", &function_match);
         if parameters_capture.is_none() {
             continue;
@@ -36,7 +38,11 @@ pub fn check(threshold: usize, source_file: Arc<File>, tree: &Tree) -> Vec<Issue
             let message = format!(
                 "Function with many parameters (count = {}): {}",
                 parameter_names.len(),
-                capture_source(query, "name", &function_match, &source_file)
+                match capture_by_name_option(query, "name", &function_match) {
+                    Some(capture) => node_source(&capture.node, &source_file),
+                    None => language
+                        .function_name_from_node(&source_file, &function_capture.node),
+                }
             );
 
             issues.push(Issue {

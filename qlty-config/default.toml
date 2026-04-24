@@ -477,6 +477,10 @@ globs = ["*.cpp", "*.hpp", "*.cc", "*.cxx", "*.c++", "*.h", "*.h++", "*.hh", "*.
 globs = ["*.cs"]
 smells.duplication.filter_patterns = ["(using_directive _)"]
 
+[language.vbnet]
+globs = ["*.vb"]
+smells.duplication.filter_patterns = ["(imports_statement _)"]
+
 [smells.boolean_logic]
 threshold = 4
 
