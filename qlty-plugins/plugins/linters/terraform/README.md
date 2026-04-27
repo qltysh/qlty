@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+Terraform will be automatically enabled by `qlty init` when Terraform (`.tf`) files are present.
 
 Terraform will be automatically enabled by `qlty init` when Terraform files are present.
 

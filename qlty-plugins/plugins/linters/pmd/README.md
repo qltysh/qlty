@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+PMD will be automatically enabled by `qlty init` when Java files are present.
 
 PMD will be automatically enabled by `qlty init` when Java or Apex files are present.
 

@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+golangci-lint will be automatically enabled by `qlty init` if a `.golangci.yml` (or `.golangci.json`, `.golangci.toml`) configuration file is present.
 
 golangci-lint will be automatically enabled by `qlty init` if a `.golangci.yml` configuration file is present.
 

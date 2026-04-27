@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+PHPStan will be automatically enabled by `qlty init` if a `phpstan.neon` or `phpstan.neon.dist` configuration file is present.
 
 PHPStan will be automatically enabled by `qlty init` if a `phpstan.neon` configuration file is present.
 

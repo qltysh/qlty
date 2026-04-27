@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+Redocly will be automatically enabled by `qlty init` if a `redocly.yaml` configuration file is present.
 
 Redocly will be automatically enabled by `qlty init` if a `redocly.yaml` configuration file is present.
 

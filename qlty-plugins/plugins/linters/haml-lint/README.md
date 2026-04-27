@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+haml-lint will be automatically enabled by `qlty init` if a `.haml-lint.yml` configuration file is present.
 
 haml-lint will be automatically enabled by `qlty init` if a `.haml-lint.yml` configuration file is present.
 

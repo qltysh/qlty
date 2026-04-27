@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+Vale will be automatically enabled by `qlty init` if a `.vale.ini` configuration file is present.
 
 Vale will be automatically enabled by `qlty init` if a `.vale.ini` configuration file is present.
 

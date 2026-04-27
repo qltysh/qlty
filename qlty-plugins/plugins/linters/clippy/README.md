@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+Clippy will be automatically enabled by `qlty init` when Rust files are present.
 
 Clippy will be automatically enabled by `qlty init` when Rust files are present.
 

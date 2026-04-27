@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+PHP_CodeSniffer will be automatically enabled by `qlty init` if a `phpcs.xml` configuration file is present.
 
 PHP_CodeSniffer will be automatically enabled by `qlty init` if a `phpcs.xml` configuration file is present.
 

@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+oxc will be automatically enabled by `qlty init` when JavaScript or TypeScript files are present.
 
 oxc will be automatically enabled by `qlty init` if an `oxlintrc.json` configuration file is present.
 

@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+CoffeeLint will be automatically enabled by `qlty init` if a `coffeelint.json` configuration file is present.
 
 CoffeeLint will be automatically enabled by `qlty init` if a `coffeelint.json` configuration file is present.
 

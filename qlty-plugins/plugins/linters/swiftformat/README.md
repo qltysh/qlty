@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+SwiftFormat will be automatically enabled by `qlty init` if a `.swiftformat` configuration file is present.
 
 SwiftFormat will be automatically enabled by `qlty init` if a `.swiftformat` configuration file is present.
 

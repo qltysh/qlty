@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+yamllint will be automatically enabled by `qlty init` if a `.yamllint` or `.yamllint.yml` configuration file is present.
 
 yamllint will be automatically enabled by `qlty init` if a `.yamllint` or `.yamllint.yml` configuration file is present.
 

@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+Reek will be automatically enabled by `qlty init` if a `.reek.yml` configuration file is present.
 
 Reek will be automatically enabled by `qlty init` if a `.reek.yml` configuration file is present.
 

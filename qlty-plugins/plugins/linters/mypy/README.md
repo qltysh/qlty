@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+mypy will be automatically enabled by `qlty init` if a `mypy.ini` or `.mypy.ini` configuration file is present.
 
 mypy will be automatically enabled by `qlty init` when Python files are present.
 

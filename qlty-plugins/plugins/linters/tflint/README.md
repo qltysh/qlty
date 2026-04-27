@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+TFLint will be automatically enabled by `qlty init` if a `.tflint.hcl` configuration file is present.
 
 TFLint will be automatically enabled by `qlty init` if a `.tflint.hcl` configuration file is present.
 

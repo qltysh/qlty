@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+PHP-CS-Fixer will be automatically enabled by `qlty init` if a `.php-cs-fixer.dist.php` configuration file is present.
 
 PHP-CS-Fixer will be automatically enabled by `qlty init` if a `.php-cs-fixer.dist.php` configuration file is present.
 

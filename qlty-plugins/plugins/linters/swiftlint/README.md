@@ -23,12 +23,6 @@ name = "swiftlint"
 version = "X.Y.Z"
 ```
 
-## Auto-enabling
-
-<!-- REVIEW: confirm auto-enabling condition -->
-
-SwiftLint will be automatically enabled by `qlty init` if a `.swiftlint.yml` configuration file is present.
-
 ## Languages and file types
 
 SwiftLint analyzes: Swift (`.swift`).

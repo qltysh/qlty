@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+Knip will be automatically enabled by `qlty init` if a `knip.json` or `knip.ts` configuration file is present.
 
 Knip will be automatically enabled by `qlty init` if a `knip.json` configuration file is present.
 

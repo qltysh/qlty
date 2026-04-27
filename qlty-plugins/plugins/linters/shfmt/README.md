@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+shfmt will be automatically enabled by `qlty init` when shell script files are present.
 
 shfmt will be automatically enabled by `qlty init` when shell script files are present.
 

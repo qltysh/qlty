@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+StringsLint will be automatically enabled by `qlty init` if a `.stringslint` or `.stringslint.yml` configuration file is present.
 
 StringsLint will be automatically enabled by `qlty init` if a `.stringslint` or `.stringslint.yml` configuration file is present.
 

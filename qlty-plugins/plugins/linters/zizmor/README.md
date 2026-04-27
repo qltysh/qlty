@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+zizmor will be automatically enabled by `qlty init` when GitHub Actions workflow files are present.
 
 zizmor will be automatically enabled by `qlty init` when GitHub Actions workflow files are present.
 

@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+ast-grep will be automatically enabled by `qlty init` if a `sgconfig.yml` configuration file is present.
 
 ast-grep will be automatically enabled by `qlty init` if a `sgconfig.yml` configuration file is present.
 

@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+Checkstyle will be automatically enabled by `qlty init` if a `checkstyle.xml` configuration file is present.
 
 Checkstyle will be automatically enabled by `qlty init` if a `checkstyle.xml` configuration file is present.
 

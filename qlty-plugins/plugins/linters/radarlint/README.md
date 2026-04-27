@@ -25,12 +25,6 @@ name = "radarlint"
 version = "X.Y.Z"
 ```
 
-## Auto-enabling
-
-<!-- REVIEW: confirm auto-enabling condition -->
-
-## Languages and file types
-
 radarlint analyzes: Java (`.java`).
 
 ## Troubleshooting

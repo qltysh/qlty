@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+gofmt will be automatically enabled by `qlty init` when Go files are present.
 
 gofmt will be automatically enabled by `qlty init` when Go files are present.
 

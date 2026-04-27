@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+Brakeman will be automatically enabled by `qlty init` when Ruby files are present in a Rails application structure.
 
 Brakeman will be automatically enabled by `qlty init` when Ruby files are present in a Rails application structure.
 

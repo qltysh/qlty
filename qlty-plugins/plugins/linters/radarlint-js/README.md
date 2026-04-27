@@ -25,12 +25,6 @@ name = "radarlint-js"
 version = "X.Y.Z"
 ```
 
-## Auto-enabling
-
-<!-- REVIEW: confirm auto-enabling condition -->
-
-## Languages and file types
-
 radarlint-js analyzes: JavaScript (`.js`, `.jsx`, `.mjs`, `.cjs`) and TypeScript (`.ts`, `.tsx`).
 
 ## Configuration files

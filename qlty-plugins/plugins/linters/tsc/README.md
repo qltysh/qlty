@@ -25,7 +25,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+tsc will be automatically enabled by `qlty init` if a `tsconfig.json` configuration file is present.
 
 tsc will be automatically enabled by `qlty init` if a `tsconfig.json` configuration file is present.
 

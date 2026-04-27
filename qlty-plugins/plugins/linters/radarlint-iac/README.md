@@ -27,7 +27,7 @@ version = "X.Y.Z"
 
 ## Auto-enabling
 
-<!-- REVIEW: confirm auto-enabling condition -->
+radarlint-iac will be automatically enabled by `qlty init` if a `radarlint.properties` configuration file is present.
 
 ## Languages and file types
 
