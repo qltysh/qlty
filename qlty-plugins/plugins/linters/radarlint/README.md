@@ -2,8 +2,6 @@
 
 radarlint is a static analysis tool for Java code. Under Qlty, it is distributed as a self-contained JAR and runs automatically as part of code quality checks.
 
-<!-- REVIEW: add upstream docs URL if radarlint has a public home page -->
-
 ## Enabling radarlint
 
 Enabling with the `qlty` CLI:

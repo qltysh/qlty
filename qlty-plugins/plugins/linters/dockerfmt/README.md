@@ -46,6 +46,4 @@ Verify that the file is not matched by an exclusion pattern and run `dockerfmt` 
 
 ## License
 
-<!-- REVIEW: confirm license -->
-
 dockerfmt is licensed under the [MIT License](https://github.com/reteps/dockerfmt/blob/main/LICENSE).

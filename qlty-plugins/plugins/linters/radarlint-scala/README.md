@@ -2,7 +2,6 @@
 
 radarlint-scala is a static analysis tool for Scala code, running as a language-specific mode of the radarlint engine.
 
-<!-- REVIEW: add upstream docs URL if radarlint has a public home page -->
 
 ## Enabling radarlint-scala
 
