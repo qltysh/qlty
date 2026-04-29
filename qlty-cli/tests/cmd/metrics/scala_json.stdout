@@ -1,0 +1,26 @@
+{
+  "metadata": {},
+  "messages": [],
+  "invocations": [],
+  "issues": [],
+  "stats": [
+    {
+      "name": "example.scala",
+      "fullyQualifiedName": "example.scala",
+      "path": "example.scala",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_SCALA",
+      "files": 1,
+      "classes": 1,
+      "functions": 1,
+      "fields": 0,
+      "lines": 9,
+      "codeLines": 8,
+      "commentLines": 1,
+      "blankLines": 0,
+      "complexity": 2,
+      "cyclomatic": 2,
+      "lcom4": 0
+    }
+  ]
+}
