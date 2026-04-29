@@ -172,6 +172,27 @@ mod test {
         }
     }
 
+    mod scala {
+        use super::*;
+
+        #[test]
+        fn many_explicit_returns_triggers_smell() {
+            let source_file = Arc::new(File::from_string(
+                "scala",
+                r#"
+class Demo {
+  def foo(): Int = {
+    return 1
+    return 2
+    return 3
+  }
+}
+"#,
+            ));
+            assert_eq!(1, check(2, source_file.clone(), &source_file.parse()).len());
+        }
+    }
+
     mod ruby {
         use super::*;
 

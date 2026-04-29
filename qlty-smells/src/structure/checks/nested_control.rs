@@ -518,6 +518,32 @@ mod test {
         }
     }
 
+    mod scala {
+        use super::*;
+
+        #[test]
+        fn for_inside_if_triggers_smell() {
+            let source_file = Arc::new(File::from_string(
+                "scala",
+                r#"
+class Demo {
+  def go(xs: Seq[Int]): Unit = {
+    if (xs.nonEmpty) {
+      for (x <- xs) {
+        if (x > 0) {
+          println(x)
+        }
+      }
+    }
+  }
+}
+"#,
+            ));
+            let issues = check(3, source_file.clone(), &source_file.parse());
+            assert_eq!(1, issues.len());
+        }
+    }
+
     mod java {
         use super::*;
 

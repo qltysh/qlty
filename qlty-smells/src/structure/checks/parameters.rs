@@ -196,6 +196,23 @@ mod test {
         "#);
     }
 
+    mod scala {
+        use super::*;
+
+        #[test]
+        fn many_parameters_triggers_smell() {
+            let source_file = Arc::new(File::from_string(
+                "scala",
+                r#"
+class Demo {
+  def manyParams(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int): Int = a
+}
+"#,
+            ));
+            assert_eq!(1, check(5, source_file.clone(), &source_file.parse()).len());
+        }
+    }
+
     mod ruby {
         use super::*;
 

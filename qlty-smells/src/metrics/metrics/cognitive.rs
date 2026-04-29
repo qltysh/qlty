@@ -238,6 +238,35 @@ impl<'a> CognitiveComplexity<'a> {
 mod test {
     use super::*;
 
+    mod scala {
+        use super::*;
+
+        #[test]
+        fn nested_for_with_guard() {
+            let source_file = File::from_string(
+                "scala",
+                r#"
+class Demo {
+  def collect(xs: Seq[Int], ys: Seq[Int]): Seq[Int] = {
+    for {
+      x <- xs
+      y <- ys if y > 0
+    } yield x + y
+  }
+}
+"#,
+            );
+            assert_eq!(
+                1,
+                count(
+                    &source_file,
+                    &source_file.parse().root_node(),
+                    &NodeFilter::empty()
+                )
+            );
+        }
+    }
+
     mod java {
         use super::*;
 

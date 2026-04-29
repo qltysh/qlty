@@ -89,6 +89,23 @@ impl Visitor for Processor {
 mod test {
     use super::*;
 
+    mod scala {
+        use super::*;
+
+        #[test]
+        fn long_boolean_chain_triggers_smell() {
+            let source_file = Arc::new(File::from_string(
+                "scala",
+                r#"
+class Demo {
+  def check(a: Boolean, b: Boolean, c: Boolean, d: Boolean): Boolean = a && b && c && d
+}
+"#,
+            ));
+            assert_eq!(1, check(1, source_file.clone(), &source_file.parse()).len());
+        }
+    }
+
     mod python {
         use super::*;
 

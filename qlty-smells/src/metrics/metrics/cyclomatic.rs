@@ -99,6 +99,34 @@ impl Visitor for CyclomaticComplexity<'_> {
 mod test {
     use super::*;
 
+    mod scala {
+        use super::*;
+
+        #[test]
+        fn match_with_guard() {
+            let source_file = File::from_string(
+                "scala",
+                r#"
+class Demo {
+  def classify(n: Int): String = n match {
+    case x if x < 0 => "neg"
+    case 0 => "zero"
+    case _ => "pos"
+  }
+}
+"#,
+            );
+            assert_eq!(
+                5,
+                count(
+                    &source_file,
+                    &source_file.parse().root_node(),
+                    &NodeFilter::empty()
+                )
+            );
+        }
+    }
+
     mod java {
         use super::*;
 
