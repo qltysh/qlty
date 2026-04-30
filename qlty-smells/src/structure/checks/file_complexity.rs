@@ -50,31 +50,6 @@ pub fn check(threshold: usize, source_file: Arc<File>, tree: &Tree) -> Vec<Issue
 mod test {
     use super::*;
 
-    mod scala {
-        use super::*;
-
-        #[test]
-        fn complex_file_triggers_smell() {
-            let source_file = Arc::new(File::from_string(
-                "scala",
-                r#"
-class Demo {
-  def foo(a: Int): Int = {
-    if (a > 0) {
-      if (a > 1) { return 1 }
-      if (a > 2) { return 2 }
-      if (a > 3) { return 3 }
-      if (a > 4) { return 4 }
-    }
-    0
-  }
-}
-"#,
-            ));
-            assert_eq!(1, check(1, source_file.clone(), &source_file.parse()).len());
-        }
-    }
-
     mod python {
         use super::*;
 

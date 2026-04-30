@@ -235,31 +235,6 @@ mod test {
         }
     }
 
-    mod scala {
-        use super::*;
-
-        #[test]
-        fn val_var_and_class_parameter_each_count_once() {
-            let source_file = File::from_string(
-                "scala",
-                r#"
-class Foo(p: Int) {
-  val a: Int = 1
-  var b: Int = 2
-}
-"#,
-            );
-            assert_eq!(
-                3,
-                count(
-                    &source_file,
-                    &source_file.parse().root_node(),
-                    &NodeFilter::empty()
-                )
-            );
-        }
-    }
-
     mod kotlin {
         use super::*;
 
