@@ -128,6 +128,10 @@ pub trait Tool: Debug + Sync + Send {
     fn version(&self) -> Option<String>;
 
     fn directory(&self) -> String {
+        self.cache_directory()
+    }
+
+    fn cache_directory(&self) -> String {
         path_to_string(PathBuf::from(self.parent_directory()).join(self.directory_name()))
     }
 
@@ -140,7 +144,7 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn debug_files_directory(&self) -> String {
-        format!("{}-installation-debug-files", self.directory())
+        format!("{}-installation-debug-files", self.cache_directory())
     }
 
     fn runtime(&self) -> Option<Box<dyn Tool>> {
@@ -166,6 +170,12 @@ pub trait Tool: Debug + Sync + Send {
         }
 
         if let Some(plugin) = self.plugin() {
+            sha.update(format!("{:?}", plugin.install_dir));
+
+            if let Some(project_install_directory) = self.project_install_directory() {
+                sha.update(project_install_directory);
+            }
+
             if let Some(package) = plugin.package {
                 sha.update(&package);
             }
@@ -329,11 +339,11 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn donefile_path(&self) -> PathBuf {
-        PathBuf::from(format!("{}.done", self.directory()))
+        PathBuf::from(format!("{}.done", self.cache_directory()))
     }
 
     fn lockfile_path(&self) -> PathBuf {
-        PathBuf::from(format!("{}.lock", self.directory()))
+        PathBuf::from(format!("{}.lock", self.cache_directory()))
     }
 
     fn exists(&self) -> bool {
@@ -661,10 +671,7 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn install_log_path(&self) -> String {
-        join_path_string!(
-            self.parent_directory(),
-            format!("{}-install.log", self.directory_name())
-        )
+        format!("{}-install.log", self.cache_directory())
     }
 
     fn clone_box(&self) -> Box<dyn Tool>;
@@ -716,6 +723,15 @@ pub trait Tool: Debug + Sync + Send {
 
     fn plugin(&self) -> Option<PluginDef> {
         None
+    }
+
+    fn project_install_directory(&self) -> Option<String> {
+        let plugin = self.plugin()?;
+        if !plugin.install_dir.is_project() {
+            return None;
+        }
+        let package_file = plugin.package_file.as_deref()?;
+        PathBuf::from(package_file).parent().map(path_to_string)
     }
 
     fn env_paths(&self) -> Result<Vec<String>> {
@@ -820,6 +836,7 @@ mod test {
     use crate::Progress;
     use command_builder::test::ENV_LOCK;
     use qlty_analysis::utils::fs::path_to_string;
+    use qlty_config::config::InstallDir;
     use std::env::var;
     use tempfile::tempdir;
     use tracing_test::traced_test;
@@ -1103,7 +1120,7 @@ mod test {
             ..Default::default()
         };
 
-        let hash = "[runtime_package]V[package]V[extra_package1]V[extra_package2]V[package_file]";
+        let hash = "ToolCache[runtime_package]VToolCache[package]V[extra_package1]V[extra_package2]V[package_file]";
         let mut hasher = sha2::Sha256::new();
         hasher.update(hash);
         assert_eq!(tool.fingerprint(), format!("{:x}", hasher.finalize())[..12]);
@@ -1140,6 +1157,52 @@ mod test {
             ))
         );
         assert_eq!(env.get("TEST"), Some(&"test".to_string()));
+    }
+
+    #[test]
+    fn test_tool_project_install_directory_uses_package_file_parent() {
+        let tempdir = tempdir().unwrap();
+        let package_file = tempdir.path().join("frontend").join("package.json");
+        std::fs::create_dir_all(package_file.parent().unwrap()).unwrap();
+        std::fs::write(&package_file, "{}").unwrap();
+
+        let tool = TestTool {
+            plugin: Some(PluginDef {
+                install_dir: InstallDir::Project,
+                package_file: Some(path_to_string(&package_file)),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        assert_eq!(
+            tool.project_install_directory(),
+            Some(path_to_string(package_file.parent().unwrap()))
+        );
+    }
+
+    #[test]
+    fn test_tool_fingerprint_changes_for_project_install_dir() {
+        let base_plugin = PluginDef {
+            package: Some("test".to_string()),
+            version: Some("1.0.0".to_string()),
+            prefix: Some("frontend".to_string()),
+            ..Default::default()
+        };
+
+        let cache_install = TestTool {
+            plugin: Some(base_plugin.clone()),
+            ..Default::default()
+        };
+        let project_install = TestTool {
+            plugin: Some(PluginDef {
+                install_dir: InstallDir::Project,
+                ..base_plugin
+            }),
+            ..Default::default()
+        };
+
+        assert_ne!(cache_install.fingerprint(), project_install.fingerprint());
     }
 
     #[test]

@@ -1,4 +1,6 @@
 pub mod composer;
+pub mod project_installer;
+
 use super::command_builder::{default_command_builder, CommandBuilder};
 use super::installations::initialize_installation;
 use super::runnable_archive::RunnableArchive;
@@ -10,8 +12,9 @@ use anyhow::{bail, Context, Result};
 use composer::Composer;
 use duct::cmd;
 use itertools::Itertools;
+use project_installer::PhpProjectInstaller;
 use qlty_analysis::utils::fs::path_to_native_string;
-use qlty_config::config::PluginDef;
+use qlty_config::config::{InstallDir, PluginDef};
 use sha2::Digest;
 use std::collections::HashMap;
 use std::env::split_paths;
@@ -96,12 +99,17 @@ impl Php {
 
 impl RuntimeTool for Php {
     fn package_tool(&self, name: &str, plugin: &PluginDef) -> Box<dyn Tool> {
-        Box::new(PhpPackage {
+        let package = PhpPackage {
             name: name.to_owned(),
             plugin: plugin.clone(),
             runtime: self.clone(),
             cmd: default_command_builder(),
-        })
+        };
+
+        match plugin.install_dir {
+            InstallDir::Project => Box::new(PhpProjectInstaller::new(package)),
+            InstallDir::ToolCache => Box::new(package),
+        }
     }
 }
 
@@ -111,6 +119,12 @@ pub struct PhpPackage {
     pub plugin: PluginDef,
     pub runtime: Php,
     cmd: Box<dyn CommandBuilder>,
+}
+
+impl PhpPackage {
+    pub(super) fn cmd(&self) -> &dyn CommandBuilder {
+        self.cmd.as_ref()
+    }
 }
 
 impl Tool for PhpPackage {
@@ -124,12 +138,6 @@ impl Tool for PhpPackage {
 
     fn runtime(&self) -> Option<Box<dyn Tool>> {
         Some(Box::new(self.runtime.clone()))
-    }
-
-    fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
-        sha.update(self.name().as_bytes());
-
-        Ok(())
     }
 
     fn version(&self) -> Option<String> {
@@ -149,26 +157,18 @@ impl Tool for PhpPackage {
     }
 
     fn package_install(&self, task: &ProgressTask, name: &str, version: &str) -> Result<()> {
-        task.set_dim_message(&format!("Installing {}", name));
+        task.set_dim_message(&format!("Installing {name}"));
         let composer = Composer {
             cmd: default_command_builder(),
         };
-
-        let composer_phar = PathBuf::from(composer.directory()).join("composer.phar");
-        let composer_path = composer_phar.to_str().with_context(|| {
-            format!(
-                "Failed to convert composer path to string: {:?}",
-                composer_phar
-            )
-        })?;
-
+        let phar = composer.phar_path()?;
         self.run_command(self.cmd.build(
             "php",
             vec![
-                &path_to_native_string(composer_path),
+                &phar,
                 "require",
                 "--no-interaction",
-                format!("{}:{}", name, version).as_str(),
+                &format!("{name}:{version}"),
             ],
         ))
     }
@@ -182,7 +182,6 @@ impl Tool for PhpPackage {
             composer.setup(task)?;
             composer.install_package_file(self)?;
         }
-
         Ok(())
     }
 
@@ -229,7 +228,7 @@ pub mod test {
         ui::ProgressTask,
         Progress, Tool,
     };
-    use qlty_config::config::PluginDef;
+    use qlty_config::config::{InstallDir, PluginDef};
     use std::sync::{Arc, Mutex};
     use tempfile::{tempdir, TempDir};
 
@@ -268,16 +267,6 @@ pub mod test {
     }
 
     #[test]
-    fn php_package_install_no_package_file() {
-        with_php_package(|pkg, _, list| {
-            pkg.package_file_install(&new_task())?;
-            assert!(list.lock().unwrap().is_empty());
-
-            Ok(())
-        });
-    }
-
-    #[test]
     fn php_package_file_install() {
         with_php_package(|pkg, temp_path, list| {
             let pkg_file = temp_path.path().join("composer.json");
@@ -313,6 +302,96 @@ pub mod test {
                     ]
                 ]
             );
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn php_project_installer_runs_in_workspace() {
+        with_php_package(|pkg, temp_path, list| {
+            let pkg_root = temp_path.path().join("backend");
+            let pkg_file = pkg_root.join("composer.json");
+            std::fs::create_dir_all(&pkg_root)?;
+            std::fs::write(&pkg_file, r#"{}"#)?;
+
+            pkg.plugin.install_dir = InstallDir::Project;
+            pkg.plugin.package = Some("vendor/test".to_string());
+            pkg.plugin.package_file = Some(pkg_file.to_str().unwrap().to_string());
+
+            let composer = Composer {
+                cmd: stub_cmd(list.clone()),
+            };
+            let installer = PhpProjectInstaller::new(pkg.clone());
+
+            assert_eq!(
+                installer.directory(),
+                pkg_root.to_str().unwrap().replace('\\', "/")
+            );
+            assert_eq!(
+                installer.extra_env_paths()?,
+                vec![qlty_analysis::join_path_string!(
+                    pkg_root.to_str().unwrap(),
+                    "vendor",
+                    "bin"
+                )]
+            );
+            assert!(installer.extra_env_vars()?.is_empty());
+
+            let composer_phar = path_to_native_string(format!(
+                "{}/.qlty/cache/tools/composer/{}/composer.phar",
+                temp_path.path().display(),
+                composer.directory_name()
+            ));
+
+            installer.install(&new_task())?;
+            assert_eq!(
+                list.lock().unwrap().clone(),
+                [
+                    vec![
+                        "php".to_string(),
+                        "-r".to_string(),
+                        "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+                            .to_string(),
+                    ],
+                    vec!["php".to_string(), "composer-setup.php".to_string()],
+                    vec![
+                        "php".to_string(),
+                        composer_phar,
+                        "install".to_string(),
+                        "--no-interaction".to_string(),
+                        "--ignore-platform-reqs".to_string(),
+                    ]
+                ]
+            );
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn php_project_installer_fingerprint_changes_with_package_file() {
+        with_php_package(|pkg, temp_path, _| {
+            let pkg_root = temp_path.path().join("backend");
+            let pkg_file = pkg_root.join("composer.json");
+            std::fs::create_dir_all(&pkg_root)?;
+            std::fs::write(&pkg_file, r#"{}"#)?;
+
+            pkg.plugin.install_dir = InstallDir::Project;
+            pkg.plugin.package_file = Some(pkg_file.to_str().unwrap().to_string());
+            reroute_tools_root(&temp_path, pkg);
+
+            let installer = PhpProjectInstaller::new(pkg.clone());
+            let fingerprint_before = installer.fingerprint();
+            let donefile_before = installer.donefile_path();
+
+            std::fs::write(&pkg_file, r#"{"require":{"phpstan/phpstan":"^2.0"}}"#)?;
+
+            let fingerprint_after = installer.fingerprint();
+            let donefile_after = installer.donefile_path();
+
+            assert_ne!(fingerprint_before, fingerprint_after);
+            assert_ne!(donefile_before, donefile_after);
 
             Ok(())
         });

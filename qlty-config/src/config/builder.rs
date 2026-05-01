@@ -461,6 +461,7 @@ fn merge_enabled_plugins(existing: &EnabledPlugin, new: &EnabledPlugin) -> Enabl
         prefix: existing.prefix.clone(),
         mode: Some(merged_mode),
         version,
+        install_dir: new.install_dir.or(existing.install_dir),
         skip_upstream: new.skip_upstream.or(existing.skip_upstream),
         package_file: new.package_file.clone().or(existing.package_file.clone()),
         triggers: prioritize_new_array(&existing.triggers, &new.triggers),
@@ -512,7 +513,7 @@ fn sort_enabled_plugins(plugins: &mut [EnabledPlugin]) {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::config::{CheckTrigger, ExtraPackage, IssueMode, PluginFetch};
+    use crate::config::{CheckTrigger, ExtraPackage, InstallDir, IssueMode, PluginFetch};
     use crate::warning_tracker::{clear_warnings, collected_warnings};
     use std::path::PathBuf;
     use std::sync::{LazyLock, Mutex, MutexGuard};
@@ -780,6 +781,7 @@ mod test {
             prefix: Some("prefix1".to_string()),
             mode: Some(IssueMode::Block),
             version: "1.0.0".to_string(),
+            install_dir: Some(InstallDir::ToolCache),
             triggers: vec![CheckTrigger::Manual],
             skip_upstream: Some(true),
             package_file: Some("package1".to_string()),
@@ -802,6 +804,7 @@ mod test {
             prefix: Some("prefix2".to_string()),
             mode: Some(IssueMode::Disabled),
             version: "2.0.0".to_string(),
+            install_dir: Some(InstallDir::Project),
             triggers: vec![CheckTrigger::PreCommit],
             skip_upstream: Some(false),
             package_file: Some("package2".to_string()),
@@ -825,6 +828,7 @@ mod test {
         assert_eq!(merged.prefix, Some("prefix1".to_string()));
         assert_eq!(merged.mode, Some(IssueMode::Disabled));
         assert_eq!(merged.version, "2.0.0");
+        assert_eq!(merged.install_dir, Some(InstallDir::Project));
         assert_eq!(merged.triggers, vec![CheckTrigger::PreCommit]);
         assert_eq!(merged.skip_upstream, Some(false));
         assert_eq!(merged.package_file, Some("package2".to_string()));
@@ -1052,6 +1056,7 @@ mod test {
                 prefix: Some("shared".to_string()),
                 mode: Some(IssueMode::Block),
                 version: "1.0.0".to_string(),
+                install_dir: Some(InstallDir::ToolCache),
                 triggers: vec![CheckTrigger::Manual],
                 skip_upstream: Some(true),
                 package_file: Some("package1".to_string()),
@@ -1073,6 +1078,7 @@ mod test {
                 prefix: Some("shared".to_string()),
                 mode: Some(IssueMode::Disabled),
                 version: "2.0.0".to_string(),
+                install_dir: Some(InstallDir::Project),
                 triggers: vec![CheckTrigger::PreCommit],
                 skip_upstream: Some(false),
                 package_file: Some("package2".to_string()),

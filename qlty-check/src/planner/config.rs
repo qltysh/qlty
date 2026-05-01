@@ -2,7 +2,7 @@ use super::{ActivePlugin, Planner};
 use anyhow::bail;
 use anyhow::{anyhow, Result};
 use qlty_analysis::workspace_entries::TargetMode;
-use qlty_config::config::{DriverDef, EnabledPlugin, IssueMode, Platform, PluginDef};
+use qlty_config::config::{DriverDef, EnabledPlugin, IssueMode, Platform, PluginDef, Runtime};
 use semver::{Version, VersionReq};
 use std::path::{Path, PathBuf};
 use tracing::{debug, trace, warn};
@@ -122,6 +122,14 @@ fn configure_plugin(
         let mut plugin_def = plugin_def.clone();
 
         plugin_def.version = Some(enabled_plugin.version.clone());
+        plugin_def.install_dir = enabled_plugin.install_dir.unwrap_or_default();
+
+        if plugin_def.install_dir.is_project() {
+            match plugin_def.runtime {
+                Some(Runtime::Node) | Some(Runtime::Php) => {}
+                _ => bail!("install_dir = project is only supported for node and php plugins"),
+            }
+        }
 
         if !enabled_plugin.drivers.contains(&ALL.to_string()) {
             plugin_def
@@ -258,7 +266,7 @@ mod test {
         CheckFilter, Settings,
     };
     use qlty_config::{
-        config::{DriverDef, PluginFetch, PluginsConfig},
+        config::{DriverDef, InstallDir, PluginFetch, PluginsConfig},
         QltyConfig, Workspace,
     };
     use qlty_types::analysis::v1::ExecutionVerb;
@@ -267,7 +275,10 @@ mod test {
 
     fn build_planner(config: QltyConfig) -> Planner {
         let workspace = Workspace::default();
-        let settings = Settings::default();
+        let settings = Settings {
+            cache: false,
+            ..Default::default()
+        };
         let cache = Planner::build_cache(&workspace, &settings).unwrap();
 
         Planner {
@@ -760,5 +771,38 @@ mod test {
         let plugin = plugins.iter().find(|p| p.name == "test_plugin").unwrap();
         assert_eq!(plugin.plugin.drivers.len(), 1);
         assert_eq!(plugin.plugin.drivers["format"].script, "fmt");
+    }
+
+    #[test]
+    fn test_project_install_rejects_unsupported_runtime() {
+        let mut plugin_defs = HashMap::new();
+        plugin_defs.insert(
+            "test_plugin".to_string(),
+            PluginDef {
+                runtime: Some(Runtime::Ruby),
+                drivers: vec![("lint".to_string(), DriverDef::default())]
+                    .into_iter()
+                    .collect(),
+                ..Default::default()
+            },
+        );
+
+        let planner = build_planner(QltyConfig {
+            plugin: vec![EnabledPlugin {
+                name: "test_plugin".to_string(),
+                install_dir: Some(InstallDir::Project),
+                ..Default::default()
+            }],
+            plugins: PluginsConfig {
+                downloads: HashMap::new(),
+                releases: HashMap::new(),
+                definitions: plugin_defs,
+            },
+            ..Default::default()
+        });
+
+        let err = enabled_plugins(&planner).unwrap_err().to_string();
+        assert!(err.contains("install_dir = project"));
+        assert!(err.contains("node and php"));
     }
 }

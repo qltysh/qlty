@@ -166,6 +166,11 @@ impl InvocationCacheKey {
             digest.add("plugin.prefix", prefix);
         }
 
+        digest.add(
+            "plugin.install_dir",
+            &format!("{:?}", self.plugin.install_dir),
+        );
+
         let driver = self.plugin.drivers.get(&self.driver_name).unwrap();
 
         digest.add("plugin.driver.script", &driver.script);
@@ -245,6 +250,7 @@ impl InvocationCacheKey {
 
         digest.add("qlty_version", &self.qlty_version);
         digest.add("tool", &self.tool.directory());
+        digest.add("tool_fingerprint", &self.tool.fingerprint());
         digest.add("driver_name", &self.driver_name);
 
         for config in self.configs.clone().iter().sorted() {

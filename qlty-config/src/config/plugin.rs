@@ -404,6 +404,9 @@ pub struct PluginDef {
     pub prefix: Option<String>,
 
     #[serde(default)]
+    pub install_dir: InstallDir,
+
+    #[serde(default)]
     pub supported_platforms: Vec<Platform>,
 
     #[serde(default)]
@@ -699,6 +702,9 @@ pub struct EnabledPlugin {
 
     #[serde(default)]
     pub prefix: Option<String>,
+
+    #[serde(default)]
+    pub install_dir: Option<InstallDir>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, JsonSchema)]
@@ -721,6 +727,22 @@ impl EnabledPlugin {
                 "Plugin '{}' has 'package_filters' configured but no 'package_file'. The 'package_filters' option requires 'package_file' to be specified.",
                 self.name
             ));
+        }
+
+        if self.install_dir.unwrap_or_default().is_project() {
+            if self.package_file.is_none() {
+                return Err(anyhow::anyhow!(
+                    "Plugin '{}' has 'install_dir = project' but no 'package_file'. Project installs require a package_file.",
+                    self.name
+                ));
+            }
+
+            if !self.package_filters.is_empty() {
+                return Err(anyhow::anyhow!(
+                    "Plugin '{}' has both 'install_dir = project' and 'package_filters' configured. Project installs do not support package_filters.",
+                    self.name
+                ));
+            }
         }
 
         Ok(())
@@ -770,6 +792,20 @@ impl PluginFetch {
         }
 
         Ok(())
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum InstallDir {
+    #[default]
+    ToolCache,
+    Project,
+}
+
+impl InstallDir {
+    pub fn is_project(&self) -> bool {
+        matches!(self, InstallDir::Project)
     }
 }
 
@@ -1028,5 +1064,24 @@ mod tests {
         assert!(error_message.contains("package_filters"));
         assert!(error_message.contains("package_file"));
         assert!(error_message.contains("requires"));
+    }
+
+    #[test]
+    fn test_enabled_plugin_validate_failure_with_project_install_and_package_filters() {
+        let plugin = EnabledPlugin {
+            name: "test-plugin".to_string(),
+            install_dir: Some(InstallDir::Project),
+            package_file: Some("package.json".to_string()),
+            package_filters: vec!["some-filter".to_string()],
+            ..Default::default()
+        };
+
+        let result = plugin.validate();
+        assert!(result.is_err());
+
+        let error_message = result.unwrap_err().to_string();
+        assert!(error_message.contains("test-plugin"));
+        assert!(error_message.contains("install_dir"));
+        assert!(error_message.contains("package_filters"));
     }
 }

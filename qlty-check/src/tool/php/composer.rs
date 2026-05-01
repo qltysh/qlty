@@ -71,9 +71,7 @@ impl Tool for Composer {
 }
 
 impl Composer {
-    pub fn install_package_file(&self, php_package: &PhpPackage) -> Result<()> {
-        info!("Installing composer package file");
-        Self::update_composer_json(php_package)?;
+    pub fn phar_path(&self) -> Result<String> {
         let composer_phar = PathBuf::from(self.directory()).join("composer.phar");
         let composer_path = composer_phar.to_str().with_context(|| {
             format!(
@@ -81,13 +79,20 @@ impl Composer {
                 composer_phar
             )
         })?;
+        Ok(path_to_native_string(composer_path))
+    }
+
+    pub fn install_package_file(&self, php_package: &PhpPackage) -> Result<()> {
+        info!("Installing composer package file");
+        Self::update_composer_json(php_package)?;
+        let phar = self.phar_path()?;
 
         let cmd = self
             .cmd
             .build(
                 "php",
                 vec![
-                    &path_to_native_string(composer_path),
+                    &phar,
                     "update",
                     "--no-interaction",
                     "--ignore-platform-reqs",
@@ -358,18 +363,6 @@ pub mod test {
     #[test]
     fn test_update_existing_composer_json() {
         with_php_package(|pkg, tempdir, _| {
-            let existing_composer_file = PathBuf::from(pkg.directory()).join("composer.json");
-            std::fs::write(
-                &existing_composer_file,
-                r#"
-                {
-                    "require": {
-                        "tool": "1.0.0"
-                    }
-                }"#,
-            )
-            .unwrap();
-
             let package_file = tempdir.path().join("user-composer.json");
             std::fs::write(
                 &package_file,
@@ -393,6 +386,17 @@ pub mod test {
 
             pkg.plugin.package_file = Some(path_to_string(package_file));
             reroute_tools_root(tempdir, pkg);
+            let existing_composer_file = PathBuf::from(pkg.directory()).join("composer.json");
+            std::fs::write(
+                &existing_composer_file,
+                r#"
+                {
+                    "require": {
+                        "tool": "1.0.0"
+                    }
+                }"#,
+            )
+            .unwrap();
 
             Composer::update_composer_json(pkg).unwrap();
 

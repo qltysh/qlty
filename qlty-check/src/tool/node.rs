@@ -1,4 +1,6 @@
 pub mod package_json;
+pub mod project_installer;
+
 use super::command_builder::default_command_builder;
 use super::command_builder::CommandBuilder;
 use super::Tool;
@@ -8,7 +10,9 @@ use crate::tool::RuntimeTool;
 use crate::ui::ProgressBar;
 use crate::ui::ProgressTask;
 use anyhow::Result;
+use project_installer::NodeProjectInstaller;
 use qlty_analysis::join_path_string;
+use qlty_config::config::InstallDir;
 use qlty_config::config::OperatingSystem;
 use qlty_config::config::PluginDef;
 use qlty_config::config::{Cpu, DownloadDef, System};
@@ -115,12 +119,17 @@ impl NodeJS {
 
 impl RuntimeTool for NodeJS {
     fn package_tool(&self, name: &str, plugin: &PluginDef) -> Box<dyn Tool> {
-        Box::new(NodePackage {
+        let package = NodePackage {
             name: name.to_owned(),
             plugin: plugin.clone(),
             runtime: self.clone(),
             cmd: default_command_builder(),
-        })
+        };
+
+        match plugin.install_dir {
+            InstallDir::Project => Box::new(NodeProjectInstaller::new(package)),
+            InstallDir::ToolCache => Box::new(package),
+        }
     }
 }
 
@@ -130,6 +139,12 @@ pub struct NodePackage {
     pub plugin: PluginDef,
     pub runtime: NodeJS,
     cmd: Box<dyn CommandBuilder>,
+}
+
+impl NodePackage {
+    pub(super) fn cmd(&self) -> &dyn CommandBuilder {
+        self.cmd.as_ref()
+    }
 }
 
 impl Tool for NodePackage {
@@ -169,11 +184,7 @@ impl Tool for NodePackage {
 
         self.run_command(self.cmd.build(
             NPM_COMMAND,
-            vec![
-                "install",
-                "--force",
-                format!("{}@{}", name, version).as_str(),
-            ],
+            vec!["install", "--force", &format!("{name}@{version}")],
         ))
     }
 
@@ -238,7 +249,7 @@ pub mod test {
         Progress, Tool,
     };
     use assert_json_diff::assert_json_eq;
-    use qlty_config::config::{ExtraPackage, PluginDef};
+    use qlty_config::config::{ExtraPackage, InstallDir, PluginDef};
     use serde_json::Value;
     use std::{
         path::Path,
@@ -419,6 +430,64 @@ pub mod test {
                 json_contents,
                 json!({"dependencies":{"tool_dep":"1.0.0","test":"1.0.0"}})
             );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn node_project_installer_runs_in_workspace() {
+        with_node_package(|pkg, temp_path, list| {
+            let pkg_root = temp_path.path().join("frontend");
+            let pkg_file = pkg_root.join("package.json");
+            std::fs::create_dir_all(&pkg_root)?;
+            std::fs::write(&pkg_file, r#"{"name":"frontend"}"#)?;
+
+            pkg.plugin.install_dir = InstallDir::Project;
+            pkg.plugin.package_file = Some(pkg_file.to_str().unwrap().to_string());
+
+            let installer = super::NodeProjectInstaller::new(pkg.clone());
+            assert_eq!(
+                installer.directory(),
+                pkg_root.to_str().unwrap().replace('\\', "/")
+            );
+
+            installer.install(&new_task())?;
+            assert_eq!(
+                list.lock().unwrap().clone(),
+                vec![vec![NPM_COMMAND, "install", "--force", "--no-package-lock"]]
+            );
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn node_project_installer_fingerprint_changes_with_package_file() {
+        with_node_package(|pkg, temp_path, _| {
+            let pkg_root = temp_path.path().join("frontend");
+            let pkg_file = pkg_root.join("package.json");
+            std::fs::create_dir_all(&pkg_root)?;
+            std::fs::write(&pkg_file, r#"{"name":"frontend"}"#)?;
+
+            pkg.plugin.install_dir = InstallDir::Project;
+            pkg.plugin.package_file = Some(pkg_file.to_str().unwrap().to_string());
+            reroute_tools_root(&temp_path, pkg);
+
+            let installer = super::NodeProjectInstaller::new(pkg.clone());
+            let fingerprint_before = installer.fingerprint();
+            let donefile_before = installer.donefile_path();
+
+            std::fs::write(
+                &pkg_file,
+                r#"{"name":"frontend","dependencies":{"eslint":"9.0.0"}}"#,
+            )?;
+
+            let fingerprint_after = installer.fingerprint();
+            let donefile_after = installer.donefile_path();
+
+            assert_ne!(fingerprint_before, fingerprint_after);
+            assert_ne!(donefile_before, donefile_after);
+
             Ok(())
         });
     }
