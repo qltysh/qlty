@@ -1,6 +1,8 @@
 use super::{ActivePlugin, Planner};
 use anyhow::bail;
 use anyhow::{anyhow, Result};
+use qlty_analysis::join_path_string;
+use qlty_analysis::utils::fs::path_to_string;
 use qlty_analysis::workspace_entries::TargetMode;
 use qlty_config::config::{DriverDef, EnabledPlugin, IssueMode, Platform, PluginDef, Runtime};
 use semver::{Version, VersionReq};
@@ -185,6 +187,14 @@ fn configure_plugin(
             plugin_def.package_file = Some(package_file.to_str().unwrap_or_default().to_string());
         }
 
+        if plugin_def.install_dir.is_project() {
+            plugin_def.project_install_directory = resolve_project_install_directory(
+                plugin_def.package_file.as_deref(),
+                &planner.workspace.root,
+                enabled_plugin.prefix.as_deref(),
+            );
+        }
+
         // This is becoming a weird pattern, we should probably refactor this?
         plugin_def.fetch = enabled_plugin.fetch.clone();
         plugin_def.package_filters = enabled_plugin.package_filters.clone();
@@ -234,6 +244,21 @@ fn configure_plugin(
         Ok(plugin_def)
     } else {
         bail!("Unknown plugin {}", name)
+    }
+}
+
+fn resolve_project_install_directory(
+    package_file: Option<&str>,
+    workspace_root: &Path,
+    prefix: Option<&str>,
+) -> Option<String> {
+    if let Some(package_file) = package_file {
+        Path::new(package_file).parent().map(path_to_string)
+    } else {
+        Some(prefix.map_or_else(
+            || path_to_string(workspace_root),
+            |p| join_path_string!(workspace_root, p),
+        ))
     }
 }
 
@@ -801,5 +826,28 @@ mod test {
         let err = enabled_plugins(&planner).unwrap_err().to_string();
         assert!(err.contains("install_dir = project"));
         assert!(err.contains("node and php"));
+    }
+
+    #[test]
+    fn test_resolve_project_install_directory_uses_package_file_parent() {
+        let resolved = resolve_project_install_directory(
+            Some("/workspace/frontend/package.json"),
+            Path::new("/workspace"),
+            Some("ignored"),
+        );
+        assert_eq!(resolved, Some("/workspace/frontend".to_string()));
+    }
+
+    #[test]
+    fn test_resolve_project_install_directory_falls_back_to_workspace_with_prefix() {
+        let resolved =
+            resolve_project_install_directory(None, Path::new("/workspace"), Some("backend"));
+        assert_eq!(resolved, Some("/workspace/backend".to_string()));
+    }
+
+    #[test]
+    fn test_resolve_project_install_directory_no_prefix_returns_workspace() {
+        let resolved = resolve_project_install_directory(None, Path::new("/workspace"), None);
+        assert_eq!(resolved, Some("/workspace".to_string()));
     }
 }

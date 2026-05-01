@@ -7,6 +7,7 @@ use anyhow::Result;
 use qlty_analysis::join_path_string;
 use qlty_config::config::PluginDef;
 use std::collections::HashMap;
+use tracing::warn;
 
 #[derive(Debug, Clone)]
 pub struct PhpProjectInstaller {
@@ -50,7 +51,44 @@ impl Tool for PhpProjectInstaller {
     }
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
-        self.package_file_install(task)
+        let plugin = self.package.plugin.clone();
+        if plugin.package_file.is_some() {
+            self.package_file_install(task)?;
+        } else {
+            if let (Some(package), Some(version)) = (&plugin.package, &plugin.version) {
+                self.package_install(task, package, version)?;
+            }
+            for pkg in &plugin.extra_packages {
+                self.package_install(task, &pkg.name, &pkg.version)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn package_install(&self, task: &ProgressTask, name: &str, version: &str) -> Result<()> {
+        warn!(
+            "Project install for '{name}' will modify composer.json in {}; \
+             provide a package_file to avoid this.",
+            self.directory()
+        );
+        task.set_dim_message(&format!("Installing {name}"));
+        let composer = Composer {
+            cmd: self.package.cmd().clone_box(),
+        };
+        composer.setup(task)?;
+        let phar = composer.phar_path()?;
+        self.run_command(self.package.cmd().build(
+            "php",
+            vec![
+                &phar,
+                "require",
+                "--dev",
+                "--with-all-dependencies",
+                "--ignore-platform-reqs",
+                "--no-interaction",
+                &format!("{name}:{version}"),
+            ],
+        ))
     }
 
     fn package_file_install(&self, task: &ProgressTask) -> Result<()> {

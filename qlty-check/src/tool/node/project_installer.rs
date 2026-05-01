@@ -49,7 +49,32 @@ impl Tool for NodeProjectInstaller {
     }
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
-        self.package_file_install(task)
+        let plugin = self.package.plugin.clone();
+        if plugin.package_file.is_some() {
+            self.package_file_install(task)?;
+        } else {
+            if let (Some(package), Some(version)) = (&plugin.package, &plugin.version) {
+                self.package_install(task, package, version)?;
+            }
+            for pkg in &plugin.extra_packages {
+                self.package_install(task, &pkg.name, &pkg.version)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn package_install(&self, _task: &ProgressTask, name: &str, version: &str) -> Result<()> {
+        let package = format!("{name}@{version}");
+        self.run_command(self.package.cmd().build(
+            NPM_COMMAND,
+            vec![
+                "install",
+                "--no-save",
+                "--package-lock=false",
+                "--force",
+                package.as_str(),
+            ],
+        ))
     }
 
     fn package_file_install(&self, task: &ProgressTask) -> Result<()> {

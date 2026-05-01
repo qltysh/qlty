@@ -406,6 +406,9 @@ pub struct PluginDef {
     #[serde(default)]
     pub install_dir: InstallDir,
 
+    #[serde(skip)]
+    pub project_install_directory: Option<String>,
+
     #[serde(default)]
     pub supported_platforms: Vec<Platform>,
 
@@ -729,20 +732,11 @@ impl EnabledPlugin {
             ));
         }
 
-        if self.install_dir.unwrap_or_default().is_project() {
-            if self.package_file.is_none() {
-                return Err(anyhow::anyhow!(
-                    "Plugin '{}' has 'install_dir = project' but no 'package_file'. Project installs require a package_file.",
-                    self.name
-                ));
-            }
-
-            if !self.package_filters.is_empty() {
-                return Err(anyhow::anyhow!(
-                    "Plugin '{}' has both 'install_dir = project' and 'package_filters' configured. Project installs do not support package_filters.",
-                    self.name
-                ));
-            }
+        if self.install_dir.unwrap_or_default().is_project() && !self.package_filters.is_empty() {
+            return Err(anyhow::anyhow!(
+                "Plugin '{}' has both 'install_dir = project' and 'package_filters' configured. Project installs do not support package_filters.",
+                self.name
+            ));
         }
 
         Ok(())

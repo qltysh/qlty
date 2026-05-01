@@ -328,16 +328,14 @@ pub mod test {
             pkg.plugin.install_dir = InstallDir::Project;
             pkg.plugin.package = Some("vendor/test".to_string());
             pkg.plugin.package_file = Some(pkg_file.to_str().unwrap().to_string());
+            pkg.plugin.project_install_directory = Some(pkg_root.to_str().unwrap().to_string());
 
             let composer = Composer {
                 cmd: stub_cmd(list.clone()),
             };
             let installer = PhpProjectInstaller::new(pkg.clone());
 
-            assert_eq!(
-                installer.directory(),
-                pkg_root.to_str().unwrap().replace('\\', "/")
-            );
+            assert_eq!(installer.directory(), pkg_root.to_str().unwrap());
             assert_eq!(
                 installer.extra_env_paths()?,
                 vec![qlty_analysis::join_path_string!(
@@ -389,6 +387,7 @@ pub mod test {
 
             pkg.plugin.install_dir = InstallDir::Project;
             pkg.plugin.package_file = Some(pkg_file.to_str().unwrap().to_string());
+            pkg.plugin.project_install_directory = Some(pkg_root.to_str().unwrap().to_string());
             reroute_tools_root(&temp_path, pkg);
 
             let installer = PhpProjectInstaller::new(pkg.clone());
@@ -402,6 +401,56 @@ pub mod test {
 
             assert_ne!(fingerprint_before, fingerprint_after);
             assert_ne!(donefile_before, donefile_after);
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn php_project_installer_without_package_file_installs_package_only() {
+        with_php_package(|pkg, temp_path, list| {
+            let pkg_root = temp_path.path().join("backend");
+            std::fs::create_dir_all(&pkg_root)?;
+
+            pkg.plugin.install_dir = InstallDir::Project;
+            pkg.plugin.package = Some("vendor/test".to_string());
+            pkg.plugin.project_install_directory = Some(pkg_root.to_str().unwrap().to_string());
+
+            let composer = Composer {
+                cmd: stub_cmd(list.clone()),
+            };
+            let installer = PhpProjectInstaller::new(pkg.clone());
+            assert_eq!(installer.directory(), pkg_root.to_str().unwrap());
+
+            let composer_phar = path_to_native_string(format!(
+                "{}/.qlty/cache/tools/composer/{}/composer.phar",
+                temp_path.path().display(),
+                composer.directory_name()
+            ));
+
+            installer.install(&new_task())?;
+            assert_eq!(
+                list.lock().unwrap().clone(),
+                [
+                    vec![
+                        "php".to_string(),
+                        "-r".to_string(),
+                        "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+                            .to_string(),
+                    ],
+                    vec!["php".to_string(), "composer-setup.php".to_string()],
+                    vec![
+                        "php".to_string(),
+                        composer_phar,
+                        "require".to_string(),
+                        "--dev".to_string(),
+                        "--with-all-dependencies".to_string(),
+                        "--ignore-platform-reqs".to_string(),
+                        "--no-interaction".to_string(),
+                        "vendor/test:1.0.0".to_string()
+                    ]
+                ]
+            );
 
             Ok(())
         });

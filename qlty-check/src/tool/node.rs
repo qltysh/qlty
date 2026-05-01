@@ -444,12 +444,10 @@ pub mod test {
 
             pkg.plugin.install_dir = InstallDir::Project;
             pkg.plugin.package_file = Some(pkg_file.to_str().unwrap().to_string());
+            pkg.plugin.project_install_directory = Some(pkg_root.to_str().unwrap().to_string());
 
             let installer = super::NodeProjectInstaller::new(pkg.clone());
-            assert_eq!(
-                installer.directory(),
-                pkg_root.to_str().unwrap().replace('\\', "/")
-            );
+            assert_eq!(installer.directory(), pkg_root.to_str().unwrap());
 
             installer.install(&new_task())?;
             assert_eq!(
@@ -471,6 +469,7 @@ pub mod test {
 
             pkg.plugin.install_dir = InstallDir::Project;
             pkg.plugin.package_file = Some(pkg_file.to_str().unwrap().to_string());
+            pkg.plugin.project_install_directory = Some(pkg_root.to_str().unwrap().to_string());
             reroute_tools_root(&temp_path, pkg);
 
             let installer = super::NodeProjectInstaller::new(pkg.clone());
@@ -487,6 +486,35 @@ pub mod test {
 
             assert_ne!(fingerprint_before, fingerprint_after);
             assert_ne!(donefile_before, donefile_after);
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn node_project_installer_without_package_file_installs_package_only() {
+        with_node_package(|pkg, temp_path, list| {
+            let pkg_root = temp_path.path().join("frontend");
+            std::fs::create_dir_all(&pkg_root)?;
+
+            pkg.plugin.install_dir = InstallDir::Project;
+            pkg.plugin.project_install_directory = Some(pkg_root.to_str().unwrap().to_string());
+
+            let installer = super::NodeProjectInstaller::new(pkg.clone());
+            assert_eq!(installer.directory(), pkg_root.to_str().unwrap());
+
+            installer.install(&new_task())?;
+            assert_eq!(
+                list.lock().unwrap().clone(),
+                vec![vec![
+                    NPM_COMMAND,
+                    "install",
+                    "--no-save",
+                    "--package-lock=false",
+                    "--force",
+                    "test@1.0.0"
+                ]]
+            );
 
             Ok(())
         });

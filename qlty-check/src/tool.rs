@@ -729,12 +729,7 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn project_install_directory(&self) -> Option<String> {
-        let plugin = self.plugin()?;
-        if !plugin.install_dir.is_project() {
-            return None;
-        }
-        let package_file = plugin.package_file.as_deref()?;
-        PathBuf::from(package_file).parent().map(path_to_string)
+        self.plugin()?.project_install_directory
     }
 
     fn env_paths(&self) -> Result<Vec<String>> {
@@ -1163,16 +1158,11 @@ mod test {
     }
 
     #[test]
-    fn test_tool_project_install_directory_uses_package_file_parent() {
-        let tempdir = tempdir().unwrap();
-        let package_file = tempdir.path().join("frontend").join("package.json");
-        std::fs::create_dir_all(package_file.parent().unwrap()).unwrap();
-        std::fs::write(&package_file, "{}").unwrap();
-
+    fn test_tool_project_install_directory_returns_plugin_field() {
         let tool = TestTool {
             plugin: Some(PluginDef {
                 install_dir: InstallDir::Project,
-                package_file: Some(path_to_string(&package_file)),
+                project_install_directory: Some("/workspace/frontend".to_string()),
                 ..Default::default()
             }),
             ..Default::default()
@@ -1180,7 +1170,7 @@ mod test {
 
         assert_eq!(
             tool.project_install_directory(),
-            Some(path_to_string(package_file.parent().unwrap()))
+            Some("/workspace/frontend".to_string())
         );
     }
 
