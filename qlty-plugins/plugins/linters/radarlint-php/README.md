@@ -2,7 +2,6 @@
 
 radarlint-php is a static analysis tool for PHP code, running as a language-specific mode of the radarlint engine.
 
-
 ## Enabling radarlint-php
 
 Enabling with the `qlty` CLI:

@@ -2,7 +2,6 @@
 
 radarlint-ruby is a static analysis tool for Ruby code, running as a language-specific mode of the radarlint engine.
 
-
 ## Enabling radarlint-ruby
 
 Enabling with the `qlty` CLI:

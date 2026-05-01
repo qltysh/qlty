@@ -34,7 +34,7 @@ dotenv-linter only checks files named `.env`, `.env.example`, `.env.test`, and s
 Verify that your `.env` file has a name that dotenv-linter recognises, and that it is not in a directory covered by `exclude_patterns`.
 
 **dotenv-linter reports "Leading space detected" on a commented-out line.**
-dotenv-linter is strict about leading spaces. Lines that start with `# ` followed by indented comments may trigger this.
+dotenv-linter is strict about leading spaces. Lines that start with `#` followed by a space and indented comments may trigger this.
 Remove any leading spaces before comment characters in the `.env` file.
 
 ## Links

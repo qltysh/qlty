@@ -30,6 +30,7 @@ version = "X.Y.Z"
 {{PluginName}} will be automatically enabled by `qlty init` if {{auto_enable_condition}}.
 
 Examples:
+
 - "a `.rubocop.yml` configuration file is present"
 - "Python files are present"
 
@@ -40,6 +41,7 @@ Examples:
 {{PluginName}} analyzes: {{languages_or_file_types}}.
 
 Examples:
+
 - "Ruby (`.rb`)"
 - "JavaScript and TypeScript (`.js`, `.ts`, `.jsx`, `.tsx`)"
 - "Shell scripts (`.sh`, `.bash`)"
@@ -60,6 +62,7 @@ To keep your project tidy, you can move configuration files into `.qlty/configs`
 {{PluginName}} requires {{extra_dependencies}}.
 
 Examples:
+
 - "Node.js (installed separately or via a package manager)"
 - "A `Gemfile` with the relevant gems for Rubocop extensions"
 

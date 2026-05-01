@@ -2,7 +2,6 @@
 
 radarlint-go is a static analysis tool for Go code, running as a language-specific mode of the radarlint engine.
 
-
 ## Enabling radarlint-go
 
 Enabling with the `qlty` CLI:

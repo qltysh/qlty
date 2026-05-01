@@ -2,7 +2,6 @@
 
 radarlint-python is a static analysis tool for Python code, running as a language-specific mode of the radarlint engine.
 
-
 ## Enabling radarlint-python
 
 Enabling with the `qlty` CLI:

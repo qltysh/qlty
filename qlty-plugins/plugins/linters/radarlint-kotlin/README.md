@@ -2,7 +2,6 @@
 
 radarlint-kotlin is a static analysis tool for Kotlin code, running as a language-specific mode of the radarlint engine.
 
-
 ## Enabling radarlint-kotlin
 
 Enabling with the `qlty` CLI:

@@ -2,7 +2,6 @@
 
 radarlint-js is a static analysis tool for JavaScript and TypeScript code, running as a language-specific mode of the radarlint engine.
 
-
 ## Enabling radarlint-js
 
 Enabling with the `qlty` CLI:

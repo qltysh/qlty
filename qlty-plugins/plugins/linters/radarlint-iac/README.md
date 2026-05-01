@@ -2,7 +2,6 @@
 
 radarlint-iac is a static analysis tool for infrastructure-as-code files, running as a language-specific mode of the radarlint engine.
 
-
 ## Enabling radarlint-iac
 
 Enabling with the `qlty` CLI:

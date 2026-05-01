@@ -2,7 +2,6 @@
 
 radarlint-java is a static analysis tool for Java code, running as a language-specific mode of the radarlint engine.
 
-
 ## Enabling radarlint-java
 
 Enabling with the `qlty` CLI:
