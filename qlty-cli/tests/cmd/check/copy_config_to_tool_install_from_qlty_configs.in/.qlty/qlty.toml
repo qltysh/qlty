@@ -1,0 +1,9 @@
+config_version = "0"
+
+[[source]]
+name = "custom"
+directory = "custom_source"
+
+[[plugin]]
+name = "exists"
+version = "1.0.0"
