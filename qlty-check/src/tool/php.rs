@@ -267,6 +267,16 @@ pub mod test {
     }
 
     #[test]
+    fn php_package_install_no_package_file() {
+        with_php_package(|pkg, _, list| {
+            pkg.package_file_install(&new_task())?;
+            assert!(list.lock().unwrap().is_empty());
+
+            Ok(())
+        });
+    }
+
+    #[test]
     fn php_package_file_install() {
         with_php_package(|pkg, temp_path, list| {
             let pkg_file = temp_path.path().join("composer.json");

@@ -671,7 +671,10 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn install_log_path(&self) -> String {
-        format!("{}-install.log", self.cache_directory())
+        join_path_string!(
+            self.parent_directory(),
+            format!("{}-install.log", self.directory_name())
+        )
     }
 
     fn clone_box(&self) -> Box<dyn Tool>;

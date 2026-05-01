@@ -275,10 +275,7 @@ mod test {
 
     fn build_planner(config: QltyConfig) -> Planner {
         let workspace = Workspace::default();
-        let settings = Settings {
-            cache: false,
-            ..Default::default()
-        };
+        let settings = Settings::default();
         let cache = Planner::build_cache(&workspace, &settings).unwrap();
 
         Planner {
