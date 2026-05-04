@@ -313,6 +313,7 @@ pub fn language_enum_from_name(name: &str) -> analysis::v1::Language {
         "python" => analysis::v1::Language::Python,
         "ruby" => analysis::v1::Language::Ruby,
         "rust" => analysis::v1::Language::Rust,
+        "scala" => analysis::v1::Language::Scala,
         "swift" => analysis::v1::Language::Swift,
         "tsx" => analysis::v1::Language::Tsx,
         "typescript" => analysis::v1::Language::Typescript,

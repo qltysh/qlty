@@ -69,3 +69,8 @@ fn csharp_tests() {
 fn swift_tests() {
     setup_and_run_test_cases("tests/lang/swift/**/*.toml");
 }
+
+#[test]
+fn scala_tests() {
+    setup_and_run_test_cases("tests/lang/scala/**/*.toml");
+}
