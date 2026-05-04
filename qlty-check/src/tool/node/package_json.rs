@@ -3,6 +3,7 @@ use crate::Tool;
 use super::NodePackage;
 use anyhow::Result;
 use serde_json::Value;
+use std::collections::HashMap;
 use std::path::PathBuf;
 use tracing::debug;
 
@@ -109,15 +110,103 @@ impl PackageJson {
     }
 
     fn update_file_dependencies(dependencies: &mut Value, package_file: &Option<String>) {
-        for (_, value) in dependencies.as_object_mut().unwrap() {
-            let version_string = value.as_str().unwrap();
+        let workspace_packages = package_file
+            .as_ref()
+            .and_then(|f| Self::find_workspace_packages(f).ok())
+            .unwrap_or_default();
+
+        for (dep_name, value) in dependencies.as_object_mut().unwrap() {
+            let version_string = value.as_str().unwrap_or_default().to_string();
+
             if version_string.starts_with("file:") {
                 let path = PathBuf::from(package_file.clone().unwrap_or_default());
                 let parent_path = path.parent().unwrap().to_str().unwrap();
                 *value =
                     Value::from(version_string.replace("file:", &format!("file:{}/", parent_path)));
+            } else if version_string.starts_with("workspace:") {
+                if let Some(pkg_path) = workspace_packages.get(dep_name) {
+                    *value = Value::from(format!("file:{}", pkg_path));
+                }
             }
         }
+    }
+
+    // Walk up from package_file to find pnpm-workspace.yaml, then resolve
+    // workspace package names to their absolute paths on disk.
+    fn find_workspace_packages(package_file: &str) -> Result<HashMap<String, String>> {
+        let mut packages = HashMap::new();
+
+        let mut current = PathBuf::from(package_file);
+        current.pop();
+
+        let workspace_root = loop {
+            let candidate = current.join("pnpm-workspace.yaml");
+            if candidate.exists() {
+                break Some((current.clone(), candidate));
+            }
+            if !current.pop() {
+                break None;
+            }
+        };
+
+        let (root, workspace_file) = match workspace_root {
+            Some(v) => v,
+            None => return Ok(packages),
+        };
+
+        let contents = std::fs::read_to_string(&workspace_file)?;
+        let globs = Self::parse_pnpm_workspace_globs(&contents);
+
+        for glob_pattern in globs {
+            let base = glob_pattern
+                .trim_end_matches("/**")
+                .trim_end_matches("/*");
+            let base_dir = root.join(base);
+
+            if let Ok(entries) = std::fs::read_dir(&base_dir) {
+                for entry in entries.flatten() {
+                    let pkg_json_path = entry.path().join("package.json");
+                    if let Ok(contents) = std::fs::read_to_string(&pkg_json_path) {
+                        if let Ok(json) = serde_json::from_str::<Value>(&contents) {
+                            if let Some(name) = json.get("name").and_then(|n| n.as_str()) {
+                                if let Some(pkg_dir) = entry.path().to_str() {
+                                    packages.insert(name.to_string(), pkg_dir.to_string());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(packages)
+    }
+
+    fn parse_pnpm_workspace_globs(contents: &str) -> Vec<String> {
+        let mut globs = Vec::new();
+        let mut in_packages = false;
+
+        for line in contents.lines() {
+            let trimmed = line.trim();
+            if trimmed == "packages:" {
+                in_packages = true;
+            } else if in_packages {
+                if let Some(stripped) = trimmed.strip_prefix('-') {
+                    let glob = stripped
+                        .trim()
+                        .trim_matches('\'')
+                        .trim_matches('"')
+                        .to_string();
+                    if !glob.is_empty() {
+                        globs.push(glob);
+                    }
+                } else if !trimmed.is_empty() && !trimmed.starts_with('#') {
+                    break;
+                }
+            }
+        }
+
+        globs
     }
 }
 
@@ -298,6 +387,70 @@ mod test {
                     .replace('\n', "")
                     .replace(' ', ""),
                 "{\"dependencies\":{\"eslint\":\"1.0.0\",\"eslint-plugin\":\"file:/Some/Path/to/packages/eslint-plugin\"}}".to_string()
+            );
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_update_workspace_protocol_dependency() {
+        with_node_package(|pkg, tempdir, _| {
+            // Set up monorepo structure:
+            //   pnpm-workspace.yaml
+            //   packages/vitest-config/package.json  (name: @acme/vitest-config)
+            //   apps/api/package.json  (depends on @acme/vitest-config: workspace:*)
+            let workspace_root = tempdir.path();
+
+            std::fs::write(
+                workspace_root.join("pnpm-workspace.yaml"),
+                "packages:\n  - 'packages/**'\n  - 'apps/**'\n",
+            )?;
+
+            let pkg_dir = workspace_root.join("packages").join("vitest-config");
+            std::fs::create_dir_all(&pkg_dir)?;
+            std::fs::write(
+                pkg_dir.join("package.json"),
+                r#"{"name":"@acme/vitest-config","version":"1.0.0"}"#,
+            )?;
+
+            let api_dir = workspace_root.join("apps").join("api");
+            std::fs::create_dir_all(&api_dir)?;
+            let user_package_file = api_dir.join("package.json");
+            std::fs::write(
+                &user_package_file,
+                r#"{
+                    "devDependencies": {
+                        "knip": "5.88.1",
+                        "@acme/vitest-config": "workspace:*"
+                    }
+                }"#,
+            )?;
+
+            pkg.plugin.package_file = Some(path_to_string(&user_package_file));
+            pkg.plugin.package_filters = vec!["knip".to_string(), "acme".to_string()];
+            reroute_tools_root(&tempdir, pkg);
+
+            let stage_path = Path::new(&pkg.directory()).join("package.json");
+            std::fs::write(&stage_path, r#"{"dependencies":{"knip":"5.88.1"}}"#)?;
+
+            pkg.update_package_json("knip", &Some(path_to_string(&user_package_file)))?;
+
+            let result: Value =
+                serde_json::from_str(&std::fs::read_to_string(&stage_path)?)?;
+            let deps = result.get("dependencies").unwrap().as_object().unwrap();
+
+            // workspace:* should be resolved to a file: path pointing at the package on disk
+            let vitest_config_dep = deps.get("@acme/vitest-config").unwrap().as_str().unwrap();
+            assert!(
+                vitest_config_dep.starts_with("file:"),
+                "Expected file: path, got: {}",
+                vitest_config_dep
+            );
+            assert!(
+                vitest_config_dep.contains("vitest-config"),
+                "Expected path to vitest-config package, got: {}",
+                vitest_config_dep
             );
 
             Ok(())
