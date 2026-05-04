@@ -33,16 +33,29 @@ const FUNCTION_DECLARATION_QUERY: &str = r#"
 
 const FIELD_QUERY: &str = r#"
 [
+    (template_body
+        (val_definition
+            pattern: (identifier) @name) @field)
+    (template_body
+        (var_definition
+            pattern: (identifier) @name) @field)
+    (template_body
+        (val_declaration
+            name: (identifier) @name) @field)
+    (template_body
+        (var_declaration
+            name: (identifier) @name) @field)
     (class_parameter
+        "val"
         name: (identifier) @name) @field
-    (val_definition
-        pattern: (identifier) @name) @field
-    (var_definition
-        pattern: (identifier) @name) @field
-    (val_declaration
+    (class_parameter
+        "var"
         name: (identifier) @name) @field
-    (var_declaration
-        name: (identifier) @name) @field
+    (class_definition
+        "case"
+        class_parameters: (class_parameters
+            (class_parameter
+                name: (identifier) @name) @field))
 ]
 "#;
 
