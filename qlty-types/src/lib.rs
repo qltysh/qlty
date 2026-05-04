@@ -316,6 +316,7 @@ pub fn language_enum_from_name(name: &str) -> analysis::v1::Language {
         "swift" => analysis::v1::Language::Swift,
         "tsx" => analysis::v1::Language::Tsx,
         "typescript" => analysis::v1::Language::Typescript,
+        "vbnet" => analysis::v1::Language::Vbdotnet,
         _ => panic!("Unrecognized language name: {}", name),
     }
 }
