@@ -31,9 +31,9 @@ struct CodeClimateLocation {
 
 #[derive(Debug, Deserialize)]
 struct CodeClimateLines {
-    begin: u32,
+    begin: i64,
     #[serde(default)]
-    end: u32,
+    end: i64,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
@@ -48,11 +48,13 @@ impl Parser for EditorconfigChecker {
             let rule_key = derive_rule_key(&message.description);
             // editorconfig-checker's codeclimate formatter sets `end` to
             // AdditionalIdenticalErrorCount (a relative count) rather than
-            // an absolute line number, so we compute: begin + end
+            // an absolute line number, so we compute: begin + end.
+            // The tool may emit -1 for unknown locations; clamp to 0.
+            let start_line = message.location.lines.begin.max(0) as u32;
             let end_line = if message.location.lines.end > 0 {
-                message.location.lines.begin + message.location.lines.end
+                (message.location.lines.begin + message.location.lines.end).max(0) as u32
             } else {
-                message.location.lines.begin
+                start_line
             };
 
             let issue = Issue {
@@ -64,7 +66,7 @@ impl Parser for EditorconfigChecker {
                 location: Some(Location {
                     path: message.location.path,
                     range: Some(Range {
-                        start_line: message.location.lines.begin,
+                        start_line,
                         end_line,
                         ..Default::default()
                     }),
@@ -115,6 +117,21 @@ fn severity_to_level(severity: &str) -> Level {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn parse_negative_line_number() {
+        let input = r###"
+[{"check_name":"editorconfig-checker","description":"Wrong character encoding","fingerprint":"abc123","severity":"minor","location":{"path":"foo.h","lines":{"begin":-1,"end":0}}}]
+        "###;
+
+        let issues = EditorconfigChecker::default().parse("editorconfig-checker", input);
+        assert!(issues.is_ok(), "should not fail on -1 line number");
+        let issues = issues.unwrap();
+        assert_eq!(issues.len(), 1);
+        let range = issues[0].location.as_ref().unwrap().range.as_ref().unwrap();
+        assert_eq!(range.start_line, 0);
+        assert_eq!(range.end_line, 0);
+    }
 
     #[test]
     fn parse() {

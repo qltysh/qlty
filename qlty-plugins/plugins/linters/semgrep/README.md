@@ -14,12 +14,13 @@ Or by editing `qlty.toml`:
 
 ```toml
 # Always use the latest version
-[plugins.enabled]
-semgrep = "latest"
+[[plugin]]
+name = "semgrep"
 
-# OR enable a specific version
-[plugins.enabled]
-semgrep = "X.Y.Z"
+# OR pin to a specific version
+[[plugin]]
+name = "semgrep"
+version = "X.Y.Z"
 ```
 
 ## Auto-enabling
@@ -32,12 +33,25 @@ Semgrep will be automatically enabled by `qlty init` if a `.semgrep.yaml` config
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Semgrep.
 
+## Languages and file types
+
+Semgrep analyzes: all file types — target languages are determined by the rules in your `.semgrep.yaml` configuration.
+
+## Troubleshooting
+
+**"Skipping N invalid rules" warning appears in logs.**
+One or more rules in your `.semgrep.yaml` contain a schema error or reference an unsupported metavariable.
+Run `semgrep --validate --config .semgrep.yaml` locally to identify and fix or remove the invalid rule.
+
+**Semgrep exits with code 7 but no issues appear in Qlty.**
+Exit 7 means Semgrep found findings — this is expected. If Qlty is not surfacing them, check that your rule `severity` values map to levels Qlty recognizes (`ERROR` or `WARNING`).
+
 ## Links
 
 - [Semgrep on GitHub](https://github.com/semgrep/semgrep)
-- [Semgrep plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/semgrep)
+- [Semgrep plugin definition](https://github.com/qltysh/qlty-plugins/tree/main/plugins/linters/semgrep)
 - [Semgrep releases](https://github.com/semgrep/semgrep/releases)
-- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty-plugins/tree/main/plugins/linters)
 
 ## License
 
