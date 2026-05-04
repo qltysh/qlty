@@ -31,16 +31,21 @@ struct LinesProcessor<'a> {
     code_lines: HashSet<usize>,
     comment_lines: HashSet<usize>,
     filter: &'a NodeFilter,
+    first_line: usize,
+    last_line: usize,
 }
 
 impl<'a> LinesProcessor<'a> {
     pub fn new(source_file: &'a File, node: &Node, filter: &'a NodeFilter) -> Self {
         // If the node is the root node, we want to count all lines in the file
-        let total_line_count = if node.parent().is_none() {
-            source_file.contents.lines().count()
+        let (first_line, last_line, total_line_count) = if node.parent().is_none() {
+            let total = source_file.contents.lines().count();
+            (1, total.max(1), total)
         } else {
             let range = node.range();
-            range.end_point.row - range.start_point.row + 1
+            let first = range.start_point.row + 1;
+            let last = range.end_point.row + 1;
+            (first, last, last - first + 1)
         };
 
         Self {
@@ -54,7 +59,13 @@ impl<'a> LinesProcessor<'a> {
             comment_lines: HashSet::new(),
             source_file,
             filter,
+            first_line,
+            last_line,
         }
+    }
+
+    fn clamp(&self, line: usize) -> usize {
+        line.clamp(self.first_line, self.last_line)
     }
 
     fn calculate(&mut self) {
@@ -63,26 +74,29 @@ impl<'a> LinesProcessor<'a> {
 
         self.lines.code_lines = self.code_lines.len();
         self.lines.comment_lines = self.comment_lines.len();
-        self.lines.blank_lines =
-            self.lines.total - self.lines.code_lines - self.lines.comment_lines;
+        self.lines.blank_lines = self
+            .lines
+            .total
+            .saturating_sub(self.lines.code_lines)
+            .saturating_sub(self.lines.comment_lines);
 
-        assert_eq!(
+        debug_assert_eq!(
             self.lines.total,
             self.lines.code_lines + self.lines.comment_lines + self.lines.blank_lines
         );
     }
 
     fn record_node(&mut self, node: &Node) {
-        let start_line = node.range().start_point.row + 1;
-        let end_line = node.range().end_point.row + 1;
+        let start_line = self.clamp(node.range().start_point.row + 1);
+        let end_line = self.clamp(node.range().end_point.row + 1);
 
         self.code_lines.insert(start_line);
         self.code_lines.insert(end_line);
     }
 
     fn record_string(&mut self, node: &Node) {
-        let start_line = node.range().start_point.row + 1;
-        let end_line = node.range().end_point.row + 1;
+        let start_line = self.clamp(node.range().start_point.row + 1);
+        let end_line = self.clamp(node.range().end_point.row + 1);
 
         for line in start_line..=end_line {
             self.code_lines.insert(line);
@@ -90,8 +104,8 @@ impl<'a> LinesProcessor<'a> {
     }
 
     fn record_comment(&mut self, node: &Node) {
-        let start_line = node.range().start_point.row + 1;
-        let end_line = node.range().end_point.row + 1;
+        let start_line = self.clamp(node.range().start_point.row + 1);
+        let end_line = self.clamp(node.range().end_point.row + 1);
 
         for line in start_line..=end_line {
             self.comment_lines.insert(line);
@@ -220,6 +234,29 @@ impl AddAssign for Lines {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    mod csharp {
+        use super::*;
+
+        #[test]
+        fn end_row_past_eof_is_clamped() {
+            let source_file = File::from_string(
+                "csharp",
+                "namespace Demo\n{\n    public class Foo\n    {\n    }\n}\n",
+            );
+            let lines = Lines::for_node(
+                &source_file,
+                &source_file.parse().root_node(),
+                &NodeFilter::empty(),
+            );
+
+            assert_eq!(lines.total, 6);
+            assert_eq!(
+                lines.code_lines + lines.comment_lines + lines.blank_lines,
+                lines.total
+            );
+        }
+    }
 
     mod python {
         use super::*;
