@@ -141,7 +141,7 @@ impl Language for Scala {
     }
 
     fn jump_nodes(&self) -> Vec<&str> {
-        vec![Self::RETURN, Self::THROW]
+        vec![Self::THROW]
     }
 
     fn return_nodes(&self) -> Vec<&str> {
@@ -308,6 +308,7 @@ mod test {
         kinds.extend(lang.loop_nodes());
         kinds.extend(lang.except_nodes());
         kinds.extend(lang.try_expression_nodes());
+        kinds.extend(lang.jump_nodes());
         kinds.extend(lang.return_nodes());
         kinds.extend(lang.binary_nodes());
         kinds.extend(lang.field_nodes());
