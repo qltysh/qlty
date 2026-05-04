@@ -74,8 +74,11 @@ impl<'a> LinesProcessor<'a> {
 
         self.lines.code_lines = self.code_lines.len();
         self.lines.comment_lines = self.comment_lines.len();
-        self.lines.blank_lines =
-            self.lines.total - self.lines.code_lines - self.lines.comment_lines;
+        self.lines.blank_lines = self
+            .lines
+            .total
+            .saturating_sub(self.lines.code_lines)
+            .saturating_sub(self.lines.comment_lines);
 
         debug_assert_eq!(
             self.lines.total,
