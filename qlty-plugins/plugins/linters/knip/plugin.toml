@@ -21,7 +21,9 @@ version_command = "knip --version"
 description = "Find unused files, dependencies, and exports in JavaScript and TypeScript projects"
 
 [plugins.definitions.knip.drivers.lint]
-script = "knip --no-progress --reporter json"
+script = "knip --no-progress --reporter json ${config_script}"
+config_script = "--config ${config_file}"
+copy_configs_into_tool_install = true
 target = { type = "parent_with", path = "package.json" }
 runs_from = { type = "target_directory" }
 success_codes = [0, 1]

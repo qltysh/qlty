@@ -1,0 +1,13 @@
+config_version = "0"
+
+[plugins.definitions.exists]
+file_types = ["shell"]
+config_files = ["config.yml"]
+
+[plugins.definitions.exists.drivers.lint]
+prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd"
+copy_configs_into_tool_install = true
+config_script = "${config_file}"
+script = "ls ${config_script} || dir ${config_script}"
+success_codes = [0]
+output = "pass_fail"
