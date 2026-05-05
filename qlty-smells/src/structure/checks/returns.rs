@@ -44,8 +44,7 @@ pub fn check(threshold: usize, source_file: Arc<File>, tree: &Tree) -> Vec<Issue
                 return_count,
                 match capture_by_name_option(function_query, "name", &function_match) {
                     Some(capture) => node_source(&capture.node, &source_file),
-                    None => language
-                        .function_name_from_node(&source_file, &function_capture.node),
+                    None => language.function_name_from_node(&source_file, &function_capture.node),
                 }
             );
 

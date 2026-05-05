@@ -71,20 +71,17 @@ fn count_groups<'a>(
             continue;
         }
 
-        let name =
-            match capture_by_name_option(function_query, "name", &function_match) {
-                Some(capture) => node_source(&capture.node, source_file),
-                None => language.function_name_from_node(source_file, &function_capture.node),
-            };
+        let name = match capture_by_name_option(function_query, "name", &function_match) {
+            Some(capture) => node_source(&capture.node, source_file),
+            None => language.function_name_from_node(source_file, &function_capture.node),
+        };
 
         if is_constructor(language, class_name, &name) {
             continue;
         }
 
         let mut group = Group::default();
-        group
-            .functions
-            .insert(language.normalize_identifier(&name));
+        group.functions.insert(language.normalize_identifier(&name));
         group.merge(&NamedReferences::process(
             source_file,
             &function_capture.node,
@@ -145,10 +142,9 @@ fn is_constructor(
         return true;
     }
 
-    language
-        .constructor_names()
-        .iter()
-        .any(|constructor_name| norm_fn.starts_with(&language.normalize_identifier(constructor_name)))
+    language.constructor_names().iter().any(|constructor_name| {
+        norm_fn.starts_with(&language.normalize_identifier(constructor_name))
+    })
 }
 
 pub struct NamedReferences<'a> {

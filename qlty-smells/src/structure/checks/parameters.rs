@@ -24,8 +24,7 @@ pub fn check(threshold: usize, source_file: Arc<File>, tree: &Tree) -> Vec<Issue
         query_cursor.matches(query, tree.root_node(), source_file.contents.as_bytes());
 
     for function_match in all_matches {
-        let function_capture =
-            capture_by_name(query, "definition.function", &function_match);
+        let function_capture = capture_by_name(query, "definition.function", &function_match);
         let parameters_capture = capture_by_name_option(query, "parameters", &function_match);
         if parameters_capture.is_none() {
             continue;
@@ -40,8 +39,7 @@ pub fn check(threshold: usize, source_file: Arc<File>, tree: &Tree) -> Vec<Issue
                 parameter_names.len(),
                 match capture_by_name_option(query, "name", &function_match) {
                     Some(capture) => node_source(&capture.node, &source_file),
-                    None => language
-                        .function_name_from_node(&source_file, &function_capture.node),
+                    None => language.function_name_from_node(&source_file, &function_capture.node),
                 }
             );
 
