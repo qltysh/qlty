@@ -85,6 +85,29 @@ End Class
                 )
             );
         }
+
+        #[test]
+        fn distinct_members_on_same_receiver_count_separately() {
+            let source_file = File::from_string(
+                "vbnet",
+                r#"
+Public Class Foo
+    Public Sub DoWork()
+        Dim x = Me.Foo
+        Dim y = Me.Bar
+    End Sub
+End Class
+"#,
+            );
+            assert_eq!(
+                2,
+                count(
+                    &source_file,
+                    &source_file.parse().root_node(),
+                    &NodeFilter::empty()
+                )
+            );
+        }
     }
 
     mod rust {

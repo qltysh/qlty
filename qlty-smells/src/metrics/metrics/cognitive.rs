@@ -198,15 +198,20 @@ impl<'a> CognitiveComplexity<'a> {
             .utf8_text(self.source_file.contents.as_bytes())
             .unwrap();
 
-        if self.language().boolean_operator_nodes().contains(&operator) {
+        let normalized_operator = self.language().normalize_identifier(operator);
+        if self
+            .language()
+            .boolean_operator_nodes()
+            .contains(&normalized_operator.as_str())
+        {
             if let Some(last_operator) = self.last_operator.as_ref() {
-                if last_operator != operator {
+                if last_operator != &normalized_operator {
                     self.on_incrementor(cursor);
                 }
             } else {
                 self.on_incrementor(cursor);
             }
-            self.last_operator = Some(operator.to_string());
+            self.last_operator = Some(normalized_operator);
         }
     }
 

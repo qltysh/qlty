@@ -56,7 +56,12 @@ impl Visitor for Processor {
                 .unwrap()
         };
 
-        if self.language().boolean_operator_nodes().contains(&operator) {
+        let normalized_operator = self.language().normalize_identifier(operator);
+        if self
+            .language()
+            .boolean_operator_nodes()
+            .contains(&normalized_operator.as_str())
+        {
             self.level += 1;
 
             if self.level == self.threshold {

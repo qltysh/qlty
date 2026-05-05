@@ -12,6 +12,12 @@ const CLASS_QUERY: &str = r#"
   (type_declaration
     (interface_block
       name: (identifier) @name))
+  (type_declaration
+    (module_block
+      name: (identifier) @name))
+  (type_declaration
+    (structure_block
+      name: (identifier) @name))
 ] @definition.class
 "#;
 
@@ -27,8 +33,8 @@ const FUNCTION_DECLARATION_QUERY: &str = r#"
 
 const FIELD_QUERY: &str = r#"
 (member_access
-    object: (_) @name
-    member: (identifier) @field_name) @field
+    object: (_) @receiver
+    member: (identifier) @name) @field
 "#;
 
 pub struct VBNet {
@@ -62,12 +68,11 @@ impl VBNet {
     pub const INTERPOLATED_STRING: &'static str = "interpolated_string_expression";
     pub const METHOD_DECLARATION: &'static str = "method_declaration";
     pub const CONSTRUCTOR_DECLARATION: &'static str = "constructor_declaration";
-    pub const IDENTIFIER: &'static str = "identifier";
 
-    pub const AND_ALSO: &'static str = "AndAlso";
-    pub const OR_ELSE: &'static str = "OrElse";
-    pub const AND: &'static str = "And";
-    pub const OR: &'static str = "Or";
+    pub const AND_ALSO: &'static str = "andalso";
+    pub const OR_ELSE: &'static str = "orelse";
+    pub const AND: &'static str = "and";
+    pub const OR: &'static str = "or";
 }
 
 impl Default for VBNet {
@@ -212,10 +217,12 @@ impl Language for VBNet {
 
     fn function_name_node<'a>(&'a self, node: &'a Node) -> Node<'a> {
         if node.kind() == Self::CONSTRUCTOR_DECLARATION {
-            node.child_by_field_name("parameters").unwrap()
-        } else {
-            node.child_by_field_name("name").unwrap()
+            panic!(
+                "VBNet constructor_declaration has no name node; \
+                 call function_name_from_node instead"
+            );
         }
+        node.child_by_field_name("name").unwrap()
     }
 
     fn function_name_from_node(&self, _source_file: &File, node: &Node) -> String {
@@ -388,6 +395,44 @@ End Class
     }
 
     #[test]
+    fn class_query_captures_module() {
+        let source_file = File::from_string(
+            "vbnet",
+            r#"
+Public Module Foo
+End Module
+"#,
+        );
+        let tree = source_file.parse();
+        let lang = VBNet::default();
+        let query = lang.class_query();
+        let mut cursor = tree_sitter::QueryCursor::new();
+        let matches: Vec<_> = cursor
+            .matches(query, tree.root_node(), source_file.contents.as_bytes())
+            .collect();
+        assert_eq!(matches.len(), 1);
+    }
+
+    #[test]
+    fn class_query_captures_structure() {
+        let source_file = File::from_string(
+            "vbnet",
+            r#"
+Public Structure Foo
+End Structure
+"#,
+        );
+        let tree = source_file.parse();
+        let lang = VBNet::default();
+        let query = lang.class_query();
+        let mut cursor = tree_sitter::QueryCursor::new();
+        let matches: Vec<_> = cursor
+            .matches(query, tree.root_node(), source_file.contents.as_bytes())
+            .collect();
+        assert_eq!(matches.len(), 1);
+    }
+
+    #[test]
     fn function_query_captures_sub() {
         let source_file = File::from_string(
             "vbnet",
@@ -536,6 +581,24 @@ End Class
             .unwrap();
 
         assert_eq!(name, "DoWork");
+    }
+
+    #[test]
+    #[should_panic(expected = "constructor_declaration has no name node")]
+    fn function_name_node_panics_on_constructor() {
+        let source_file = File::from_string(
+            "vbnet",
+            r#"
+Public Class Foo
+    Public Sub New()
+    End Sub
+End Class
+"#,
+        );
+        let tree = source_file.parse();
+        let lang = VBNet::default();
+        let ctor = find_first_node_of_kind(&tree.root_node(), "constructor_declaration").unwrap();
+        let _ = lang.function_name_node(&ctor);
     }
 
     #[test]
