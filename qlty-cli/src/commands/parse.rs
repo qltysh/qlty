@@ -22,9 +22,7 @@ pub struct Parse {
 impl Parse {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
         let workspace = Workspace::new()?;
-        workspace.fetch_sources()?;
-
-        let config = workspace.config()?;
+        let config = workspace.load_config(false)?;
 
         let mut workspace_entry_finder_builder = WorkspaceEntryFinderBuilder {
             mode: TargetMode::Paths(1),

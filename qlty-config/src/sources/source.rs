@@ -75,6 +75,10 @@ impl Default for Box<dyn SourceFetch> {
 }
 
 pub trait Source: SourceFetch {
+    fn is_cached(&self) -> bool {
+        true
+    }
+
     fn plugin_tomls(&self) -> Result<Vec<SourceFile>> {
         let mut globset_builder = GlobSetBuilder::new();
 

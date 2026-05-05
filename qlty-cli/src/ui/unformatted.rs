@@ -96,7 +96,7 @@ pub fn print_unformatted(
 
 fn apply_fmt(writer: &mut dyn std::io::Write, settings: &Settings) -> Result<bool> {
     let workspace = Workspace::require_initialized()?;
-    workspace.fetch_sources()?;
+    workspace.prepare_sources(false)?;
 
     let mut settings = settings.clone();
 

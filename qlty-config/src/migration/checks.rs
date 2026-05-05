@@ -183,11 +183,7 @@ impl CheckMigration {
             DUPLICATION_DEFAULT_THRESHOLD,
         );
 
-        Self::migrate_default(
-            smells_table,
-            "similar_code",
-            DUPLICATION_DEFAULT_THRESHOLD,
-        );
+        Self::migrate_default(smells_table, "similar_code", DUPLICATION_DEFAULT_THRESHOLD);
 
         Ok(())
     }

@@ -150,10 +150,7 @@ impl Check {
         self.validate_options()?;
 
         let workspace = Workspace::require_initialized()?;
-
-        if !self.skip_source_fetch {
-            workspace.fetch_sources()?;
-        }
+        workspace.prepare_sources(self.skip_source_fetch)?;
 
         let git_hook_stdin = if self.upstream_from_pre_push {
             match Self::read_pre_push_stdin()? {

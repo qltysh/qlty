@@ -1,6 +1,6 @@
 use super::{Source, SourceFetch};
 use crate::TomlMerge;
-use anyhow::Result;
+use anyhow::{bail, Result};
 
 #[derive(Default, Clone)]
 pub struct SourcesList {
@@ -29,6 +29,19 @@ impl SourcesList {
 
         Ok(toml)
     }
+
+    pub fn validate_sources_cached(&self) -> Result<()> {
+        for source in &self.sources {
+            if !source.is_cached() {
+                bail!(
+                    "Source {:?} is not available locally. Run without --skip-source-fetch, or run `qlty sources fetch` first.",
+                    source
+                );
+            }
+        }
+
+        Ok(())
+    }
 }
 
 impl SourceFetch for SourcesList {
@@ -46,5 +59,52 @@ impl SourceFetch for SourcesList {
 
     fn clone_box(&self) -> Box<dyn SourceFetch> {
         Box::new(self.clone())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::sources::{DefaultSource, GitSource, GitSourceReference, LocalSource};
+    use crate::Library;
+    use std::path::Path;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_validate_sources_cached_with_empty_list() {
+        let sources_list = SourcesList::new();
+        assert!(sources_list.validate_sources_cached().is_ok());
+    }
+
+    #[test]
+    fn test_validate_sources_cached_with_default_source() {
+        let mut sources_list = SourcesList::new();
+        sources_list.sources.push(Box::new(DefaultSource {}));
+        assert!(sources_list.validate_sources_cached().is_ok());
+    }
+
+    #[test]
+    fn test_validate_sources_cached_with_local_source() {
+        let mut sources_list = SourcesList::new();
+        sources_list.sources.push(Box::new(LocalSource {
+            root: Path::new("/nonexistent/path").to_path_buf(),
+        }));
+        assert!(sources_list.validate_sources_cached().is_ok());
+    }
+
+    #[test]
+    fn test_validate_sources_cached_errors_when_git_source_not_cached() {
+        let temp_dir = tempdir().unwrap();
+        let library = Library::new(temp_dir.path()).unwrap();
+        let git_source = GitSource {
+            library,
+            origin: "https://github.com/qltysh/plugins".to_string(),
+            reference: GitSourceReference::Tag("v1.0.0".to_string()),
+        };
+
+        let mut sources_list = SourcesList::new();
+        sources_list.sources.push(Box::new(git_source));
+
+        assert!(sources_list.validate_sources_cached().is_err());
     }
 }

@@ -34,8 +34,7 @@ pub struct Install {
 impl Install {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
         let workspace = Workspace::require_initialized()?;
-        workspace.fetch_sources()?;
-        let config = workspace.config()?;
+        let config = workspace.load_config(false)?;
 
         let mut settings = Settings {
             root: workspace.root.clone(),

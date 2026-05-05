@@ -71,6 +71,11 @@ fn swift_tests() {
 }
 
 #[test]
+fn scala_tests() {
+    setup_and_run_test_cases("tests/lang/scala/**/*.toml");
+}
+
+#[test]
 fn vbnet_tests() {
     setup_and_run_test_cases("tests/lang/vbnet/**/*.toml");
 }

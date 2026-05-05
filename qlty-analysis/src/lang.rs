@@ -14,6 +14,7 @@ mod php;
 mod python;
 mod ruby;
 mod rust;
+mod scala;
 mod swift;
 mod tsx;
 mod typescript;
@@ -22,7 +23,7 @@ mod vbnet;
 
 pub use {
     c::*, cpp::*, csharp::*, go::*, java::*, javascript::*, kotlin::*, php::*, python::*, ruby::*,
-    rust::*, swift::*, tsx::*, typescript::*, vbnet::*,
+    rust::*, scala::*, swift::*, tsx::*, typescript::*, vbnet::*,
 };
 
 #[allow(clippy::borrowed_box)]
@@ -46,6 +47,7 @@ lazy_static! {
             Box::<python::Python>::default(),
             Box::<ruby::Ruby>::default(),
             Box::<rust::Rust>::default(),
+            Box::<scala::Scala>::default(),
             Box::<swift::Swift>::default(),
             Box::<typescript::TypeScript>::default(),
             Box::<tsx::TSX>::default(),
@@ -173,8 +175,7 @@ pub trait Language {
             let normalized_self = self.normalize_identifier(self_keyword);
             if normalized_param != normalized_self
                 && normalized_param != self.normalize_identifier(&format!("&{}", self_keyword))
-                && normalized_param
-                    != self.normalize_identifier(&format!("&mut {}", self_keyword))
+                && normalized_param != self.normalize_identifier(&format!("&mut {}", self_keyword))
             {
                 Some(parameter_name)
             } else {

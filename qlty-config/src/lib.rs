@@ -10,6 +10,7 @@ pub mod version;
 mod warning_tracker;
 mod workspace;
 
+pub use crate::config::DeprecatedDefaultSourceError;
 pub use crate::config::FileType;
 pub use crate::config::QltyConfig;
 use crate::toml_merge::TomlMerge;

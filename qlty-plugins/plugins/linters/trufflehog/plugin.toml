@@ -14,8 +14,20 @@ version_command = "trufflehog --version"
 description = "Security tool that scans code to find secrets accidentally committed"
 security = true
 
-[plugins.definitions.trufflehog.drivers.lint]
+[[plugins.definitions.trufflehog.drivers.lint.version]]
+version_matcher = "<3.82.9"
 script = "trufflehog filesystem --json --fail --only-verified --no-update ${target}"
+success_codes = [0, 183]
+output = "stdout"
+output_format = "trufflehog"
+cache_results = true
+batch = true
+suggested = "targets"
+output_missing = "parse"
+
+[[plugins.definitions.trufflehog.drivers.lint.version]]
+version_matcher = ">=3.82.9"
+script = "trufflehog filesystem --json --fail --only-verified --no-update --user-agent-suffix=qlty ${target}"
 success_codes = [0, 183]
 output = "stdout"
 output_format = "trufflehog"
