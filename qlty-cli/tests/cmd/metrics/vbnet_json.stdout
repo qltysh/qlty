@@ -1,0 +1,26 @@
+{
+  "metadata": {},
+  "messages": [],
+  "invocations": [],
+  "issues": [],
+  "stats": [
+    {
+      "name": "example.vb",
+      "fullyQualifiedName": "example.vb",
+      "path": "example.vb",
+      "kind": "COMPONENT_TYPE_FILE",
+      "language": "LANGUAGE_VBDOTNET",
+      "files": 1,
+      "classes": 1,
+      "functions": 1,
+      "fields": 0,
+      "lines": 7,
+      "codeLines": 5,
+      "commentLines": 0,
+      "blankLines": 2,
+      "complexity": 0,
+      "cyclomatic": 1,
+      "lcom4": 0
+    }
+  ]
+}

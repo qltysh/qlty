@@ -1,0 +1,15 @@
+Imports System
+Imports System.Collections.Generic
+Imports System.Linq
+Imports System.Text
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports System.IO
+Imports System.Diagnostics
+Imports System.Globalization
+Imports System.Net
+Imports System.Net.Http
+Imports AFoo.Bar
+Imports BNoo.Net
+Imports BNoo.Net.Http
+Imports BNoo.Net.Http.Client

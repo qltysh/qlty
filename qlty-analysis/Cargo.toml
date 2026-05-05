@@ -49,6 +49,7 @@ tree-sitter-rust.workspace = true
 tree-sitter-scala.workspace = true
 tree-sitter-swift.workspace = true
 tree-sitter-typescript.workspace = true
+tree-sitter-vb-dotnet.workspace = true
 
 [dev-dependencies]
 insta.workspace = true
