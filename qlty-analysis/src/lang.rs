@@ -174,8 +174,8 @@ pub trait Language {
             let normalized_param = self.normalize_identifier(&parameter_name);
             let normalized_self = self.normalize_identifier(self_keyword);
             if normalized_param != normalized_self
-                && normalized_param != self.normalize_identifier(&format!("&{}", self_keyword))
-                && normalized_param != self.normalize_identifier(&format!("&mut {}", self_keyword))
+                && normalized_param != self.normalize_identifier(&format!("&{self_keyword}"))
+                && normalized_param != self.normalize_identifier(&format!("&mut {self_keyword}"))
             {
                 Some(parameter_name)
             } else {
