@@ -14,7 +14,8 @@ package_file_candidate = "package.json"
 package_file_candidate_filters = ["biome"]
 
 [plugins.definitions.biome.drivers.lint]
-script = "biome lint --reporter=json ${target}"
+script = "biome lint --reporter=json ${config_script} ${target}"
+config_script = "--config-path ${config_file}"
 success_codes = [0, 1]
 output = "stdout"
 output_format = "biome"
@@ -24,7 +25,8 @@ suggested = "config"
 output_missing = "parse"
 
 [plugins.definitions.biome.drivers.format]
-script = "biome format --write ${target}"
+script = "biome format --write ${config_script} ${target}"
+config_script = "--config-path ${config_file}"
 success_codes = [0, 1]
 output = "rewrite"
 batch = true
