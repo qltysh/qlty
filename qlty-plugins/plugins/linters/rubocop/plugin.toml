@@ -13,7 +13,7 @@ package_file_candidate = "Gemfile"
 package_file_candidate_filters = ["rubocop", "standard"]
 
 [plugins.definitions.rubocop.drivers.lint]
-script = "rubocop --format json ${target}"
+script = "rubocop --force-exclusion --format json ${target}"
 success_codes = [0, 1]
 output = "stdout"
 output_format = "rubocop"
@@ -23,7 +23,7 @@ suggested = "targets"
 output_missing = "parse"
 
 [plugins.definitions.rubocop.drivers.format]
-script = "rubocop --fix-layout ${target}"
+script = "rubocop --force-exclusion --fix-layout ${target}"
 success_codes = [0, 1]
 output = "rewrite"
 cache_results = true
