@@ -16,11 +16,25 @@ config_files = [
 ]
 affects_cache = ["package.json"]
 latest_version = "5.70.2"
-known_good_version = "5.21.2"
+known_good_version = "5.70.2"
 version_command = "knip --version"
 description = "Find unused files, dependencies, and exports in JavaScript and TypeScript projects"
 
-[plugins.definitions.knip.drivers.lint]
+[[plugins.definitions.knip.drivers.lint.version]]
+version_matcher = ">=5.66.3"
+script = "knip --no-progress --reporter json ${config_script}"
+config_script = "--config ${config_file}"
+target = { type = "parent_with", path = "package.json" }
+runs_from = { type = "target_directory" }
+success_codes = [0, 1]
+output = "stdout"
+output_format = "knip"
+skip_upstream = true
+output_missing = "parse"
+suggested = "config"
+
+[[plugins.definitions.knip.drivers.lint.version]]
+version_matcher = "<5.66.3"
 script = "knip --no-progress --reporter json"
 target = { type = "parent_with", path = "package.json" }
 runs_from = { type = "target_directory" }
@@ -30,3 +44,4 @@ output_format = "knip"
 skip_upstream = true
 output_missing = "parse"
 suggested = "config"
+known_good_version = "5.21.2"
