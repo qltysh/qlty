@@ -21,7 +21,7 @@ version_command = "knip --version"
 description = "Find unused files, dependencies, and exports in JavaScript and TypeScript projects"
 
 [[plugins.definitions.knip.drivers.lint.version]]
-version_matcher = ">=5.66.3"
+version_matcher = ">=5.62.0"
 script = "knip --no-progress --reporter json ${config_script}"
 config_script = "--config ${config_file}"
 target = { type = "parent_with", path = "package.json" }
@@ -34,7 +34,7 @@ output_missing = "parse"
 suggested = "config"
 
 [[plugins.definitions.knip.drivers.lint.version]]
-version_matcher = "<5.66.3"
+version_matcher = "<5.62.0"
 script = "knip --no-progress --reporter json"
 target = { type = "parent_with", path = "package.json" }
 runs_from = { type = "target_directory" }
