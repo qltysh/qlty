@@ -13,8 +13,11 @@ description = "A static analyzer for web projects"
 package_file_candidate = "package.json"
 package_file_candidate_filters = ["biome"]
 
-[plugins.definitions.biome.drivers.lint]
-script = "biome lint --reporter=json ${target}"
+[[plugins.definitions.biome.drivers.lint.version]]
+version_matcher = ">=2.0.0"
+script = "biome lint --reporter=json ${config_script} ${target}"
+config_script = "--config-path ${config_file}"
+copy_configs_into_tool_install = true
 success_codes = [0, 1]
 output = "stdout"
 output_format = "biome"
@@ -23,7 +26,32 @@ cache_results = true
 suggested = "config"
 output_missing = "parse"
 
-[plugins.definitions.biome.drivers.format]
+[[plugins.definitions.biome.drivers.lint.version]]
+version_matcher = "<2.0.0"
+script = "biome lint --reporter=json ${target}"
+success_codes = [0, 1]
+output = "stdout"
+output_format = "biome"
+batch = true
+cache_results = true
+suggested = "config"
+output_missing = "parse"
+known_good_version = "1.9.4"
+
+[[plugins.definitions.biome.drivers.format.version]]
+version_matcher = ">=2.0.0"
+script = "biome format --write ${config_script} ${target}"
+config_script = "--config-path ${config_file}"
+copy_configs_into_tool_install = true
+success_codes = [0, 1]
+output = "rewrite"
+batch = true
+cache_results = true
+driver_type = "formatter"
+suggested = "config"
+
+[[plugins.definitions.biome.drivers.format.version]]
+version_matcher = "<2.0.0"
 script = "biome format --write ${target}"
 success_codes = [0, 1]
 output = "rewrite"
@@ -31,3 +59,4 @@ batch = true
 cache_results = true
 driver_type = "formatter"
 suggested = "config"
+known_good_version = "1.9.4"
