@@ -761,4 +761,55 @@ mod test {
         assert_eq!(plugin.plugin.drivers.len(), 1);
         assert_eq!(plugin.plugin.drivers["format"].script, "fmt");
     }
+
+    #[test]
+    fn test_later_matching_driver_version_overrides_earlier_match() {
+        let mut plugin_defs = HashMap::new();
+        plugin_defs.insert(
+            "test_plugin".to_string(),
+            PluginDef {
+                drivers: vec![(
+                    "lint".to_string(),
+                    DriverDef {
+                        version: vec![
+                            DriverDef {
+                                version_matcher: Some(">=2.0.0".to_string()),
+                                script: "built-in".to_string(),
+                                ..Default::default()
+                            },
+                            DriverDef {
+                                version_matcher: Some(">=2.0.0".to_string()),
+                                script: "override".to_string(),
+                                ..Default::default()
+                            },
+                        ],
+                        ..Default::default()
+                    },
+                )]
+                .into_iter()
+                .collect(),
+                ..Default::default()
+            },
+        );
+
+        let planner = build_planner(QltyConfig {
+            plugin: vec![EnabledPlugin {
+                name: "test_plugin".to_string(),
+                version: "2.1.0".to_string(),
+                drivers: vec![ALL.to_string()],
+                ..Default::default()
+            }],
+            plugins: PluginsConfig {
+                downloads: HashMap::new(),
+                releases: HashMap::new(),
+                definitions: plugin_defs,
+            },
+            ..Default::default()
+        });
+
+        let plugins = enabled_plugins(&planner).unwrap();
+
+        let plugin = plugins.iter().find(|p| p.name == "test_plugin").unwrap();
+        assert_eq!(plugin.plugin.drivers["lint"].script, "override");
+    }
 }
