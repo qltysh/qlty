@@ -42,6 +42,28 @@ pub enum InvocationStatus {
     ParseError,
 }
 
+fn keys_only_env(env: HashMap<String, String>) -> HashMap<String, String> {
+    if env_scrubbing_disabled() {
+        return env;
+    }
+
+    scrub_env_values(env)
+}
+
+fn scrub_env_values(env: HashMap<String, String>) -> HashMap<String, String> {
+    env.into_keys().map(|key| (key, String::new())).collect()
+}
+
+fn env_scrubbing_disabled() -> bool {
+    match std::env::var("QLTY_INSECURE_KEEP_INVOCATION_ENV") {
+        Ok(value) => {
+            let normalized = value.trim().to_ascii_lowercase();
+            normalized == "1" || normalized == "true"
+        }
+        Err(_) => false,
+    }
+}
+
 impl InvocationResult {
     pub fn from_command_output(
         plan: &InvocationPlan,
@@ -85,9 +107,14 @@ impl InvocationResult {
                     .collect(),
                 script: rerun.to_string(),
                 cwd: path_to_string(&plan.invocation_directory),
-                env: plan.tool.env().with_context(|| {
+                // Record only the environment variable names, not their values. Values can
+                // contain user secrets (e.g. `${env.NAME}` interpolation), and this struct is
+                // serialized into invocation artifacts that get uploaded, where redaction does
+                // not reach. Set QLTY_INSECURE_KEEP_INVOCATION_ENV=1 to retain values for
+                // local debugging.
+                env: keys_only_env(plan.tool.env().with_context(|| {
                     format!("Failed to get environment for {}", plan.tool.name())
-                })?,
+                })?),
                 started_at: Some(start_time.into()),
                 duration_secs: duration as f32,
                 exit_code: exec_result.exit_code,
@@ -542,5 +569,35 @@ impl InvocationResult {
         } else {
             PathBuf::from(path)
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn scrub_env_values_drops_values() {
+        let mut env = HashMap::new();
+        env.insert("SECRET_TOKEN".to_string(), "super-secret".to_string());
+        env.insert("PATH".to_string(), "/usr/bin".to_string());
+
+        let scrubbed = scrub_env_values(env);
+
+        assert_eq!(scrubbed.get("SECRET_TOKEN"), Some(&String::new()));
+        assert_eq!(scrubbed.get("PATH"), Some(&String::new()));
+    }
+
+    #[test]
+    fn scrub_env_values_preserves_keys() {
+        let mut env = HashMap::new();
+        env.insert("SECRET_TOKEN".to_string(), "super-secret".to_string());
+        env.insert("PATH".to_string(), "/usr/bin".to_string());
+
+        let scrubbed = scrub_env_values(env);
+
+        assert_eq!(scrubbed.len(), 2);
+        assert!(scrubbed.contains_key("SECRET_TOKEN"));
+        assert!(scrubbed.contains_key("PATH"));
     }
 }
