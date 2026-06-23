@@ -54,7 +54,7 @@ jobs:
 
           # Windows
           - target: x86_64-pc-windows-msvc
-            runner: windows-latest
+            runner: windows-2022
             archive_format: zip
     name: ${{ matrix.target }}
     runs-on: ${{ matrix.runner }}
