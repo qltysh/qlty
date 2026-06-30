@@ -4,6 +4,7 @@ mod circleci;
 mod codefresh;
 mod github;
 mod gitlab;
+mod harness;
 mod jenkins;
 mod semaphore;
 mod travisci;
@@ -14,6 +15,7 @@ pub use circleci::CircleCI;
 pub use codefresh::Codefresh;
 pub use github::GitHub;
 pub use gitlab::GitLab;
+pub use harness::Harness;
 pub use jenkins::Jenkins;
 use qlty_types::tests::v1::CoverageMetadata;
 pub use semaphore::Semaphore;
@@ -89,6 +91,7 @@ pub fn all() -> Vec<Box<dyn CI>> {
         Box::<Codefresh>::default(),
         Box::<GitHub>::default(),
         Box::<GitLab>::default(),
+        Box::<Harness>::default(),
         Box::<Jenkins>::default(),
         Box::<Semaphore>::default(),
         Box::<TravisCI>::default(),
