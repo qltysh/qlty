@@ -1,0 +1,70 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=actionlint fixture=bad version=1.7.12 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": ".github/workflows/bad.yaml",
+        "range": {
+          "endColumn": 14,
+          "endLine": 4,
+          "startColumn": 13,
+          "startLine": 4,
+        },
+      },
+      "message": "invalid CRON format "0 */3 * *" in schedule event: expected exactly 5 fields, found 4: [0 */3 * *]",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "events",
+      "snippet": "    - cron: '0 */3 * *'",
+      "snippetWithContext": "on:
+  schedule:
+    # Cron syntax is not correct
+    - cron: '0 */3 * *'
+    # Interval of scheduled job is too small (job runs too frequently)
+    - cron: '* */3 * * *'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ...",
+      "tool": "actionlint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": ".github/workflows/bad.yaml",
+        "range": {
+          "endColumn": 14,
+          "endLine": 6,
+          "startColumn": 13,
+          "startLine": 6,
+        },
+      },
+      "message": "scheduled job runs too frequently. it runs once per 60 seconds. the shortest interval is once every 5 minutes",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "events",
+      "snippet": "    - cron: '* */3 * * *'",
+      "snippetWithContext": "on:
+  schedule:
+    # Cron syntax is not correct
+    - cron: '0 */3 * *'
+    # Interval of scheduled job is too small (job runs too frequently)
+    - cron: '* */3 * * *'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ...",
+      "tool": "actionlint",
+    },
+  ],
+}
+`;

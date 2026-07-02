@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=actionlint fixture=empty version=1.7.12 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": ".github/workflows/empty.yaml",
+        "range": {
+          "endColumn": 1,
+          "endLine": 1,
+          "startColumn": 1,
+          "startLine": 1,
+        },
+      },
+      "message": "workflow is empty",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "syntax-check",
+      "tool": "actionlint",
+    },
+  ],
+}
+`;
