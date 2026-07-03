@@ -201,6 +201,7 @@ impl MetadataPlanner {
         metadata.name = self.settings.name.clone();
         metadata.total_parts_count = self.settings.total_parts_count;
         metadata.incomplete = self.settings.incomplete;
+        metadata.selection = self.settings.selection.clone();
 
         // Override metadata with command line arguments
         if let Some(build_id) = self.settings.override_build_id.clone() {
@@ -605,6 +606,25 @@ mod tests {
         let metadata_planner = MetadataPlanner::new(&settings, None);
         let metadata = metadata_planner.compute().unwrap();
         assert_eq!(metadata.reference_type, ReferenceType::Unspecified as i32);
+    }
+
+    #[test]
+    fn test_selection_set_from_settings() {
+        let settings = Settings {
+            selection: Some("selective".to_string()),
+            ..Default::default()
+        };
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute().unwrap();
+        assert_eq!(metadata.selection, Some("selective".to_string()));
+    }
+
+    #[test]
+    fn test_selection_defaults_to_none() {
+        let settings = Settings::default();
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute().unwrap();
+        assert_eq!(metadata.selection, None);
     }
 
     #[test]

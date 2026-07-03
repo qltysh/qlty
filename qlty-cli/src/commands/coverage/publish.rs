@@ -149,6 +149,12 @@ pub struct Publish {
     /// The server will merge the uploads into a single report when qlty coverage complete is called.
     pub incomplete: bool,
 
+    #[arg(long)]
+    /// Mark this upload as a selective (subset) test run — e.g. only the tests
+    /// affected by a pull request's changes. Selective coverage contributes to
+    /// diff coverage only and is excluded from total coverage.
+    pub selective: bool,
+
     /// Skip fetching sources before publishing. Requires sources to be cached locally.
     #[arg(long)]
     pub skip_source_fetch: bool,
@@ -294,6 +300,11 @@ impl Publish {
             strip_prefix,
             tag: self.tag.clone(),
             total_parts_count: self.total_parts_count,
+            selection: if self.selective {
+                Some("selective".to_string())
+            } else {
+                None
+            },
         })
     }
 
