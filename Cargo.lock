@@ -2862,6 +2862,7 @@ dependencies = [
  "sysinfo",
  "tar",
  "tempfile",
+ "thiserror 2.0.16",
  "tracing",
  "tracing-test",
  "ureq",
