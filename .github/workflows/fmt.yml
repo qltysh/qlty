@@ -22,7 +22,7 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           persist-credentials: false
-      - uses: qltysh/qlty-action/fmt@a19242102d17e497f437d7466aa01b528537e899
+      - uses: qltysh/qlty-action/fmt@b413a89d8f3a8b36b9edd20b7ef1ad7ae0a7ac3a # version 2.2.2
       - name: Commit changes
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
         with:

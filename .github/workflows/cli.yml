@@ -56,7 +56,7 @@ jobs:
       - name: Run Test
         run: cargo llvm-cov --lcov --output-path target/lcov.info -- --include-ignored
 
-      - uses: qltysh/qlty-action/coverage@f071a76ab07c05c4326f50342b7b477db89624f6 # node24-smoke / pre-release
+      - uses: qltysh/qlty-action/coverage@b413a89d8f3a8b36b9edd20b7ef1ad7ae0a7ac3a # version 2.2.2
         if: ${{ matrix.os != 'windows-2022' }}
         with:
           oidc: true
