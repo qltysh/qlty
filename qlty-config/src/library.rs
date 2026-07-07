@@ -254,29 +254,39 @@ impl Library {
     }
 
     fn try_symlink_if_missing(&self, target: &Path, link: &Path) -> Result<()> {
-        if !link.exists() {
-            #[cfg(unix)]
-            {
-                if let Err(err) = std::os::unix::fs::symlink(target, link) {
-                    error!(
-                        "Failed to create symlink from {} to {}: {}",
-                        target.display(),
-                        link.display(),
-                        err
-                    );
-                }
+        // Path::exists() follows symlinks, so a dangling symlink (e.g. one left
+        // behind after the cache directory was deleted) reports false while still
+        // blocking symlink creation with EEXIST. Check the link node itself and
+        // remove it if it is a symlink whose target is gone.
+        if let Ok(metadata) = link.symlink_metadata() {
+            if metadata.file_type().is_symlink() && !link.exists() {
+                fs::remove_file(link)?;
+            } else {
+                return Ok(());
             }
+        }
 
-            #[cfg(windows)]
-            {
-                if let Err(err) = std::os::windows::fs::symlink_dir(target, link) {
-                    error!(
-                        "Failed to create symlink from {} to {}: {}",
-                        target.display(),
-                        link.display(),
-                        err
-                    );
-                }
+        #[cfg(unix)]
+        {
+            if let Err(err) = std::os::unix::fs::symlink(target, link) {
+                error!(
+                    "Failed to create symlink from {} to {}: {}",
+                    target.display(),
+                    link.display(),
+                    err
+                );
+            }
+        }
+
+        #[cfg(windows)]
+        {
+            if let Err(err) = std::os::windows::fs::symlink_dir(target, link) {
+                error!(
+                    "Failed to create symlink from {} to {}: {}",
+                    target.display(),
+                    link.display(),
+                    err
+                );
             }
         }
 
@@ -306,5 +316,70 @@ impl Library {
         }
 
         Ok(existing_dirs)
+    }
+}
+
+#[cfg(test)]
+#[cfg(unix)]
+mod test {
+    use super::*;
+    use tempfile::TempDir;
+
+    fn setup() -> (TempDir, Library, PathBuf, PathBuf) {
+        let temp_dir = TempDir::new().unwrap();
+        let library = Library::new(temp_dir.path()).unwrap();
+
+        let target = temp_dir.path().join("target");
+        fs::create_dir_all(&target).unwrap();
+
+        let link = temp_dir.path().join("link");
+
+        (temp_dir, library, target, link)
+    }
+
+    #[test]
+    fn try_symlink_creates_link_when_missing() {
+        let (_temp_dir, library, target, link) = setup();
+
+        library.try_symlink_if_missing(&target, &link).unwrap();
+
+        assert_eq!(fs::read_link(&link).unwrap(), target);
+    }
+
+    #[test]
+    fn try_symlink_replaces_dangling_link() {
+        let (temp_dir, library, target, link) = setup();
+
+        let missing_target = temp_dir.path().join("deleted-cache-dir");
+        std::os::unix::fs::symlink(&missing_target, &link).unwrap();
+
+        library.try_symlink_if_missing(&target, &link).unwrap();
+
+        assert_eq!(fs::read_link(&link).unwrap(), target);
+    }
+
+    #[test]
+    fn try_symlink_keeps_valid_link() {
+        let (temp_dir, library, target, link) = setup();
+
+        let other_target = temp_dir.path().join("other-target");
+        fs::create_dir_all(&other_target).unwrap();
+        std::os::unix::fs::symlink(&other_target, &link).unwrap();
+
+        library.try_symlink_if_missing(&target, &link).unwrap();
+
+        assert_eq!(fs::read_link(&link).unwrap(), other_target);
+    }
+
+    #[test]
+    fn try_symlink_keeps_existing_directory() {
+        let (_temp_dir, library, target, link) = setup();
+
+        fs::create_dir_all(&link).unwrap();
+
+        library.try_symlink_if_missing(&target, &link).unwrap();
+
+        assert!(link.is_dir());
+        assert!(fs::read_link(&link).is_err());
     }
 }
