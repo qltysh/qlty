@@ -52,14 +52,71 @@ jobs:
             "${RELEASE_VERSION}"
 
           echo "version=$(cargo metadata --format-version 1 | jq -r ".workspace_members[0]" | cut -d# -f2)" >> "$GITHUB_OUTPUT"
+
+          LAST_TAG=$(git tag --list 'v*' --sort=-version:refname \
+            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1)
+          echo "last_tag=$LAST_TAG" >> "$GITHUB_OUTPUT"
+          echo "date=$(date -u +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
         env:
           RELEASE_VERSION: ${{ inputs.increment == 'version' && inputs.version || inputs.increment || 'minor' }}
+      - name: Draft changelog entry
+        uses: anthropics/claude-code-action@493279a9d94b7cc5d07a98e5e66cb03313805350 # version 1.0.166
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ steps.app-token.outputs.token }}
+          prompt: |
+            Follow the instructions in .github/prompts/changelog.md with these values:
+
+            VERSION: ${{ steps.version.outputs.version }}
+            LAST_TAG: ${{ steps.version.outputs.last_tag }}
+            DATE: ${{ steps.version.outputs.date }}
+          claude_args: >-
+            --allowedTools "Read,Grep,Glob,Edit(CHANGELOG.md),Write(CHANGELOG.md),Bash(git log:*),Bash(git show:*),Bash(gh pr view:*),Bash(gh pr list:*),Bash(gh release list:*)"
+      - name: Validate drafted changes
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+
+          if ! grep -q "^## v${VERSION} " CHANGELOG.md; then
+            echo "Error: No '## v${VERSION}' entry was added to CHANGELOG.md"
+            exit 1
+          fi
+
+          # Only the changelog and cargo version bumps may change
+          git status --porcelain | while read -r _status file; do
+            case "$file" in
+              CHANGELOG.md|Cargo.lock|Cargo.toml|*/Cargo.toml) ;;
+              *)
+                echo "Error: Unexpected change to $file"
+                exit 1
+                ;;
+            esac
+          done
+
+          # Extract the new entry for the PR body
+          awk "/^## v${VERSION} /{flag=1; next} /^## v[0-9]/{flag=0} flag" \
+            CHANGELOG.md > "$RUNNER_TEMP/changelog_entry.txt"
+
+          echo "Drafted changelog entry:"
+          cat "$RUNNER_TEMP/changelog_entry.txt"
+
+          {
+            echo "Automated PR for release ${VERSION}."
+            echo
+            echo "Review (and edit, if needed) the changelog entry below, then"
+            echo "merge this pull request to publish the release."
+            echo
+            echo "## Draft release notes"
+            echo
+            cat "$RUNNER_TEMP/changelog_entry.txt"
+          } > "$RUNNER_TEMP/pr_body.md"
       - name: Commit changes
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
         with:
           token: ${{ steps.app-token.outputs.token }}
           title: Release ${{ steps.version.outputs.version }}
-          body: Automated PR for release ${{ steps.version.outputs.version }}
+          body-path: ${{ runner.temp }}/pr_body.md
           branch: release-${{ steps.version.outputs.version }}
           sign-commits: true
           commit-message: Release ${{ steps.version.outputs.version }}
