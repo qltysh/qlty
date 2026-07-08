@@ -94,7 +94,14 @@ jobs:
           STEPS_VERSION_OUTPUTS_VERSION: ${{ steps.version.outputs.version }}
         run: |
           # Write and read notes from a file to avoid quoting breaking things
-          echo "$ANNOUNCEMENT_BODY" > $RUNNER_TEMP/notes.txt
+          awk "/^## v${STEPS_VERSION_OUTPUTS_VERSION} /{flag=1; next} /^## v[0-9]/{flag=0} flag" \
+            CHANGELOG.md > "$RUNNER_TEMP/notes.txt"
+
+          if ! grep -q '[^[:space:]]' "$RUNNER_TEMP/notes.txt"; then
+            echo "No CHANGELOG.md entry found for v${STEPS_VERSION_OUTPUTS_VERSION}; using default notes"
+            echo "$ANNOUNCEMENT_BODY" > "$RUNNER_TEMP/notes.txt"
+          fi
+
           gh release create "v${STEPS_VERSION_OUTPUTS_VERSION}" $PRERELEASE_FLAG --title "$ANNOUNCEMENT_TITLE" --notes-file "$RUNNER_TEMP/notes.txt" target/distrib/*
   s3-upload:
     needs: release
