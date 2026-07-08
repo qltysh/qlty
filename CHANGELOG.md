@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.632.1 (2026-07-08)
+
+### Fixed
+
+- Recreate dangling `.qlty/out` and `.qlty/logs` symlinks after the cache is deleted (#2805)
+
 ## v0.632.0 (2026-07-01)
 
 ### New
