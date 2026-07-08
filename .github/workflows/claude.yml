@@ -33,7 +33,7 @@ jobs:
           persist-credentials: false
 
       - name: Install Qlty CLI
-        uses: qltysh/qlty-action/install@a19242102d17e497f437d7466aa01b528537e899
+        uses: qltysh/qlty-action/install@b413a89d8f3a8b36b9edd20b7ef1ad7ae0a7ac3a # version 2.2.2
 
       - name: Install Rust toolchain
         uses: actions-rust-lang/setup-rust-toolchain@2fcdc490d667999e01ddbbf0f2823181beef6b39
