@@ -1,5 +1,74 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Recreate dangling `.qlty` symlinks after the cache directory is deleted (#2805)
+
+## v0.632.0 (2026-07-01)
+
+### New
+
+- Add native CI detection for Harness CI to coverage uploads (#2799)
+
+## v0.631.0 (2026-06-23)
+
+### Fixed
+
+- Scrub environment variable values from serialized invocation records (#2797)
+
+## v0.630.0 (2026-05-08)
+
+### Fixed
+
+- Revert the Biome `--config-path` change from v0.629.0 (#2791)
+
+## v0.629.0 (2026-05-07)
+
+### Fixed
+
+- Pass `--config-path` to Biome so configs in `.qlty/configs/` are honored (#2788)
+- Pass `--config` to Knip so configs in `.qlty/configs/` are honored in nested-package layouts (#2789)
+
+## v0.628.0 (2026-05-06)
+
+### New
+
+- Add VB.NET maintainability support (#2759)
+
+### Fixed
+
+- Pass `--force-exclusion` to RuboCop so `AllCops: Exclude` is respected (#2786)
+
+## v0.627.0 (2026-05-05)
+
+### New
+
+- Add Scala maintainability support (#2778)
+
+### Fixed
+
+- Clamp line counters to file bounds to prevent overflow crashes during metrics analysis (#2777)
+
+## v0.626.0 (2026-05-01)
+
+### Fixed
+
+- Handle `-1` line numbers in editorconfig-checker output so its issues are reported (#2773)
+
+## v0.625.0 (2026-04-24)
+
+### New
+
+- Centralize config loading with `--skip-source-fetch` support, with graceful fallback in `qlty coverage publish` (#2766)
+
+## v0.624.0 (2026-04-22)
+
+### Fixed
+
+- Revert the config loading centralization from v0.623.0 due to a `qlty coverage publish` regression (#2764)
+
 ## v0.623.0 (2026-04-20)
 
 ### New
