@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.633.0 (2026-07-08)
+
+### New
+
+- Add `--selection` to `qlty coverage publish` and `qlty coverage complete` for uploads from a selective (subset) test run (#2802)
+
 ## v0.632.1 (2026-07-08)
 
 ### Fixed
