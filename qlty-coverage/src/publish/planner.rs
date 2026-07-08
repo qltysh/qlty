@@ -170,6 +170,7 @@ impl MetadataPlanner {
             nanos: now.nanosecond() as i32,
         });
         metadata.tag = self.settings.tag.clone();
+        metadata.selection = self.settings.selection.clone();
 
         Ok(metadata)
     }
@@ -624,6 +625,25 @@ mod tests {
         let settings = Settings::default();
         let metadata_planner = MetadataPlanner::new(&settings, None);
         let metadata = metadata_planner.compute().unwrap();
+        assert_eq!(metadata.selection, None);
+    }
+
+    #[test]
+    fn test_minimal_selection_set_from_settings() {
+        let settings = Settings {
+            selection: Some("selected".to_string()),
+            ..Default::default()
+        };
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute_minimal().unwrap();
+        assert_eq!(metadata.selection, Some("selected".to_string()));
+    }
+
+    #[test]
+    fn test_minimal_selection_defaults_to_none() {
+        let settings = Settings::default();
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute_minimal().unwrap();
         assert_eq!(metadata.selection, None);
     }
 

@@ -54,6 +54,13 @@ pub struct Complete {
     /// workspace and if it cannot be inferred from the git origin.
     pub project: Option<String>,
 
+    #[arg(long, num_args = 0..=1, require_equals = true, default_missing_value = "selected")]
+    /// Complete the uploads published with the same --selection value.
+    /// Selected and unselected uploads assemble into separate reports, so this
+    /// must match the value passed to qlty coverage publish. Defaults to
+    /// "selected"; pass --selection=<label> to name the selection.
+    pub selection: Option<String>,
+
     #[arg(long)]
     /// Perform a dry-run without actually completing the coverage
     pub dry_run: bool,
@@ -136,6 +143,7 @@ impl Complete {
             tag: self.tag.clone(),
             quiet: self.quiet,
             project: self.project.clone(),
+            selection: self.selection.clone(),
             ..Default::default()
         }
     }
