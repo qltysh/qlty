@@ -27,7 +27,10 @@ Follow these steps:
    reference PR numbers like `(#2762)`.
 5. If there are no externally observable changes, still add the section with a
    single brief bullet summarizing the most significant internal change.
-6. If a PR author is not a member of the team, include a shout out thanking
+6. If CHANGELOG.md contains an `## Unreleased` section, fold its bullets into
+   the new version's section and remove the `## Unreleased` heading, so the
+   same changes are not listed twice.
+7. If a PR author is not a member of the team, include a shout out thanking
    them. (Team members are @noahd1, @lsegal, @brynary, @marschattha,
    @davehenton, @laura-mlg. They don't need shout outs.)
 

@@ -1,11 +1,5 @@
 # Changelog
 
-## Unreleased
-
-### Fixed
-
-- Recreate dangling `.qlty` symlinks after the cache directory is deleted (#2805)
-
 ## v0.632.0 (2026-07-01)
 
 ### New
