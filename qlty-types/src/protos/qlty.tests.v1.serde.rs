@@ -136,6 +136,9 @@ impl serde::Serialize for CoverageMetadata {
         if self.complete {
             len += 1;
         }
+        if self.selection.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("qlty.tests.v1.CoverageMetadata", len)?;
         if !self.upload_id.is_empty() {
             struct_ser.serialize_field("uploadId", &self.upload_id)?;
@@ -268,6 +271,9 @@ impl serde::Serialize for CoverageMetadata {
         if self.complete {
             struct_ser.serialize_field("complete", &self.complete)?;
         }
+        if let Some(v) = self.selection.as_ref() {
+            struct_ser.serialize_field("selection", v)?;
+        }
         struct_ser.end()
     }
 }
@@ -353,6 +359,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             "buildUrl",
             "reference",
             "complete",
+            "selection",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -400,6 +407,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             BuildUrl,
             Reference,
             Complete,
+            Selection,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -464,6 +472,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                             "buildUrl" | "build_url" => Ok(GeneratedField::BuildUrl),
                             "reference" => Ok(GeneratedField::Reference),
                             "complete" => Ok(GeneratedField::Complete),
+                            "selection" => Ok(GeneratedField::Selection),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -526,6 +535,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                 let mut build_url__ = None;
                 let mut reference__ = None;
                 let mut complete__ = None;
+                let mut selection__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::UploadId => {
@@ -790,6 +800,12 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                             }
                             complete__ = Some(map_.next_value()?);
                         }
+                        GeneratedField::Selection => {
+                            if selection__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("selection"));
+                            }
+                            selection__ = map_.next_value()?;
+                        }
                     }
                 }
                 Ok(CoverageMetadata {
@@ -836,6 +852,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                     build_url: build_url__,
                     reference: reference__.unwrap_or_default(),
                     complete: complete__.unwrap_or_default(),
+                    selection: selection__,
                 })
             }
         }

@@ -26,6 +26,7 @@ pub struct Settings {
     pub strip_prefix: Option<String>,
     pub tag: Option<String>,
     pub total_parts_count: Option<u32>,
+    pub selection: Option<String>,
 
     pub paths: Vec<String>,
 }

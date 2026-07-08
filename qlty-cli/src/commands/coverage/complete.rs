@@ -55,6 +55,12 @@ pub struct Complete {
     pub project: Option<String>,
 
     #[arg(long)]
+    /// Complete the uploads published with --selection. Selected and
+    /// unselected uploads assemble into separate reports, so pass this
+    /// exactly when it was passed to qlty coverage publish.
+    pub selection: bool,
+
+    #[arg(long)]
     /// Perform a dry-run without actually completing the coverage
     pub dry_run: bool,
 
@@ -136,6 +142,7 @@ impl Complete {
             tag: self.tag.clone(),
             quiet: self.quiet,
             project: self.project.clone(),
+            selection: self.selection.then(|| "selected".to_string()),
             ..Default::default()
         }
     }

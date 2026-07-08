@@ -88,6 +88,8 @@ pub struct CoverageMetadata {
     pub reference: ::prost::alloc::string::String,
     #[prost(bool, tag="43")]
     pub complete: bool,
+    #[prost(string, optional, tag="44")]
+    pub selection: ::core::option::Option<::prost::alloc::string::String>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ReportFile {
