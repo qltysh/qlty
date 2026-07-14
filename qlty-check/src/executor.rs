@@ -776,7 +776,11 @@ fn install_error_message(name: &str, error: &Error) -> Message {
 }
 
 fn install_error_details(error: &Error) -> String {
-    if let Some(command_error) = error.downcast_ref::<ToolCommandError>() {
+    let command_error = error
+        .chain()
+        .find_map(|cause| cause.downcast_ref::<ToolCommandError>());
+
+    if let Some(command_error) = command_error {
         let output_tail = command_error.output_tail();
 
         if !output_tail.is_empty() {
