@@ -274,6 +274,7 @@ impl GitHubRelease {
         [
             "application/x-ms-dos-executable",
             "application/x-msdownload",
+            "application/x-msdos-program",
         ]
         .iter()
         .map(|s| s.to_string())
@@ -504,6 +505,7 @@ mod test {
             ("tool-v0.7.0_windows_386.zip", "application/zip", false),
             ("any_filename.ext", "application/x-msdownload", true),
             ("any_filename.ext", "application/x-ms-dos-executable", true),
+            ("any_filename.ext", "application/x-msdos-program", true),
             ("tool-v0.7.0.zip", "application/zip", true),
             ("tool-v0.7.0.tar.gz", "application/gzip", false),
             ("tool-v0.7.0.linux.zip", "application/zip", false),
