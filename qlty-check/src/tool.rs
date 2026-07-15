@@ -1,4 +1,5 @@
 pub mod command_builder;
+pub mod command_error;
 mod download;
 mod github;
 pub mod go;
@@ -20,6 +21,7 @@ use crate::ui::ProgressTask;
 use anyhow::{bail, Context, Result};
 use chrono::Utc;
 use command_builder::Command;
+use command_error::ToolCommandError;
 use console::style;
 use duct::Expression;
 use fslock::LockFile;
@@ -453,11 +455,13 @@ pub trait Tool: Debug + Sync + Send {
 
         let output = result?;
         if !output.status.success() {
-            bail!(
-                "Command {:?} exited with code {}",
-                command.lock().map_err(|_| lock_error())?,
-                output.status.code().unwrap_or_default()
-            );
+            return Err(ToolCommandError {
+                command: command.lock().map_err(|_| lock_error())?.clone(),
+                exit_code: exit_status_code(&output.status),
+                stdout: String::from_utf8_lossy(&output.stdout).to_string(),
+                stderr: String::from_utf8_lossy(&output.stderr).to_string(),
+            }
+            .into());
         }
 
         Ok(())
