@@ -5,8 +5,8 @@ runtime = "node"
 package = "@redocly/cli"
 file_types = ["openapi"]
 config_files = ["redocly.yaml"]
-latest_version = "2.11.1"
-known_good_version = "1.25.8"
+latest_version = "2.39.0"
+known_good_version = "2.32.2"
 version_command = "redocly --version"
 description = "Identify problems found in OpenAPI or Arazzo descriptions"
 suggested_mode = "comment"
@@ -16,7 +16,7 @@ script = "redocly lint --format=github-actions ${target}"
 success_codes = [0, 1]
 output = "stdout"
 output_format = "regex"
-output_regex = "::(?P<severity>[^ ]+) title=(?P<code>[^,]+),file=(?P<path>[^,]+),line=(?P<line>\\d+),col=(?P<col>\\d+),endLine=(?P<end_line>\\d+),endColumn=(?P<end_col>\\d+)::(?P<message>.+)"
+output_regex = "(?m)::(?P<severity>[^ ]+) title=(?P<code>[^,]+),file=(?P<path>[^,]+),line=(?P<line>\\d+),col=(?P<col>\\d+),endLine=(?P<end_line>\\d+),endColumn=(?P<end_col>\\d+)::(?P<message>.+?)(?:%0A.*)?$"
 cache_results = true
 suggested = "targets"
 output_missing = "parse"

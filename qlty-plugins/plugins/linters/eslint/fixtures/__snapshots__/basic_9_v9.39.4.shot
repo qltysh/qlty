@@ -1,0 +1,80 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=eslint fixture=basic_9 version=9.39.4 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://eslint.org/docs/rules/no-cond-assign",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.js",
+        "range": {
+          "endColumn": 10,
+          "endLine": 3,
+          "startColumn": 5,
+          "startLine": 3,
+        },
+      },
+      "message": "Expected a conditional expression and instead saw an assignment.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "no-cond-assign",
+      "snippet": "if (x = 2) {",
+      "snippetWithContext": "let x = 1;
+
+if (x = 2) {
+  console.log('hi');
+}",
+      "tool": "eslint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://eslint.org/docs/rules/no-constant-condition",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.js",
+        "range": {
+          "endColumn": 10,
+          "endLine": 3,
+          "startColumn": 5,
+          "startLine": 3,
+        },
+      },
+      "message": "Unexpected constant condition.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "no-constant-condition",
+      "snippet": "if (x = 2) {",
+      "snippetWithContext": "let x = 1;
+
+if (x = 2) {
+  console.log('hi');
+}",
+      "tool": "eslint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://eslint.org/docs/rules/no-unused-vars",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.js",
+        "range": {
+          "endColumn": 6,
+          "endLine": 3,
+          "startColumn": 5,
+          "startLine": 3,
+        },
+      },
+      "message": "'x' is assigned a value but never used.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "no-unused-vars",
+      "snippet": "if (x = 2) {",
+      "snippetWithContext": "let x = 1;
+
+if (x = 2) {
+  console.log('hi');
+}",
+      "tool": "eslint",
+    },
+  ],
+}
+`;

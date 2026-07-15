@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`linter=knip fixture=basic version=5.21.2 1`] = `
+exports[`linter=knip fixture=basic version=5.88.1 1`] = `
 {
   "issues": [
     {
@@ -9,7 +9,7 @@ exports[`linter=knip fixture=basic version=5.21.2 1`] = `
       "location": {
         "path": "index.js",
       },
-      "message": "Unlisted dependency: src/mistake.js",
+      "message": "Unlisted dependency: src",
       "mode": "MODE_BLOCK",
       "ruleKey": "unlisted-dependency",
       "tool": "knip",
@@ -34,6 +34,17 @@ exports[`linter=knip fixture=basic version=5.21.2 1`] = `
       "message": "Unused dependency: @aws-sdk/client-cloudwatch-logs",
       "mode": "MODE_BLOCK",
       "ruleKey": "unused-dependency",
+      "tool": "knip",
+    },
+    {
+      "category": "CATEGORY_DEAD_CODE",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "src/unusedCode.js",
+      },
+      "message": "Unused export: default",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "unused-export",
       "tool": "knip",
     },
     {

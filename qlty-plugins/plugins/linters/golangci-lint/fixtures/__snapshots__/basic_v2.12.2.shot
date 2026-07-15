@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`linter=golangci-lint fixture=basic version=1.59.1 1`] = `
+exports[`linter=golangci-lint fixture=basic version=2.12.2 1`] = `
 {
   "issues": [
     {
@@ -34,7 +34,7 @@ func main() {
       "location": {
         "path": "basic.in.go",
         "range": {
-          "startColumn": 34,
+          "startColumn": 1,
           "startLine": 6,
         },
       },
@@ -51,36 +51,6 @@ import "time"
 func main() {
 	time.Parse("asdf", "")
 }",
-      "suggestions": [
-        {
-          "patch": "--- original
-+++ modified
-@@ -3,7 +3,7 @@
- import "time"
-
- // ✋✋✋✋
--// this is the main function 🏃
-+// this is the main function 🏃.
- func main() {
- 	time.Parse("asdf", "")
- }
-",
-          "replacements": [
-            {
-              "data": "// this is the main function 🏃.",
-              "location": {
-                "path": "basic.in.go",
-                "range": {
-                  "endColumn": 34,
-                  "endLine": 6,
-                  "startLine": 6,
-                },
-              },
-            },
-          ],
-          "source": "SUGGESTION_SOURCE_TOOL",
-        },
-      ],
       "tool": "golangci-lint",
     },
   ],
