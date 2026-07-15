@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.634.0 (2026-07-15)
+
+### Improved
+
+- Update linter plugin versions, including a PMD bump that clears GHSA-8rr6-2qw5-pc7r (stored XSS in HTML renderers) (#2812)
+
+### Fixed
+
+- Pin TypeScript to 6.0.3 for Knip so it no longer crashes when npm resolves TypeScript 7.0 (#2811)
+
 ## v0.633.0 (2026-07-08)
 
 ### New
