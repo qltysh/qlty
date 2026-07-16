@@ -32,7 +32,10 @@ impl RubyGemfile {
 
         contents.lines().any(|line| {
             let line = line.trim();
-            line.starts_with("source ") && !line.contains("rubygems.org")
+            line.starts_with("source")
+                && line["source".len()..].starts_with([' ', '('])
+                && !line.contains("rubygems.org")
+                && !line.contains(":rubygems")
         })
     }
 
@@ -490,6 +493,34 @@ mod test {
             std::fs::write(
                 &req_file,
                 "source 'https://gems.example.com'\ngem 'tool', '1.0.0'",
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+
+            assert!(pkg.package_file_declares_custom_source());
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_package_file_declares_custom_source_rubygems_symbol() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(&req_file, "source :rubygems\ngem 'tool', '1.0.0'").unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+
+            assert!(!pkg.package_file_declares_custom_source());
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_package_file_declares_custom_source_parenthesized() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                "source('https://gems.example.com')\ngem 'tool', '1.0.0'",
             )
             .unwrap();
             pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
