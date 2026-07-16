@@ -1,3 +1,4 @@
+use super::install_failure::InstallFailure;
 use thiserror::Error;
 
 const OUTPUT_TAIL_LINES: usize = 10;
@@ -9,6 +10,7 @@ pub struct ToolCommandError {
     pub exit_code: i32,
     pub stdout: String,
     pub stderr: String,
+    pub failure: Option<InstallFailure>,
 }
 
 impl ToolCommandError {
@@ -39,6 +41,7 @@ mod test {
             exit_code: 1,
             stdout: stdout.to_string(),
             stderr: stderr.to_string(),
+            failure: None,
         }
     }
 
