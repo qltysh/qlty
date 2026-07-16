@@ -1,4 +1,5 @@
 mod driver;
+mod install_error;
 mod invocation_result;
 mod invocation_script;
 pub mod staging_area;
@@ -8,7 +9,6 @@ use crate::llm::Fixer;
 use crate::planner::check_filters::CheckFilters;
 use crate::planner::config_files::config_globset;
 use crate::planner::source_extractor::SourceExtractor;
-use crate::tool::command_error::ToolCommandError;
 use crate::Tool;
 use crate::{
     cache::IssueCache,
@@ -16,10 +16,10 @@ use crate::{
     ui::{Progress, ProgressBar},
 };
 use crate::{cache::IssuesCacheHit, planner::Plan, results::FormattedFile, Results};
-use anyhow::{bail, Context, Error, Result};
-use chrono::Utc;
+use anyhow::{bail, Context, Result};
 pub use driver::Driver;
 use ignore::{DirEntry, WalkBuilder, WalkState};
+use install_error::install_error_message;
 pub use invocation_result::{InvocationResult, InvocationStatus};
 pub use invocation_script::{compute_invocation_script, plan_target_list};
 use itertools::Itertools;
@@ -763,34 +763,6 @@ fn run_invocation(
     Ok(result)
 }
 
-fn install_error_message(name: &str, error: &Error) -> Message {
-    Message {
-        timestamp: Some(Utc::now().into()),
-        module: "qlty_check::executor".to_string(),
-        ty: "executor.install.error".to_string(),
-        level: MessageLevel::Error.into(),
-        message: format!("Error installing tool {name}"),
-        details: install_error_details(error),
-        ..Default::default()
-    }
-}
-
-fn install_error_details(error: &Error) -> String {
-    let command_error = error
-        .chain()
-        .find_map(|cause| cause.downcast_ref::<ToolCommandError>());
-
-    if let Some(command_error) = command_error {
-        let output_tail = command_error.output_tail();
-
-        if !output_tail.is_empty() {
-            return format!("{error}\n\n{output_tail}");
-        }
-    }
-
-    error.to_string()
-}
-
 fn walk_collect_entries_parallel(builder: &WalkBuilder) -> Vec<DirEntry> {
     let dents = Arc::new(Mutex::new(vec![]));
 
@@ -807,57 +779,4 @@ fn walk_collect_entries_parallel(builder: &WalkBuilder) -> Vec<DirEntry> {
 
     let dents = dents.lock().unwrap();
     dents.to_vec()
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-    use anyhow::anyhow;
-
-    fn command_error() -> ToolCommandError {
-        ToolCommandError {
-            command: vec!["npm".to_string(), "install".to_string()],
-            exit_code: 1,
-            stdout: String::new(),
-            stderr: "npm error code E404\nnpm error 404 Not Found".to_string(),
-        }
-    }
-
-    #[test]
-    fn install_error_details_appends_command_output() {
-        let error = Error::from(command_error()).context("Error installing eslint@9.7.0.");
-
-        let details = install_error_details(&error);
-
-        assert_eq!(
-            details,
-            "Error installing eslint@9.7.0.\n\nnpm error code E404\nnpm error 404 Not Found"
-        );
-    }
-
-    #[test]
-    fn install_error_details_with_empty_command_output() {
-        let mut error = command_error();
-        error.stderr = String::new();
-
-        assert_eq!(
-            install_error_details(&Error::from(error)),
-            r#"Command ["npm", "install"] exited with code 1"#
-        );
-    }
-
-    #[test]
-    fn install_error_details_without_command_error() {
-        assert_eq!(install_error_details(&anyhow!("boom")), "boom");
-    }
-
-    #[test]
-    fn install_error_message_fields() {
-        let message = install_error_message("eslint", &anyhow!("boom"));
-
-        assert_eq!(message.ty, "executor.install.error");
-        assert_eq!(message.level, MessageLevel::Error as i32);
-        assert_eq!(message.message, "Error installing tool eslint");
-        assert_eq!(message.details, "boom");
-    }
 }

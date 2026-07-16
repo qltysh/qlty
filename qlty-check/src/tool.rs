@@ -3,6 +3,7 @@ pub mod command_error;
 mod download;
 mod github;
 pub mod go;
+pub mod install_failure;
 mod installations;
 pub mod java;
 pub mod node;
@@ -25,6 +26,7 @@ use command_error::ToolCommandError;
 use console::style;
 use duct::Expression;
 use fslock::LockFile;
+use install_failure::InstallFailure;
 use installations::initialize_installation;
 use installations::write_to_file;
 use qlty_analysis::join_path_string;
@@ -267,7 +269,6 @@ pub trait Tool: Debug + Sync + Send {
                     let log_path = self.install_log_path();
                     if Path::new(&log_path).exists() {
                         const BUILD_LOG_LINES_LIMIT: usize = 50;
-                        const STDERR_LOG_LINES_LIMIT: usize = 20;
 
                         fn extract_last_lines(lines: &[&str], limit: usize) -> String {
                             lines[lines.len().saturating_sub(limit)..].join("\n")
@@ -280,7 +281,7 @@ pub trait Tool: Debug + Sync + Send {
                                     let build_log =
                                         extract_last_lines(&lines, BUILD_LOG_LINES_LIMIT);
                                     let stderr_log =
-                                        extract_last_lines(&lines, STDERR_LOG_LINES_LIMIT);
+                                        extract_last_lines(&lines, self.install_log_tail_lines());
                                     (build_log, stderr_log)
                                 }
                                 Err(err) => {
@@ -420,6 +421,10 @@ pub trait Tool: Debug + Sync + Send {
         );
     }
 
+    fn classify_install_failure(&self, _error: &ToolCommandError) -> Option<InstallFailure> {
+        None
+    }
+
     fn post_install(&self, _task: &ProgressTask) -> Result<()> {
         Ok(())
     }
@@ -455,13 +460,16 @@ pub trait Tool: Debug + Sync + Send {
 
         let output = result?;
         if !output.status.success() {
-            return Err(ToolCommandError {
+            let mut command_error = ToolCommandError {
                 command: command.lock().map_err(|_| lock_error())?.clone(),
                 exit_code: exit_status_code(&output.status),
                 stdout: String::from_utf8_lossy(&output.stdout).to_string(),
                 stderr: String::from_utf8_lossy(&output.stderr).to_string(),
-            }
-            .into());
+                failure: None,
+            };
+            command_error.failure = self.classify_install_failure(&command_error);
+
+            return Err(command_error.into());
         }
 
         Ok(())
@@ -669,6 +677,10 @@ pub trait Tool: Debug + Sync + Send {
             self.parent_directory(),
             format!("{}-install.log", self.directory_name())
         )
+    }
+
+    fn install_log_tail_lines(&self) -> usize {
+        20
     }
 
     fn clone_box(&self) -> Box<dyn Tool>;

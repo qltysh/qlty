@@ -9,7 +9,7 @@ pub fn print_installation_error_messages(
     let installation_error_messages: Vec<&Message> = report
         .messages
         .iter()
-        .filter(|m| m.ty == "executor.install.error")
+        .filter(|m| m.ty.starts_with("executor.install."))
         .collect();
 
     if !installation_error_messages.is_empty() {
