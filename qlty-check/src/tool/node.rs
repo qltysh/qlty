@@ -271,12 +271,16 @@ fn unsupported_protocol_summary(output: &str) -> String {
     let protocol = Regex::new(r#"Unsupported URL Type "([^"]+)""#)
         .unwrap()
         .captures(output)
-        .and_then(|captures| captures.get(1))
-        .map_or("workspace:", |protocol| protocol.as_str());
+        .and_then(|captures| captures.get(1));
 
-    format!(
-        "npm cannot install \"{protocol}\" dependencies (pnpm/yarn workspace protocols are not supported)"
-    )
+    match protocol {
+        Some(protocol) => format!(
+            "npm cannot install \"{}\" dependencies (pnpm/yarn workspace protocols are not supported)",
+            protocol.as_str()
+        ),
+        None => "npm cannot install this package file (it uses an unsupported dependency protocol)"
+            .to_string(),
+    }
 }
 
 // Unscoped failures are usually typos, yanked versions, or public-registry
@@ -596,6 +600,18 @@ pub mod test {
             failure.kind,
             InstallFailureKind::UnsupportedDependencyProtocol
         ));
+    }
+
+    #[test]
+    fn test_detect_npm_failure_unsupported_protocol_without_url_type_line() {
+        let stderr = "npm error code EUNSUPPORTEDPROTOCOL";
+
+        let failure = detect_npm_failure(&npm_command_error(stderr)).unwrap();
+
+        assert_eq!(
+            failure.summary,
+            "npm cannot install this package file (it uses an unsupported dependency protocol)"
+        );
     }
 
     #[test]
