@@ -11,6 +11,7 @@ pub enum InstallFailureKind {
     AuthenticationFailed,
     AccessDenied,
     PackageMaybePrivate,
+    UnsupportedDependencyProtocol,
 }
 
 impl InstallFailureKind {
@@ -20,6 +21,9 @@ impl InstallFailureKind {
                 "executor.install.auth_error"
             }
             InstallFailureKind::PackageMaybePrivate => "executor.install.package_not_found",
+            InstallFailureKind::UnsupportedDependencyProtocol => {
+                "executor.install.unsupported_protocol"
+            }
         }
     }
 }

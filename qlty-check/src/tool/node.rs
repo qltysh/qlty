@@ -240,13 +240,18 @@ impl Tool for NodePackage {
 fn detect_npm_failure(error: &ToolCommandError) -> Option<InstallFailure> {
     let output = format!("{}\n{}", error.stdout, error.stderr);
 
-    let code_regex = Regex::new(r"npm (?:ERR!|error) code (E401|E403|E404)").unwrap();
+    let code_regex =
+        Regex::new(r"npm (?:ERR!|error) code (E401|E403|E404|EUNSUPPORTEDPROTOCOL)").unwrap();
     let code = code_regex.captures(&output)?.get(1)?.as_str();
 
     let failure = match code {
         "E401" => InstallFailure {
             kind: InstallFailureKind::AuthenticationFailed,
             summary: format!("npm registry authentication failed (see {BUILD_SECRETS_URL})"),
+        },
+        "EUNSUPPORTEDPROTOCOL" => InstallFailure {
+            kind: InstallFailureKind::UnsupportedDependencyProtocol,
+            summary: unsupported_protocol_summary(&output),
         },
         "E403" if mentions_scoped_package(&output, "403") => InstallFailure {
             kind: InstallFailureKind::AccessDenied,
@@ -260,6 +265,22 @@ fn detect_npm_failure(error: &ToolCommandError) -> Option<InstallFailure> {
     };
 
     Some(failure)
+}
+
+fn unsupported_protocol_summary(output: &str) -> String {
+    let protocol = Regex::new(r#"Unsupported URL Type "([^"]+)""#)
+        .unwrap()
+        .captures(output)
+        .and_then(|captures| captures.get(1));
+
+    match protocol {
+        Some(protocol) => format!(
+            "npm cannot install \"{}\" dependencies (pnpm/yarn workspace protocols are not supported)",
+            protocol.as_str()
+        ),
+        None => "npm cannot install this package file (it uses an unsupported dependency protocol)"
+            .to_string(),
+    }
 }
 
 // Unscoped failures are usually typos, yanked versions, or public-registry
@@ -563,6 +584,34 @@ pub mod test {
         let stderr = "npm warn deprecated @babel/polyfill@7.12.1: This package has been deprecated\nnpm ERR! code E404\nnpm ERR! 404  'left-padd@1.0.0' is not in this registry.";
 
         assert!(detect_npm_failure(&npm_command_error(stderr)).is_none());
+    }
+
+    #[test]
+    fn test_detect_npm_failure_unsupported_protocol() {
+        let stderr = "npm warn using --force Recommended protections disabled.\nnpm error code EUNSUPPORTEDPROTOCOL\nnpm error Unsupported URL Type \"workspace:\": workspace:*";
+
+        let failure = detect_npm_failure(&npm_command_error(stderr)).unwrap();
+
+        assert_eq!(
+            failure.summary,
+            "npm cannot install \"workspace:\" dependencies (pnpm/yarn workspace protocols are not supported)"
+        );
+        assert!(matches!(
+            failure.kind,
+            InstallFailureKind::UnsupportedDependencyProtocol
+        ));
+    }
+
+    #[test]
+    fn test_detect_npm_failure_unsupported_protocol_without_url_type_line() {
+        let stderr = "npm error code EUNSUPPORTEDPROTOCOL";
+
+        let failure = detect_npm_failure(&npm_command_error(stderr)).unwrap();
+
+        assert_eq!(
+            failure.summary,
+            "npm cannot install this package file (it uses an unsupported dependency protocol)"
+        );
     }
 
     #[test]
