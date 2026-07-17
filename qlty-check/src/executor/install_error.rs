@@ -37,7 +37,7 @@ fn install_error_details(error: &Error, command_error: Option<&ToolCommandError>
         }
     }
 
-    error.to_string()
+    format!("{error:#}")
 }
 
 #[cfg(test)]
@@ -114,6 +114,7 @@ mod test {
             InstallFailureKind::AuthenticationFailed,
             InstallFailureKind::AccessDenied,
             InstallFailureKind::PackageMaybePrivate,
+            InstallFailureKind::UnsupportedDependencyProtocol,
         ] {
             assert!(kind.message_ty().starts_with("executor.install."));
         }
@@ -135,6 +136,19 @@ mod test {
         assert_eq!(
             message.details,
             r#"Command ["npm", "install"] exited with code 1"#
+        );
+    }
+
+    #[test]
+    fn details_without_command_error_include_the_cause_chain() {
+        let error =
+            anyhow!("No package file provided").context("Error installing rubocop@bundled.");
+
+        let message = install_error_message("rubocop", &error);
+
+        assert_eq!(
+            message.details,
+            "Error installing rubocop@bundled.: No package file provided"
         );
     }
 
