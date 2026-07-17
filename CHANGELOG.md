@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.635.0 (2026-07-17)
+
+### Improved
+
+- Include the failing install command's captured output in build messages when a plugin install fails, instead of only a log file path (#2803)
+- Classify npm install auth and not-found failures (`E401`/`E403`/`E404`) with actionable messages linking to the build secrets docs (#2816)
+- Classify bundler and gem install auth and not-found failures with actionable messages (#2817)
+
 ## v0.634.0 (2026-07-15)
 
 ### Improved
