@@ -1,0 +1,23 @@
+config_version = "0"
+
+[plugins.definitions.versioned]
+file_types = ["ALL"]
+
+[plugins.definitions.versioned.drivers.lint]
+prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd"
+
+[[plugins.definitions.versioned.drivers.lint.version]]
+version_matcher = "<2.0.0"
+script = "ls -l ${linter}/ls.cmd"
+success_codes = [0]
+output = "pass_fail"
+
+[[plugins.definitions.versioned.drivers.lint.version]]
+version_matcher = ">=2.0.0"
+script = "ls -l ${linter}/ls.cmd"
+success_codes = [0]
+output = "pass_fail"
+
+[[plugin]]
+name = "versioned"
+version = "1.0.0"
