@@ -4,17 +4,17 @@ config_version = "0"
 file_types = ["ALL"]
 
 [plugins.definitions.versioned.drivers.lint]
-prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd && echo prepared > prepared.marker"
+prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd"
 
 [[plugins.definitions.versioned.drivers.lint.version]]
 version_matcher = "<2.0.0"
-script = "ls -l prepared.marker"
+script = "ls -l sample.sh"
 success_codes = [0]
 output = "pass_fail"
 
 [[plugins.definitions.versioned.drivers.lint.version]]
 version_matcher = ">=2.0.0"
-script = "ls -l prepared.marker"
+script = "ls -l sample.sh"
 success_codes = [0]
 output = "pass_fail"
 
