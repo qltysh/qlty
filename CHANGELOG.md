@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.636.0 (2026-07-17)
+
+### Improved
+
+- Classify npm `EUNSUPPORTEDPROTOCOL` failures caused by `workspace:`/`catalog:` dependencies with a clear message explaining that pnpm/yarn workspace protocols are not supported (#2819)
+- Surface the full error cause chain in install error details so failures without command output (such as package-file staging errors) are no longer reported with empty details (#2819)
+
 ## v0.635.0 (2026-07-17)
 
 ### Improved
