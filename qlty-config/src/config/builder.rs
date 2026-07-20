@@ -13,7 +13,7 @@ use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use std::env;
 use std::path::Path;
-use toml::Value;
+use toml::{map::Map, Value};
 use tracing::{debug, trace, warn};
 
 const EXPECTED_CONFIG_VERSION: &str = "0";
@@ -279,7 +279,7 @@ impl Builder {
             return Ok(());
         };
 
-        for (_, definition) in definitions.iter_mut() {
+        for (plugin_name, definition) in definitions.iter_mut() {
             let Some(drivers) = definition
                 .get_mut("drivers")
                 .and_then(|drivers| drivers.as_table_mut())
@@ -287,14 +287,22 @@ impl Builder {
                 continue;
             };
 
-            for (_, driver) in drivers.iter_mut() {
+            for (driver_name, driver) in drivers.iter_mut() {
                 let Some(driver_table) = driver.as_table_mut() else {
                     continue;
                 };
 
-                let mut overlay = driver_table.clone();
-                overlay.remove("version");
-                overlay.remove("version_matcher");
+                if !driver_table.get("version").is_some_and(Value::is_array) {
+                    continue;
+                }
+
+                let overlay: Map<String, Value> = driver_table
+                    .iter()
+                    .filter(|(key, _)| {
+                        key.as_str() != "version" && key.as_str() != "version_matcher"
+                    })
+                    .map(|(key, value)| (key.clone(), value.clone()))
+                    .collect();
 
                 if overlay.is_empty() {
                     continue;
@@ -313,7 +321,12 @@ impl Builder {
                             versioned_driver.clone(),
                             Value::Table(overlay.clone()),
                         )
-                        .map_err(|error| anyhow!("{error}"))?;
+                        .map_err(|error| anyhow!("{error}"))
+                        .with_context(|| {
+                            format!(
+                                "Failed to merge driver configuration into the versioned definitions of driver '{driver_name}' for plugin '{plugin_name}'"
+                            )
+                        })?;
                     }
                 }
             }
