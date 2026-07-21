@@ -6,11 +6,7 @@ package = "oxlint"
 file_types = ["javascript", "typescript", "jsx", "tsx"]
 affects_cache = ["package.json", "tsconfig.json"]
 latest_version = "1.74.0"
-# oxlint >=1.0 requires node ^20.19 || >=22.12; the managed node runtime (21.7.3)
-# fails that engine check, so npm skips the native binding and installs break.
-# Bump known_good once the node runtime moves off 21.x. The >=1.0.0 driver block
-# below is ready for that (oxlint 1.x changed the --format github title syntax).
-known_good_version = "0.11.1"
+known_good_version = "1.70.0"
 version_command = "oxlint --version"
 description = "Javascript linter"
 
