@@ -1432,4 +1432,54 @@ mod test {
         assert_eq!(driver.prepare_script, Some("npm install".to_string()));
         assert_eq!(driver.script, "mylint ${target}");
     }
+
+    #[test]
+    fn test_versioned_drivers_with_same_version_matcher_are_merged() {
+        let sources = toml! {
+            config_version = "0"
+
+            [plugins.definitions.mylint]
+            file_types = ["ALL"]
+
+            [[plugins.definitions.mylint.drivers.lint.version]]
+            version_matcher = "<2.0.0"
+            script = "mylint-legacy ${target}"
+            success_codes = [0]
+            output = "pass_fail"
+
+            [[plugins.definitions.mylint.drivers.lint.version]]
+            version_matcher = ">=2.0.0"
+            script = "mylint ${target}"
+            success_codes = [0]
+            output = "pass_fail"
+        };
+        let qlty_config = toml! {
+            config_version = "0"
+
+            [[plugins.definitions.mylint.drivers.lint.version]]
+            version_matcher = ">=2.0.0"
+            prepare_script = "npm install"
+        };
+
+        let config =
+            Builder::full_config(toml::Value::Table(sources), toml::Value::Table(qlty_config))
+                .unwrap();
+
+        let driver = &config.plugins.definitions["mylint"].drivers["lint"];
+        assert_eq!(driver.version.len(), 2);
+        assert_eq!(
+            driver.version[0].version_matcher,
+            Some("<2.0.0".to_string())
+        );
+        assert_eq!(driver.version[0].prepare_script, None);
+        assert_eq!(
+            driver.version[1].version_matcher,
+            Some(">=2.0.0".to_string())
+        );
+        assert_eq!(
+            driver.version[1].prepare_script,
+            Some("npm install".to_string())
+        );
+        assert_eq!(driver.version[1].script, "mylint ${target}");
+    }
 }
