@@ -6,18 +6,33 @@ package = "@biomejs/biome"
 file_types = ["typescript", "javascript", "jsx", "tsx", "json", "css"]
 config_files = ["biome.json", "biome.jsonc"]
 affects_cache = ["package.json", ".editorconfig"]
-latest_version = "2.3.7"
-known_good_version = "1.9.4"
+latest_version = "2.5.4"
+known_good_version = "2.5.4"
 version_command = "biome --version"
 description = "A static analyzer for web projects"
 package_file_candidate = "package.json"
 package_file_candidate_filters = ["biome"]
 
-[plugins.definitions.biome.drivers.lint]
+# Biome's unstable `json` reporter changed shape in 2.4.0; the stable
+# `rdjson` reporter (added in 2.x) also carries fix data, which `json`
+# dropped in 2.4.0.
+[[plugins.definitions.biome.drivers.lint.version]]
+version_matcher = "<2.4.0"
 script = "biome lint --reporter=json ${target}"
 success_codes = [0, 1]
 output = "stdout"
 output_format = "biome"
+batch = true
+cache_results = true
+suggested = "config"
+output_missing = "parse"
+
+[[plugins.definitions.biome.drivers.lint.version]]
+version_matcher = ">=2.4.0"
+script = "biome lint --reporter=rdjson ${target}"
+success_codes = [0, 1]
+output = "stdout"
+output_format = "rdjson"
 batch = true
 cache_results = true
 suggested = "config"

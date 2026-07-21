@@ -1,0 +1,197 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=biome fixture=basic version=2.5.4 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_STYLE",
+      "level": "LEVEL_FMT",
+      "location": {
+        "path": "basic.in.ts",
+      },
+      "message": "Incorrect formatting, autoformat by running \`qlty fmt\`.",
+      "mode": "MODE_BLOCK",
+      "onAddedLine": true,
+      "ruleKey": "fmt",
+      "tool": "biome",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://biomejs.dev/linter/rules/no-useless-lone-block-statements",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.ts",
+        "range": {
+          "endColumn": 22,
+          "endLine": 13,
+          "startColumn": 3,
+          "startLine": 13,
+        },
+      },
+      "message": "This block statement doesn't serve any purpose and can be safely removed.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "lint/complexity/noUselessLoneBlockStatements",
+      "snippet": "  { !foo ? null : 1 }",
+      "snippetWithContext": "
+enum Bar { Baz };
+
+const foo = (bar: Bar) => {
+  switch (bar) {
+    case Bar.Baz:
+      foobar();
+      barfoo();
+      break;
+  }
+  { !foo ? null : 1 }
+}
+
+enum Foo { Bae };",
+      "suggestions": [
+        {
+          "patch": "--- original
++++ modified
+@@ -9,8 +9,7 @@
+       foobar();
+       barfoo();
+       break;
+-  }
+-  { !foo ? null : 1 }
++  }!foo ? null : 1 
+ }
+
+ enum Foo { Bae };
+",
+          "replacements": [
+            {
+              "data": "!foo ? null : 1 ",
+              "location": {
+                "range": {
+                  "endColumn": 22,
+                  "endLine": 13,
+                  "startColumn": 4,
+                  "startLine": 12,
+                },
+              },
+            },
+          ],
+          "source": "SUGGESTION_SOURCE_TOOL",
+          "unsafe": true,
+        },
+      ],
+      "tool": "biome",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://biomejs.dev/linter/rules/no-unused-variables",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.ts",
+        "range": {
+          "endColumn": 9,
+          "endLine": 16,
+          "startColumn": 6,
+          "startLine": 16,
+        },
+      },
+      "message": "This variable Foo is unused.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "lint/correctness/noUnusedVariables",
+      "snippet": "enum Foo { Bae };",
+      "snippetWithContext": "const foo = (bar: Bar) => {
+  switch (bar) {
+    case Bar.Baz:
+      foobar();
+      barfoo();
+      break;
+  }
+  { !foo ? null : 1 }
+}
+
+enum Foo { Bae };",
+      "tool": "biome",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://biomejs.dev/linter/rules/no-unused-variables",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.ts",
+        "range": {
+          "endColumn": 10,
+          "endLine": 6,
+          "startColumn": 7,
+          "startLine": 6,
+        },
+      },
+      "message": "This variable foo is unused.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "lint/correctness/noUnusedVariables",
+      "snippet": "const foo = (bar: Bar) => {",
+      "snippetWithContext": "const foobar = () => { }
+const barfoo = () => { }
+
+enum Bar { Baz };
+
+const foo = (bar: Bar) => {
+  switch (bar) {
+    case Bar.Baz:
+      foobar();
+      barfoo();
+      break;
+  }
+  { !foo ? null : 1 }
+}
+
+enum Foo { Bae };",
+      "suggestions": [
+        {
+          "patch": "--- original
++++ modified
+@@ -3,7 +3,7 @@
+
+ enum Bar { Baz };
+
+-const foo = (bar: Bar) => {
++const _foo = (bar: Bar) => {
+   switch (bar) {
+     case Bar.Baz:
+       foobar();
+@@ -10,7 +10,7 @@
+       barfoo();
+       break;
+   }
+-  { !foo ? null : 1 }
++  { !_foo ? null : 1 }
+ }
+
+ enum Foo { Bae };
+",
+          "replacements": [
+            {
+              "data": "_foo = (bar: Bar) => {
+  switch (bar) {
+    case Bar.Baz:
+      foobar();
+      barfoo();
+      break;
+  }
+  { !_foo",
+              "location": {
+                "range": {
+                  "endColumn": 9,
+                  "endLine": 13,
+                  "startColumn": 7,
+                  "startLine": 6,
+                },
+              },
+            },
+          ],
+          "source": "SUGGESTION_SOURCE_TOOL",
+          "unsafe": true,
+        },
+      ],
+      "tool": "biome",
+    },
+  ],
+}
+`;

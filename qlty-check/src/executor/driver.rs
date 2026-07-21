@@ -18,6 +18,7 @@ use crate::parser::php_codesniffer::PhpCodesniffer;
 use crate::parser::phpstan::Phpstan;
 use crate::parser::pylint::Pylint;
 use crate::parser::radarlint::Radarlint;
+use crate::parser::rdjson::Rdjson;
 use crate::parser::reek::Reek;
 use crate::parser::regex::Regex;
 use crate::parser::ripgrep::Ripgrep;
@@ -440,6 +441,7 @@ impl Driver {
             OutputFormat::Phpstan => Box::new(Phpstan {}),
             OutputFormat::Pylint => Box::new(Pylint {}),
             OutputFormat::Radarlint => Box::new(Radarlint {}),
+            OutputFormat::Rdjson => Box::new(Rdjson {}),
             OutputFormat::Reek => Box::new(Reek {}),
 
             OutputFormat::Regex => {
