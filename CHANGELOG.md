@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.637.0 (2026-07-21)
+
+### Improved
+
+- Merge a `[[plugins.definitions.X.drivers.Y.version]]` block in qlty.toml into a source's versioned driver entry with the same `version_matcher`, allowing per-version driver field overrides instead of being silently unreachable (#2823)
+
+### Fixed
+
+- Apply user-configured driver fields (such as `prepare_script`) to version-matched drivers for plugins with versioned drivers (eslint, stylelint, knip, golangci-lint, trufflehog, radarlint-*), instead of silently discarding them at plan time (#2822)
+
 ## v0.636.0 (2026-07-17)
 
 ### Improved
