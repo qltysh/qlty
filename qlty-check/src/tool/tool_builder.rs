@@ -146,7 +146,7 @@ impl ToolBuilder<'_> {
     fn latest_runtime_version(runtime: &Runtime) -> Option<String> {
         match runtime {
             Runtime::Go => Some("1.22.0".to_owned()),
-            Runtime::Node => Some("21.7.3".to_owned()),
+            Runtime::Node => Some("22.23.1".to_owned()),
             Runtime::Python => Some("3.11.7".to_owned()),
             Runtime::Ruby => Some("3.3.7".to_owned()),
             Runtime::Rust => Some("1.77.2".to_owned()),
