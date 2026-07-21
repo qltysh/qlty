@@ -6,7 +6,8 @@ use std::collections::HashMap;
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 struct Report {
-    // Unused files
+    // Unused files (knip <6 reports them at the top level)
+    #[serde(default)]
     pub files: Vec<String>,
 
     // Issues within files
@@ -17,45 +18,85 @@ struct Report {
 struct KnipIssue {
     pub file: String,
 
+    // Unused files (knip >=6 reports them per issue row)
+    #[serde(default)]
+    pub files: Vec<KnipIdentifier>,
+
     // Unused dependencies
+    #[serde(default)]
     pub dependencies: Vec<KnipIdentifier>,
-    #[serde(alias = "devDependencies")]
+    #[serde(default, alias = "devDependencies")]
     pub dev_dependencies: Vec<KnipIdentifier>,
-    #[serde(alias = "optionalPeerDependencies")]
+    #[serde(default, alias = "optionalPeerDependencies")]
     pub optional_peer_dependencies: Vec<KnipIdentifier>,
 
     // Unlisted dependencies
+    #[serde(default)]
     pub unlisted: Vec<KnipIdentifier>,
 
     // Unlisted binaries
+    #[serde(default)]
     pub binaries: Vec<KnipIdentifier>,
 
     // Unused exports
+    #[serde(default)]
     pub exports: Vec<KnipIdentifier>,
     #[serde(alias = "nsExports")]
     pub ns_exports: Option<Vec<KnipIdentifier>>,
 
     // Unused exported types
+    #[serde(default)]
     pub types: Vec<KnipIdentifier>,
     #[serde(alias = "nsTypes")]
     pub ns_types: Option<Vec<KnipIdentifier>>,
 
     // Unresolved imports
+    #[serde(default)]
     pub unresolved: Vec<KnipIdentifier>,
 
     // Unused exported enum or class members
+    // (knip <6 groups them by parent symbol, knip >=6 uses a flat list
+    // with the parent recorded on each identifier's `namespace`)
     #[serde(alias = "enumMembers")]
-    pub enum_members: Option<HashMap<String, Vec<KnipIdentifier>>>,
+    pub enum_members: Option<KnipMembers>,
     #[serde(alias = "classMembers")]
-    pub class_members: Option<HashMap<String, Vec<KnipIdentifier>>>,
+    pub class_members: Option<KnipMembers>,
 
     // Duplicate exports
+    #[serde(default)]
     pub duplicates: Vec<Vec<KnipIdentifier>>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(untagged)]
+enum KnipMembers {
+    Grouped(HashMap<String, Vec<KnipIdentifier>>),
+    Flat(Vec<KnipIdentifier>),
+}
+
+impl KnipMembers {
+    fn into_pairs(self) -> Vec<(String, KnipIdentifier)> {
+        match self {
+            KnipMembers::Grouped(map) => map
+                .into_iter()
+                .flat_map(|(parent, members)| {
+                    members
+                        .into_iter()
+                        .map(move |member| (parent.clone(), member))
+                })
+                .collect(),
+            KnipMembers::Flat(members) => members
+                .into_iter()
+                .map(|member| (member.namespace.clone().unwrap_or_default(), member))
+                .collect(),
+        }
+    }
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 struct KnipIdentifier {
     pub name: String,
+    pub namespace: Option<String>,
     pub line: Option<i32>,
     pub col: Option<i32>,
     pub pos: Option<i32>,
@@ -74,6 +115,10 @@ impl Parser for Knip {
         }
 
         for issue in report.issues {
+            for file in issue.files {
+                issues.push(build_issue("unused-file", "Unused file".into(), file.name));
+            }
+
             for dependency in issue.dependencies {
                 issues.push(build_issue(
                     "unused-dependency",
@@ -157,27 +202,31 @@ impl Parser for Knip {
                 ));
             }
 
-            for (enum_name, members) in issue.enum_members.unwrap_or_default() {
-                for member in members {
-                    issues.push(build_issue(
-                        "unused-exported-enum-member",
-                        format!("Unused exported enum member: {}.{}", enum_name, member.name),
-                        issue.file.clone(),
-                    ));
-                }
+            for (enum_name, member) in issue
+                .enum_members
+                .map(KnipMembers::into_pairs)
+                .unwrap_or_default()
+            {
+                issues.push(build_issue(
+                    "unused-exported-enum-member",
+                    format!("Unused exported enum member: {}.{}", enum_name, member.name),
+                    issue.file.clone(),
+                ));
             }
 
-            for (class_name, members) in issue.class_members.unwrap_or_default() {
-                for member in members {
-                    issues.push(build_issue(
-                        "unused-exported-class-member",
-                        format!(
-                            "Unused exported class member: {}.{}",
-                            class_name, member.name
-                        ),
-                        issue.file.clone(),
-                    ));
-                }
+            for (class_name, member) in issue
+                .class_members
+                .map(KnipMembers::into_pairs)
+                .unwrap_or_default()
+            {
+                issues.push(build_issue(
+                    "unused-exported-class-member",
+                    format!(
+                        "Unused exported class member: {}.{}",
+                        class_name, member.name
+                    ),
+                    issue.file.clone(),
+                ));
             }
 
             for duplicate in issue.duplicates {
@@ -315,6 +364,89 @@ mod test {
           category: CATEGORY_DEAD_CODE
           location:
             path: refresher.js
+        "#);
+    }
+
+    #[test]
+    fn parse_v6() {
+        let input = r###"
+        {
+            "issues": [
+                {
+                "file": "src/hello.js",
+                "binaries": [],
+                "catalog": [],
+                "dependencies": [],
+                "devDependencies": [],
+                "duplicates": [],
+                "enumMembers": [],
+                "exports": [],
+                "files": [{ "name": "src/hello.js" }],
+                "namespaceMembers": [],
+                "optionalPeerDependencies": [],
+                "types": [],
+                "unlisted": [],
+                "unresolved": []
+                },
+                {
+                "file": "package.json",
+                "binaries": [],
+                "catalog": [],
+                "dependencies": [{ "name": "@aws-sdk/client-batch" }],
+                "devDependencies": [],
+                "duplicates": [],
+                "enumMembers": [],
+                "exports": [],
+                "files": [],
+                "namespaceMembers": [],
+                "optionalPeerDependencies": [],
+                "types": [],
+                "unlisted": [],
+                "unresolved": []
+                },
+                {
+                "file": "colors.ts",
+                "binaries": [],
+                "catalog": [],
+                "dependencies": [],
+                "devDependencies": [],
+                "duplicates": [],
+                "enumMembers": [{ "namespace": "Colors", "name": "BLUE", "line": 3, "col": 3, "pos": 40 }],
+                "exports": [],
+                "files": [],
+                "namespaceMembers": [],
+                "optionalPeerDependencies": [],
+                "types": [],
+                "unlisted": [],
+                "unresolved": []
+                }
+            ]
+        }
+        "###;
+
+        let issues = Knip::default().parse("knip", input);
+        insta::assert_yaml_snapshot!(issues.unwrap(), @r#"
+        - tool: knip
+          ruleKey: unused-file
+          message: Unused file
+          level: LEVEL_MEDIUM
+          category: CATEGORY_DEAD_CODE
+          location:
+            path: src/hello.js
+        - tool: knip
+          ruleKey: unused-dependency
+          message: "Unused dependency: @aws-sdk/client-batch"
+          level: LEVEL_MEDIUM
+          category: CATEGORY_DEAD_CODE
+          location:
+            path: package.json
+        - tool: knip
+          ruleKey: unused-exported-enum-member
+          message: "Unused exported enum member: Colors.BLUE"
+          level: LEVEL_MEDIUM
+          category: CATEGORY_DEAD_CODE
+          location:
+            path: colors.ts
         "#);
     }
 }
