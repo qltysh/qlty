@@ -13,7 +13,7 @@ use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use std::env;
 use std::path::Path;
-use toml::Value;
+use toml::{map::Map, Value};
 use tracing::{debug, trace, warn};
 
 const EXPECTED_CONFIG_VERSION: &str = "0";
@@ -257,13 +257,82 @@ impl Builder {
         }
     }
 
-    pub fn toml_to_config(toml: Value) -> Result<QltyConfig> {
+    pub fn toml_to_config(mut toml: Value) -> Result<QltyConfig> {
+        Self::overlay_driver_fields_into_versions(&mut toml)?;
         let mut config: QltyConfig = Self::parse_toml_as_config(toml)?;
         Self::insert_ignores_from_exclude_patterns(&mut config);
         let config = Self::post_process_config(config);
 
         trace!("Config: {:#?}", config);
         config
+    }
+
+    // Driver fields set outside the version array (e.g. a user's prepare_script in
+    // qlty.toml) would otherwise be lost when the planner replaces the driver with
+    // the version-matched entry, so they are merged into every versioned entry here.
+    fn overlay_driver_fields_into_versions(toml: &mut Value) -> Result<()> {
+        let Some(definitions) = toml
+            .get_mut("plugins")
+            .and_then(|plugins| plugins.get_mut("definitions"))
+            .and_then(|definitions| definitions.as_table_mut())
+        else {
+            return Ok(());
+        };
+
+        for (plugin_name, definition) in definitions.iter_mut() {
+            let Some(drivers) = definition
+                .get_mut("drivers")
+                .and_then(|drivers| drivers.as_table_mut())
+            else {
+                continue;
+            };
+
+            for (driver_name, driver) in drivers.iter_mut() {
+                let Some(driver_table) = driver.as_table_mut() else {
+                    continue;
+                };
+
+                if !driver_table.get("version").is_some_and(Value::is_array) {
+                    continue;
+                }
+
+                let overlay: Map<String, Value> = driver_table
+                    .iter()
+                    .filter(|(key, _)| {
+                        key.as_str() != "version" && key.as_str() != "version_matcher"
+                    })
+                    .map(|(key, value)| (key.clone(), value.clone()))
+                    .collect();
+
+                if overlay.is_empty() {
+                    continue;
+                }
+
+                let Some(versions) = driver_table
+                    .get_mut("version")
+                    .and_then(|versions| versions.as_array_mut())
+                else {
+                    continue;
+                };
+
+                for versioned_driver in versions.iter_mut() {
+                    if versioned_driver.is_table() {
+                        *versioned_driver = TomlMerge::merge(
+                            versioned_driver.clone(),
+                            Value::Table(overlay.clone()),
+                        )
+                        .map_err(|error| anyhow!("{error}"))
+                        .with_context(|| {
+                            format!(
+                                "Failed to merge driver configuration into the versioned definitions of driver '{driver_name}' for plugin '{plugin_name}'"
+                            )
+                        })?;
+                    }
+                }
+            }
+        }
+
+        Ok(())
     }
 
     fn parse_toml_as_config(toml: Value) -> Result<QltyConfig> {
@@ -1215,5 +1284,152 @@ mod test {
         assert_eq!(config.plugin[1].version, "2.0.0");
 
         assert_eq!(config.plugin[1].mode, Some(IssueMode::Block));
+    }
+
+    #[test]
+    fn test_versioned_driver_overlays_outer_driver_fields() {
+        let sources = toml! {
+            config_version = "0"
+
+            [plugins.definitions.mylint]
+            file_types = ["ALL"]
+
+            [[plugins.definitions.mylint.drivers.lint.version]]
+            version_matcher = "<2.0.0"
+            script = "mylint-legacy ${target}"
+            success_codes = [0]
+            output = "pass_fail"
+
+            [[plugins.definitions.mylint.drivers.lint.version]]
+            version_matcher = ">=2.0.0"
+            script = "mylint ${target}"
+            success_codes = [0]
+            output = "pass_fail"
+        };
+        let qlty_config = toml! {
+            config_version = "0"
+
+            [plugins.definitions.mylint.drivers.lint]
+            prepare_script = "npm install"
+        };
+
+        let config =
+            Builder::full_config(toml::Value::Table(sources), toml::Value::Table(qlty_config))
+                .unwrap();
+
+        let driver = &config.plugins.definitions["mylint"].drivers["lint"];
+        assert_eq!(driver.version.len(), 2);
+        assert_eq!(
+            driver.version[0].prepare_script,
+            Some("npm install".to_string())
+        );
+        assert_eq!(
+            driver.version[1].prepare_script,
+            Some("npm install".to_string())
+        );
+    }
+
+    #[test]
+    fn test_versioned_driver_overlay_overrides_versioned_fields() {
+        let sources = toml! {
+            config_version = "0"
+
+            [plugins.definitions.mylint]
+            file_types = ["ALL"]
+
+            [[plugins.definitions.mylint.drivers.lint.version]]
+            version_matcher = "<2.0.0"
+            script = "mylint-legacy ${target}"
+            success_codes = [0]
+            output = "pass_fail"
+            timeout = 300
+        };
+        let qlty_config = toml! {
+            config_version = "0"
+
+            [plugins.definitions.mylint.drivers.lint]
+            timeout = 900
+        };
+
+        let config =
+            Builder::full_config(toml::Value::Table(sources), toml::Value::Table(qlty_config))
+                .unwrap();
+
+        let driver = &config.plugins.definitions["mylint"].drivers["lint"];
+        assert_eq!(driver.version[0].timeout, 900);
+        assert_eq!(driver.version[0].script, "mylint-legacy ${target}");
+    }
+
+    #[test]
+    fn test_versioned_driver_overlay_preserves_version_matchers() {
+        let sources = toml! {
+            config_version = "0"
+
+            [plugins.definitions.mylint]
+            file_types = ["ALL"]
+
+            [[plugins.definitions.mylint.drivers.lint.version]]
+            version_matcher = "<2.0.0"
+            script = "mylint-legacy ${target}"
+            success_codes = [0]
+            output = "pass_fail"
+
+            [[plugins.definitions.mylint.drivers.lint.version]]
+            version_matcher = ">=2.0.0"
+            script = "mylint ${target}"
+            success_codes = [0]
+            output = "pass_fail"
+        };
+        let qlty_config = toml! {
+            config_version = "0"
+
+            [plugins.definitions.mylint.drivers.lint]
+            version_matcher = ">=9.9.9"
+            prepare_script = "npm install"
+        };
+
+        let config =
+            Builder::full_config(toml::Value::Table(sources), toml::Value::Table(qlty_config))
+                .unwrap();
+
+        let driver = &config.plugins.definitions["mylint"].drivers["lint"];
+        assert_eq!(
+            driver.version[0].version_matcher,
+            Some("<2.0.0".to_string())
+        );
+        assert_eq!(
+            driver.version[1].version_matcher,
+            Some(">=2.0.0".to_string())
+        );
+    }
+
+    #[test]
+    fn test_driver_without_versions_is_unchanged_by_overlay() {
+        let sources = toml! {
+            config_version = "0"
+
+            [plugins.definitions.mylint]
+            file_types = ["ALL"]
+
+            [plugins.definitions.mylint.drivers.lint]
+            script = "mylint ${target}"
+            success_codes = [0]
+            output = "pass_fail"
+        };
+        let qlty_config = toml! {
+            config_version = "0"
+
+            [plugins.definitions.mylint.drivers.lint]
+            prepare_script = "npm install"
+        };
+
+        let config =
+            Builder::full_config(toml::Value::Table(sources), toml::Value::Table(qlty_config))
+                .unwrap();
+
+        let driver = &config.plugins.definitions["mylint"].drivers["lint"];
+        assert!(driver.version.is_empty());
+        assert_eq!(driver.prepare_script, Some("npm install".to_string()));
+        assert_eq!(driver.script, "mylint ${target}");
     }
 }
