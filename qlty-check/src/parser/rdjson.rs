@@ -96,7 +96,10 @@ impl Parser for Rdjson {
                         path: diagnostic.location.path.clone(),
                         range: diagnostic.location.range.as_ref().map(build_range),
                     }),
-                    suggestions: build_suggestions(&diagnostic.suggestions),
+                    suggestions: build_suggestions(
+                        &diagnostic.suggestions,
+                        &diagnostic.location.path,
+                    ),
                     ..Default::default()
                 }
             })
@@ -119,7 +122,7 @@ fn build_range(range: &RdjsonRange) -> Range {
 // Rdformat does not carry fix applicability, and tools may include fixes
 // they consider unsafe (Biome does), so suggestions are marked unsafe and
 // only apply with --unsafe.
-fn build_suggestions(suggestions: &[RdjsonSuggestion]) -> Vec<Suggestion> {
+fn build_suggestions(suggestions: &[RdjsonSuggestion], path: &str) -> Vec<Suggestion> {
     suggestions
         .iter()
         .map(|suggestion| Suggestion {
@@ -128,7 +131,7 @@ fn build_suggestions(suggestions: &[RdjsonSuggestion]) -> Vec<Suggestion> {
             replacements: vec![Replacement {
                 data: suggestion.text.clone(),
                 location: Some(Location {
-                    path: "".into(),
+                    path: path.into(),
                     range: Some(build_range(&suggestion.range)),
                 }),
             }],
@@ -241,6 +244,7 @@ mod test {
               replacements:
                 - data: "_foo = (bar: Bar) => {\n  switch (bar) {\n    case Bar.Baz:\n      foobar();\n      barfoo();\n      break;\n  }\n  { !_foo"
                   location:
+                    path: basic.in.ts
                     range:
                       startLine: 6
                       startColumn: 7
@@ -278,6 +282,7 @@ mod test {
               replacements:
                 - data: "= 0 "
                   location:
+                    path: basic.in.ts
                     range:
                       startLine: 4
                       startColumn: 16

@@ -65,6 +65,7 @@ enum Foo { Bae };",
             {
               "data": "!foo ? null : 1 ",
               "location": {
+                "path": "basic.in.ts",
                 "range": {
                   "endColumn": 22,
                   "endLine": 13,
@@ -177,6 +178,7 @@ enum Foo { Bae };",
   }
   { !_foo",
               "location": {
+                "path": "basic.in.ts",
                 "range": {
                   "endColumn": 9,
                   "endLine": 13,
