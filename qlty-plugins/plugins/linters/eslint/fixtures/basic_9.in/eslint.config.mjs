@@ -1,7 +1,4 @@
-import js from "@eslint/js";
-
 export default [
-  js.configs.recommended,
   {
     languageOptions: {
       ecmaVersion: "latest",
@@ -9,6 +6,11 @@ export default [
       globals: {
         console: "readonly",
       },
+    },
+    rules: {
+      "no-cond-assign": "error",
+      "no-constant-condition": "error",
+      "no-unused-vars": "error",
     },
   },
 ];
