@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`linter=golangci-lint fixture=unused_func version=1.59.1 1`] = `
+exports[`linter=golangci-lint fixture=unused_func version=2.12.2 1`] = `
 {
   "issues": [
     {
@@ -13,7 +13,7 @@ exports[`linter=golangci-lint fixture=unused_func version=1.59.1 1`] = `
           "startLine": 5,
         },
       },
-      "message": "func \`helper\` is unused",
+      "message": "func helper is unused",
       "mode": "MODE_COMMENT",
       "ruleKey": "unused",
       "snippet": "func helper() {",

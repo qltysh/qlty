@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.636.0 (2026-07-17)
+
+### Improved
+
+- Classify npm `EUNSUPPORTEDPROTOCOL` failures caused by `workspace:`/`catalog:` dependencies with a clear message explaining that pnpm/yarn workspace protocols are not supported (#2819)
+- Surface the full error cause chain in install error details so failures without command output (such as package-file staging errors) are no longer reported with empty details (#2819)
+
+## v0.635.0 (2026-07-17)
+
+### Improved
+
+- Include the failing install command's captured output in build messages when a plugin install fails, instead of only a log file path (#2803)
+- Classify npm install auth and not-found failures (`E401`/`E403`/`E404`) with actionable messages linking to the build secrets docs (#2816)
+- Classify bundler and gem install auth and not-found failures with actionable messages (#2817)
+
+## v0.634.0 (2026-07-15)
+
+### Improved
+
+- Update linter plugin versions, including a PMD bump that clears GHSA-8rr6-2qw5-pc7r (stored XSS in HTML renderers) (#2812)
+
+### Fixed
+
+- Pin TypeScript to 6.0.3 for Knip so it no longer crashes when npm resolves TypeScript 7.0 (#2811)
+
 ## v0.633.0 (2026-07-08)
 
 ### New

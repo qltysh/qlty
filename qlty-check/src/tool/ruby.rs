@@ -4,7 +4,9 @@ mod sys;
 use super::command_builder::{default_command_builder, CommandBuilder};
 use super::ruby_source::RubySource;
 use super::{Tool, ToolType};
+use crate::tool::command_error::ToolCommandError;
 use crate::tool::download::Download;
+use crate::tool::install_failure::{InstallFailure, InstallFailureKind, BUILD_SECRETS_URL};
 use crate::tool::RuntimeTool;
 use crate::ui::{ProgressBar, ProgressTask};
 use anyhow::{Context, Result};
@@ -13,6 +15,7 @@ use qlty_analysis::join_path_string;
 use qlty_analysis::utils::fs::{path_to_native_string, path_to_string};
 use qlty_config::config::{Cpu, DownloadDef, System};
 use qlty_config::config::{OperatingSystem, PluginDef};
+use regex::Regex;
 use sha2::Digest;
 use std::collections::HashMap;
 use std::env::join_paths;
@@ -414,6 +417,38 @@ impl Tool for RubygemsPackage {
     fn plugin(&self) -> Option<PluginDef> {
         Some(self.plugin.clone())
     }
+
+    fn classify_install_failure(&self, error: &ToolCommandError) -> Option<InstallFailure> {
+        detect_rubygems_failure(error, self.package_file_declares_custom_source())
+    }
+}
+
+fn detect_rubygems_failure(
+    error: &ToolCommandError,
+    custom_gem_source: bool,
+) -> Option<InstallFailure> {
+    let output = format!("{}\n{}", error.stdout, error.stderr);
+
+    let auth_regex = Regex::new(
+        r"Authentication is required for|Bad username or password for|bad response Unauthorized 401|bad response Forbidden 403",
+    )
+    .unwrap();
+    if auth_regex.is_match(&output) {
+        return Some(InstallFailure {
+            kind: InstallFailureKind::AuthenticationFailed,
+            summary: format!("gem source authentication failed (see {BUILD_SECRETS_URL})"),
+        });
+    }
+
+    let not_found_regex = Regex::new(r"Could not find (a valid )?gem '").unwrap();
+    if custom_gem_source && not_found_regex.is_match(&output) {
+        return Some(InstallFailure {
+            kind: InstallFailureKind::PackageMaybePrivate,
+            summary: "gem not found (its custom Gemfile source is not used by Qlty)".to_string(),
+        });
+    }
+
+    None
 }
 
 #[cfg(test)]
@@ -422,6 +457,8 @@ pub mod test {
     use crate::{
         tool::{
             command_builder::test::{reroute_tools_root, stub_cmd, ENV_LOCK},
+            command_error::ToolCommandError,
+            install_failure::BUILD_SECRETS_URL,
             ruby::sys::platform,
             ruby_source::RubySource,
         },
@@ -566,5 +603,90 @@ pub mod test {
             }
             Ok(())
         });
+    }
+
+    fn ruby_command_error(stderr: &str) -> ToolCommandError {
+        ToolCommandError {
+            command: vec!["ruby".to_string(), "-S".to_string(), "bundle".to_string()],
+            exit_code: 17,
+            stdout: String::new(),
+            stderr: stderr.to_string(),
+            failure: None,
+        }
+    }
+
+    const AUTH_REQUIRED_STDERR: &str = "Authentication is required for rubygems.pkg.github.com.\nPlease supply credentials for this source. You can do this by running:\n`bundle config set --global rubygems.pkg.github.com username:password`\nor by storing the credentials in the `BUNDLE_RUBYGEMS__PKG__GITHUB__COM`\nenvironment variable";
+    const BAD_CREDENTIALS_STDERR: &str = "Bad username or password for rubygems.pkg.github.com.\nPlease double-check your credentials and correct them.";
+    const GEM_UNAUTHORIZED_STDERR: &str = "ERROR:  Could not find a valid gem 'some-gem' (= 1.0.0), here is why:\n          Unable to download data from https://rubygems.pkg.github.com/marschattha/ - bad response Unauthorized 401 (https://rubygems.pkg.github.com/marschattha/specs.4.8.gz)";
+    const NOT_FOUND_STDERR: &str = "Could not find gem 'qlty-private-gem-xyz (= 1.0.0)' in rubygems\nrepository https://rubygems.org/ or installed locally.";
+
+    #[test]
+    fn test_detect_rubygems_failure_auth_required() {
+        let failure =
+            super::detect_rubygems_failure(&ruby_command_error(AUTH_REQUIRED_STDERR), false)
+                .unwrap();
+
+        assert_eq!(
+            failure.summary,
+            format!("gem source authentication failed (see {BUILD_SECRETS_URL})")
+        );
+        assert!(matches!(
+            failure.kind,
+            crate::tool::install_failure::InstallFailureKind::AuthenticationFailed
+        ));
+    }
+
+    #[test]
+    fn test_detect_rubygems_failure_bad_credentials() {
+        let failure =
+            super::detect_rubygems_failure(&ruby_command_error(BAD_CREDENTIALS_STDERR), false)
+                .unwrap();
+
+        assert!(matches!(
+            failure.kind,
+            crate::tool::install_failure::InstallFailureKind::AuthenticationFailed
+        ));
+    }
+
+    #[test]
+    fn test_detect_rubygems_failure_unauthorized_takes_precedence_over_not_found() {
+        let failure =
+            super::detect_rubygems_failure(&ruby_command_error(GEM_UNAUTHORIZED_STDERR), true)
+                .unwrap();
+
+        assert!(matches!(
+            failure.kind,
+            crate::tool::install_failure::InstallFailureKind::AuthenticationFailed
+        ));
+    }
+
+    #[test]
+    fn test_detect_rubygems_failure_not_found_with_custom_source() {
+        let failure =
+            super::detect_rubygems_failure(&ruby_command_error(NOT_FOUND_STDERR), true).unwrap();
+
+        assert_eq!(
+            failure.summary,
+            "gem not found (its custom Gemfile source is not used by Qlty)"
+        );
+        assert!(matches!(
+            failure.kind,
+            crate::tool::install_failure::InstallFailureKind::PackageMaybePrivate
+        ));
+    }
+
+    #[test]
+    fn test_detect_rubygems_failure_ignores_not_found_without_custom_source() {
+        assert!(
+            super::detect_rubygems_failure(&ruby_command_error(NOT_FOUND_STDERR), false).is_none()
+        );
+    }
+
+    #[test]
+    fn test_detect_rubygems_failure_ignores_other_output() {
+        assert!(
+            super::detect_rubygems_failure(&ruby_command_error("Bundler::GemspecError"), true)
+                .is_none()
+        );
     }
 }

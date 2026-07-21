@@ -1,4 +1,5 @@
 mod driver;
+mod install_error;
 mod invocation_result;
 mod invocation_script;
 pub mod staging_area;
@@ -16,9 +17,9 @@ use crate::{
 };
 use crate::{cache::IssuesCacheHit, planner::Plan, results::FormattedFile, Results};
 use anyhow::{bail, Context, Result};
-use chrono::Utc;
 pub use driver::Driver;
 use ignore::{DirEntry, WalkBuilder, WalkState};
+use install_error::install_error_message;
 pub use invocation_result::{InvocationResult, InvocationStatus};
 pub use invocation_script::{compute_invocation_script, plan_target_list};
 use itertools::Itertools;
@@ -83,16 +84,7 @@ impl Executor {
             if self.plan.skip_errored_plugins {
                 if let Err(err) = result {
                     error!("Error installing tool {}: {:?}", name, err);
-
-                    install_messages.push(Message {
-                        timestamp: Some(Utc::now().into()),
-                        module: "qlty_check::executor".to_string(),
-                        ty: "executor.install.error".to_string(),
-                        level: MessageLevel::Error.into(),
-                        message: format!("Error installing tool {}", name),
-                        details: err.to_string(),
-                        ..Default::default()
-                    });
+                    install_messages.push(install_error_message(&name, &err));
                 }
             } else {
                 result?;

@@ -29,8 +29,8 @@ url = "https://releases.hashicorp.com/terraform/${version}/terraform_${version}_
 downloads = ["terraform"]
 file_types = ["terraform"]
 affects_cache = [".terraform.lock.hcl"]
-latest_version = "1.12.1"
-known_good_version = "1.12.1"
+latest_version = "1.15.8"
+known_good_version = "1.15.6"
 version_command = "terraform --version"
 description = "Validator and formatter for terraform"
 

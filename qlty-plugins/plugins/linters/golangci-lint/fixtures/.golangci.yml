@@ -1,32 +1,42 @@
-linters-settings:
-  errcheck:
-    check-type-assertions: true
+version: "2"
 linters:
   enable:
-    - govet
     - asciicheck
     - bodyclose
     - depguard
     - dogsled
-    - errcheck
-    - exportloopref
     - gochecknoinits
     - godot
-    - gofmt
     - goheader
-    - goimports
     - goprintffuncname
-    - gosimple
     - gosec
-    - govet
-    - ineffassign
     - misspell
     - nakedret
     - nolintlint
     - rowserrcheck
     - staticcheck
-    - stylecheck
-    - typecheck
     - unconvert
-    - unused
     - whitespace
+  settings:
+    errcheck:
+      check-type-assertions: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

@@ -3,7 +3,9 @@ use super::command_builder::default_command_builder;
 use super::command_builder::CommandBuilder;
 use super::Tool;
 use super::ToolType;
+use crate::tool::command_error::ToolCommandError;
 use crate::tool::download::Download;
+use crate::tool::install_failure::{InstallFailure, InstallFailureKind, BUILD_SECRETS_URL};
 use crate::tool::RuntimeTool;
 use crate::ui::ProgressBar;
 use crate::ui::ProgressTask;
@@ -12,6 +14,7 @@ use qlty_analysis::join_path_string;
 use qlty_config::config::OperatingSystem;
 use qlty_config::config::PluginDef;
 use qlty_config::config::{Cpu, DownloadDef, System};
+use regex::Regex;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::path::Path;
@@ -224,14 +227,84 @@ impl Tool for NodePackage {
     fn plugin(&self) -> Option<PluginDef> {
         Some(self.plugin.clone())
     }
+
+    fn classify_install_failure(&self, error: &ToolCommandError) -> Option<InstallFailure> {
+        detect_npm_failure(error)
+    }
+
+    fn install_log_tail_lines(&self) -> usize {
+        10
+    }
+}
+
+fn detect_npm_failure(error: &ToolCommandError) -> Option<InstallFailure> {
+    let output = format!("{}\n{}", error.stdout, error.stderr);
+
+    let code_regex =
+        Regex::new(r"npm (?:ERR!|error) code (E401|E403|E404|EUNSUPPORTEDPROTOCOL)").unwrap();
+    let code = code_regex.captures(&output)?.get(1)?.as_str();
+
+    let failure = match code {
+        "E401" => InstallFailure {
+            kind: InstallFailureKind::AuthenticationFailed,
+            summary: format!("npm registry authentication failed (see {BUILD_SECRETS_URL})"),
+        },
+        "EUNSUPPORTEDPROTOCOL" => InstallFailure {
+            kind: InstallFailureKind::UnsupportedDependencyProtocol,
+            summary: unsupported_protocol_summary(&output),
+        },
+        "E403" if mentions_scoped_package(&output, "403") => InstallFailure {
+            kind: InstallFailureKind::AccessDenied,
+            summary: format!("npm registry access was denied (see {BUILD_SECRETS_URL})"),
+        },
+        "E404" if mentions_scoped_package(&output, "404") => InstallFailure {
+            kind: InstallFailureKind::PackageMaybePrivate,
+            summary: format!("npm package not found (it may be private; see {BUILD_SECRETS_URL})"),
+        },
+        _ => return None,
+    };
+
+    Some(failure)
+}
+
+fn unsupported_protocol_summary(output: &str) -> String {
+    let protocol = Regex::new(r#"Unsupported URL Type "([^"]+)""#)
+        .unwrap()
+        .captures(output)
+        .and_then(|captures| captures.get(1));
+
+    match protocol {
+        Some(protocol) => format!(
+            "npm cannot install \"{}\" dependencies (pnpm/yarn workspace protocols are not supported)",
+            protocol.as_str()
+        ),
+        None => "npm cannot install this package file (it uses an unsupported dependency protocol)"
+            .to_string(),
+    }
+}
+
+// Unscoped failures are usually typos, yanked versions, or public-registry
+// blocks; only scoped packages (@owner/name) plausibly live on an
+// authenticated private registry. Checked only on the failing status lines so
+// that incidental scoped mentions elsewhere in the output (e.g. deprecation
+// warnings) don't match.
+fn mentions_scoped_package(output: &str, status: &str) -> bool {
+    let scoped_regex = Regex::new(r"@[\w.-]+(/|%2[fF])[\w.-]+").unwrap();
+
+    output
+        .lines()
+        .filter(|line| line.contains(status))
+        .any(|line| scoped_regex.is_match(line))
 }
 
 #[cfg(test)]
 pub mod test {
-    use super::NodePackage;
+    use super::{detect_npm_failure, NodePackage};
     use crate::{
         tool::{
             command_builder::test::{reroute_tools_root, stub_cmd, ENV_LOCK},
+            command_error::ToolCommandError,
+            install_failure::{InstallFailureKind, BUILD_SECRETS_URL},
             node::NPM_COMMAND,
         },
         ui::ProgressTask,
@@ -421,5 +494,128 @@ pub mod test {
             );
             Ok(())
         });
+    }
+
+    fn npm_command_error(stderr: &str) -> ToolCommandError {
+        ToolCommandError {
+            command: vec!["npm".to_string(), "install".to_string()],
+            exit_code: 1,
+            stdout: String::new(),
+            stderr: stderr.to_string(),
+            failure: None,
+        }
+    }
+
+    const MISSING_TOKEN_STDERR: &str = "npm ERR! code E401\nnpm ERR! 401 Unauthorized - GET https://npm.pkg.github.com/@marschattha%2feslint-config-qlty-demo - authentication token not provided";
+    const BAD_TOKEN_STDERR: &str = "npm ERR! code E401\nnpm ERR! 401 Unauthorized - GET https://npm.pkg.github.com/@marschattha%2feslint-config-qlty-demo - unauthenticated: User cannot be authenticated with the token provided.";
+    const FORBIDDEN_STDERR: &str = "npm ERR! code E403\nnpm ERR! 403 403 Forbidden - GET https://npm.pkg.github.com/@marschattha%2feslint-config-qlty-demo";
+    const SCOPED_NOT_FOUND_STDERR: &str = "npm error code E404\nnpm error 404 Not Found - GET https://npm.pkg.github.com/@qltyverifydemo%2fdoes-not-exist\nnpm error 404  '@qltyverifydemo/does-not-exist@1.0.0' is not in this registry.";
+    const UNSCOPED_NOT_FOUND_STDERR: &str =
+        "npm ERR! code E404\nnpm ERR! 404  'left-padd@1.0.0' is not in this registry.";
+
+    #[test]
+    fn test_classify_install_failure_missing_token() {
+        with_node_package(|pkg, _, _| {
+            let failure = pkg
+                .classify_install_failure(&npm_command_error(MISSING_TOKEN_STDERR))
+                .unwrap();
+
+            assert_eq!(
+                failure.summary,
+                format!("npm registry authentication failed (see {BUILD_SECRETS_URL})")
+            );
+            assert!(matches!(
+                failure.kind,
+                InstallFailureKind::AuthenticationFailed
+            ));
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_detect_npm_failure_bad_token() {
+        let failure = detect_npm_failure(&npm_command_error(BAD_TOKEN_STDERR)).unwrap();
+
+        assert!(matches!(
+            failure.kind,
+            InstallFailureKind::AuthenticationFailed
+        ));
+    }
+
+    #[test]
+    fn test_detect_npm_failure_forbidden_scoped() {
+        let failure = detect_npm_failure(&npm_command_error(FORBIDDEN_STDERR)).unwrap();
+
+        assert_eq!(
+            failure.summary,
+            format!("npm registry access was denied (see {BUILD_SECRETS_URL})")
+        );
+        assert!(matches!(failure.kind, InstallFailureKind::AccessDenied));
+    }
+
+    #[test]
+    fn test_detect_npm_failure_ignores_forbidden_unscoped() {
+        let stderr = "npm ERR! code E403\nnpm ERR! 403 403 Forbidden - GET https://registry.npmjs.org/left-pad - Package was removed for security reasons";
+
+        assert!(detect_npm_failure(&npm_command_error(stderr)).is_none());
+    }
+
+    #[test]
+    fn test_detect_npm_failure_scoped_not_found() {
+        let failure = detect_npm_failure(&npm_command_error(SCOPED_NOT_FOUND_STDERR)).unwrap();
+
+        assert_eq!(
+            failure.summary,
+            format!("npm package not found (it may be private; see {BUILD_SECRETS_URL})")
+        );
+        assert!(matches!(
+            failure.kind,
+            InstallFailureKind::PackageMaybePrivate
+        ));
+    }
+
+    #[test]
+    fn test_detect_npm_failure_ignores_unscoped_not_found() {
+        assert!(detect_npm_failure(&npm_command_error(UNSCOPED_NOT_FOUND_STDERR)).is_none());
+    }
+
+    #[test]
+    fn test_detect_npm_failure_ignores_unscoped_not_found_with_scoped_warning() {
+        let stderr = "npm warn deprecated @babel/polyfill@7.12.1: This package has been deprecated\nnpm ERR! code E404\nnpm ERR! 404  'left-padd@1.0.0' is not in this registry.";
+
+        assert!(detect_npm_failure(&npm_command_error(stderr)).is_none());
+    }
+
+    #[test]
+    fn test_detect_npm_failure_unsupported_protocol() {
+        let stderr = "npm warn using --force Recommended protections disabled.\nnpm error code EUNSUPPORTEDPROTOCOL\nnpm error Unsupported URL Type \"workspace:\": workspace:*";
+
+        let failure = detect_npm_failure(&npm_command_error(stderr)).unwrap();
+
+        assert_eq!(
+            failure.summary,
+            "npm cannot install \"workspace:\" dependencies (pnpm/yarn workspace protocols are not supported)"
+        );
+        assert!(matches!(
+            failure.kind,
+            InstallFailureKind::UnsupportedDependencyProtocol
+        ));
+    }
+
+    #[test]
+    fn test_detect_npm_failure_unsupported_protocol_without_url_type_line() {
+        let stderr = "npm error code EUNSUPPORTEDPROTOCOL";
+
+        let failure = detect_npm_failure(&npm_command_error(stderr)).unwrap();
+
+        assert_eq!(
+            failure.summary,
+            "npm cannot install this package file (it uses an unsupported dependency protocol)"
+        );
+    }
+
+    #[test]
+    fn test_detect_npm_failure_ignores_other_output() {
+        assert!(detect_npm_failure(&npm_command_error("error: linking failed")).is_none());
     }
 }

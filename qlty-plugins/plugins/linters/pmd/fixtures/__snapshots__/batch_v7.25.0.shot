@@ -1,0 +1,60 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=pmd fixture=batch version=7.25.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://docs.pmd-code.org/snapshot/pmd_rules_java_codestyle.html#nopackage",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "hello.java",
+        "range": {
+          "endColumn": 17,
+          "endLine": 3,
+          "startColumn": 7,
+          "startLine": 3,
+        },
+      },
+      "message": "All classes, interfaces, enums and annotations must belong to a named package",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "NoPackage",
+      "snippet": "class HelloWorld {",
+      "snippetWithContext": "// Your First Program
+
+class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!"); 
+    }
+}",
+      "tool": "pmd",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://docs.pmd-code.org/snapshot/pmd_rules_java_codestyle.html#nopackage",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "second.java",
+        "range": {
+          "endColumn": 17,
+          "endLine": 3,
+          "startColumn": 7,
+          "startLine": 3,
+        },
+      },
+      "message": "All classes, interfaces, enums and annotations must belong to a named package",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "NoPackage",
+      "snippet": "class HelloWorld {",
+      "snippetWithContext": "// Your First Program
+
+class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!"); 
+    }
+}",
+      "tool": "pmd",
+    },
+  ],
+}
+`;

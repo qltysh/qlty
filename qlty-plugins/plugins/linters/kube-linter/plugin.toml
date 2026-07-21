@@ -33,8 +33,8 @@ url = "https://github.com/stackrox/kube-linter/releases/download/v${version}/kub
 [plugins.definitions.kube-linter]
 downloads = ["kube-linter"]
 file_types = ["yaml"]
-latest_version = "0.7.1"
-known_good_version = "0.7.1"
+latest_version = "0.8.3"
+known_good_version = "0.8.3"
 description = "Linting for Kubernetes YAML files and Helm charts"
 config_files = [".kube-linter.yaml", ".kube-linter.yml"]
 
