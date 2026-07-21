@@ -10,28 +10,18 @@ pub struct BiomeOutput {
     pub diagnostics: Vec<BiomeDiagnostic>,
 }
 
-// The JSON reporter format changed in Biome 2.4.0: `path` became a plain
-// string, `description` was dropped in favor of a string `message`, and
-// locations are reported as line/column positions instead of byte spans.
 #[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(untagged)]
-pub enum BiomeDiagnostic {
-    Legacy(BiomeLegacyDiagnostic),
-    Current(BiomeCurrentDiagnostic),
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct BiomeLegacyDiagnostic {
+pub struct BiomeDiagnostic {
     pub category: String,
     pub severity: String,
     pub description: String,
-    pub location: BiomeLegacyLocation,
+    pub location: BiomeLocation,
     #[serde(default)]
     pub advices: Option<BiomeAdvices>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct BiomeLegacyLocation {
+pub struct BiomeLocation {
     pub path: BiomePath,
     pub span: Option<Vec<u64>>,
     #[serde(rename = "sourceCode")]
@@ -41,27 +31,6 @@ pub struct BiomeLegacyLocation {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BiomePath {
     pub file: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct BiomeCurrentDiagnostic {
-    pub category: String,
-    pub severity: String,
-    pub message: String,
-    pub location: BiomeCurrentLocation,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct BiomeCurrentLocation {
-    pub path: String,
-    pub start: Option<BiomePosition>,
-    pub end: Option<BiomePosition>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct BiomePosition {
-    pub line: u32,
-    pub column: u32,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -115,30 +84,15 @@ impl Parser for Biome {
         let biome_output: BiomeOutput = serde_json::from_str(output)?;
 
         for diagnostic in biome_output.diagnostics {
-            match diagnostic {
-                BiomeDiagnostic::Legacy(diagnostic) => {
-                    issues.push(self.build_legacy_issue(plugin_name, &diagnostic))
-                }
-                BiomeDiagnostic::Current(diagnostic) => {
-                    issues.push(self.build_current_issue(plugin_name, &diagnostic))
-                }
-            }
-        }
+            let suggestions = self.build_suggestions(&diagnostic);
 
-        Ok(issues)
-    }
-}
+            // Range is a bit tricky to calculate.
+            let range = if let Some(source_code) = &diagnostic.location.source_code {
+                let span = diagnostic.location.span.clone().unwrap_or_default();
 
-impl Biome {
-    fn build_legacy_issue(&self, plugin_name: &str, diagnostic: &BiomeLegacyDiagnostic) -> Issue {
-        let suggestions = self.build_suggestions(diagnostic);
-
-        // Range is a bit tricky to calculate.
-        let range = if let Some(source_code) = &diagnostic.location.source_code {
-            let span = diagnostic.location.span.clone().unwrap_or_default();
-
-            let (start_line, start_column, end_line, end_column) =
-                if let Some(start_offset) = span.first() {
+                let (start_line, start_column, end_line, end_column) = if let Some(start_offset) =
+                    span.first()
+                {
                     if let Some(end_offset) = span.get(1) {
                         calculate_line_and_column(source_code.as_str(), *start_offset, *end_offset)
                     } else {
@@ -148,59 +102,40 @@ impl Biome {
                     (0, 0, 0, 0)
                 };
 
-            Some(Range {
-                start_line,
-                start_column,
-                end_line,
-                end_column,
+                Some(Range {
+                    start_line,
+                    start_column,
+                    end_line,
+                    end_column,
+                    ..Default::default()
+                })
+            } else {
+                None
+            };
+
+            let issue = Issue {
+                tool: plugin_name.into(),
+                rule_key: diagnostic.category.clone(),
+                message: diagnostic.description.clone(),
+                category: Category::Lint.into(),
+                level: severity_to_level(&diagnostic.severity).into(),
+                location: Some(Location {
+                    path: diagnostic.location.path.file.clone(),
+                    range,
+                }),
+                suggestions,
                 ..Default::default()
-            })
-        } else {
-            None
-        };
+            };
 
-        Issue {
-            tool: plugin_name.into(),
-            rule_key: diagnostic.category.clone(),
-            message: diagnostic.description.clone(),
-            category: Category::Lint.into(),
-            level: severity_to_level(&diagnostic.severity).into(),
-            location: Some(Location {
-                path: diagnostic.location.path.file.clone(),
-                range,
-            }),
-            suggestions,
-            ..Default::default()
+            issues.push(issue);
         }
+
+        Ok(issues)
     }
+}
 
-    fn build_current_issue(&self, plugin_name: &str, diagnostic: &BiomeCurrentDiagnostic) -> Issue {
-        let range = match (&diagnostic.location.start, &diagnostic.location.end) {
-            (Some(start), Some(end)) => Some(Range {
-                start_line: start.line,
-                start_column: start.column,
-                end_line: end.line,
-                end_column: end.column,
-                ..Default::default()
-            }),
-            _ => None,
-        };
-
-        Issue {
-            tool: plugin_name.into(),
-            rule_key: diagnostic.category.clone(),
-            message: diagnostic.message.clone(),
-            category: Category::Lint.into(),
-            level: severity_to_level(&diagnostic.severity).into(),
-            location: Some(Location {
-                path: diagnostic.location.path.clone(),
-                range,
-            }),
-            ..Default::default()
-        }
-    }
-
-    fn build_suggestions(&self, diagnostic: &BiomeLegacyDiagnostic) -> Vec<Suggestion> {
+impl Biome {
+    fn build_suggestions(&self, diagnostic: &BiomeDiagnostic) -> Vec<Suggestion> {
         if let Some(advices) = &diagnostic.advices {
             if let Some(source_code) = &diagnostic.location.source_code {
                 advices
@@ -440,109 +375,6 @@ fn severity_to_level(severity: &str) -> Level {
 #[cfg(test)]
 mod test {
     use super::*;
-
-    #[test]
-    fn parse_current() {
-        let input = r###"
-        {
-            "summary": {
-                "changed": 0,
-                "unchanged": 1,
-                "matches": 0,
-                "duration": 6790083,
-                "errors": 3,
-                "warnings": 2,
-                "infos": 0,
-                "skipped": 0,
-                "suggestedFixesSkipped": 0,
-                "diagnosticsNotPrinted": 0,
-                "scannerDuration": 649042
-            },
-            "diagnostics": [
-                {
-                "severity": "warning",
-                "message": "This variable foo is unused.",
-                "category": "lint/correctness/noUnusedVariables",
-                "location": {
-                    "path": "basic.in.ts",
-                    "start": { "line": 6, "column": 7 },
-                    "end": { "line": 6, "column": 10 }
-                },
-                "advices": []
-                },
-                {
-                "severity": "error",
-                "message": "This enum declaration contains members that are implicitly initialized.",
-                "category": "lint/style/useEnumInitializers",
-                "location": {
-                    "path": "basic.in.ts",
-                    "start": { "line": 4, "column": 6 },
-                    "end": { "line": 4, "column": 9 }
-                },
-                "advices": [
-                    {
-                    "start": { "line": 4, "column": 12 },
-                    "end": { "line": 4, "column": 15 },
-                    "text": "Safe fix: Initialize all enum members."
-                    }
-                ]
-                },
-                {
-                "severity": "error",
-                "message": "This block statement doesn't serve any purpose and can be safely removed.",
-                "category": "lint/complexity/noUselessLoneBlockStatements",
-                "location": {
-                    "path": "basic.in.ts",
-                    "start": { "line": 13, "column": 3 },
-                    "end": { "line": 13, "column": 22 }
-                },
-                "advices": []
-                }
-            ],
-            "command": "lint"
-        }
-        "###;
-
-        let issues = Biome::default().parse("biome", input);
-        insta::assert_yaml_snapshot!(issues.unwrap(), @r###"
-        - tool: biome
-          ruleKey: lint/correctness/noUnusedVariables
-          message: This variable foo is unused.
-          level: LEVEL_MEDIUM
-          category: CATEGORY_LINT
-          location:
-            path: basic.in.ts
-            range:
-              startLine: 6
-              startColumn: 7
-              endLine: 6
-              endColumn: 10
-        - tool: biome
-          ruleKey: lint/style/useEnumInitializers
-          message: This enum declaration contains members that are implicitly initialized.
-          level: LEVEL_HIGH
-          category: CATEGORY_LINT
-          location:
-            path: basic.in.ts
-            range:
-              startLine: 4
-              startColumn: 6
-              endLine: 4
-              endColumn: 9
-        - tool: biome
-          ruleKey: lint/complexity/noUselessLoneBlockStatements
-          message: "This block statement doesn't serve any purpose and can be safely removed."
-          level: LEVEL_HIGH
-          category: CATEGORY_LINT
-          location:
-            path: basic.in.ts
-            range:
-              startLine: 13
-              startColumn: 3
-              endLine: 13
-              endColumn: 22
-        "###);
-    }
 
     #[test]
     fn parse() {
