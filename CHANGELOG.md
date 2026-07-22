@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.638.0 (2026-07-22)
+
+### Improved
+
+- Bump the managed Node runtime from 21.7.3 to 22.23.1 LTS, so plugins that require even-numbered LTS Node lines (such as eslint 10, knip 6, oxlint 1.x, and prisma 7) install their native dependencies correctly (#2827)
+
 ## v0.637.0 (2026-07-21)
 
 ### Improved
