@@ -177,7 +177,7 @@ impl Tool for NodePackage {
     }
 
     fn package_file_install(&self, task: &ProgressTask) -> Result<()> {
-        self.update_package_json(&self.name, &self.plugin.package_file)?;
+        let lock_file_staged = self.update_package_json(&self.name, &self.plugin.package_file)?;
         task.set_dim_message(
             format!(
                 "{} install {}",
@@ -191,12 +191,13 @@ impl Tool for NodePackage {
             .as_str(),
         );
 
-        let staged_lock_file = Path::new(&self.directory()).join("package-lock.json");
         let mut arguments = vec!["install", "--force"];
 
-        // Honor the staged lock file when present; --no-package-lock would
-        // make npm ignore it and resolve latest matching versions instead
-        if !staged_lock_file.exists() {
+        // Honor the user's lock file when one was staged; --no-package-lock
+        // would make npm ignore it and resolve latest matching versions
+        // instead. The flag is kept otherwise so npm does not consult the
+        // lock file it generated during the initial tool installation.
+        if !lock_file_staged {
             arguments.push("--no-package-lock");
         }
 
@@ -428,6 +429,33 @@ pub mod test {
 
             let staged_lock_file = Path::new(&pkg.directory()).join("package-lock.json");
             assert!(staged_lock_file.exists());
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn node_package_install_ignores_leftover_staging_lock_file() {
+        with_node_package(|pkg, temp_path, list| {
+            let pkg_file = temp_path.path().join("package.json");
+            std::fs::write(&pkg_file, r#"{"dependencies":{"other":"2.0.0"}}"#)?;
+
+            pkg.plugin.package_file = Some(pkg_file.to_str().unwrap().to_string());
+            reroute_tools_root(&temp_path, pkg);
+
+            let staged_lock_file = Path::new(&pkg.directory()).join("package-lock.json");
+            std::fs::write(
+                &staged_lock_file,
+                r#"{"name":"tool","lockfileVersion":3,"packages":{}}"#,
+            )?;
+
+            pkg.install(&new_task())?;
+            assert_eq!(
+                list.lock().unwrap().clone(),
+                [
+                    [NPM_COMMAND, "install", "--force", "test@1.0.0"],
+                    [NPM_COMMAND, "install", "--force", "--no-package-lock"]
+                ]
+            );
             Ok(())
         });
     }

@@ -22,11 +22,12 @@ impl PackageJson {
         }
     }
 
+    // Returns whether the user's lock file was copied into the staging directory
     pub fn update_package_json(
         &self,
         tool_name: &str,
         package_file: &Option<String>,
-    ) -> Result<()> {
+    ) -> Result<bool> {
         let user_file_contents =
             std::fs::read_to_string(self.plugin.package_file.as_deref().unwrap_or_default())?;
         let mut user_json = serde_json::from_str::<Value>(&user_file_contents)?;
@@ -66,6 +67,8 @@ impl PackageJson {
         let final_package_file = serde_json::to_string_pretty(&user_json)?;
         debug!("Writing {} package.json: {}", tool_name, final_package_file);
 
+        let mut lock_file_staged = false;
+
         if self.plugin.package_filters.is_empty() {
             if let Some(package_file) = &self.plugin.package_file {
                 let package_file_path = PathBuf::from(package_file);
@@ -82,6 +85,7 @@ impl PackageJson {
                             staging_lock_file.display()
                         );
                         std::fs::copy(lock_file, staging_lock_file)?;
+                        lock_file_staged = true;
                     }
                 }
             }
@@ -89,7 +93,7 @@ impl PackageJson {
 
         std::fs::write(staged_file, final_package_file)?;
 
-        Ok(())
+        Ok(lock_file_staged)
     }
 
     // Filter out any dependencies that don't seem related to the plugin
@@ -115,7 +119,7 @@ impl PackageJson {
                 let path = PathBuf::from(package_file.clone().unwrap_or_default());
                 let parent_path = path.parent().unwrap().to_str().unwrap();
                 *value =
-                    Value::from(version_string.replace("file:", &format!("file:{}/", parent_path)));
+                    Value::from(version_string.replace("file:", &format!("file:{parent_path}/")));
             }
         }
     }
