@@ -177,7 +177,7 @@ impl Tool for NodePackage {
     }
 
     fn package_file_install(&self, task: &ProgressTask) -> Result<()> {
-        let lock_file_staged = self.update_package_json(&self.name, &self.plugin.package_file)?;
+        let lock_file_staged = self.update_package_json(&self.name)?;
         task.set_dim_message(
             format!(
                 "{} install {}",

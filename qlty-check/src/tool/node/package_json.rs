@@ -24,11 +24,7 @@ impl PackageJson {
 
     // Returns whether the repository's package-lock.json was copied into the
     // staging directory, which only happens when package_filters is empty
-    pub fn update_package_json(
-        &self,
-        tool_name: &str,
-        package_file: &Option<String>,
-    ) -> Result<bool> {
+    pub fn update_package_json(&self, tool_name: &str) -> Result<bool> {
         let user_file_contents =
             std::fs::read_to_string(self.plugin.package_file.as_deref().unwrap_or_default())?;
         let mut user_json = serde_json::from_str::<Value>(&user_file_contents)?;
@@ -52,7 +48,7 @@ impl PackageJson {
             // clear out unrelated deps
             if let Some(dependencies) = root_object.get_mut("dependencies") {
                 self.remove_unrelated_dependencies(dependencies, tool_name);
-                Self::update_file_dependencies(dependencies, package_file);
+                Self::update_file_dependencies(dependencies, &self.plugin.package_file);
             }
         }
 
@@ -206,7 +202,7 @@ mod test {
                 let stage_path = Path::new(&pkg.directory()).join("package.json");
                 std::fs::write(&stage_path, r#"{"dependencies":{"eslint":"1.0.0"}}"#)?;
 
-                pkg.update_package_json("eslint", &Some("package.json".to_string()))?;
+                pkg.update_package_json("eslint")?;
 
                 assert_eq!(
                     std::fs::read_to_string(&stage_path)?
@@ -258,7 +254,7 @@ mod test {
                 let stage_path = Path::new(&pkg.directory()).join("package.json");
                 std::fs::write(&stage_path, r#"{"dependencies":{"eslint":"1.0.0"}}"#)?;
 
-                pkg.update_package_json("eslint", &Some("package.json".to_string()))?;
+                pkg.update_package_json("eslint")?;
 
                 assert_eq!(
                     std::fs::read_to_string(&stage_path)?
@@ -296,13 +292,20 @@ mod test {
             let stage_path = Path::new(&pkg.directory()).join("package.json");
             std::fs::write(&stage_path, r#"{"dependencies":{"eslint":"1.0.0"}}"#)?;
 
-            pkg.update_package_json("eslint", &Some("/Some/Path/to/package.json".to_string()))?;
+            pkg.update_package_json("eslint")?;
 
+            let expected_file_dependency = user_package_file
+                .parent()
+                .unwrap()
+                .join("packages/eslint-plugin");
             assert_eq!(
                 std::fs::read_to_string(&stage_path)?
                     .replace('\n', "")
                     .replace(' ', ""),
-                "{\"dependencies\":{\"eslint\":\"1.0.0\",\"eslint-plugin\":\"file:/Some/Path/to/packages/eslint-plugin\"}}".to_string()
+                format!(
+                    "{{\"dependencies\":{{\"eslint\":\"1.0.0\",\"eslint-plugin\":\"file:{}\"}}}}",
+                    expected_file_dependency.display()
+                )
             );
 
             Ok(())
@@ -347,7 +350,7 @@ mod test {
             let stage_path = Path::new(&pkg.directory()).join("package.json");
             std::fs::write(&stage_path, r#"{"dependencies":{"eslint":"1.0.0"}}"#)?;
 
-            pkg.update_package_json("eslint", &Some("package.json".to_string()))?;
+            pkg.update_package_json("eslint")?;
 
             // Verify lock file was copied
             let staged_lock_file = Path::new(&pkg.directory()).join("package-lock.json");
@@ -401,7 +404,7 @@ mod test {
             let stage_path = Path::new(&pkg.directory()).join("package.json");
             std::fs::write(&stage_path, r#"{"dependencies":{"eslint":"1.0.0"}}"#)?;
 
-            pkg.update_package_json("eslint", &Some("package.json".to_string()))?;
+            pkg.update_package_json("eslint")?;
 
             // Verify lock file was not copied
             let staged_lock_file = Path::new(&pkg.directory()).join("package-lock.json");
