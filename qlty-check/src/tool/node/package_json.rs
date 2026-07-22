@@ -22,7 +22,8 @@ impl PackageJson {
         }
     }
 
-    // Returns whether the user's lock file was copied into the staging directory
+    // Returns whether the repository's package-lock.json was copied into the
+    // staging directory, which only happens when package_filters is empty
     pub fn update_package_json(
         &self,
         tool_name: &str,
