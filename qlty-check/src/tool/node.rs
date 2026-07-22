@@ -172,11 +172,7 @@ impl Tool for NodePackage {
 
         self.run_command(self.cmd.build(
             NPM_COMMAND,
-            vec![
-                "install",
-                "--force",
-                format!("{}@{}", name, version).as_str(),
-            ],
+            vec!["install", "--force", format!("{name}@{version}").as_str()],
         ))
     }
 
@@ -195,10 +191,16 @@ impl Tool for NodePackage {
             .as_str(),
         );
 
-        self.run_command(
-            self.cmd
-                .build(NPM_COMMAND, vec!["install", "--force", "--no-package-lock"]),
-        )
+        let staged_lock_file = Path::new(&self.directory()).join("package-lock.json");
+        let mut arguments = vec!["install", "--force"];
+
+        // Honor the staged lock file when present; --no-package-lock would
+        // make npm ignore it and resolve latest matching versions instead
+        if !staged_lock_file.exists() {
+            arguments.push("--no-package-lock");
+        }
+
+        self.run_command(self.cmd.build(NPM_COMMAND, arguments))
     }
 
     fn extra_env_paths(&self) -> Result<Vec<String>> {
@@ -396,6 +398,67 @@ pub mod test {
                 json_contents,
                 json!({"dependencies":{"other": "1.0.0", "test":"1.0.0"}})
             );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn node_package_install_with_package_file_and_lock_file() {
+        with_node_package(|pkg, temp_path, list| {
+            let pkg_file = temp_path.path().join("package.json");
+            std::fs::write(&pkg_file, r#"{"dependencies":{"other":"2.0.0"}}"#)?;
+
+            let lock_file = temp_path.path().join("package-lock.json");
+            std::fs::write(
+                &lock_file,
+                r#"{"name":"lock-test","lockfileVersion":3,"packages":{}}"#,
+            )?;
+
+            pkg.plugin.package_file = Some(pkg_file.to_str().unwrap().to_string());
+            reroute_tools_root(&temp_path, pkg);
+
+            pkg.install(&new_task())?;
+            assert_eq!(
+                list.lock().unwrap().clone(),
+                [
+                    vec![NPM_COMMAND, "install", "--force", "test@1.0.0"],
+                    vec![NPM_COMMAND, "install", "--force"]
+                ]
+            );
+
+            let staged_lock_file = Path::new(&pkg.directory()).join("package-lock.json");
+            assert!(staged_lock_file.exists());
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn node_package_install_with_lock_file_and_package_filters() {
+        with_node_package(|pkg, temp_path, list| {
+            let pkg_file = temp_path.path().join("package.json");
+            std::fs::write(&pkg_file, r#"{"dependencies":{"other":"2.0.0"}}"#)?;
+
+            let lock_file = temp_path.path().join("package-lock.json");
+            std::fs::write(
+                &lock_file,
+                r#"{"name":"lock-test","lockfileVersion":3,"packages":{}}"#,
+            )?;
+
+            pkg.plugin.package_file = Some(pkg_file.to_str().unwrap().to_string());
+            pkg.plugin.package_filters = vec![pkg.name.clone()];
+            reroute_tools_root(&temp_path, pkg);
+
+            pkg.install(&new_task())?;
+            assert_eq!(
+                list.lock().unwrap().clone(),
+                [
+                    [NPM_COMMAND, "install", "--force", "test@1.0.0"],
+                    [NPM_COMMAND, "install", "--force", "--no-package-lock"]
+                ]
+            );
+
+            let staged_lock_file = Path::new(&pkg.directory()).join("package-lock.json");
+            assert!(!staged_lock_file.exists());
             Ok(())
         });
     }
