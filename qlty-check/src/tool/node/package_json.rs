@@ -304,7 +304,7 @@ mod test {
                     .replace(' ', ""),
                 format!(
                     "{{\"dependencies\":{{\"eslint\":\"1.0.0\",\"eslint-plugin\":\"file:{}\"}}}}",
-                    expected_file_dependency.display()
+                    path_to_string(expected_file_dependency)
                 )
             );
 
