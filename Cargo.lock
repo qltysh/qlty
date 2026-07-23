@@ -2698,7 +2698,7 @@ dependencies = [
 
 [[package]]
 name = "qlty"
-version = "0.638.0"
+version = "0.639.0"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -2774,7 +2774,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-analysis"
-version = "0.638.0"
+version = "0.639.0"
 dependencies = [
  "anyhow",
  "config",
@@ -2819,7 +2819,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-check"
-version = "0.638.0"
+version = "0.639.0"
 dependencies = [
  "anyhow",
  "ar",
@@ -2872,7 +2872,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-cloud"
-version = "0.638.0"
+version = "0.639.0"
 dependencies = [
  "anyhow",
  "insta",
@@ -2884,7 +2884,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-config"
-version = "0.638.0"
+version = "0.639.0"
 dependencies = [
  "anyhow",
  "auth-git2",
@@ -2922,7 +2922,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-coverage"
-version = "0.638.0"
+version = "0.639.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -2954,7 +2954,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-formats"
-version = "0.638.0"
+version = "0.639.0"
 dependencies = [
  "anyhow",
  "flate2",
@@ -2967,14 +2967,14 @@ dependencies = [
 
 [[package]]
 name = "qlty-plugins"
-version = "0.638.0"
+version = "0.639.0"
 dependencies = [
  "rust-embed",
 ]
 
 [[package]]
 name = "qlty-smells"
-version = "0.638.0"
+version = "0.639.0"
 dependencies = [
  "anyhow",
  "bencher",
@@ -2993,7 +2993,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-test-utilities"
-version = "0.638.0"
+version = "0.639.0"
 dependencies = [
  "git2",
  "tempfile",
@@ -3001,7 +3001,7 @@ dependencies = [
 
 [[package]]
 name = "qlty-types"
-version = "0.638.0"
+version = "0.639.0"
 dependencies = [
  "clap",
  "pbjson",
