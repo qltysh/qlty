@@ -1,0 +1,108 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=oxc fixture=basic version=1.70.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.js",
+        "range": {
+          "endColumn": 8,
+          "endLine": 3,
+          "startColumn": 7,
+          "startLine": 3,
+        },
+      },
+      "message": "Expected a conditional expression and instead saw an assignment",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "eslint(no-cond-assign)",
+      "snippet": "if (x = 2) {",
+      "snippetWithContext": "let x = 1;
+
+if (x = 2) {
+  console.log('hi');
+}
+
+debugger;",
+      "tool": "oxc",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.js",
+        "range": {
+          "endColumn": 10,
+          "endLine": 3,
+          "startColumn": 5,
+          "startLine": 3,
+        },
+      },
+      "message": "Unexpected constant condition",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "eslint(no-constant-condition)",
+      "snippet": "if (x = 2) {",
+      "snippetWithContext": "let x = 1;
+
+if (x = 2) {
+  console.log('hi');
+}
+
+debugger;",
+      "tool": "oxc",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.js",
+        "range": {
+          "endColumn": 10,
+          "endLine": 7,
+          "startColumn": 1,
+          "startLine": 7,
+        },
+      },
+      "message": "\`debugger\` statement is not allowed",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "eslint(no-debugger)",
+      "snippet": "debugger;",
+      "snippetWithContext": "let x = 1;
+
+if (x = 2) {
+  console.log('hi');
+}
+
+debugger;",
+      "tool": "oxc",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.js",
+        "range": {
+          "endColumn": 6,
+          "endLine": 1,
+          "startColumn": 5,
+          "startLine": 1,
+        },
+      },
+      "message": "Variable 'x' is assigned a value but never used. Unused variables should start with a '_'.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "eslint(no-unused-vars)",
+      "snippet": "let x = 1;",
+      "snippetWithContext": "let x = 1;
+
+if (x = 2) {
+  console.log('hi');
+}
+
+debugger;",
+      "tool": "oxc",
+    },
+  ],
+}
+`;
