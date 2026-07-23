@@ -129,7 +129,11 @@ impl Composer {
 
         let output = result?;
         if output.status.code() != Some(0) {
-            bail!("Failed to install composer package file");
+            bail!(
+                "composer {} exited with code {:?} (see installation logs for details)",
+                subcommand,
+                output.status.code()
+            );
         }
 
         Ok(())
@@ -263,7 +267,7 @@ impl Composer {
                 if lock_file.exists() {
                     let staging_lock_file = install_dir.join("composer.lock");
                     debug!(
-                        "Copying lock file from {:?} to {:?}",
+                        "Staging lock file from {:?} to {:?} with dev packages collapsed",
                         lock_file, staging_lock_file
                     );
                     let lock_contents = std::fs::read_to_string(&lock_file)?;
