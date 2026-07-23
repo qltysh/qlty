@@ -1,14 +1,26 @@
-name: Promote a Release to Latest
+name: Promote a Release
+run-name: Promote ${{ inputs.version }} to ${{ inputs.channel }}
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "The version to promote as latest (e.g. v1.0.0)"
+        description: "The version to promote (e.g. v1.0.0)"
         required: true
         type: string
+      channel:
+        description: "The channel to promote the version to"
+        required: true
+        type: choice
+        options:
+          - latest
+          - canary
+        default: latest
   workflow_call:
     inputs:
       version:
+        required: true
+        type: string
+      channel:
         required: true
         type: string
     secrets:
@@ -52,7 +64,13 @@ jobs:
       - name: Upload to S3
         run: |
           VERSION="${INPUTS_VERSION}"
-          aws s3 cp --recursive ${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/v${VERSION#v}/ ${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/latest/
+          CHANNEL="${INPUTS_CHANNEL}"
+          if [ "$CHANNEL" != "latest" ] && [ "$CHANNEL" != "canary" ]; then
+            echo "Unknown channel: $CHANNEL" >&2
+            exit 1
+          fi
+          aws s3 cp --recursive ${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/v${VERSION#v}/ ${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/${CHANNEL}/
         env:
           INPUTS_VERSION: ${{ inputs.version }}
+          INPUTS_CHANNEL: ${{ inputs.channel }}
           VARS_QLTY_RELEASE_AWS_S3_DESTINATION: ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}

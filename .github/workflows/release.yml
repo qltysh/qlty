@@ -134,5 +134,6 @@ jobs:
     uses: ./.github/workflows/release_promote.yml
     with:
       version: ${{ needs.release.outputs.tag }}
+      channel: canary
     secrets:
       QLTY_RELEASE_AWS_ROLE_ARN: ${{ secrets.QLTY_RELEASE_AWS_ROLE_ARN }}
