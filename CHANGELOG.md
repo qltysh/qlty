@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.639.0 (2026-07-23)
+
+### Fixed
+
+- Honor `package-lock.json` when installing node-based linters from `package_file`, so the locked versions are respected instead of npm resolving the latest versions matching the `package.json` semver ranges (#2829)
+- Honor `composer.lock` when installing PHP linters from `package_file`, so the locked versions are respected instead of `composer update` re-resolving to the latest matching versions (#2830)
+
 ## v0.638.0 (2026-07-22)
 
 ### Improved
