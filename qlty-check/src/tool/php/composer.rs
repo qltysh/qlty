@@ -11,7 +11,7 @@ use serde_json::Value;
 use sha2::Digest;
 use std::env::split_paths;
 use std::path::PathBuf;
-use tracing::{debug, error, info};
+use tracing::{debug, error, info, warn};
 
 use super::PhpPackage;
 
@@ -74,20 +74,33 @@ impl Composer {
     pub fn install_package_file(&self, php_package: &PhpPackage) -> Result<()> {
         info!("Installing composer package file");
         let lock_file_staged = Self::update_composer_json(php_package)?;
+
+        // `composer install` honors the staged lock file while `composer update`
+        // re-resolves and rewrites it. Install hard-errors when the lock file
+        // cannot satisfy composer.json (e.g. a stale lock file in the
+        // repository, or the tool missing from it), so fall back to update
+        // rather than failing the installation.
+        if lock_file_staged {
+            match self.run_composer_subcommand(php_package, "install") {
+                Ok(()) => return Ok(()),
+                Err(err) => {
+                    warn!(
+                        "composer install with the staged lock file failed ({}), \
+                        falling back to composer update",
+                        err
+                    );
+                }
+            }
+        }
+
+        self.run_composer_subcommand(php_package, "update")
+    }
+
+    fn run_composer_subcommand(&self, php_package: &PhpPackage, subcommand: &str) -> Result<()> {
         let composer_phar = PathBuf::from(self.directory()).join("composer.phar");
         let composer_path = composer_phar.to_str().with_context(|| {
             format!("Failed to convert composer path to string: {composer_phar:?}")
         })?;
-
-        // `composer install` honors the staged lock file while `composer update`
-        // re-resolves and rewrites it. Install only installs packages recorded
-        // in the lock file, so fall back to update when the tool is absent
-        // from it since install would not add it.
-        let subcommand = if lock_file_staged && Self::lock_file_contains_package(php_package) {
-            "install"
-        } else {
-            "update"
-        };
 
         let cmd = self
             .cmd
@@ -144,32 +157,6 @@ impl Composer {
         }
 
         serde_json::to_string_pretty(&lock_json).ok()
-    }
-
-    fn lock_file_contains_package(php_package: &PhpPackage) -> bool {
-        let Some(package_name) = php_package.plugin.package.as_deref() else {
-            return false;
-        };
-
-        let lock_file = PathBuf::from(php_package.directory()).join("composer.lock");
-        let Ok(contents) = std::fs::read_to_string(&lock_file) else {
-            return false;
-        };
-        let Ok(lock_json) = serde_json::from_str::<Value>(&contents) else {
-            debug!("Failed to parse staged lock file {:?}", lock_file);
-            return false;
-        };
-
-        ["packages", "packages-dev"].iter().any(|section| {
-            lock_json
-                .get(section)
-                .and_then(|packages| packages.as_array())
-                .is_some_and(|packages| {
-                    packages.iter().any(|package| {
-                        package.get("name").and_then(|name| name.as_str()) == Some(package_name)
-                    })
-                })
-        })
     }
 
     // Filter out any dependencies that don't seem related to the plugin
