@@ -69,7 +69,7 @@ jobs:
             echo "Unknown channel: $CHANNEL" >&2
             exit 1
           fi
-          aws s3 cp --recursive ${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/v${VERSION#v}/ ${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/${CHANNEL}/
+          aws s3 cp --recursive "${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/v${VERSION#v}/" "${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/${CHANNEL}/"
         env:
           INPUTS_VERSION: ${{ inputs.version }}
           INPUTS_CHANNEL: ${{ inputs.channel }}
