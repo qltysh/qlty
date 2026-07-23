@@ -11,7 +11,7 @@ use serde_json::Value;
 use sha2::Digest;
 use std::env::split_paths;
 use std::path::PathBuf;
-use tracing::{debug, error, info};
+use tracing::{debug, error, info, warn};
 
 use super::PhpPackage;
 
@@ -73,13 +73,33 @@ impl Tool for Composer {
 impl Composer {
     pub fn install_package_file(&self, php_package: &PhpPackage) -> Result<()> {
         info!("Installing composer package file");
-        Self::update_composer_json(php_package)?;
+        let lock_file_staged = Self::update_composer_json(php_package)?;
+
+        // `composer install` honors the staged lock file while `composer update`
+        // re-resolves and rewrites it. Install hard-errors when the lock file
+        // cannot satisfy composer.json (e.g. a stale lock file in the
+        // repository, or the tool missing from it), so fall back to update
+        // rather than failing the installation.
+        if lock_file_staged {
+            match self.run_composer_subcommand(php_package, "install") {
+                Ok(()) => return Ok(()),
+                Err(err) => {
+                    warn!(
+                        "composer install with the staged lock file failed ({}), \
+                        falling back to composer update",
+                        err
+                    );
+                }
+            }
+        }
+
+        self.run_composer_subcommand(php_package, "update")
+    }
+
+    fn run_composer_subcommand(&self, php_package: &PhpPackage, subcommand: &str) -> Result<()> {
         let composer_phar = PathBuf::from(self.directory()).join("composer.phar");
         let composer_path = composer_phar.to_str().with_context(|| {
-            format!(
-                "Failed to convert composer path to string: {:?}",
-                composer_phar
-            )
+            format!("Failed to convert composer path to string: {composer_phar:?}")
         })?;
 
         let cmd = self
@@ -88,7 +108,7 @@ impl Composer {
                 "php",
                 vec![
                     &path_to_native_string(composer_path),
-                    "update",
+                    subcommand,
                     "--no-interaction",
                     "--ignore-platform-reqs",
                 ],
@@ -99,7 +119,7 @@ impl Composer {
             .stdout_capture()
             .unchecked(); // Capture output for debugging
 
-        let script = format!("{:?}", cmd);
+        let script = format!("{cmd:?}");
         debug!(script);
 
         let mut installation = initialize_installation(php_package)?;
@@ -109,10 +129,38 @@ impl Composer {
 
         let output = result?;
         if output.status.code() != Some(0) {
-            bail!("Failed to install composer package file");
+            bail!(
+                "composer {} exited with code {:?} (see installation logs for details)",
+                subcommand,
+                output.status.code()
+            );
         }
 
         Ok(())
+    }
+
+    // The staged composer.json has require-dev collapsed into require, so the
+    // staged lock file must record dev packages as regular packages for
+    // `composer install` to accept required packages locked as dev
+    fn collapse_dev_packages(lock_contents: &str) -> Option<String> {
+        let mut lock_json = serde_json::from_str::<Value>(lock_contents).ok()?;
+        let root = lock_json.as_object_mut()?;
+
+        let dev_packages = match root.get_mut("packages-dev") {
+            Some(value) => std::mem::replace(value, Value::Array(vec![])),
+            None => return serde_json::to_string_pretty(&lock_json).ok(),
+        };
+
+        if let Value::Array(dev_packages) = dev_packages {
+            match root.get_mut("packages") {
+                Some(Value::Array(packages)) => packages.extend(dev_packages),
+                _ => {
+                    root.insert("packages".to_string(), Value::Array(dev_packages));
+                }
+            }
+        }
+
+        serde_json::to_string_pretty(&lock_json).ok()
     }
 
     // Filter out any dependencies that don't seem related to the plugin
@@ -171,7 +219,9 @@ impl Composer {
         Ok(serde_json::to_string_pretty(&composer_json)?)
     }
 
-    fn update_composer_json(php_package: &PhpPackage) -> Result<()> {
+    // Returns whether the repository's composer.lock was copied into the
+    // staging directory, which only happens when package_filters is empty
+    fn update_composer_json(php_package: &PhpPackage) -> Result<bool> {
         let install_dir = PathBuf::from(php_package.directory());
         let package_file_contents = Self::filter_composer(php_package)?;
         let user_json = serde_json::from_str::<Value>(&package_file_contents)?;
@@ -201,6 +251,8 @@ impl Composer {
 
         std::fs::write(staged_file, final_composer_file)?;
 
+        let mut lock_file_staged = false;
+
         if php_package.plugin.package_filters.is_empty() {
             let package_file = php_package
                 .plugin
@@ -215,15 +267,19 @@ impl Composer {
                 if lock_file.exists() {
                     let staging_lock_file = install_dir.join("composer.lock");
                     debug!(
-                        "Copying lock file from {:?} to {:?}",
+                        "Staging lock file from {:?} to {:?} with dev packages collapsed",
                         lock_file, staging_lock_file
                     );
-                    std::fs::copy(lock_file, staging_lock_file)?;
+                    let lock_contents = std::fs::read_to_string(&lock_file)?;
+                    let staged_lock_contents =
+                        Self::collapse_dev_packages(&lock_contents).unwrap_or(lock_contents);
+                    std::fs::write(staging_lock_file, staged_lock_contents)?;
+                    lock_file_staged = true;
                 }
             }
         }
 
-        Ok(())
+        Ok(lock_file_staged)
     }
 }
 
@@ -458,6 +514,60 @@ pub mod test {
             assert!(
                 lock_content.contains("phpstan/phpstan"),
                 "Lock file contents are incorrect"
+            );
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_lock_file_staged_with_dev_packages_collapsed() {
+        with_php_package(|pkg, tempdir, _| {
+            let parent_dir = tempdir.path().join("project");
+            std::fs::create_dir_all(&parent_dir)?;
+
+            let user_composer_file = parent_dir.join("composer.json");
+            let composer_contents = r#"{
+                "require-dev": {
+                    "phpstan/phpstan": "^1.10.0"
+                }
+            }"#;
+            std::fs::write(&user_composer_file, composer_contents)?;
+
+            let lock_file = parent_dir.join("composer.lock");
+            let lock_contents = r#"{
+                "packages": [{
+                    "name": "other/package",
+                    "version": "2.0.0"
+                }],
+                "packages-dev": [{
+                    "name": "phpstan/phpstan",
+                    "version": "1.10.35"
+                }]
+            }"#;
+            std::fs::write(&lock_file, lock_contents)?;
+
+            pkg.plugin.package_file = Some(path_to_string(&user_composer_file));
+            reroute_tools_root(tempdir, pkg);
+
+            let install_dir = PathBuf::from(pkg.directory());
+            std::fs::create_dir_all(&install_dir)?;
+
+            Composer::update_composer_json(pkg)?;
+
+            let staged_lock_file = install_dir.join("composer.lock");
+            let staged_lock =
+                serde_json::from_str::<Value>(&std::fs::read_to_string(&staged_lock_file)?)?;
+
+            assert_eq!(
+                staged_lock,
+                serde_json::json!({
+                    "packages": [
+                        { "name": "other/package", "version": "2.0.0" },
+                        { "name": "phpstan/phpstan", "version": "1.10.35" }
+                    ],
+                    "packages-dev": []
+                })
             );
 
             Ok(())
