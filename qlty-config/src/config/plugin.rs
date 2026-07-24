@@ -411,6 +411,9 @@ pub struct PluginDef {
 
     #[serde(default = "default_tab_column_width")]
     pub tab_column_width: usize,
+
+    #[serde(default)]
+    pub install_script: Option<String>,
 }
 
 fn default_idempotent() -> bool {
