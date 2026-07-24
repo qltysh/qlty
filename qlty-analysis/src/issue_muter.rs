@@ -1,10 +1,3 @@
-use crate::source_reader::SourceReader;
-use qlty_analysis::{
-    code::{all_captured_nodes, File},
-    lang,
-    utils::filename_to_language,
-    Language,
-};
 use qlty_config::issue_transformer::IssueTransformer;
 use qlty_types::analysis::v1::Issue;
 use regex::Regex;
@@ -15,6 +8,14 @@ use std::{
     sync::{Arc, RwLock},
 };
 use tracing::{debug, trace};
+
+use crate::{
+    code::{all_captured_nodes, File},
+    lang,
+    source_reader::SourceReader,
+    utils::filename_to_language,
+    Language,
+};
 
 #[derive(Debug)]
 pub struct IssueMuter {
@@ -69,8 +70,8 @@ impl IssueMuter {
 
     fn rule_key_is_ignored(parser: &IgnoreParser, tool: &str, rule_key: &str, line: usize) -> bool {
         parser.ignore_rule_at_line(line, tool.to_string())
-            || parser.ignore_rule_at_line(line, format!("{}/{}", tool, rule_key))
-            || parser.ignore_rule_at_line(line, format!("{}:{}", tool, rule_key))
+            || parser.ignore_rule_at_line(line, format!("{tool}/{rule_key}"))
+            || parser.ignore_rule_at_line(line, format!("{tool}:{rule_key}"))
     }
 
     fn parse_issue_file(&self, issue: &Issue) {
@@ -259,7 +260,7 @@ impl IgnoreParser {
             language
                 .comment_nodes()
                 .iter()
-                .map(|c| format!("({})", c))
+                .map(|c| format!("({c})"))
                 .collect::<Vec<_>>()
                 .join(" ")
         );

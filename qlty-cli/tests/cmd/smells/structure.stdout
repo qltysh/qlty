@@ -5,24 +5,24 @@
     "driver": "structure",
     "ruleKey": "return-statements",
     "message": "Function with many returns (count = 6): foo",
-    "level": "LEVEL_MEDIUM",
+    "level": "LEVEL_LOW",
     "language": "LANGUAGE_JAVASCRIPT",
     "category": "CATEGORY_STRUCTURE",
-    "snippet": "function foo() {/n  return;/n  return;/n  return;/n  return;/n  return;/n  return;/n}",
-    "snippetWithContext": "function foo() {/n  return;/n  return;/n  return;/n  return;/n  return;/n  return;/n}",
+    "snippet": "function foo(a,b,c,d,e,f,g) {/n  return;/n  return;/n  return;/n  return;/n  return;/n  return;/n}",
+    "snippetWithContext": "// qlty-ignore: qlty:function-parameters/nfunction foo(a,b,c,d,e,f,g) {/n  return;/n  return;/n  return;/n  return;/n  return;/n  return;/n}",
     "effortMinutes": 15,
     "value": 6,
     "location": {
       "path": "returns.js",
       "range": {
-        "startLine": 1,
+        "startLine": 2,
         "startColumn": 1,
-        "endLine": 8,
+        "endLine": 9,
         "endColumn": 2,
-        "startByte": 0,
-        "endByte": 78
+        "startByte": 41,
+        "endByte": 132
       }
     },
-    "mode": "MODE_BLOCK"
+    "mode": "MODE_COMMENT"
   }
 ]

@@ -3,11 +3,14 @@ use crate::{
     InvocationResult,
 };
 use itertools::Itertools;
-use qlty_analysis::{workspace_entries::TargetMode, IssueCount};
+use qlty_analysis::{
+    basic_transformations::BasicTransformations, workspace_entries::TargetMode, IssueCount,
+};
+use qlty_config::QltyConfig;
 use qlty_types::analysis::v1::{ExecutionVerb, Issue, Level, Message};
 use std::{
     collections::{HashMap, HashSet},
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 
 #[derive(Clone, Debug)]
@@ -75,5 +78,19 @@ impl Report {
 
         paths.sort();
         paths
+    }
+}
+
+impl BasicTransformations for Report {
+    fn apply_basic_issue_transformations(
+        &mut self,
+        workspace_root: &Path,
+        qlty_config: &QltyConfig,
+    ) {
+        let transformers = self.compute_transformers(workspace_root, qlty_config);
+
+        for transformer in transformers {
+            self.issues = transformer.transform_batch(&self.issues);
+        }
     }
 }

@@ -1,8 +1,7 @@
-use crate::{
-    executor::staging_area::StagingArea, results::FixedResult, source_reader::SourceReader as _,
-};
+use crate::{executor::staging_area::StagingArea, results::FixedResult};
 use anyhow::Result;
 use itertools::Itertools;
+use qlty_analysis::source_reader::SourceReader;
 use qlty_types::analysis::v1::Issue;
 use std::{borrow::BorrowMut, collections::HashSet, ops::RangeInclusive, path::PathBuf};
 use tracing::{debug, error, trace, warn};
