@@ -24,7 +24,7 @@ jobs:
           persist-credentials: false
       - uses: qltysh/qlty-action/fmt@b413a89d8f3a8b36b9edd20b7ef1ad7ae0a7ac3a # version 2.2.2
       - name: Commit changes
-        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0
         with:
           token: ${{ steps.app-token.outputs.token }}
           title: qlty fmt --all
