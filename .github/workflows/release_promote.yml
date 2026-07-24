@@ -13,7 +13,7 @@ on:
         type: choice
         options:
           - latest
-          - canary
+          - pre-release
         default: latest
   workflow_call:
     inputs:
@@ -65,7 +65,7 @@ jobs:
         run: |
           VERSION="${INPUTS_VERSION}"
           CHANNEL="${INPUTS_CHANNEL}"
-          if [ "$CHANNEL" != "latest" ] && [ "$CHANNEL" != "canary" ]; then
+          if [ "$CHANNEL" != "latest" ] && [ "$CHANNEL" != "pre-release" ]; then
             echo "Unknown channel: $CHANNEL" >&2
             exit 1
           fi
