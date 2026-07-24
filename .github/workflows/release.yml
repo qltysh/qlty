@@ -8,7 +8,7 @@ on:
       pre-release:
         required: false
         type: boolean
-        default: false
+        default: true
     secrets:
       QLTY_APP_PRIVATE_KEY:
         required: true
