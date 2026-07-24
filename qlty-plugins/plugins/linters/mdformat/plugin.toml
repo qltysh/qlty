@@ -1,0 +1,19 @@
+config_version = "0"
+
+[plugins.definitions.mdformat]
+runtime = "python"
+package = "mdformat"
+file_types = ["markdown"]
+config_files = [".mdformat.toml"]
+latest_version = "1.0.0"
+known_good_version = "1.0.0"
+version_command = "mdformat --version"
+description = "CommonMark compliant Markdown formatter"
+
+[plugins.definitions.mdformat.drivers.format]
+script = "mdformat ${target}"
+success_codes = [0]
+output = "rewrite"
+cache_results = true
+batch = true
+driver_type = "formatter"
