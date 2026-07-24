@@ -5,6 +5,10 @@ on:
       workflow_run_id:
         required: true
         type: string
+      pre-release:
+        required: false
+        type: boolean
+        default: true
     secrets:
       QLTY_APP_PRIVATE_KEY:
         required: true
@@ -134,5 +138,6 @@ jobs:
     uses: ./.github/workflows/release_promote.yml
     with:
       version: ${{ needs.release.outputs.tag }}
+      channel: ${{ inputs.pre-release && 'pre-release' || 'latest' }}
     secrets:
       QLTY_RELEASE_AWS_ROLE_ARN: ${{ secrets.QLTY_RELEASE_AWS_ROLE_ARN }}
