@@ -15,7 +15,7 @@ config_files = [
   "knip.config.js",
 ]
 affects_cache = ["package.json"]
-latest_version = "6.26.0"
+latest_version = "6.27.0"
 known_good_version = "5.88.1"
 # No typescript extra_packages pin: knip >=5.62 bounds its typescript peer to <7,
 # so npm resolves a compatible version on its own. Do not re-add a pin — a second
