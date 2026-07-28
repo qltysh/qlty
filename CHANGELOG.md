@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.640.0 (2026-07-28)
+
+- Add a `pre-release` channel to the release promotion workflow, so new releases auto-promote to `pre-release` and promotion to `latest` becomes a deliberate step (#2832)
+
 ## v0.639.0 (2026-07-23)
 
 ### Fixed
