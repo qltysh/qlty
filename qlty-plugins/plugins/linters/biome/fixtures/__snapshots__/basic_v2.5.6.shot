@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`linter=biome fixture=basic version=2.5.4 1`] = `
+exports[`linter=biome fixture=basic version=2.5.6 1`] = `
 {
   "issues": [
     {
@@ -18,7 +18,7 @@ exports[`linter=biome fixture=basic version=2.5.4 1`] = `
     {
       "category": "CATEGORY_LINT",
       "documentationUrl": "https://biomejs.dev/linter/rules/no-useless-lone-block-statements",
-      "level": "LEVEL_MEDIUM",
+      "level": "LEVEL_LOW",
       "location": {
         "path": "basic.in.ts",
         "range": {
