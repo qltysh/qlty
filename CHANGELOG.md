@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.641.0 (2026-08-03)
+
+### Improved
+
+- Bump the eslint, oxlint, and prisma plugins to eslint 10, oxlint 1.x, and prisma 7 (#2825)
+
+### Fixed
+
+- Switch Biome >= 2.4 to the stable `rdjson` reporter, restoring lint results that were dropped when Biome 2.4 changed its unstable `json` reporter output (#2821)
+
 ## v0.640.0 (2026-07-28)
 
 - Add a `pre-release` channel to the release promotion workflow, so new releases auto-promote to `pre-release` and promotion to `latest` becomes a deliberate step (#2832)
