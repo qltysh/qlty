@@ -542,6 +542,8 @@ pub enum OutputFormat {
     Phpstan,
     #[serde(rename = "radarlint")]
     Radarlint,
+    #[serde(rename = "rdjson")]
+    Rdjson,
     #[serde(rename = "reek")]
     Reek,
     #[serde(rename = "regex")]
@@ -591,6 +593,7 @@ impl std::fmt::Display for OutputFormat {
             OutputFormat::Phpstan => write!(f, "phpstan"),
             OutputFormat::Pylint => write!(f, "pylint"),
             OutputFormat::Radarlint => write!(f, "radarlint"),
+            OutputFormat::Rdjson => write!(f, "rdjson"),
             OutputFormat::Reek => write!(f, "reek"),
             OutputFormat::Regex => write!(f, "regex"),
             OutputFormat::Ripgrep => write!(f, "ripgrep"),

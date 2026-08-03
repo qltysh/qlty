@@ -19,6 +19,7 @@ pub mod php_codesniffer;
 pub mod phpstan;
 pub mod pylint;
 pub mod radarlint;
+pub mod rdjson;
 pub mod reek;
 pub mod regex;
 pub mod ripgrep;
