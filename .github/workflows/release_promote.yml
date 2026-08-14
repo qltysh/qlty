@@ -1,11 +1,11 @@
 name: Promote a Release
-run-name: Promote ${{ inputs.version }} to ${{ inputs.channel }}
+run-name: Promote ${{ inputs.version || 'the latest release' }} to ${{ inputs.channel }}
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "The version to promote (e.g. v1.0.0)"
-        required: true
+        description: "The version to promote (e.g. v1.0.0). Leave blank to promote the latest GitHub release."
+        required: false
         type: string
       channel:
         description: "The channel to promote the version to"
@@ -29,8 +29,31 @@ on:
 permissions:
   contents: read
 jobs:
+  resolve:
+    name: Resolve version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+    steps:
+      - name: Resolve version
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUTS_VERSION: ${{ inputs.version }}
+        run: |
+          VERSION="${INPUTS_VERSION}"
+          if [ -z "$VERSION" ]; then
+            VERSION="$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName)"
+            echo "No version provided, promoting the latest release: $VERSION"
+          fi
+          if [ -z "$VERSION" ]; then
+            echo "Could not determine a version to promote" >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
   test:
     name: ${{ matrix.runner }}
+    needs: resolve
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -45,14 +68,14 @@ jobs:
     steps:
       - name: Install qlty and validate
         env:
-          QLTY_VERSION: ${{ inputs.version }}
+          QLTY_VERSION: ${{ needs.resolve.outputs.version }}
         run: ${{ matrix.command }} && ~/.qlty/bin/qlty version --no-upgrade-check
         shell: sh
   promote:
     permissions:
       contents: read
       id-token: write
-    needs: test
+    needs: [resolve, test]
     runs-on: ubuntu-latest
     steps:
       - name: Setup AWS CLI
@@ -63,7 +86,7 @@ jobs:
           aws-region: ${{ vars.QLTY_RELEASE_AWS_REGION }}
       - name: Upload to S3
         run: |
-          VERSION="${INPUTS_VERSION}"
+          VERSION="${RESOLVED_VERSION}"
           CHANNEL="${INPUTS_CHANNEL}"
           if [ "$CHANNEL" != "latest" ] && [ "$CHANNEL" != "pre-release" ]; then
             echo "Unknown channel: $CHANNEL" >&2
@@ -71,6 +94,6 @@ jobs:
           fi
           aws s3 cp --recursive "${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/v${VERSION#v}/" "${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/${CHANNEL}/"
         env:
-          INPUTS_VERSION: ${{ inputs.version }}
+          RESOLVED_VERSION: ${{ needs.resolve.outputs.version }}
           INPUTS_CHANNEL: ${{ inputs.channel }}
           VARS_QLTY_RELEASE_AWS_S3_DESTINATION: ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}
