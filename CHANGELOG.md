@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.642.0 (2026-08-14)
+
+### Fixed
+
+- Bump PHP_CodeSniffer from 3.10.3 to 3.13.6, which patches GHSA-hmqg-cxww-wqhq and restores installs that Composer now blocks on the vulnerable pin (#2839)
+- Bump haml-lint from 0.69.0 to 0.77.0, fixing a `Cannot handle Haml version` failure when fresh installs resolve Haml 7.3.x (#2839)
+
 ## v0.641.0 (2026-08-03)
 
 ### Improved
