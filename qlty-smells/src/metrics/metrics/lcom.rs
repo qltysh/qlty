@@ -175,8 +175,8 @@ impl Group {
 }
 
 impl<'a> Visitor for NamedReferences<'a> {
-    fn language(&self) -> &Box<dyn Language + Sync> {
-        self.source_file.language()
+    fn source_file(&self) -> &File {
+        self.source_file
     }
 
     fn visit_call(&mut self, cursor: &mut TreeCursor) {
@@ -982,5 +982,54 @@ End Class
                 &NodeFilter::empty()
             )
         );
+    }
+
+    mod elixir {
+        use super::*;
+
+        #[test]
+        fn local_calls_connect_functions_qualified_do_not() {
+            let source_file = File::from_string(
+                "elixir",
+                r#"
+defmodule M do
+  def a, do: helper()
+  def b, do: helper()
+  def helper, do: :ok
+  def c, do: Other.thing()
+end
+"#,
+            );
+            assert_eq!(
+                1,
+                count(
+                    &source_file,
+                    &source_file.parse().root_node(),
+                    &NodeFilter::empty()
+                )
+            );
+        }
+
+        #[test]
+        fn module_attributes_do_not_feed_lcom() {
+            let source_file = File::from_string(
+                "elixir",
+                r#"
+defmodule M do
+  @shared 1
+  def a, do: @shared
+  def b, do: @shared
+end
+"#,
+            );
+            assert_eq!(
+                0,
+                count(
+                    &source_file,
+                    &source_file.parse().root_node(),
+                    &NodeFilter::empty()
+                )
+            );
+        }
     }
 }

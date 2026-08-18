@@ -6,6 +6,7 @@ use tree_sitter::{Node, Parser, Query};
 mod c;
 mod cpp;
 mod csharp;
+mod elixir;
 mod go;
 mod java;
 mod javascript;
@@ -22,8 +23,8 @@ mod typescript_common;
 mod vbnet;
 
 pub use {
-    c::*, cpp::*, csharp::*, go::*, java::*, javascript::*, kotlin::*, php::*, python::*, ruby::*,
-    rust::*, scala::*, swift::*, tsx::*, typescript::*, vbnet::*,
+    c::*, cpp::*, csharp::*, elixir::*, go::*, java::*, javascript::*, kotlin::*, php::*,
+    python::*, ruby::*, rust::*, scala::*, swift::*, tsx::*, typescript::*, vbnet::*,
 };
 
 #[allow(clippy::borrowed_box)]
@@ -39,6 +40,7 @@ lazy_static! {
             Box::<c::C>::default(),
             Box::<cpp::Cpp>::default(),
             Box::<csharp::CSharp>::default(),
+            Box::<elixir::Elixir>::default(),
             Box::<php::Php>::default(),
             Box::<kotlin::Kotlin>::default(),
             Box::<go::Go>::default(),
@@ -100,6 +102,16 @@ pub trait Language {
     }
 
     fn boolean_operator_nodes(&self) -> Vec<&str>;
+
+    /// Maps a grammar node to the kind used for `Visitor` dispatch. Defaults to the
+    /// tree-sitter node kind. Languages where a single grammar node kind encodes many
+    /// semantic constructs (e.g. Elixir's `call`, which represents def/if/case/...)
+    /// override this to disambiguate using the source text, returning a `'static`
+    /// synthetic constant. Must never return borrowed source text.
+    fn dispatch_node_kind(&self, node: &Node, source_file: &File) -> &'static str {
+        let _ = source_file;
+        node.kind()
+    }
 
     fn constructor_names(&self) -> Vec<&str> {
         vec![]
@@ -247,6 +259,18 @@ mod test {
     #[test]
     fn language_parser() {
         crate::lang::Rust::default().parser();
+    }
+
+    #[test]
+    fn dispatch_node_kind_defaults_to_tree_sitter_kind() {
+        let source_file = crate::code::File::from_string("rust", "fn main() { if x {} }");
+        let tree = source_file.parse();
+        let root = tree.root_node();
+        let language = crate::lang::from_str("rust").unwrap();
+        assert_eq!(
+            language.dispatch_node_kind(&root, &source_file),
+            root.kind()
+        );
     }
 
     #[test]

@@ -1,5 +1,4 @@
 use qlty_analysis::code::{File, NodeExt, NodeFilter, Visitor};
-use qlty_analysis::Language;
 use tree_sitter::Node;
 use tree_sitter::TreeCursor;
 
@@ -28,8 +27,8 @@ pub struct CognitiveComplexity<'a> {
 }
 
 impl Visitor for CognitiveComplexity<'_> {
-    fn language(&self) -> &Box<dyn Language + Sync> {
-        self.source_file.language()
+    fn source_file(&self) -> &File {
+        self.source_file
     }
 
     fn skip_node(&self, node: &Node) -> bool {
@@ -798,6 +797,50 @@ End Class
                     &source_file.parse().root_node(),
                     &NodeFilter::empty()
                 )
+            );
+        }
+    }
+
+    mod elixir {
+        use super::*;
+
+        fn cognitive(source: &str) -> usize {
+            let source_file = File::from_string("elixir", source);
+            count(
+                &source_file,
+                &source_file.parse().root_node(),
+                &NodeFilter::empty(),
+            )
+        }
+
+        #[test]
+        fn function_signature_is_not_recursion() {
+            assert_eq!(0, cognitive("defmodule M do\n def a(x), do: x\nend"));
+        }
+
+        #[test]
+        fn real_self_recursion_counts() {
+            assert_eq!(
+                1,
+                cognitive("defmodule M do\n def fact(n), do: n * fact(n - 1)\nend")
+            );
+        }
+
+        #[test]
+        fn nested_case_inside_if_is_weighted_by_depth() {
+            assert_eq!(
+                3,
+                cognitive(
+                    "defmodule M do\n def f(x) do\n  if x do\n   case x do\n    1 -> :a\n    _ -> :b\n   end\n  end\n end\nend"
+                )
+            );
+        }
+
+        #[test]
+        fn alternating_boolean_operators_increment_once_per_change() {
+            assert_eq!(
+                2,
+                cognitive("defmodule M do\n def f(a, b, c, d), do: a and b and c or d\nend")
             );
         }
     }

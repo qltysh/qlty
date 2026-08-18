@@ -229,4 +229,26 @@ mod test {
             "#);
         }
     }
+
+    mod elixir {
+        use super::*;
+
+        #[test]
+        fn no_return_smell_on_branchy_function() {
+            let source_file = Arc::new(File::from_string(
+                "elixir",
+                "defmodule M do\n def f(x) do\n  case x do\n   1 -> :a\n   2 -> :b\n   _ -> :c\n  end\n end\nend",
+            ));
+            assert_eq!(0, check(1, source_file.clone(), &source_file.parse()).len());
+        }
+
+        #[test]
+        fn no_return_smell_on_cond_function() {
+            let source_file = Arc::new(File::from_string(
+                "elixir",
+                "defmodule M do\n def f(x) do\n  cond do\n   x > 2 -> :a\n   x > 1 -> :b\n   true -> :c\n  end\n end\nend",
+            ));
+            assert_eq!(0, check(1, source_file.clone(), &source_file.parse()).len());
+        }
+    }
 }

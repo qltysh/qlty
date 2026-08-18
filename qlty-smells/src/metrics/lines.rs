@@ -1,7 +1,6 @@
 use qlty_analysis::code::File;
 use qlty_analysis::code::NodeFilter;
 use qlty_analysis::code::Visitor;
-use qlty_analysis::Language;
 use serde::Serialize;
 use std::collections::HashSet;
 use std::ops::{Add, AddAssign};
@@ -114,8 +113,8 @@ impl<'a> LinesProcessor<'a> {
 }
 
 impl Visitor for LinesProcessor<'_> {
-    fn language(&self) -> &Box<dyn Language + Sync> {
-        self.source_file.language()
+    fn source_file(&self) -> &File {
+        self.source_file
     }
 
     fn skip_node(&self, node: &Node) -> bool {
@@ -340,6 +339,50 @@ mod test {
             comment_lines: 2
             blank_lines: 1
             ");
+        }
+    }
+
+    mod elixir {
+        use super::*;
+
+        fn lines(source: &str) -> Lines {
+            let source_file = File::from_string("elixir", source);
+            Lines::for_node(
+                &source_file,
+                &source_file.parse().root_node(),
+                &NodeFilter::empty(),
+            )
+        }
+
+        #[test]
+        fn empty_file_has_no_code_lines() {
+            assert_eq!(0, lines("").code_lines);
+        }
+
+        #[test]
+        fn comments_only_file_counts_comment_lines() {
+            let result = lines("# one\n# two\n\n# three\n");
+            assert_eq!(3, result.comment_lines);
+            assert_eq!(0, result.code_lines);
+        }
+
+        #[test]
+        fn heredocs_sigils_and_charlists_are_string_content() {
+            let result = lines("defmodule M do\n  @moduledoc \"\"\"\n  doc\n  \"\"\"\n  def a, do: ~s(hi)\n  def b, do: ~w[a b]\n  def c, do: ~c\"chars\"\nend\n");
+            assert_eq!(0, result.comment_lines);
+            assert_eq!(8, result.code_lines);
+        }
+
+        #[test]
+        fn multibyte_source_does_not_panic() {
+            let result =
+                lines("defmodule M do\n  @moduledoc \"emoji 🎉 docs\"\n  def ola, do: :olá\nend\n");
+            assert_eq!(4, result.total);
+        }
+
+        #[test]
+        fn malformed_source_does_not_panic() {
+            let _ = lines("defmodule do :::: end");
         }
     }
 }

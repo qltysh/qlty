@@ -295,4 +295,30 @@ mod test {
             "#);
         }
     }
+
+    mod elixir {
+        use super::*;
+
+        #[test]
+        fn parameters_found() {
+            let source_file = Arc::new(File::from_string(
+                "elixir",
+                "defmodule M do\n def f(a, b, c, d, e, f), do: a\nend",
+            ));
+            let issues = check(6, source_file.clone(), &source_file.parse());
+            assert_eq!(1, issues.len());
+            assert_eq!(6, issues[0].value);
+        }
+
+        #[test]
+        fn default_argument_counts_once() {
+            let source_file = Arc::new(File::from_string(
+                "elixir",
+                "defmodule M do\n def f(a, b \\\\ 1), do: a\nend",
+            ));
+            let issues = check(2, source_file.clone(), &source_file.parse());
+            assert_eq!(1, issues.len());
+            assert_eq!(2, issues[0].value);
+        }
+    }
 }

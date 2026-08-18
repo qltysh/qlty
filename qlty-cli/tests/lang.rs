@@ -79,3 +79,8 @@ fn scala_tests() {
 fn vbnet_tests() {
     setup_and_run_test_cases("tests/lang/vbnet/**/*.toml");
 }
+
+#[test]
+fn elixir_tests() {
+    setup_and_run_test_cases("tests/lang/elixir/**/*.toml");
+}

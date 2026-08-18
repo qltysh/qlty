@@ -1,3 +1,4 @@
+use crate::code::File;
 use crate::Language;
 use tracing::warn;
 use tree_sitter::{Node, TreeCursor};
@@ -7,12 +8,13 @@ const MAX_CURSOR_DEPTH: u32 = 300;
 pub trait Visitor {
     fn process_node(&mut self, cursor: &mut TreeCursor) {
         let node = cursor.node();
-        let kind = node.kind();
-        let language = self.language();
 
         if self.skip_node(&node) {
             return;
         }
+
+        let language = self.language();
+        let kind = language.dispatch_node_kind(&node, self.source_file());
 
         if cursor.depth() > MAX_CURSOR_DEPTH {
             // This is a safety check to prevent stack overflow
@@ -174,6 +176,10 @@ pub trait Visitor {
         !node.is_named()
     }
 
+    fn source_file(&self) -> &File;
+
     #[allow(clippy::borrowed_box)]
-    fn language(&self) -> &Box<dyn Language + Sync>;
+    fn language(&self) -> &Box<dyn Language + Sync> {
+        self.source_file().language()
+    }
 }

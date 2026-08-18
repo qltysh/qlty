@@ -1,0 +1,973 @@
+use crate::code::node_source;
+use crate::code::File;
+use crate::lang::Language;
+use tree_sitter::Node;
+
+const CLASS_QUERY: &str = r#"
+(call
+  target: (identifier) @_definition
+  (arguments (alias) @name)
+  (#match? @_definition "^(defmodule|defprotocol|defimpl)$")) @definition.class
+"#;
+
+const FUNCTION_DECLARATION_QUERY: &str = r#"
+[
+  (call
+    target: (identifier) @_definition
+    (arguments
+      (call target: (identifier) @name (arguments) @parameters))
+    (#match? @_definition "^(def|defp|defmacro|defmacrop|defguard|defguardp)$"))
+  (call
+    target: (identifier) @_definition
+    (arguments (identifier) @name)
+    (#match? @_definition "^(def|defp|defmacro|defmacrop|defguard|defguardp)$"))
+  (call
+    target: (identifier) @_definition
+    (arguments
+      (binary_operator
+        left: (call target: (identifier) @name (arguments) @parameters)))
+    (#match? @_definition "^(def|defp|defmacro|defmacrop|defguard|defguardp)$"))
+  (call
+    target: (identifier) @_definition
+    (arguments
+      (binary_operator left: (identifier) @name))
+    (#match? @_definition "^(def|defp|defmacro|defmacrop|defguard|defguardp)$"))
+] @definition.function
+"#;
+
+const FIELD_QUERY: &str = r#"
+[
+  (unary_operator
+    operator: "@"
+    operand: (call target: (identifier) @name)
+    (#not-match? @name "^(after_compile|before_compile|behaviour|behavior|callback|compile|deprecated|derive|describetag|dialyzer|doc|doctest|enforce_keys|external_resource|impl|macrocallback|moduledoc|moduletag|on_definition|on_load|opaque|optional_callbacks|since|spec|tag|type|typedoc|typep)$")) @field
+  (call
+    target: (identifier) @_defstruct
+    (arguments
+      (list [(atom) @name (keywords (pair key: (keyword) @name))]))
+    (#eq? @_defstruct "defstruct")) @field
+  (call
+    target: (identifier) @_defstruct
+    (arguments (keywords (pair key: (keyword) @name)))
+    (#eq? @_defstruct "defstruct")) @field
+]
+"#;
+
+pub struct Elixir {
+    pub class_query: tree_sitter::Query,
+    pub function_declaration_query: tree_sitter::Query,
+    pub field_query: tree_sitter::Query,
+}
+
+impl Elixir {
+    pub const NAME: &'static str = "elixir";
+
+    // Synthetic dispatch kinds. Elixir's grammar encodes def/if/case/for/try as
+    // `call` nodes distinguished only by their target text, and `=`/`|>`/`&&` as
+    // `binary_operator` nodes distinguished only by their operator text, so the
+    // semantic category can only be resolved by reading the source. Every constant
+    // is prefixed `__elixir_` so it can never collide with a real grammar kind.
+    pub const DEFINITION: &'static str = "__elixir_definition";
+    pub const DEFINITION_HEAD: &'static str = "__elixir_definition_head";
+    pub const CONDITIONAL: &'static str = "__elixir_conditional";
+    pub const BRANCH: &'static str = "__elixir_branch";
+    pub const COMPREHENSION: &'static str = "__elixir_comprehension";
+    pub const TRY: &'static str = "__elixir_try";
+    pub const BOOLEAN_BINARY: &'static str = "__elixir_boolean_binary";
+    pub const CASE_CLAUSE: &'static str = "__elixir_case_clause";
+    pub const STAB_CLAUSE: &'static str = "__elixir_stab_clause";
+    pub const ATTRIBUTE_NAME: &'static str = "__elixir_attribute_name";
+    pub const TYPE_DECLARATION: &'static str = "__elixir_type_declaration";
+
+    pub const SOURCE: &'static str = "source";
+    pub const CALL: &'static str = "call";
+    pub const BINARY_OPERATOR: &'static str = "binary_operator";
+    pub const UNARY_OPERATOR: &'static str = "unary_operator";
+    pub const STAB_CLAUSE_KIND: &'static str = "stab_clause";
+    pub const ANONYMOUS_FUNCTION: &'static str = "anonymous_function";
+    pub const RESCUE_BLOCK: &'static str = "rescue_block";
+    pub const CATCH_BLOCK: &'static str = "catch_block";
+    pub const DO_BLOCK: &'static str = "do_block";
+    pub const ELSE_BLOCK: &'static str = "else_block";
+    pub const AFTER_BLOCK: &'static str = "after_block";
+    pub const COMMENT: &'static str = "comment";
+    pub const STRING: &'static str = "string";
+    pub const CHARLIST: &'static str = "charlist";
+    pub const SIGIL: &'static str = "sigil";
+    pub const IDENTIFIER: &'static str = "identifier";
+    pub const DOT: &'static str = "dot";
+    pub const ARGUMENTS: &'static str = "arguments";
+
+    pub const AND: &'static str = "and";
+    pub const OR: &'static str = "or";
+    pub const AMPERSAND_AMPERSAND: &'static str = "&&";
+    pub const PIPE_PIPE: &'static str = "||";
+
+    const UNKNOWN: &'static str = "<UNKNOWN>";
+
+    const ATTRIBUTE_OPERATOR: &'static str = "@";
+
+    const DEFINITION_KEYWORDS: [&'static str; 6] = [
+        "def",
+        "defp",
+        "defmacro",
+        "defmacrop",
+        "defguard",
+        "defguardp",
+    ];
+
+    /// Macros whose first argument is a `name(params)` head that declares a function
+    /// rather than calling one. `defdelegate` is not in `DEFINITION_KEYWORDS` because it
+    /// must keep dispatching as a plain call (it is not a `function_nodes` body and
+    /// `FUNCTION_DECLARATION_QUERY` deliberately omits it, so the function count is
+    /// unchanged) — only its *head* is a declaration.
+    const DECLARATION_HEAD_KEYWORDS: [&'static str; 7] = [
+        "def",
+        "defp",
+        "defmacro",
+        "defmacrop",
+        "defguard",
+        "defguardp",
+        "defdelegate",
+    ];
+
+    /// Module attributes whose body is a pure type declaration and never executes.
+    /// Value attributes (`@version Mix.Project.config()[:version]`) are deliberately
+    /// absent: the calls in their body do run and must still be counted.
+    const TYPE_DECLARATION_ATTRIBUTES: [&'static str; 6] = [
+        "callback",
+        "macrocallback",
+        "opaque",
+        "spec",
+        "type",
+        "typep",
+    ];
+
+    fn dispatch_call(node: &Node, source_file: &File) -> &'static str {
+        if Self::is_definition_head(node, source_file) {
+            return Self::DEFINITION_HEAD;
+        }
+
+        if Self::is_attribute_name(node, source_file) {
+            return Self::ATTRIBUTE_NAME;
+        }
+
+        if Self::is_in_type_declaration(node, source_file) {
+            return Self::TYPE_DECLARATION;
+        }
+
+        let Some(target) = node.child_by_field_name("target") else {
+            return Self::CALL;
+        };
+
+        if target.kind() != Self::IDENTIFIER {
+            return Self::CALL; // qualified or dynamic call, e.g. Mod.fun()
+        }
+
+        let target_source = node_source(&target, source_file);
+
+        if Self::DEFINITION_KEYWORDS.contains(&target_source.as_str()) {
+            return Self::DEFINITION;
+        }
+
+        match target_source.as_str() {
+            "if" | "unless" => Self::CONDITIONAL,
+            "case" | "cond" | "with" | "receive" => Self::BRANCH,
+            "for" => Self::COMPREHENSION,
+            "try" => Self::TRY,
+            _ => Self::CALL,
+        }
+    }
+
+    /// `@timeout 5000` parses as a `call` named `timeout` wrapped in a `@` unary
+    /// operator. The attribute *name* is a declaration, not a call, so dispatching it as
+    /// one charges cyclomatic complexity whenever the attribute name happens to collide
+    /// with an entry in `iterator_method_identifiers` (`@map`, `@filter`, `@reduce`, ...).
+    /// Only the name node is remapped; the attribute's value is traversed normally so
+    /// real calls inside it still count.
+    fn is_attribute_name(node: &Node, source_file: &File) -> bool {
+        node.parent().is_some_and(|parent| {
+            Self::is_module_attribute(&parent, source_file)
+                && parent.child_by_field_name("operand") == Some(*node)
+        })
+    }
+
+    fn is_module_attribute(node: &Node, source_file: &File) -> bool {
+        node.kind() == Self::UNARY_OPERATOR
+            && node
+                .child_by_field_name("operator")
+                .is_some_and(|operator| {
+                    node_source(&operator, source_file) == Self::ATTRIBUTE_OPERATOR
+                })
+    }
+
+    /// A `@spec`, `@callback`, `@macrocallback`, `@type`, `@typep` or `@opaque` body is a
+    /// type declaration: `@spec map(list) :: list` contains a `call` node for `map(list)`
+    /// that never executes. Left as a plain call it charges `+1` cyclomatic whenever the
+    /// declared name is in `iterator_method_identifiers`, so two modules differing only in
+    /// the name they spec would report different complexity.
+    ///
+    /// The rule is simply: find the nearest enclosing module attribute and ask whether it
+    /// is a type declaration. Nothing about the *shape* of the nesting matters, so this
+    /// holds for every way a type can be written — argument position, return position,
+    /// function types `(map() -> map())`, unions, tuples, lists, maps, remote and
+    /// parameterised types, and `when` constraints alike.
+    ///
+    /// No intermediate node kind terminates the walk. Earlier revisions stopped at
+    /// `call`, `do_block`, `stab_clause` and `anonymous_function`; each of those was a
+    /// false negative waiting to happen, and `stab_clause` was an actual one, because an
+    /// Elixir function type `(a -> b)` parses as a `stab_clause`. None was load-bearing:
+    /// a call can only reach a type-declaration attribute by genuinely being inside one,
+    /// since a type declaration body contains no executable code. Calls in an attribute
+    /// *value* still count, because the nearest enclosing attribute is then a value
+    /// attribute rather than a type declaration.
+    fn is_in_type_declaration(node: &Node, source_file: &File) -> bool {
+        let mut current = *node;
+
+        while let Some(parent) = current.parent() {
+            if Self::is_module_attribute(&parent, source_file) {
+                return Self::is_type_declaration_name(&parent, source_file);
+            }
+
+            current = parent;
+        }
+
+        false
+    }
+
+    fn is_type_declaration_name(attribute: &Node, source_file: &File) -> bool {
+        attribute
+            .child_by_field_name("operand")
+            .and_then(|operand| operand.child_by_field_name("target"))
+            .is_some_and(|target| {
+                target.kind() == Self::IDENTIFIER
+                    && Self::TYPE_DECLARATION_ATTRIBUTES
+                        .contains(&node_source(&target, source_file).as_str())
+            })
+    }
+
+    /// Decision 8. A definition head is the `name(params)` call nested inside a `def`'s
+    /// arguments, possibly behind one or more right-associative `when` guards. It is not a
+    /// real call, and dispatching it as one makes cognitive complexity mistake every
+    /// function signature for self-recursion.
+    fn is_definition_head(node: &Node, source_file: &File) -> bool {
+        let mut current = *node;
+
+        while let Some(parent) = current.parent() {
+            match parent.kind() {
+                Self::BINARY_OPERATOR if parent.child_by_field_name("left") == Some(current) => {
+                    current = parent;
+                }
+                Self::ARGUMENTS => {
+                    return parent.parent().is_some_and(|declaration| {
+                        Self::is_declaration_call(&declaration, source_file)
+                    });
+                }
+                _ => return false,
+            }
+        }
+
+        false
+    }
+
+    fn is_declaration_call(node: &Node, source_file: &File) -> bool {
+        node.kind() == Self::CALL
+            && node.child_by_field_name("target").is_some_and(|target| {
+                target.kind() == Self::IDENTIFIER
+                    && Self::DECLARATION_HEAD_KEYWORDS
+                        .contains(&node_source(&target, source_file).as_str())
+            })
+    }
+
+    /// Decision 7. `=` (match), `|>` (pipe), `\\` (default arg), `::` (typespec) and
+    /// arithmetic are all `binary_operator`s in Elixir. Counting them the way other
+    /// languages count their binary nodes would charge cyclomatic complexity for every
+    /// binding and every pipeline stage, so only short-circuit booleans are remapped.
+    fn dispatch_binary_operator(node: &Node, source_file: &File) -> &'static str {
+        let Some(operator) = node.child_by_field_name("operator") else {
+            return Self::BINARY_OPERATOR;
+        };
+
+        match node_source(&operator, source_file).as_str() {
+            Self::AMPERSAND_AMPERSAND | Self::PIPE_PIPE | Self::AND | Self::OR => {
+                Self::BOOLEAN_BINARY
+            }
+            _ => Self::BINARY_OPERATOR,
+        }
+    }
+
+    /// Decision 10. `stab_clause` is the arm node for `case`/`cond`/`with`/`receive`, for
+    /// `else` and `after` blocks, for `rescue`/`catch` handlers, and for every clause of an
+    /// anonymous function. Only the first two groups are branches: rescue and catch already
+    /// count through `except_nodes`, and closures add nothing to cyclomatic complexity in
+    /// every other language qlty supports.
+    fn dispatch_stab_clause(node: &Node) -> &'static str {
+        match node.parent().map(|parent| parent.kind()) {
+            Some(Self::DO_BLOCK) | Some(Self::ELSE_BLOCK) | Some(Self::AFTER_BLOCK) => {
+                Self::CASE_CLAUSE
+            }
+            _ => Self::STAB_CLAUSE,
+        }
+    }
+}
+
+impl Default for Elixir {
+    fn default() -> Self {
+        let language = tree_sitter_elixir::language();
+
+        Self {
+            class_query: tree_sitter::Query::new(&language, CLASS_QUERY).unwrap(),
+            function_declaration_query: tree_sitter::Query::new(
+                &language,
+                FUNCTION_DECLARATION_QUERY,
+            )
+            .unwrap(),
+            field_query: tree_sitter::Query::new(&language, FIELD_QUERY).unwrap(),
+        }
+    }
+}
+
+impl Language for Elixir {
+    fn name(&self) -> &str {
+        Self::NAME
+    }
+
+    /// Decision 4. Elixir has no receiver syntax for local calls, so LCOM4 becomes a
+    /// call-cohesion signal: a bare `foo()` connects the functions that call it, while a
+    /// qualified `Mod.fun()` does not. `visit_field` is gated on this being `Some(..)`, so
+    /// module attributes never feed LCOM4. Auto-imported `Kernel` calls and guards read as
+    /// intra-module references and bias LCOM4 low. Elixir LCOM4 is therefore a weaker
+    /// signal than in OO languages — a property of the language, not a defect.
+    fn self_keyword(&self) -> Option<&str> {
+        None
+    }
+
+    fn invisible_container_nodes(&self) -> Vec<&str> {
+        vec![Self::SOURCE]
+    }
+
+    fn if_nodes(&self) -> Vec<&str> {
+        vec![Self::CONDITIONAL]
+    }
+
+    fn else_nodes(&self) -> Vec<&str> {
+        vec![Self::ELSE_BLOCK]
+    }
+
+    fn switch_nodes(&self) -> Vec<&str> {
+        vec![Self::BRANCH]
+    }
+
+    fn case_nodes(&self) -> Vec<&str> {
+        vec![Self::CASE_CLAUSE]
+    }
+
+    fn loop_nodes(&self) -> Vec<&str> {
+        vec![Self::COMPREHENSION]
+    }
+
+    fn except_nodes(&self) -> Vec<&str> {
+        vec![Self::RESCUE_BLOCK, Self::CATCH_BLOCK]
+    }
+
+    fn try_expression_nodes(&self) -> Vec<&str> {
+        vec![Self::TRY]
+    }
+
+    fn jump_nodes(&self) -> Vec<&str> {
+        vec![]
+    }
+
+    /// Decision 5. Elixir has no `return` keyword, so the `return-statements` smell can
+    /// never fire. That is correct: there is no construct to count.
+    fn return_nodes(&self) -> Vec<&str> {
+        vec![]
+    }
+
+    fn binary_nodes(&self) -> Vec<&str> {
+        vec![Self::BOOLEAN_BINARY]
+    }
+
+    fn boolean_operator_nodes(&self) -> Vec<&str> {
+        vec![
+            Self::AMPERSAND_AMPERSAND,
+            Self::PIPE_PIPE,
+            Self::AND,
+            Self::OR,
+        ]
+    }
+
+    /// Decision 6. Elixir has no distinct field-access node and LCOM4 does not use one.
+    /// Field *counting* runs through `field_query` instead.
+    fn field_nodes(&self) -> Vec<&str> {
+        vec![]
+    }
+
+    fn call_nodes(&self) -> Vec<&str> {
+        vec![Self::CALL]
+    }
+
+    fn function_nodes(&self) -> Vec<&str> {
+        vec![Self::DEFINITION]
+    }
+
+    fn closure_nodes(&self) -> Vec<&str> {
+        vec![Self::ANONYMOUS_FUNCTION]
+    }
+
+    fn comment_nodes(&self) -> Vec<&str> {
+        vec![Self::COMMENT]
+    }
+
+    fn string_nodes(&self) -> Vec<&str> {
+        vec![Self::STRING, Self::CHARLIST, Self::SIGIL]
+    }
+
+    /// Decision 11. Idiomatic Elixir iteration is a higher-order `Enum`/`Stream` call, not
+    /// a loop keyword, so these names are the language's decision points for iteration.
+    /// Matching is by name only with the receiver discarded, exactly as in Ruby, Python,
+    /// JavaScript, Rust, Scala and Kotlin.
+    fn iterator_method_identifiers(&self) -> Vec<&str> {
+        vec![
+            "all?",
+            "any?",
+            "chunk_by",
+            "chunk_while",
+            "dedup_by",
+            "drop_while",
+            "each",
+            "each_with_index",
+            "filter",
+            "find",
+            "find_index",
+            "find_value",
+            "flat_map",
+            "flat_map_reduce",
+            "group_by",
+            "map",
+            "map_every",
+            "map_intersperse",
+            "map_join",
+            "map_reduce",
+            "max_by",
+            "min_by",
+            "min_max_by",
+            "reduce",
+            "reduce_while",
+            "reject",
+            "scan",
+            "sort_by",
+            "split_while",
+            "split_with",
+            "take_while",
+            "uniq_by",
+            "zip_reduce",
+            "zip_with",
+            "with_index",
+        ]
+    }
+
+    fn dispatch_node_kind(&self, node: &Node, source_file: &File) -> &'static str {
+        match node.kind() {
+            Self::CALL => Self::dispatch_call(node, source_file),
+            Self::BINARY_OPERATOR => Self::dispatch_binary_operator(node, source_file),
+            Self::STAB_CLAUSE_KIND => Self::dispatch_stab_clause(node),
+            _ => node.kind(),
+        }
+    }
+
+    fn call_identifiers(&self, source_file: &File, node: &Node) -> (Option<String>, String) {
+        let Some(target) = node.child_by_field_name("target") else {
+            return (Some(Self::UNKNOWN.to_string()), Self::UNKNOWN.to_string());
+        };
+
+        match target.kind() {
+            Self::IDENTIFIER => (None, node_source(&target, source_file)),
+            Self::DOT => {
+                let receiver = target
+                    .child_by_field_name("left")
+                    .map(|left| node_source(&left, source_file))
+                    .unwrap_or_else(|| Self::UNKNOWN.to_string());
+                let name = target
+                    .child_by_field_name("right")
+                    .map(|right| node_source(&right, source_file))
+                    .unwrap_or_else(|| Self::UNKNOWN.to_string());
+                (Some(receiver), name)
+            }
+            _ => (Some(Self::UNKNOWN.to_string()), Self::UNKNOWN.to_string()),
+        }
+    }
+
+    /// Unreachable by design: `field_nodes()` is empty (Decision 6), so `visit_field`
+    /// never fires.
+    fn field_identifiers(&self, _source_file: &File, _node: &Node) -> (String, String) {
+        (Self::UNKNOWN.to_string(), Self::UNKNOWN.to_string())
+    }
+
+    /// Decision 9. The trait default reads a `name` field, which Elixir `call` nodes do not
+    /// have, so it would panic on every Elixir function. `call` nodes also have no
+    /// `arguments` *field*, so the argument list must be found by node kind.
+    fn function_name_from_node(&self, source_file: &File, node: &Node) -> String {
+        let mut cursor = node.walk();
+        let Some(arguments) = node
+            .named_children(&mut cursor)
+            .find(|child| child.kind() == Self::ARGUMENTS)
+        else {
+            return Self::UNKNOWN.to_string();
+        };
+
+        let mut cursor = arguments.walk();
+        for child in arguments.named_children(&mut cursor) {
+            let head = match child.kind() {
+                Self::BINARY_OPERATOR => child.child_by_field_name("left"),
+                _ => Some(child),
+            };
+
+            match head.map(|head| (head.kind(), head)) {
+                Some((Self::IDENTIFIER, head)) => return node_source(&head, source_file),
+                Some((Self::CALL, head)) => {
+                    if let Some(target) = head.child_by_field_name("target") {
+                        return node_source(&target, source_file);
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        Self::UNKNOWN.to_string()
+    }
+
+    fn tree_sitter_language(&self) -> tree_sitter::Language {
+        tree_sitter_elixir::language()
+    }
+
+    fn class_query(&self) -> &tree_sitter::Query {
+        &self.class_query
+    }
+
+    fn function_declaration_query(&self) -> &tree_sitter::Query {
+        &self.function_declaration_query
+    }
+
+    fn field_query(&self) -> &tree_sitter::Query {
+        &self.field_query
+    }
+
+    fn has_field_names(&self) -> bool {
+        true
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::code::File;
+    use std::collections::HashSet;
+
+    fn collect_dispatch_kinds(
+        node: Node,
+        language: &Elixir,
+        file: &File,
+        kinds: &mut Vec<&'static str>,
+    ) {
+        if node.is_named() {
+            kinds.push(language.dispatch_node_kind(&node, file));
+        }
+
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            collect_dispatch_kinds(child, language, file, kinds);
+        }
+    }
+
+    fn dispatch_kinds(source: &str) -> Vec<&'static str> {
+        let file = File::from_string(Elixir::NAME, source);
+        let tree = file.parse();
+        let language = Elixir::default();
+        let mut kinds = vec![];
+        collect_dispatch_kinds(tree.root_node(), &language, &file, &mut kinds);
+        kinds
+    }
+
+    fn match_count(query: &tree_sitter::Query, source: &str) -> usize {
+        let file = File::from_string(Elixir::NAME, source);
+        let tree = file.parse();
+        let mut cursor = tree_sitter::QueryCursor::new();
+        cursor
+            .matches(query, tree.root_node(), file.contents.as_bytes())
+            .count()
+    }
+
+    #[test]
+    fn registered_in_all_langs() {
+        assert_eq!(crate::lang::from_str("elixir").unwrap().name(), "elixir");
+    }
+
+    #[test]
+    fn parses_module() {
+        let file = File::from_string(
+            Elixir::NAME,
+            "defmodule Foo do\n  def bar(x), do: x + 1\nend\n",
+        );
+        assert!(!file.parse().root_node().has_error());
+    }
+
+    #[test]
+    fn mutually_exclusive() {
+        let lang = Elixir::default();
+        let mut kinds: Vec<&str> = vec![];
+
+        kinds.extend(lang.if_nodes());
+        kinds.extend(lang.else_nodes());
+        kinds.extend(lang.conditional_assignment_nodes());
+        kinds.extend(lang.switch_nodes());
+        kinds.extend(lang.case_nodes());
+        kinds.extend(lang.ternary_nodes());
+        kinds.extend(lang.loop_nodes());
+        kinds.extend(lang.except_nodes());
+        kinds.extend(lang.try_expression_nodes());
+        kinds.extend(lang.jump_nodes());
+        kinds.extend(lang.return_nodes());
+        kinds.extend(lang.binary_nodes());
+        kinds.extend(lang.field_nodes());
+        kinds.extend(lang.call_nodes());
+        kinds.extend(lang.function_nodes());
+        kinds.extend(lang.closure_nodes());
+        kinds.extend(lang.comment_nodes());
+        kinds.extend(lang.string_nodes());
+        kinds.extend(lang.boolean_operator_nodes());
+        kinds.extend(lang.block_nodes());
+
+        let unique: HashSet<_> = kinds.iter().cloned().collect();
+        assert_eq!(unique.len(), kinds.len());
+    }
+
+    #[test]
+    fn synthetic_kinds_are_namespaced() {
+        let synthetic = [
+            Elixir::DEFINITION,
+            Elixir::DEFINITION_HEAD,
+            Elixir::CONDITIONAL,
+            Elixir::BRANCH,
+            Elixir::COMPREHENSION,
+            Elixir::TRY,
+            Elixir::BOOLEAN_BINARY,
+            Elixir::CASE_CLAUSE,
+            Elixir::STAB_CLAUSE,
+            Elixir::ATTRIBUTE_NAME,
+            Elixir::TYPE_DECLARATION,
+        ];
+        assert!(synthetic.iter().all(|kind| kind.starts_with("__elixir_")));
+    }
+
+    #[test]
+    fn malformed_input_does_not_panic() {
+        let file = File::from_string(Elixir::NAME, "defmodule do :::: end");
+        let _tree = file.parse();
+    }
+
+    #[test]
+    fn classifies_if_as_conditional() {
+        assert!(dispatch_kinds("if x, do: 1, else: 2").contains(&Elixir::CONDITIONAL));
+    }
+
+    #[test]
+    fn classifies_case_as_branch() {
+        assert!(dispatch_kinds("case x do\n 1 -> :a\n _ -> :b\nend").contains(&Elixir::BRANCH));
+    }
+
+    #[test]
+    fn classifies_def_as_definition() {
+        assert!(dispatch_kinds("def f, do: 1").contains(&Elixir::DEFINITION));
+    }
+
+    #[test]
+    fn classifies_defmodule_as_plain_call() {
+        assert!(dispatch_kinds("defmodule M do\nend").contains(&"call"));
+    }
+
+    #[test]
+    fn classifies_qualified_call_as_plain_call() {
+        assert!(dispatch_kinds("Enum.map(list, fn x -> x end)").contains(&"call"));
+    }
+
+    #[test]
+    fn definition_head_is_not_a_call() {
+        let kinds = dispatch_kinds("def a(x), do: x");
+        assert!(kinds.contains(&Elixir::DEFINITION_HEAD));
+        assert!(!kinds.contains(&"call"));
+    }
+
+    #[test]
+    fn guarded_definition_head_is_not_a_call_but_the_guard_is() {
+        let kinds = dispatch_kinds("def a(x) when is_integer(x), do: x");
+        assert!(kinds.contains(&Elixir::DEFINITION_HEAD));
+        assert!(kinds.contains(&"call"));
+    }
+
+    #[test]
+    fn boolean_binary_is_remapped_and_arithmetic_is_not() {
+        assert!(dispatch_kinds("a and b").contains(&Elixir::BOOLEAN_BINARY));
+        assert!(!dispatch_kinds("x = a + b").contains(&Elixir::BOOLEAN_BINARY));
+    }
+
+    #[test]
+    fn case_arms_are_case_clauses() {
+        let kinds = dispatch_kinds("case x do\n 1 -> :a\n _ -> :b\nend");
+        assert_eq!(
+            2,
+            kinds
+                .iter()
+                .filter(|kind| **kind == Elixir::CASE_CLAUSE)
+                .count()
+        );
+    }
+
+    #[test]
+    fn anonymous_function_clauses_are_not_case_clauses() {
+        let kinds = dispatch_kinds("Enum.map(l, fn x -> x end)");
+        assert!(kinds.contains(&Elixir::STAB_CLAUSE));
+        assert!(!kinds.contains(&Elixir::CASE_CLAUSE));
+    }
+
+    #[test]
+    fn rescue_and_catch_clauses_are_not_case_clauses() {
+        let kinds = dispatch_kinds("try do\n a()\nrescue\n e -> e\ncatch\n :error, e -> e\nend");
+        assert_eq!(
+            2,
+            kinds
+                .iter()
+                .filter(|kind| **kind == Elixir::STAB_CLAUSE)
+                .count()
+        );
+        assert!(!kinds.contains(&Elixir::CASE_CLAUSE));
+    }
+
+    #[test]
+    fn with_else_arms_are_case_clauses() {
+        let kinds = dispatch_kinds("with {:ok, a} <- f() do\n a\nelse\n _ -> :err\nend");
+        assert!(kinds.contains(&Elixir::CASE_CLAUSE));
+    }
+
+    #[test]
+    fn receive_after_arms_are_case_clauses() {
+        let kinds = dispatch_kinds("receive do\n x -> x\nafter\n 1000 -> :timeout\nend");
+        assert_eq!(
+            2,
+            kinds
+                .iter()
+                .filter(|kind| **kind == Elixir::CASE_CLAUSE)
+                .count()
+        );
+    }
+
+    #[test]
+    fn typespec_body_is_a_type_declaration_not_a_call() {
+        let kinds = dispatch_kinds("@spec map(list) :: list");
+        assert!(kinds.contains(&Elixir::TYPE_DECLARATION));
+        assert!(!kinds.contains(&"call"));
+    }
+
+    #[test]
+    fn callback_body_is_a_type_declaration_not_a_call() {
+        let kinds = dispatch_kinds("@callback filter(list) :: list");
+        assert!(kinds.contains(&Elixir::TYPE_DECLARATION));
+        assert!(!kinds.contains(&"call"));
+    }
+
+    #[test]
+    fn attribute_name_is_not_a_call() {
+        let kinds = dispatch_kinds("@map %{a: 1}");
+        assert!(kinds.contains(&Elixir::ATTRIBUTE_NAME));
+        assert!(!kinds.contains(&"call"));
+    }
+
+    #[test]
+    fn calls_in_an_attribute_value_are_still_calls() {
+        let kinds = dispatch_kinds("@names Enum.map([1], fn n -> n end)");
+        assert!(kinds.contains(&Elixir::ATTRIBUTE_NAME));
+        assert_eq!(1, kinds.iter().filter(|kind| **kind == "call").count());
+    }
+
+    #[test]
+    fn argument_position_types_are_type_declarations() {
+        let kinds = dispatch_kinds("@spec fetch(map()) :: term()");
+        assert_eq!(0, kinds.iter().filter(|kind| **kind == "call").count());
+        assert_eq!(
+            3,
+            kinds
+                .iter()
+                .filter(|kind| **kind == Elixir::TYPE_DECLARATION)
+                .count()
+        );
+    }
+
+    #[test]
+    fn nested_types_inside_a_type_declaration_are_type_declarations() {
+        let kinds = dispatch_kinds("@type t :: %{a: map(), b: [map()]}");
+        assert!(!kinds.contains(&"call"));
+    }
+
+    #[test]
+    fn defdelegate_head_is_not_a_call() {
+        let kinds = dispatch_kinds("defdelegate map(list, fun), to: Enum");
+        assert!(kinds.contains(&Elixir::DEFINITION_HEAD));
+        assert_eq!(1, kinds.iter().filter(|kind| **kind == "call").count());
+    }
+
+    #[test]
+    fn calls_in_a_function_body_are_not_type_declarations() {
+        let kinds = dispatch_kinds(
+            "defmodule M do\n def go(l) do\n  Enum.map(l, fn n -> n end)\n end\nend",
+        );
+        assert!(kinds.contains(&"call"));
+        assert!(!kinds.contains(&Elixir::TYPE_DECLARATION));
+    }
+
+    #[test]
+    fn apply_with_computed_target_does_not_panic() {
+        let file = File::from_string(Elixir::NAME, "apply(m, f, a)");
+        let tree = file.parse();
+        let call = tree.root_node().named_child(0).unwrap();
+        assert_eq!(
+            (None, "apply".to_string()),
+            Elixir::default().call_identifiers(&file, &call)
+        );
+    }
+
+    #[test]
+    fn class_query_matches_module_protocol_and_impl() {
+        let language = Elixir::default();
+        assert_eq!(
+            1,
+            match_count(language.class_query(), "defmodule App.Foo do\nend")
+        );
+        assert_eq!(
+            2,
+            match_count(
+                language.class_query(),
+                "defmodule A do\n defmodule B do\n end\nend"
+            )
+        );
+        assert_eq!(
+            1,
+            match_count(
+                language.class_query(),
+                "defimpl P, for: Foo do\n def f(x), do: x\nend"
+            )
+        );
+    }
+
+    #[test]
+    fn function_query_matches_every_definition_form() {
+        let language = Elixir::default();
+        let query = language.function_declaration_query();
+        assert_eq!(
+            1,
+            match_count(query, "defmodule M do\n def a(x, y), do: x\nend")
+        );
+        assert_eq!(1, match_count(query, "defmodule M do\n def a, do: 1\nend"));
+        assert_eq!(
+            1,
+            match_count(
+                query,
+                "defmodule M do\n def a(x) when is_integer(x), do: x\nend"
+            )
+        );
+        assert_eq!(
+            1,
+            match_count(query, "defmodule M do\n def a when true, do: 1\nend")
+        );
+        assert_eq!(
+            3,
+            match_count(
+                query,
+                "defmodule M do\n def a(x), do: x\n defp b, do: 1\n defmacro c(y), do: y\nend"
+            )
+        );
+    }
+
+    #[test]
+    fn field_query_counts_attributes_and_struct_fields() {
+        let language = Elixir::default();
+        let query = language.field_query();
+        assert_eq!(
+            4,
+            match_count(
+                query,
+                "defmodule M do\n @foo 1\n @bar 2\n defstruct [:x, :y]\n def a, do: @foo\nend"
+            )
+        );
+        assert_eq!(
+            2,
+            match_count(query, "defmodule M do\n defstruct x: 1, y: 2\nend")
+        );
+        assert_eq!(
+            2,
+            match_count(query, "defmodule M do\n defstruct [:a, b: 1]\nend")
+        );
+    }
+
+    #[test]
+    fn field_query_ignores_reserved_attributes() {
+        let language = Elixir::default();
+        let source = "defmodule M do\n @moduledoc \"m\"\n @doc \"d\"\n @spec f(integer) :: integer\n @impl true\n @enforce_keys [:a]\n @behaviour GenServer\n defstruct [:a]\n def f(x), do: x\nend";
+        assert_eq!(1, match_count(language.field_query(), source));
+    }
+
+    #[test]
+    fn local_call_has_no_receiver() {
+        let file = File::from_string(Elixir::NAME, "foo(1)");
+        let tree = file.parse();
+        let call = tree.root_node().named_child(0).unwrap();
+        assert_eq!(
+            (None, "foo".to_string()),
+            Elixir::default().call_identifiers(&file, &call)
+        );
+    }
+
+    #[test]
+    fn qualified_call_has_receiver() {
+        let file = File::from_string(Elixir::NAME, "Mod.fun(1)");
+        let tree = file.parse();
+        let call = tree.root_node().named_child(0).unwrap();
+        assert_eq!(
+            (Some("Mod".to_string()), "fun".to_string()),
+            Elixir::default().call_identifiers(&file, &call)
+        );
+    }
+
+    #[test]
+    fn dynamic_call_target_does_not_panic() {
+        let file = File::from_string(Elixir::NAME, "fun.(1)");
+        let tree = file.parse();
+        let call = tree.root_node().named_child(0).unwrap();
+        let (receiver, name) = Elixir::default().call_identifiers(&file, &call);
+        assert_eq!(
+            (Some("fun".to_string()), "<UNKNOWN>".to_string()),
+            (receiver, name)
+        );
+    }
+
+    fn function_name(source: &str) -> String {
+        let file = File::from_string(Elixir::NAME, source);
+        let tree = file.parse();
+        let definition = tree.root_node().named_child(0).unwrap();
+        Elixir::default().function_name_from_node(&file, &definition)
+    }
+
+    #[test]
+    fn function_name_from_parenthesized_definition() {
+        assert_eq!("a", function_name("def a(x), do: x"));
+    }
+
+    #[test]
+    fn function_name_from_bare_definition() {
+        assert_eq!("a", function_name("def a, do: 1"));
+    }
+
+    #[test]
+    fn function_name_from_guarded_definition() {
+        assert_eq!("a", function_name("def a(x) when g(x), do: x"));
+    }
+}

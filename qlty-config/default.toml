@@ -477,6 +477,12 @@ globs = ["*.cpp", "*.hpp", "*.cc", "*.cxx", "*.c++", "*.h", "*.h++", "*.hh", "*.
 globs = ["*.cs"]
 smells.duplication.filter_patterns = ["(using_directive _)"]
 
+[language.elixir]
+globs = ["*.ex", "*.exs"]
+smells.duplication.filter_patterns = [
+  "(call target: (identifier) @_directive (#match? @_directive \"^(alias|import|require)$\"))",
+]
+
 [language.scala]
 globs = ["*.scala", "*.sc"]
 smells.duplication.filter_patterns = ["(import_declaration _)"]

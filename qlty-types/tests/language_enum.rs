@@ -10,3 +10,8 @@ fn scala_maps_to_scala_language_enum() {
 fn vbnet_maps_to_vbdotnet() {
     assert_eq!(language_enum_from_name("vbnet"), Language::Vbdotnet);
 }
+
+#[test]
+fn elixir_maps_to_elixir_language_enum() {
+    assert_eq!(language_enum_from_name("elixir"), Language::Elixir);
+}
