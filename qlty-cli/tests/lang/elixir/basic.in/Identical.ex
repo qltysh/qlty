@@ -1,6 +1,4 @@
-# The price/1 function below is copy-pasted verbatim into Identical2.ex. The two
-# enclosing modules differ in shape, so the duplication engine reports the shared
-# function itself as identical-code.
+# price/1 is copy-pasted verbatim into Identical2.ex.
 defmodule Identical do
   def price(order) do
     subtotal = order.quantity * order.unit_price

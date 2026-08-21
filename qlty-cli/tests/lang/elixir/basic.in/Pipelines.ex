@@ -1,7 +1,4 @@
-# Decision 7 end-to-end guard. Every function here is built from `=` bindings and
-# `|>` pipelines through non-iterator functions, with no branching and no Enum or
-# Stream call, so every reported cyclomatic value must be exactly 1. A value above 1
-# means `binary_operator` was mapped wholesale into `binary_nodes`.
+# `=` bindings and `|>` stages are not branches.
 defmodule Pipelines do
   def normalize(input) do
     trimmed = String.trim(input)

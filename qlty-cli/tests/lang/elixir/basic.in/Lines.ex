@@ -1,5 +1,4 @@
-# A module exercising the line metrics: comments, blank lines, a heredoc,
-# a sigil and a charlist.
+# Line metrics: comments, blanks, a heredoc, a sigil and a charlist.
 defmodule Lines do
   @moduledoc """
   A heredoc that spans

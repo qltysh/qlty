@@ -62,11 +62,8 @@ pub struct Elixir {
 impl Elixir {
     pub const NAME: &'static str = "elixir";
 
-    // Synthetic dispatch kinds. Elixir's grammar encodes def/if/case/for/try as
-    // `call` nodes distinguished only by their target text, and `=`/`|>`/`&&` as
-    // `binary_operator` nodes distinguished only by their operator text, so the
-    // semantic category can only be resolved by reading the source. Every constant
-    // is prefixed `__elixir_` so it can never collide with a real grammar kind.
+    // `def`/`if`/`case` share the `call` kind and `=`/`|>`/`&&` share `binary_operator`, so
+    // dispatch resolves them from source. `__elixir_` cannot collide with a grammar kind.
     pub const DEFINITION: &'static str = "__elixir_definition";
     pub const DEFINITION_HEAD: &'static str = "__elixir_definition_head";
     pub const CONDITIONAL: &'static str = "__elixir_conditional";
@@ -126,11 +123,8 @@ impl Elixir {
         "defguardp",
     ];
 
-    /// Macros whose first argument is a `name(params)` head that declares a function
-    /// rather than calling one. `defdelegate` is not in `DEFINITION_KEYWORDS` because it
-    /// must keep dispatching as a plain call (it is not a `function_nodes` body and
-    /// `FUNCTION_DECLARATION_QUERY` deliberately omits it, so the function count is
-    /// unchanged) — only its *head* is a declaration.
+    /// Macros whose first argument is a `name(params)` head that declares rather than calls.
+    /// `defdelegate` is here but not in `DEFINITION_KEYWORDS`: only its head is a declaration.
     const DECLARATION_HEAD_KEYWORDS: [&'static str; 7] = [
         "def",
         "defp",
@@ -141,9 +135,8 @@ impl Elixir {
         "defdelegate",
     ];
 
-    /// Module attributes whose body is a pure type declaration and never executes.
-    /// Value attributes (`@version Mix.Project.config()[:version]`) are deliberately
-    /// absent: the calls in their body do run and must still be counted.
+    /// Attributes whose body is a pure type declaration and never executes. Value attributes
+    /// are absent on purpose: the calls in their bodies do run.
     const TYPE_DECLARATION_ATTRIBUTES: [&'static str; 6] = [
         "callback",
         "macrocallback",
@@ -193,12 +186,8 @@ impl Elixir {
         }
     }
 
-    /// `@timeout 5000` parses as a `call` named `timeout` wrapped in a `@` unary
-    /// operator. The attribute *name* is a declaration, not a call, so dispatching it as
-    /// one charges cyclomatic complexity whenever the attribute name happens to collide
-    /// with an entry in `iterator_method_identifiers` (`@map`, `@filter`, `@reduce`, ...).
-    /// Only the name node is remapped; the attribute's value is traversed normally so
-    /// real calls inside it still count.
+    /// `@timeout 5000` parses as a `call` named `timeout`; left as one, `@map` or `@reduce`
+    /// would charge complexity.
     fn is_attribute_name(node: &Node, source_file: &File) -> bool {
         node.parent().is_some_and(|parent| {
             Self::is_module_attribute(&parent, source_file)
@@ -215,26 +204,9 @@ impl Elixir {
                 })
     }
 
-    /// A `@spec`, `@callback`, `@macrocallback`, `@type`, `@typep` or `@opaque` body is a
-    /// type declaration: `@spec map(list) :: list` contains a `call` node for `map(list)`
-    /// that never executes. Left as a plain call it charges `+1` cyclomatic whenever the
-    /// declared name is in `iterator_method_identifiers`, so two modules differing only in
-    /// the name they spec would report different complexity.
-    ///
-    /// The rule is simply: find the nearest enclosing module attribute and ask whether it
-    /// is a type declaration. Nothing about the *shape* of the nesting matters, so this
-    /// holds for every way a type can be written — argument position, return position,
-    /// function types `(map() -> map())`, unions, tuples, lists, maps, remote and
-    /// parameterised types, and `when` constraints alike.
-    ///
-    /// No intermediate node kind terminates the walk. Earlier revisions stopped at
-    /// `call`, `do_block`, `stab_clause` and `anonymous_function`; each of those was a
-    /// false negative waiting to happen, and `stab_clause` was an actual one, because an
-    /// Elixir function type `(a -> b)` parses as a `stab_clause`. None was load-bearing:
-    /// a call can only reach a type-declaration attribute by genuinely being inside one,
-    /// since a type declaration body contains no executable code. Calls in an attribute
-    /// *value* still count, because the nearest enclosing attribute is then a value
-    /// attribute rather than a type declaration.
+    /// A `@spec`/`@callback`/`@type` body never executes, so its calls must not count, or
+    /// `@spec map(...)` charges complexity for the name it declares. Walks to the nearest
+    /// enclosing attribute — nesting shape is irrelevant; calls in a *value* attribute count.
     fn is_in_type_declaration(node: &Node, source_file: &File) -> bool {
         let mut current = *node;
 
@@ -260,12 +232,8 @@ impl Elixir {
             })
     }
 
-    /// A definition head is the `name(params)` call nested inside a `def`'s arguments,
-    /// possibly behind one or more right-associative `when` guards. It is not a real call,
-    /// and dispatching it as one makes cognitive complexity mistake every function signature
-    /// for self-recursion.
-    ///
-    /// Returns the enclosing declaration so the head's clause position can be resolved.
+    /// The `name(params)` head inside a `def`, behind any `when` guards. Not a real call:
+    /// dispatched as one, every function signature reads as self-recursion.
     fn declaration_for_head<'tree>(node: &Node<'tree>, source_file: &File) -> Option<Node<'tree>> {
         let mut current = *node;
 
@@ -296,10 +264,8 @@ impl Elixir {
             })
     }
 
-    /// Decision 7. `=` (match), `|>` (pipe), `\\` (default arg), `::` (typespec) and
-    /// arithmetic are all `binary_operator`s in Elixir. Counting them the way other
-    /// languages count their binary nodes would charge cyclomatic complexity for every
-    /// binding and every pipeline stage, so only short-circuit booleans are remapped.
+    /// `=`, `|>`, `::` and arithmetic are all `binary_operator`; mapping them all into
+    /// `binary_nodes` would charge every binding and pipeline stage.
     fn dispatch_binary_operator(node: &Node, source_file: &File) -> &'static str {
         let Some(operator) = node.child_by_field_name("operator") else {
             return Self::BINARY_OPERATOR;
@@ -313,11 +279,8 @@ impl Elixir {
         }
     }
 
-    /// Decision 10. `stab_clause` is the arm node for `case`/`cond`/`with`/`receive`, for
-    /// `else` and `after` blocks, for `rescue`/`catch` handlers, and for every clause of an
-    /// anonymous function. Only the first two groups are branches: rescue and catch already
-    /// count through `except_nodes`, and closures add nothing to cyclomatic complexity in
-    /// every other language qlty supports.
+    /// `stab_clause` is a case arm, an `else`/`after` arm, a rescue handler and an `fn` clause
+    /// alike. Only the first two branch: rescue counts via `except_nodes`, closures never do.
     fn dispatch_stab_clause(node: &Node) -> &'static str {
         match node.parent().map(|parent| parent.kind()) {
             Some(Self::DO_BLOCK) | Some(Self::ELSE_BLOCK) | Some(Self::AFTER_BLOCK) => {
@@ -327,13 +290,8 @@ impl Elixir {
         }
     }
 
-    /// `if x, do: 1, else: 2` is the keyword form of `if x do 1 else 2 end`. Its `else:` is a
-    /// `pair` in the conditional's argument list rather than an `else_block`, so without this
-    /// the two spellings of one branch report different cognitive complexity — and the
-    /// keyword form is the more idiomatic of the two.
-    ///
-    /// Only a pair directly beneath a conditional's argument list qualifies, so an ordinary
-    /// keyword list that happens to carry an `else:` key is left alone.
+    /// `if x, do: 1, else: 2` spells `else` as a `pair`, not an `else_block`, so the two forms
+    /// of one branch would score differently. Scoped to a conditional's own argument list.
     fn dispatch_pair(node: &Node, source_file: &File) -> &'static str {
         let Some(key) = node.child_by_field_name("key") else {
             return Self::PAIR;
@@ -365,16 +323,8 @@ impl Elixir {
             })
     }
 
-    /// Elixir expresses branching through clause heads rather than a body-level branch: an
-    /// eight-clause `handle_call/3` takes a dispatch decision per clause. Counting only
-    /// body-level branches reports the idiomatic form as having no complexity at all, while
-    /// the same logic written as one `case` reports one per arm.
-    ///
-    /// Clauses need not be adjacent — `@doc` and `@spec` routinely sit between them — so
-    /// every preceding sibling is examined rather than stopping at the first non-definition.
-    ///
-    /// This is quadratic in the number of definitions sharing a scope, so signatures are
-    /// borrowed from the source rather than allocated.
+    /// Elixir branches through clause heads, not the body: an eight-clause `handle_call/3`
+    /// would otherwise score as a one-liner. Scans all siblings — `@doc` sits between clauses.
     fn preceding_clause_count(node: &Node, source_file: &File) -> usize {
         let Some(signature) = Self::definition_signature(node, source_file) else {
             return 0;
@@ -394,8 +344,7 @@ impl Elixir {
         count
     }
 
-    /// The name and arity a definition declares, or `None` for any node that is not a
-    /// function definition. Two clauses belong to the same function when these agree.
+    /// Two clauses belong to the same function when name and arity agree.
     fn definition_signature<'src>(
         node: &Node,
         source_file: &'src File,
@@ -472,12 +421,8 @@ impl Language for Elixir {
         Self::NAME
     }
 
-    /// Decision 4. Elixir has no receiver syntax for local calls, so LCOM4 becomes a
-    /// call-cohesion signal: a bare `foo()` connects the functions that call it, while a
-    /// qualified `Mod.fun()` does not. `visit_field` is gated on this being `Some(..)`, so
-    /// module attributes never feed LCOM4. Auto-imported `Kernel` calls and guards read as
-    /// intra-module references and bias LCOM4 low. Elixir LCOM4 is therefore a weaker
-    /// signal than in OO languages — a property of the language, not a defect.
+    /// Elixir has no `self`, so LCOM4 becomes call cohesion: bare `foo()` links functions,
+    /// qualified `Mod.fun()` does not. Also keeps attributes out, since `visit_field` is gated.
     fn self_keyword(&self) -> Option<&str> {
         None
     }
@@ -490,9 +435,8 @@ impl Language for Elixir {
         vec![Self::CONDITIONAL]
     }
 
-    /// The clause that first proves a function is multi-clause reaches `visit_elsif`
-    /// (cyclomatic `+1`, cognitive `+1`), so the group as a whole is weighted like the single
-    /// `case` it replaces while every later clause still adds its own decision point.
+    /// The clause that first proves a function is multi-clause: `visit_elsif` adds 1 to both
+    /// counters, weighting the group like the single `case` it replaces.
     fn elsif_nodes(&self) -> Vec<&str> {
         vec![Self::SECOND_CLAUSE_HEAD]
     }
@@ -505,8 +449,7 @@ impl Language for Elixir {
         vec![Self::BRANCH]
     }
 
-    /// A repeat clause head is a dispatch decision, so it must reach `visit_case`
-    /// (cyclomatic `+1`, cognitive `+0`) exactly as a `case` arm does.
+    /// Later clause heads: `visit_case` adds 1 to cyclomatic only, exactly like a `case` arm.
     fn case_nodes(&self) -> Vec<&str> {
         vec![Self::CASE_CLAUSE, Self::LATER_CLAUSE_HEAD]
     }
@@ -527,8 +470,7 @@ impl Language for Elixir {
         vec![]
     }
 
-    /// Decision 5. Elixir has no `return` keyword, so the `return-statements` smell can
-    /// never fire. That is correct: there is no construct to count.
+    /// Elixir has no `return`, so the `return-statements` smell correctly never fires.
     fn return_nodes(&self) -> Vec<&str> {
         vec![]
     }
@@ -546,8 +488,7 @@ impl Language for Elixir {
         ]
     }
 
-    /// Decision 6. Elixir has no distinct field-access node and LCOM4 does not use one.
-    /// Field *counting* runs through `field_query` instead.
+    /// No field-access node in the grammar; field *counting* runs through `field_query`.
     fn field_nodes(&self) -> Vec<&str> {
         vec![]
     }
@@ -572,10 +513,7 @@ impl Language for Elixir {
         vec![Self::STRING, Self::CHARLIST, Self::SIGIL]
     }
 
-    /// Decision 11. Idiomatic Elixir iteration is a higher-order `Enum`/`Stream` call, not
-    /// a loop keyword, so these names are the language's decision points for iteration.
-    /// Matching is by name only with the receiver discarded, exactly as in Ruby, Python,
-    /// JavaScript, Rust, Scala and Kotlin.
+    /// Idiomatic Elixir iterates with higher-order `Enum`/`Stream` calls, not loop keywords.
     fn iterator_method_identifiers(&self) -> Vec<&str> {
         vec![
             "all?",
@@ -648,15 +586,13 @@ impl Language for Elixir {
         }
     }
 
-    /// Unreachable by design: `field_nodes()` is empty (Decision 6), so `visit_field`
-    /// never fires.
+    /// Unreachable: `field_nodes()` is empty, so `visit_field` never fires.
     fn field_identifiers(&self, _source_file: &File, _node: &Node) -> (String, String) {
         (Self::UNKNOWN.to_string(), Self::UNKNOWN.to_string())
     }
 
-    /// Decision 9. The trait default reads a `name` field, which Elixir `call` nodes do not
-    /// have, so it would panic on every Elixir function. `call` nodes also have no
-    /// `arguments` *field*, so the argument list must be found by node kind.
+    /// The trait default reads a `name` field, which `call` nodes lack — it would panic on
+    /// every Elixir function. They have no `arguments` field either, so it is found by kind.
     fn function_name_from_node(&self, source_file: &File, node: &Node) -> String {
         let mut cursor = node.walk();
         let Some(arguments) = node

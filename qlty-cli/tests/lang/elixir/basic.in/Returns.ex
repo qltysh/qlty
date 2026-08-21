@@ -1,7 +1,4 @@
-# Decision 5: Elixir has no `return` keyword, so `return_nodes()` is empty and the
-# `return-statements` smell can never fire. This module is deliberately branchy: it
-# has many exit points expressed as case/cond arms, and must still produce zero
-# `return-statements` issues.
+# Elixir has no `return`: this branchy module must report no return-statements issues.
 defmodule Returns do
   def classify(value) do
     case value do
