@@ -103,13 +103,9 @@ pub trait Language {
 
     fn boolean_operator_nodes(&self) -> Vec<&str>;
 
-    /// Maps a grammar node to the kind used for `Visitor` dispatch. Defaults to the
-    /// tree-sitter node kind. Languages where a single grammar node kind encodes many
-    /// semantic constructs (e.g. Elixir's `call`, which represents def/if/case/...)
-    /// override this to disambiguate using the source text, returning a `'static`
-    /// synthetic constant. Must never return borrowed source text.
-    fn dispatch_node_kind(&self, node: &Node, source_file: &File) -> &'static str {
-        let _ = source_file;
+    /// The kind `Visitor` dispatches on. Elixir overrides this because its grammar gives
+    /// `def`, `if` and `case` the same node kind, separable only from source text.
+    fn dispatch_node_kind(&self, node: &Node, _source_file: &File) -> &'static str {
         node.kind()
     }
 

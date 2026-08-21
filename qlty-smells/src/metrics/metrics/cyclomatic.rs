@@ -418,6 +418,78 @@ mod test {
         }
 
         #[test]
+        fn cyclo_does_not_count_a_single_clause_function() {
+            assert_eq!(1, cyclomatic("defmodule M do\n def f(x), do: x\nend"));
+        }
+
+        #[test]
+        fn cyclo_counts_each_clause_after_the_first() {
+            assert_eq!(
+                3,
+                cyclomatic(
+                    "defmodule M do\n def f(0), do: 1\n def f(n), do: n\n def f(_), do: 0\nend"
+                )
+            );
+        }
+
+        #[test]
+        fn cyclo_counts_guarded_clauses() {
+            assert_eq!(
+                3,
+                cyclomatic(
+                    "defmodule M do\n def f(x) when x < 0, do: :neg\n def f(x) when x > 0, do: :pos\n def f(_), do: :zero\nend"
+                )
+            );
+        }
+
+        #[test]
+        fn cyclo_tracks_the_case_form_it_replaces() {
+            let clauses = cyclomatic(
+                "defmodule M do\n def f(:a), do: 1\n def f(:b), do: 2\n def f(_), do: 3\nend",
+            );
+            let arms = cyclomatic(
+                "defmodule M do\n def f(x) do\n  case x do\n   :a -> 1\n   :b -> 2\n   _ -> 3\n  end\n end\nend",
+            );
+            assert_eq!(arms - 1, clauses);
+        }
+
+        #[test]
+        fn cyclo_groups_clauses_by_arity() {
+            assert_eq!(
+                1,
+                cyclomatic("defmodule M do\n def f(a), do: a\n def f(a, b), do: {a, b}\nend")
+            );
+        }
+
+        #[test]
+        fn cyclo_groups_clauses_by_name() {
+            assert_eq!(
+                1,
+                cyclomatic("defmodule M do\n def f(a), do: a\n def g(a), do: a\nend")
+            );
+        }
+
+        #[test]
+        fn cyclo_does_not_group_clauses_across_modules() {
+            assert_eq!(
+                1,
+                cyclomatic(
+                    "defmodule A do\n def f(x), do: x\nend\n\ndefmodule B do\n def f(x), do: x\nend"
+                )
+            );
+        }
+
+        #[test]
+        fn cyclo_is_unchanged_by_the_else_spelling() {
+            let keyword =
+                cyclomatic("defmodule M do\n def f(x) do\n  if x, do: 1, else: 2\n end\nend");
+            let block = cyclomatic(
+                "defmodule M do\n def f(x) do\n  if x do\n   1\n  else\n   2\n  end\n end\nend",
+            );
+            assert_eq!(block, keyword);
+        }
+
+        #[test]
         fn cyclo_counts_rescue_block_once() {
             assert_eq!(
                 3,

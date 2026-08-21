@@ -78,6 +78,9 @@ impl Elixir {
     pub const STAB_CLAUSE: &'static str = "__elixir_stab_clause";
     pub const ATTRIBUTE_NAME: &'static str = "__elixir_attribute_name";
     pub const TYPE_DECLARATION: &'static str = "__elixir_type_declaration";
+    pub const KEYWORD_ELSE: &'static str = "__elixir_keyword_else";
+    pub const SECOND_CLAUSE_HEAD: &'static str = "__elixir_second_clause_head";
+    pub const LATER_CLAUSE_HEAD: &'static str = "__elixir_later_clause_head";
 
     pub const SOURCE: &'static str = "source";
     pub const CALL: &'static str = "call";
@@ -97,6 +100,8 @@ impl Elixir {
     pub const IDENTIFIER: &'static str = "identifier";
     pub const DOT: &'static str = "dot";
     pub const ARGUMENTS: &'static str = "arguments";
+    pub const KEYWORDS: &'static str = "keywords";
+    pub const PAIR: &'static str = "pair";
 
     pub const AND: &'static str = "and";
     pub const OR: &'static str = "or";
@@ -106,6 +111,11 @@ impl Elixir {
     const UNKNOWN: &'static str = "<UNKNOWN>";
 
     const ATTRIBUTE_OPERATOR: &'static str = "@";
+
+    const ELSE_KEYWORD: &'static str = "else:";
+
+    /// Macros whose keyword-form `else:` is a branch rather than an ordinary option.
+    const ELSE_KEYWORD_CALLERS: [&'static str; 5] = ["if", "unless", "with", "try", "receive"];
 
     const DEFINITION_KEYWORDS: [&'static str; 6] = [
         "def",
@@ -144,8 +154,12 @@ impl Elixir {
     ];
 
     fn dispatch_call(node: &Node, source_file: &File) -> &'static str {
-        if Self::is_definition_head(node, source_file) {
-            return Self::DEFINITION_HEAD;
+        if let Some(declaration) = Self::declaration_for_head(node, source_file) {
+            return match Self::preceding_clause_count(&declaration, source_file) {
+                0 => Self::DEFINITION_HEAD,
+                1 => Self::SECOND_CLAUSE_HEAD,
+                _ => Self::LATER_CLAUSE_HEAD,
+            };
         }
 
         if Self::is_attribute_name(node, source_file) {
@@ -246,11 +260,13 @@ impl Elixir {
             })
     }
 
-    /// Decision 8. A definition head is the `name(params)` call nested inside a `def`'s
-    /// arguments, possibly behind one or more right-associative `when` guards. It is not a
-    /// real call, and dispatching it as one makes cognitive complexity mistake every
-    /// function signature for self-recursion.
-    fn is_definition_head(node: &Node, source_file: &File) -> bool {
+    /// A definition head is the `name(params)` call nested inside a `def`'s arguments,
+    /// possibly behind one or more right-associative `when` guards. It is not a real call,
+    /// and dispatching it as one makes cognitive complexity mistake every function signature
+    /// for self-recursion.
+    ///
+    /// Returns the enclosing declaration so the head's clause position can be resolved.
+    fn declaration_for_head<'tree>(node: &Node<'tree>, source_file: &File) -> Option<Node<'tree>> {
         let mut current = *node;
 
         while let Some(parent) = current.parent() {
@@ -259,15 +275,16 @@ impl Elixir {
                     current = parent;
                 }
                 Self::ARGUMENTS => {
-                    return parent.parent().is_some_and(|declaration| {
-                        Self::is_declaration_call(&declaration, source_file)
-                    });
+                    let declaration = parent.parent()?;
+
+                    return Self::is_declaration_call(&declaration, source_file)
+                        .then_some(declaration);
                 }
-                _ => return false,
+                _ => return None,
             }
         }
 
-        false
+        None
     }
 
     fn is_declaration_call(node: &Node, source_file: &File) -> bool {
@@ -308,6 +325,129 @@ impl Elixir {
             }
             _ => Self::STAB_CLAUSE,
         }
+    }
+
+    /// `if x, do: 1, else: 2` is the keyword form of `if x do 1 else 2 end`. Its `else:` is a
+    /// `pair` in the conditional's argument list rather than an `else_block`, so without this
+    /// the two spellings of one branch report different cognitive complexity — and the
+    /// keyword form is the more idiomatic of the two.
+    ///
+    /// Only a pair directly beneath a conditional's argument list qualifies, so an ordinary
+    /// keyword list that happens to carry an `else:` key is left alone.
+    fn dispatch_pair(node: &Node, source_file: &File) -> &'static str {
+        let Some(key) = node.child_by_field_name("key") else {
+            return Self::PAIR;
+        };
+
+        // The `keyword` token spans its trailing whitespace: `else: ` and `else:\n` alike.
+        if node_source(&key, source_file).trim_end() != Self::ELSE_KEYWORD {
+            return Self::PAIR;
+        }
+
+        if Self::is_conditional_keyword(node, source_file) {
+            Self::KEYWORD_ELSE
+        } else {
+            Self::PAIR
+        }
+    }
+
+    fn is_conditional_keyword(node: &Node, source_file: &File) -> bool {
+        node.parent()
+            .filter(|keywords| keywords.kind() == Self::KEYWORDS)
+            .and_then(|keywords| keywords.parent())
+            .filter(|arguments| arguments.kind() == Self::ARGUMENTS)
+            .and_then(|arguments| arguments.parent())
+            .and_then(|call| call.child_by_field_name("target"))
+            .is_some_and(|target| {
+                target.kind() == Self::IDENTIFIER
+                    && Self::ELSE_KEYWORD_CALLERS
+                        .contains(&node_source(&target, source_file).as_str())
+            })
+    }
+
+    /// Elixir expresses branching through clause heads rather than a body-level branch: an
+    /// eight-clause `handle_call/3` takes a dispatch decision per clause. Counting only
+    /// body-level branches reports the idiomatic form as having no complexity at all, while
+    /// the same logic written as one `case` reports one per arm.
+    ///
+    /// Clauses need not be adjacent — `@doc` and `@spec` routinely sit between them — so
+    /// every preceding sibling is examined rather than stopping at the first non-definition.
+    ///
+    /// This is quadratic in the number of definitions sharing a scope, so signatures are
+    /// borrowed from the source rather than allocated.
+    fn preceding_clause_count(node: &Node, source_file: &File) -> usize {
+        let Some(signature) = Self::definition_signature(node, source_file) else {
+            return 0;
+        };
+
+        let mut count = 0;
+        let mut sibling = node.prev_named_sibling();
+
+        while let Some(current) = sibling {
+            if Self::definition_signature(&current, source_file) == Some(signature) {
+                count += 1;
+            }
+
+            sibling = current.prev_named_sibling();
+        }
+
+        count
+    }
+
+    /// The name and arity a definition declares, or `None` for any node that is not a
+    /// function definition. Two clauses belong to the same function when these agree.
+    fn definition_signature<'src>(
+        node: &Node,
+        source_file: &'src File,
+    ) -> Option<(&'src str, usize)> {
+        if node.kind() != Self::CALL {
+            return None;
+        }
+
+        let target = node.child_by_field_name("target")?;
+
+        if target.kind() != Self::IDENTIFIER
+            || !Self::DEFINITION_KEYWORDS.contains(&Self::text(&target, source_file)?)
+        {
+            return None;
+        }
+
+        let head = Self::definition_head(node)?;
+
+        match head.kind() {
+            Self::IDENTIFIER => Some((Self::text(&head, source_file)?, 0)),
+            Self::CALL => {
+                let name = head.child_by_field_name("target")?;
+                let arity = Self::arguments_child(&head)
+                    .map(|arguments| arguments.named_child_count())
+                    .unwrap_or(0);
+
+                Some((Self::text(&name, source_file)?, arity))
+            }
+            _ => None,
+        }
+    }
+
+    fn text<'src>(node: &Node, source_file: &'src File) -> Option<&'src str> {
+        node.utf8_text(source_file.contents.as_bytes()).ok()
+    }
+
+    /// The `name(params)` head of a definition, reached through any `when` guards.
+    fn definition_head<'tree>(node: &Node<'tree>) -> Option<Node<'tree>> {
+        let first = Self::arguments_child(node)?.named_child(0)?;
+
+        if first.kind() == Self::BINARY_OPERATOR {
+            first.child_by_field_name("left")
+        } else {
+            Some(first)
+        }
+    }
+
+    /// `call` nodes have no `arguments` *field*, so the argument list is found by kind.
+    fn arguments_child<'tree>(node: &Node<'tree>) -> Option<Node<'tree>> {
+        (0..node.named_child_count())
+            .filter_map(|index| node.named_child(index))
+            .find(|child| child.kind() == Self::ARGUMENTS)
     }
 }
 
@@ -350,16 +490,25 @@ impl Language for Elixir {
         vec![Self::CONDITIONAL]
     }
 
+    /// The clause that first proves a function is multi-clause reaches `visit_elsif`
+    /// (cyclomatic `+1`, cognitive `+1`), so the group as a whole is weighted like the single
+    /// `case` it replaces while every later clause still adds its own decision point.
+    fn elsif_nodes(&self) -> Vec<&str> {
+        vec![Self::SECOND_CLAUSE_HEAD]
+    }
+
     fn else_nodes(&self) -> Vec<&str> {
-        vec![Self::ELSE_BLOCK]
+        vec![Self::ELSE_BLOCK, Self::KEYWORD_ELSE]
     }
 
     fn switch_nodes(&self) -> Vec<&str> {
         vec![Self::BRANCH]
     }
 
+    /// A repeat clause head is a dispatch decision, so it must reach `visit_case`
+    /// (cyclomatic `+1`, cognitive `+0`) exactly as a `case` arm does.
     fn case_nodes(&self) -> Vec<&str> {
-        vec![Self::CASE_CLAUSE]
+        vec![Self::CASE_CLAUSE, Self::LATER_CLAUSE_HEAD]
     }
 
     fn loop_nodes(&self) -> Vec<&str> {
@@ -472,6 +621,7 @@ impl Language for Elixir {
             Self::CALL => Self::dispatch_call(node, source_file),
             Self::BINARY_OPERATOR => Self::dispatch_binary_operator(node, source_file),
             Self::STAB_CLAUSE_KIND => Self::dispatch_stab_clause(node),
+            Self::PAIR => Self::dispatch_pair(node, source_file),
             _ => node.kind(),
         }
     }
@@ -563,6 +713,7 @@ mod test {
     use super::*;
     use crate::code::File;
     use std::collections::HashSet;
+    use tree_sitter::Node;
 
     fn collect_dispatch_kinds(
         node: Node,
@@ -587,6 +738,27 @@ mod test {
         let mut kinds = vec![];
         collect_dispatch_kinds(tree.root_node(), &language, &file, &mut kinds);
         kinds
+    }
+
+    fn definition_nodes<'tree>(node: Node<'tree>, file: &File, found: &mut Vec<Node<'tree>>) {
+        let language = Elixir::default();
+
+        if node.is_named() && language.dispatch_node_kind(&node, file) == Elixir::DEFINITION {
+            found.push(node);
+        }
+
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            definition_nodes(child, file, found);
+        }
+    }
+
+    fn clause_index(source: &str, definition: usize) -> usize {
+        let file = File::from_string(Elixir::NAME, source);
+        let tree = file.parse();
+        let mut definitions = vec![];
+        definition_nodes(tree.root_node(), &file, &mut definitions);
+        Elixir::preceding_clause_count(&definitions[definition], &file)
     }
 
     fn match_count(query: &tree_sitter::Query, source: &str) -> usize {
@@ -618,6 +790,7 @@ mod test {
         let mut kinds: Vec<&str> = vec![];
 
         kinds.extend(lang.if_nodes());
+        kinds.extend(lang.elsif_nodes());
         kinds.extend(lang.else_nodes());
         kinds.extend(lang.conditional_assignment_nodes());
         kinds.extend(lang.switch_nodes());
@@ -969,5 +1142,80 @@ mod test {
     #[test]
     fn function_name_from_guarded_definition() {
         assert_eq!("a", function_name("def a(x) when g(x), do: x"));
+    }
+
+    #[test]
+    fn keyword_form_else_is_an_else() {
+        assert!(dispatch_kinds("if x, do: 1, else: 2").contains(&Elixir::KEYWORD_ELSE));
+    }
+
+    #[test]
+    fn keyword_form_else_is_recognized_for_every_conditional() {
+        assert!(dispatch_kinds("unless x, do: 1, else: 2").contains(&Elixir::KEYWORD_ELSE));
+        assert!(
+            dispatch_kinds("with {:ok, a} <- f(), do: a, else: (_ -> :err)")
+                .contains(&Elixir::KEYWORD_ELSE)
+        );
+    }
+
+    #[test]
+    fn an_ordinary_else_keyword_is_not_an_else() {
+        assert!(!dispatch_kinds("config(else: 1)").contains(&Elixir::KEYWORD_ELSE));
+        assert!(!dispatch_kinds("%{else: 1}").contains(&Elixir::KEYWORD_ELSE));
+    }
+
+    #[test]
+    fn do_keyword_is_not_an_else() {
+        assert!(!dispatch_kinds("if x, do: 1").contains(&Elixir::KEYWORD_ELSE));
+    }
+
+    #[test]
+    fn a_single_clause_function_is_a_first_clause() {
+        assert_eq!(0, clause_index("defmodule M do\n def f(x), do: x\nend", 0));
+    }
+
+    #[test]
+    fn later_clauses_of_the_same_function_are_numbered() {
+        let source = "defmodule M do\n def f(0), do: 1\n def f(n), do: n\n def f(_), do: 0\nend";
+        assert_eq!(0, clause_index(source, 0));
+        assert_eq!(1, clause_index(source, 1));
+        assert_eq!(2, clause_index(source, 2));
+    }
+
+    #[test]
+    fn clauses_are_grouped_across_interleaved_attributes() {
+        let source = "defmodule M do\n @doc \"d\"\n def f(0), do: 1\n @spec f(integer) :: integer\n def f(n), do: n\nend";
+        assert_eq!(1, clause_index(source, 1));
+    }
+
+    #[test]
+    fn a_different_arity_is_a_different_function() {
+        let source = "defmodule M do\n def f(a), do: a\n def f(a, b), do: {a, b}\nend";
+        assert_eq!(0, clause_index(source, 1));
+    }
+
+    #[test]
+    fn a_different_name_is_a_different_function() {
+        let source = "defmodule M do\n def f(a), do: a\n def g(a), do: a\nend";
+        assert_eq!(0, clause_index(source, 1));
+    }
+
+    #[test]
+    fn guarded_clauses_of_one_function_are_grouped() {
+        let source = "defmodule M do\n def f(x) when x < 0, do: :neg\n def f(x) when x > 0, do: :pos\n def f(_), do: :zero\nend";
+        assert_eq!(2, clause_index(source, 2));
+    }
+
+    #[test]
+    fn zero_arity_clauses_are_grouped() {
+        let source = "defmodule M do\n def f, do: 1\n def f, do: 2\nend";
+        assert_eq!(1, clause_index(source, 1));
+    }
+
+    #[test]
+    fn clauses_in_different_modules_are_not_grouped() {
+        let source =
+            "defmodule A do\n def f(x), do: x\nend\n\ndefmodule B do\n def f(x), do: x\nend";
+        assert_eq!(0, clause_index(source, 1));
     }
 }

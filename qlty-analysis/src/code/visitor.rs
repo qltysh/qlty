@@ -13,15 +13,15 @@ pub trait Visitor {
             return;
         }
 
-        let language = self.language();
-        let kind = language.dispatch_node_kind(&node, self.source_file());
-
         if cursor.depth() > MAX_CURSOR_DEPTH {
             // This is a safety check to prevent stack overflow
             // due to infinite recursion on deeply nested trees.
             warn!("Max cursor depth reached");
             return;
         }
+
+        let language = self.language();
+        let kind = language.dispatch_node_kind(&node, self.source_file());
 
         if language.invisible_container_nodes().contains(&kind) {
             self.visit_invisible_container(cursor);

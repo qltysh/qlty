@@ -837,6 +837,61 @@ End Class
         }
 
         #[test]
+        fn a_clause_group_increments_once() {
+            assert_eq!(
+                1,
+                cognitive(
+                    "defmodule M do\n def f(:a), do: 1\n def f(:b), do: 2\n def f(:c), do: 3\n def f(_), do: 4\nend"
+                )
+            );
+        }
+
+        #[test]
+        fn a_clause_group_matches_the_case_form_it_replaces() {
+            let clauses = cognitive(
+                "defmodule M do\n def f(:a), do: 1\n def f(:b), do: 2\n def f(_), do: 3\nend",
+            );
+            let arms = cognitive(
+                "defmodule M do\n def f(x) do\n  case x do\n   :a -> 1\n   :b -> 2\n   _ -> 3\n  end\n end\nend",
+            );
+            assert_eq!(arms, clauses);
+        }
+
+        #[test]
+        fn a_single_clause_function_does_not_increment() {
+            assert_eq!(0, cognitive("defmodule M do\n def f(x), do: x\nend"));
+        }
+
+        #[test]
+        fn separate_clause_groups_increment_separately() {
+            assert_eq!(
+                2,
+                cognitive(
+                    "defmodule M do\n def f(0), do: 1\n def f(n), do: n\n def g(0), do: 1\n def g(n), do: n\nend"
+                )
+            );
+        }
+
+        #[test]
+        fn the_two_else_spellings_agree() {
+            let keyword =
+                cognitive("defmodule M do\n def f(x) do\n  if x, do: 1, else: 2\n end\nend");
+            let block = cognitive(
+                "defmodule M do\n def f(x) do\n  if x do\n   1\n  else\n   2\n  end\n end\nend",
+            );
+            assert_eq!(2, keyword);
+            assert_eq!(block, keyword);
+        }
+
+        #[test]
+        fn an_ordinary_else_keyword_does_not_increment() {
+            assert_eq!(
+                0,
+                cognitive("defmodule M do\n def f, do: config(else: 1)\nend")
+            );
+        }
+
+        #[test]
         fn alternating_boolean_operators_increment_once_per_change() {
             assert_eq!(
                 2,
