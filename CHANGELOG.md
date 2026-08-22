@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.643.0 (2026-08-22)
+
+### New
+
+- Add maintainability analysis for Elixir, including complexity metrics (cyclomatic, cognitive, function/class/field counts, LCOM4), structure smells, and duplication detection (#2843)
+
 ## v0.642.0 (2026-08-14)
 
 ### Fixed
