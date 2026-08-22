@@ -1,5 +1,4 @@
 use qlty_analysis::code::{File, Visitor};
-use qlty_analysis::Language;
 use qlty_types::analysis::v1::{Issue, Level};
 use qlty_types::calculate_effort_minutes;
 use std::sync::Arc;
@@ -37,8 +36,8 @@ impl Processor {
 }
 
 impl Visitor for Processor {
-    fn language(&self) -> &Box<dyn Language + Sync> {
-        self.source_file.language()
+    fn source_file(&self) -> &File {
+        &self.source_file
     }
 
     fn visit_binary(&mut self, cursor: &mut TreeCursor) {
@@ -143,6 +142,28 @@ mod test {
                   startByte: 3
                   endByte: 30
             "#);
+        }
+    }
+
+    mod elixir {
+        use super::*;
+
+        #[test]
+        fn boolean_logic_found() {
+            let source_file = Arc::new(File::from_string(
+                "elixir",
+                "defmodule M do\n def f(a, b, c, d, e), do: a and b and c and d and e\nend",
+            ));
+            assert_eq!(1, check(4, source_file.clone(), &source_file.parse()).len());
+        }
+
+        #[test]
+        fn boolean_logic_not_found_below_threshold() {
+            let source_file = Arc::new(File::from_string(
+                "elixir",
+                "defmodule M do\n def f(a, b), do: a and b\nend",
+            ));
+            assert_eq!(0, check(4, source_file.clone(), &source_file.parse()).len());
         }
     }
 }

@@ -411,4 +411,24 @@ End Class
             );
         }
     }
+
+    mod elixir {
+        use super::*;
+
+        #[test]
+        fn counts_user_attributes_and_struct_fields_only() {
+            let source_file = File::from_string(
+                "elixir",
+                "defmodule M do\n @moduledoc \"m\"\n @timeout 5000\n @retries 3\n defstruct [:x, :y]\n @doc \"d\"\n @spec f(integer) :: integer\n def f(x), do: x\nend",
+            );
+            assert_eq!(
+                4,
+                count(
+                    &source_file,
+                    &source_file.parse().root_node(),
+                    &NodeFilter::empty()
+                )
+            );
+        }
+    }
 }

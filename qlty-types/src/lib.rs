@@ -304,6 +304,7 @@ pub fn language_enum_from_name(name: &str) -> analysis::v1::Language {
         "c" => analysis::v1::Language::C,
         "cpp" => analysis::v1::Language::CPlusPlus,
         "csharp" => analysis::v1::Language::CSharp,
+        "elixir" => analysis::v1::Language::Elixir,
         "go" => analysis::v1::Language::Go,
         "java" => analysis::v1::Language::Java,
         "javascript" => analysis::v1::Language::Javascript,

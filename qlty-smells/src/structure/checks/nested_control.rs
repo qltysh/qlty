@@ -1,5 +1,4 @@
 use qlty_analysis::code::{File, NodeExt, Visitor};
-use qlty_analysis::Language;
 use qlty_types::analysis::v1::{Issue, Level};
 use qlty_types::calculate_effort_minutes;
 use std::sync::Arc;
@@ -61,8 +60,8 @@ impl Processor {
 }
 
 impl Visitor for Processor {
-    fn language(&self) -> &Box<dyn Language + Sync> {
-        self.source_file.language()
+    fn source_file(&self) -> &File {
+        &self.source_file
     }
 
     fn visit_if(&mut self, cursor: &mut TreeCursor) {
@@ -621,6 +620,28 @@ mod test {
                 .trim(),
             ));
             assert_eq!(0, check(2, source_file.clone(), &source_file.parse()).len());
+        }
+    }
+
+    mod elixir {
+        use super::*;
+
+        #[test]
+        fn nested_control_found_if_threshold_breached() {
+            let source_file = Arc::new(File::from_string(
+                "elixir",
+                "defmodule M do\n def f(a, b, c) do\n  if a do\n   case b do\n    1 ->\n     if c do\n      case a do\n       2 ->\n        if b do\n         :deep\n        end\n       _ -> :other\n      end\n     end\n    _ -> :other\n   end\n  end\n end\nend",
+            ));
+            assert_eq!(1, check(5, source_file.clone(), &source_file.parse()).len());
+        }
+
+        #[test]
+        fn case_arms_do_not_add_depth() {
+            let source_file = Arc::new(File::from_string(
+                "elixir",
+                "defmodule M do\n def f(x) do\n  case x do\n   1 -> :a\n   _ -> :b\n  end\n end\nend",
+            ));
+            assert_eq!(0, check(5, source_file.clone(), &source_file.parse()).len());
         }
     }
 }
