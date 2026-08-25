@@ -15,14 +15,12 @@ config_files = [
   "knip.config.js",
 ]
 affects_cache = ["package.json"]
-latest_version = "6.26.0"
-known_good_version = "5.88.1"
+latest_version = "6.27.0"
+known_good_version = "6.17.1"
 # No typescript extra_packages pin: knip >=5.62 bounds its typescript peer to <7,
 # so npm resolves a compatible version on its own. Do not re-add a pin — a second
 # `npm install` wipes native optional bindings (npm/cli#4828), which breaks knip 6.x.
 # Anyone pinning knip <5.62 must pin typescript <7 themselves.
-# knip 6.x is blocked on the managed node runtime: its engines (^20.19 || >=22.12)
-# exclude node 21.7.3. Bump known_good to 6.x once the runtime moves off 21.
 version_command = "knip --version"
 description = "Find unused files, dependencies, and exports in JavaScript and TypeScript projects"
 

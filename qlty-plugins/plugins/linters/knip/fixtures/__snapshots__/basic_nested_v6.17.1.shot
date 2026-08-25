@@ -1,0 +1,63 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=knip fixture=basic_nested version=6.17.1 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_DEAD_CODE",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "nested/index.js",
+      },
+      "message": "Unlisted dependency: src",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "unlisted-dependency",
+      "tool": "knip",
+    },
+    {
+      "category": "CATEGORY_DEAD_CODE",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "nested/package.json",
+      },
+      "message": "Unused dependency: @aws-sdk/client-batch",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "unused-dependency",
+      "tool": "knip",
+    },
+    {
+      "category": "CATEGORY_DEAD_CODE",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "nested/package.json",
+      },
+      "message": "Unused dependency: @aws-sdk/client-cloudwatch-logs",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "unused-dependency",
+      "tool": "knip",
+    },
+    {
+      "category": "CATEGORY_DEAD_CODE",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "nested/src/unusedCode.js",
+      },
+      "message": "Unused export: default",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "unused-export",
+      "tool": "knip",
+    },
+    {
+      "category": "CATEGORY_DEAD_CODE",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "nested/src/hello.js",
+      },
+      "message": "Unused file",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "unused-file",
+      "tool": "knip",
+    },
+  ],
+}
+`;
