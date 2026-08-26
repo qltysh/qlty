@@ -30,7 +30,7 @@ downloads = ["terraform"]
 file_types = ["terraform"]
 affects_cache = [".terraform.lock.hcl"]
 latest_version = "1.15.8"
-known_good_version = "1.15.6"
+known_good_version = "1.15.8"
 version_command = "terraform --version"
 description = "Validator and formatter for terraform"
 
