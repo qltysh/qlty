@@ -12,7 +12,7 @@ description = "Shell code formatter"
 
 [plugins.definitions.shfmt.drivers.format]
 script = "shfmt -w -s ${target}"
-success_codes = [0, 1]
+success_codes = [0]
 output = "rewrite"
 cache_results = true
 batch = true
