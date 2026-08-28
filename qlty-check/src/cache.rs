@@ -243,6 +243,11 @@ impl InvocationCacheKey {
             &driver.copy_configs_into_tool_install.to_string(),
         );
 
+        digest.add(
+            "plugin.driver.ignore_files",
+            &serde_yaml::to_string(&driver.ignore_files).unwrap(),
+        );
+
         digest.add("qlty_version", &self.qlty_version);
         digest.add("tool", &self.tool.directory());
         digest.add("driver_name", &self.driver_name);

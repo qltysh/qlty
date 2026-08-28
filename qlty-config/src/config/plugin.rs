@@ -103,6 +103,9 @@ pub struct DriverDef {
     pub config_files: Vec<PathBuf>,
 
     #[serde(default)]
+    pub ignore_files: Vec<PathBuf>,
+
+    #[serde(default)]
     pub suggested: SuggestionMode,
 
     /// The latest validated version of the driver
