@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.644.0 (2026-08-28)
+
+### Fixed
+
+- Bump redocly from 2.32.2 to 2.41.0, which patches CVE-2026-63325 (arbitrary code execution via Arazzo `$faker` expressions) and CVE-2026-63225 (path traversal in the `split` command) (#2847)
+- Fix shfmt reporting unparseable shell files as clean; files it cannot parse now surface a plugin error instead of silently passing with zero findings (#2847)
+
 ## v0.643.0 (2026-08-22)
 
 ### New
