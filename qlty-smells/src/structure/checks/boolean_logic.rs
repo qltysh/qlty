@@ -21,6 +21,7 @@ pub struct Processor {
     source_file: Arc<File>,
     threshold: usize,
     level: usize,
+    max_level: usize,
     issues: Vec<Issue>,
 }
 
@@ -30,6 +31,7 @@ impl Processor {
             threshold,
             issues: Vec::new(),
             level: 0,
+            max_level: 0,
             source_file,
         }
     }
@@ -61,7 +63,12 @@ impl Visitor for Processor {
             .boolean_operator_nodes()
             .contains(&normalized_operator.as_str())
         {
+            let first_issue = self.issues.len();
+            if self.level == 0 {
+                self.max_level = 0;
+            }
             self.level += 1;
+            self.max_level = self.max_level.max(self.level);
 
             if self.level == self.threshold {
                 let message = "Complex binary expression";
@@ -76,13 +83,18 @@ impl Visitor for Processor {
                         BASE_EFFORT_MINUTES,
                         EFFORT_MINUTES_PER_VALUE_DELTA,
                     ),
-                    ..issue_for(&self.source_file, &node)
+                    ..issue_for(&self.source_file, &node, self.threshold, self.level)
                 });
             }
 
             self.process_children(cursor);
 
             self.level -= 1;
+            if self.level == 0 {
+                for issue in &mut self.issues[first_issue..] {
+                    issue.set_property_number("actual", self.max_level as f64);
+                }
+            }
         } else {
             self.process_children(cursor);
         }
@@ -92,6 +104,64 @@ impl Visitor for Processor {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn actual_reports_full_operator_depth() {
+        let source_file = Arc::new(File::from_string(
+            "rust",
+            "fn f() { a || b || c || d || e || f || g || h || i; }",
+        ));
+        let issues = check(4, source_file.clone(), &source_file.parse());
+
+        assert_eq!(issues.len(), 1);
+        assert_eq!(issues[0].get_property_number("threshold"), 4.0);
+        assert_eq!(issues[0].get_property_number("actual"), 8.0);
+        assert_eq!(issues[0].value, 4);
+        assert_eq!(issues[0].value_delta, 0);
+    }
+
+    #[test]
+    fn actual_measures_depth_instead_of_total_operators() {
+        let source_file = Arc::new(File::from_string(
+            "rust",
+            "fn f() { ((a || b) || (c || d)) || ((e || f) || (g || h)); }",
+        ));
+        let issues = check(2, source_file.clone(), &source_file.parse());
+
+        assert_eq!(issues.len(), 2);
+        assert_eq!(issues[0].get_property_number("actual"), 3.0);
+        assert_eq!(issues[1].get_property_number("actual"), 3.0);
+    }
+
+    #[test]
+    fn actual_resets_between_expressions() {
+        let source_file = Arc::new(File::from_string(
+            "python",
+            "a or b or c or d or e or f or g or h or i\na or b or c or d or e",
+        ));
+        let issues = check(4, source_file.clone(), &source_file.parse());
+
+        assert_eq!(issues.len(), 2);
+        assert_eq!(issues[0].get_property_number("actual"), 8.0);
+        assert_eq!(issues[1].get_property_number("actual"), 4.0);
+    }
+
+    #[test]
+    fn actual_is_independent_of_line_wrapping() {
+        let compact = Arc::new(File::from_string(
+            "java",
+            "class Example { boolean f() { return a || b || c || d || e; } }",
+        ));
+        let wrapped = Arc::new(File::from_string(
+            "java",
+            "class Example { boolean f() { return a\n || b\n || c\n || d\n || e; } }",
+        ));
+        let compact_issues = check(4, compact.clone(), &compact.parse());
+        let wrapped_issues = check(4, wrapped.clone(), &wrapped.parse());
+
+        assert_eq!(compact_issues[0].get_property_number("actual"), 4.0);
+        assert_eq!(wrapped_issues[0].get_property_number("actual"), 4.0);
+    }
 
     mod python {
         use super::*;
@@ -120,7 +190,7 @@ mod test {
                 .trim(),
             ));
 
-            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), @r#"
+            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
             - tool: qlty
               driver: structure
               ruleKey: boolean-logic
@@ -141,6 +211,9 @@ mod test {
                   endColumn: 31
                   startByte: 3
                   endByte: 30
+              properties:
+                actual: 3
+                threshold: 1
             "#);
         }
     }

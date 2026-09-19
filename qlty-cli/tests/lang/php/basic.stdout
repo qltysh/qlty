@@ -59,6 +59,8 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -102,6 +104,8 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -133,6 +137,10 @@
           "endByte": 57
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -163,6 +171,10 @@
           "startByte": 0,
           "endByte": 571
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "partialFingerprints": {
         "file.path": "file_complexity.php"
@@ -198,6 +210,10 @@
           "endByte": 567
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "main"
       },
@@ -231,6 +247,10 @@
           "endByte": 99
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -260,6 +280,10 @@
           "startByte": 149,
           "endByte": 527
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -291,6 +315,10 @@
           "endByte": 241
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -320,6 +348,10 @@
           "startByte": 8,
           "endByte": 428
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -351,6 +383,10 @@
           "startByte": 566,
           "endByte": 1052
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     }

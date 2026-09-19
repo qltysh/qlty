@@ -97,3 +97,54 @@ impl Executor {
         issues
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::structure::Planner;
+    use qlty_config::config::smells::{BooleanLogic, Smells};
+    use qlty_config::config::Language;
+    use qlty_config::QltyConfig;
+    use std::collections::HashMap;
+
+    #[test]
+    fn measurements_use_language_threshold_override() {
+        let source_file = Arc::new(File::from_string(
+            "rust",
+            "fn f() { a || b || c || d || e; }",
+        ));
+        let config = QltyConfig {
+            smells: Some(Smells {
+                boolean_logic: Some(BooleanLogic {
+                    enabled: true,
+                    threshold: Some(10),
+                }),
+                ..Default::default()
+            }),
+            language: HashMap::from([(
+                "rust".to_string(),
+                Language {
+                    smells: Some(Smells {
+                        boolean_logic: Some(BooleanLogic {
+                            enabled: true,
+                            threshold: Some(3),
+                        }),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+            )]),
+            ..Default::default()
+        };
+        let plan = Planner::new(&config, vec![source_file])
+            .unwrap()
+            .compute()
+            .unwrap();
+        let mut executor = Executor::new(&plan);
+        executor.execute();
+
+        assert_eq!(executor.issues.len(), 1);
+        assert_eq!(executor.issues[0].get_property_number("threshold"), 3.0);
+        assert_eq!(executor.issues[0].get_property_number("actual"), 4.0);
+    }
+}

@@ -60,6 +60,8 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -104,6 +106,8 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -135,6 +139,10 @@
           "endByte": 329
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -164,6 +172,10 @@
           "startByte": 136,
           "endByte": 149
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -195,6 +207,10 @@
           "startByte": 0,
           "endByte": 1201
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "partialFingerprints": {
         "file.path": "FileComplexity.cs"
@@ -230,6 +246,10 @@
           "endByte": 1198
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "Main"
       },
@@ -263,6 +283,10 @@
           "endByte": 230
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -293,6 +317,10 @@
           "endByte": 1128
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -322,6 +350,10 @@
           "startByte": 345,
           "endByte": 472
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -354,6 +386,10 @@
           "endByte": 1398
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -383,6 +419,10 @@
           "startByte": 57,
           "endByte": 512
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     }

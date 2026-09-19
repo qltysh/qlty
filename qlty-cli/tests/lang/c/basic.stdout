@@ -60,6 +60,8 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -104,6 +106,8 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -135,6 +139,10 @@
           "endByte": 234
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -164,6 +172,10 @@
           "startByte": 335,
           "endByte": 361
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -195,6 +207,10 @@
           "startByte": 0,
           "endByte": 3310
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "partialFingerprints": {
         "file.path": "file_complexity.c"
@@ -230,6 +246,10 @@
           "endByte": 367
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "func1"
       },
@@ -263,6 +283,10 @@
           "startByte": 369,
           "endByte": 716
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "partialFingerprints": {
         "function.name": "func2"
@@ -298,6 +322,10 @@
           "endByte": 1065
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "func3"
       },
@@ -331,6 +359,10 @@
           "startByte": 1067,
           "endByte": 1414
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "partialFingerprints": {
         "function.name": "func4"
@@ -366,6 +398,10 @@
           "endByte": 1763
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "func5"
       },
@@ -399,6 +435,10 @@
           "startByte": 1765,
           "endByte": 2112
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "partialFingerprints": {
         "function.name": "func6"
@@ -434,6 +474,10 @@
           "endByte": 2461
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "func7"
       },
@@ -467,6 +511,10 @@
           "startByte": 2463,
           "endByte": 2810
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "partialFingerprints": {
         "function.name": "func8"
@@ -502,6 +550,10 @@
           "endByte": 1225
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "complex_func"
       },
@@ -536,6 +588,10 @@
           "endByte": 697
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "deeply_nested"
       },
@@ -569,6 +625,10 @@
           "endByte": 99
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -598,6 +658,10 @@
           "startByte": 159,
           "endByte": 317
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -629,6 +693,10 @@
           "endByte": 666
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -658,6 +726,10 @@
           "startByte": 857,
           "endByte": 1015
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -689,6 +761,10 @@
           "endByte": 1364
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -718,6 +794,10 @@
           "startByte": 1555,
           "endByte": 1713
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -749,6 +829,10 @@
           "endByte": 2062
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -778,6 +862,10 @@
           "startByte": 2253,
           "endByte": 2411
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -809,6 +897,10 @@
           "endByte": 2760
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -838,6 +930,10 @@
           "startByte": 484,
           "endByte": 647
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -870,6 +966,10 @@
           "endByte": 1225
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -900,6 +1000,10 @@
           "startByte": 50,
           "endByte": 429
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     }

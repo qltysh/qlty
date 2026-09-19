@@ -60,6 +60,8 @@
         [..],
         [..],
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -104,6 +106,8 @@
         [..],
         [..],
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -135,6 +139,10 @@
           "endByte": 48
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -165,6 +173,10 @@
           "startByte": 0,
           "endByte": 515
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "partialFingerprints": {
         "file.path": "file_complexity.js"
@@ -200,6 +212,10 @@
           "endByte": 514
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "main"
       },
@@ -233,6 +249,10 @@
           "endByte": 73
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -262,6 +282,10 @@
           "startByte": 128,
           "endByte": 484
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -293,6 +317,10 @@
           "endByte": 221
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -322,6 +350,10 @@
           "startByte": 0,
           "endByte": 381
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -353,6 +385,10 @@
           "startByte": 518,
           "endByte": 948
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     }

@@ -47,6 +47,10 @@
           "endByte": 368
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -77,6 +81,10 @@
           "startByte": 0,
           "endByte": 741
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "partialFingerprints": {
         "file.path": "file_complexity.kt"
@@ -112,6 +120,10 @@
           "endByte": 740
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "main"
       },
@@ -145,6 +157,10 @@
           "endByte": 121
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -175,6 +191,10 @@
           "endByte": 690
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -204,6 +224,10 @@
           "startByte": 172,
           "endByte": 256
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     }

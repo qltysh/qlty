@@ -344,6 +344,36 @@ mod test {
     use std::collections::HashSet;
 
     #[test]
+    fn smell_measurements_survive_json_and_sarif_serialization() {
+        let mut issue = Issue {
+            tool: "qlty".to_string(),
+            rule_key: "boolean-logic".to_string(),
+            ..Default::default()
+        };
+        issue.set_property_number("threshold", 4.0);
+        issue.set_property_number("actual", 8.0);
+
+        let json = serde_json::to_value(&issue).unwrap();
+        let sarif = SarifFormatter::new(vec![], vec![]).serialize_issue(&issue);
+
+        assert_eq!(json["properties"], json!({"threshold": 4.0, "actual": 8.0}));
+        assert_eq!(sarif["properties"], json["properties"]);
+    }
+
+    #[test]
+    fn zero_smell_measurements_survive_json_and_sarif_serialization() {
+        let mut issue = Issue::default();
+        issue.set_property_number("threshold", 0.0);
+        issue.set_property_number("actual", 0.0);
+
+        let json = serde_json::to_value(&issue).unwrap();
+        let sarif = SarifFormatter::new(vec![], vec![]).serialize_issue(&issue);
+
+        assert_eq!(json["properties"], json!({"threshold": 0.0, "actual": 0.0}));
+        assert_eq!(sarif["properties"], json["properties"]);
+    }
+
+    #[test]
     fn test_sarif_formatter() {
         let mut tags = Vec::new();
         tags.push("test-tag".to_string());

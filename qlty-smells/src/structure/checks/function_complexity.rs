@@ -61,7 +61,7 @@ pub fn check(threshold: usize, source_file: Arc<File>, tree: &Tree) -> Vec<Issue
                     EFFORT_MINUTES_PER_VALUE_DELTA,
                 ),
                 partial_fingerprints,
-                ..issue_for(&source_file, &function_capture.node)
+                ..issue_for(&source_file, &function_capture.node, threshold, count)
             });
         }
     }
@@ -103,7 +103,7 @@ mod test {
                 "#
                 .trim(),
             ));
-            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), @r#"
+            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
             - tool: qlty
               driver: structure
               ruleKey: function-complexity
@@ -125,6 +125,9 @@ mod test {
                   endColumn: 49
                   startByte: 0
                   endByte: 261
+              properties:
+                actual: 15
+                threshold: 1
               partialFingerprints:
                 function.name: foo
             "#);
