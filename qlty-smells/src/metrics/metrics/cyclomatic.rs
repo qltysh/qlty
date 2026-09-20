@@ -95,6 +95,9 @@ impl Visitor for CyclomaticComplexity<'_> {
 }
 
 #[cfg(test)]
+mod operator_tests;
+
+#[cfg(test)]
 mod test {
     use super::*;
 
