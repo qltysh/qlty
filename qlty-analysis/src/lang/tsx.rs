@@ -126,6 +126,10 @@ impl Language for TSX {
         self.common.boolean_operator_nodes()
     }
 
+    fn short_circuit_operators(&self) -> Vec<&str> {
+        self.common.short_circuit_operators()
+    }
+
     fn field_nodes(&self) -> Vec<&str> {
         self.common.field_nodes()
     }

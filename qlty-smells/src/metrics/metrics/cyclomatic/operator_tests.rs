@@ -70,6 +70,206 @@ fn each_short_circuit_operator_adds_a_path() {
     );
 }
 
+#[test]
+fn comparisons_in_conditions_do_not_count_twice() {
+    assert_complexity(
+        "typescript",
+        r#"
+            function isReady(count: number, limit: number, enabled: boolean) {
+                if (enabled && count + 1 < limit) {
+                    return true;
+                }
+                return false;
+            }
+        "#,
+        3,
+    );
+}
+
+#[test]
+fn short_circuit_operators_inside_comparisons_still_count() {
+    assert_complexity(
+        "typescript",
+        r#"
+            function agrees(enabled: boolean, ready: boolean, expected: boolean) {
+                return (enabled && ready) === expected;
+            }
+        "#,
+        2,
+    );
+}
+
+#[test]
+fn comments_and_operator_strings_do_not_add_paths() {
+    assert_complexity(
+        "javascript",
+        r#"
+            function choose(primary, fallback) {
+                const label = "&&" + "||";
+                return primary /* prefer the primary value */ || fallback + label;
+            }
+        "#,
+        2,
+    );
+}
+
+#[test]
+fn javascript_and_typescript_null_coalescing_adds_paths() {
+    for language in ["javascript", "typescript", "tsx"] {
+        assert_complexity(
+            language,
+            r#"
+                function choose(primary, secondary, fallback) {
+                    return primary ?? secondary ?? fallback;
+                }
+            "#,
+            3,
+        );
+    }
+}
+
+#[test]
+fn csharp_null_coalescing_adds_paths() {
+    assert_complexity(
+        "csharp",
+        r#"
+            class Settings {
+                static string Choose(string primary, string secondary, string fallback) {
+                    return primary ?? secondary ?? fallback;
+                }
+            }
+        "#,
+        3,
+    );
+}
+
+#[test]
+fn php_null_coalescing_adds_paths() {
+    assert_complexity(
+        "php",
+        r#"
+            <?php
+            function choose($primary, $secondary, $fallback) {
+                return $primary ?? $secondary ?? $fallback;
+            }
+        "#,
+        3,
+    );
+}
+
+#[test]
+fn cpp_alternative_operators_only_count_short_circuiting() {
+    assert_complexity(
+        "cpp",
+        r#"
+            bool is_ready(int flags, int mask, bool enabled, bool cached) {
+                int selected = (flags bitand mask) bitor (flags xor mask);
+                return enabled and (selected not_eq 0 or cached);
+            }
+        "#,
+        3,
+    );
+}
+
+#[test]
+fn php_keyword_operators_only_count_short_circuiting() {
+    assert_complexity(
+        "php",
+        r#"
+            <?php
+            function isReady(bool $enabled, bool $connected, bool $cached): bool {
+                return $enabled AnD ($connected oR ($cached xor $enabled));
+            }
+        "#,
+        3,
+    );
+}
+
+#[test]
+fn ruby_keyword_operators_add_paths() {
+    assert_complexity(
+        "ruby",
+        r#"
+            def is_ready(enabled, connected, cached)
+              enabled and (connected or cached)
+            end
+        "#,
+        3,
+    );
+}
+
+#[test]
+fn kotlin_chained_operators_add_paths() {
+    assert_complexity(
+        "kotlin",
+        r#"
+            fun isReady(enabled: Boolean, connected: Boolean, cached: Boolean): Boolean {
+                return enabled /* gate access */ && connected && (cached || connected)
+            }
+        "#,
+        4,
+    );
+}
+
+#[test]
+fn vbnet_mixed_case_short_circuit_operators_add_paths() {
+    assert_complexity(
+        "vbnet",
+        r#"
+            Module Settings
+                Function IsReady(enabled As Boolean, connected As Boolean, cached As Boolean) As Boolean
+                    Return enabled aNdAlSo (connected OrELse cached)
+                End Function
+            End Module
+        "#,
+        3,
+    );
+}
+
+#[test]
+fn vbnet_eager_boolean_operators_do_not_add_paths() {
+    assert_complexity(
+        "vbnet",
+        r#"
+            Module Settings
+                Function IsReady(enabled As Boolean, connected As Boolean, cached As Boolean) As Boolean
+                    Return enabled And (connected Or (cached Xor enabled))
+                End Function
+            End Module
+        "#,
+        1,
+    );
+}
+
+#[test]
+fn vbnet_handles_line_continuations_and_comments() {
+    assert_complexity(
+        "vbnet",
+        r#"
+            Module Settings
+                Function IsReady(enabled As Boolean, connected As Boolean, cached As Boolean) As Boolean
+                    Return enabled _
+                        AndAlso (connected OrElse _
+                        cached)
+                End Function
+            End Module
+        "#,
+        3,
+    );
+
+    assert_complexity(
+        "vbnet",
+        r#"
+            Module Settings
+                Function Both(enabled As Boolean, connected As Boolean) As Boolean
+                    Return enabled And connected ' AndAlso would short-circuit here.
+                End Function
+            End Module
+        "#,
+        1,
+    );
+}
+
 // Only short-circuit conditions add paths in these examples.
 // Bitwise operations, addition and comparison do not.
 // Include unaffected languages to preserve their existing behavior.

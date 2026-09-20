@@ -172,6 +172,10 @@ impl Language for Cpp {
         vec![Self::AND, Self::OR]
     }
 
+    fn short_circuit_operators(&self) -> Vec<&str> {
+        vec![Self::AND, Self::OR, "and", "or"]
+    }
+
     fn field_nodes(&self) -> Vec<&str> {
         vec![Self::FIELD_DECLARATION, Self::FIELD_EXPRESSION]
     }

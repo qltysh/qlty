@@ -74,7 +74,18 @@ impl Visitor for CyclomaticComplexity<'_> {
     }
 
     fn visit_binary(&mut self, cursor: &mut TreeCursor) {
-        self.count += 1;
+        let language = self.language();
+        if let Some(operator) = language.binary_operator(&cursor.node(), self.source_file) {
+            if language
+                .short_circuit_operators()
+                .iter()
+                // PHP and VB.NET allow mixed-case keyword operators.
+                .any(|candidate| candidate.eq_ignore_ascii_case(&operator))
+            {
+                self.count += 1;
+            }
+        }
+
         self.process_children(cursor);
     }
 

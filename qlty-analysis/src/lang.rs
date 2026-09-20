@@ -103,6 +103,23 @@ pub trait Language {
 
     fn boolean_operator_nodes(&self) -> Vec<&str>;
 
+    /// The operator text for a node dispatched through `binary_nodes`.
+    fn binary_operator(&self, node: &Node, source_file: &File) -> Option<String> {
+        let operator = node.child_by_field_name("operator").or_else(|| {
+            // Kotlin has no operator field. Skip named operands and comments.
+            node.children(&mut node.walk())
+                .find(|child| !child.is_named())
+        })?;
+        Some(node_source(&operator, source_file))
+    }
+
+    /// Binary operators that conditionally evaluate their right operand.
+    /// These add a path to cyclomatic complexity. Override for languages with
+    /// eager boolean operators, alternative spellings, or null coalescing.
+    fn short_circuit_operators(&self) -> Vec<&str> {
+        self.boolean_operator_nodes()
+    }
+
     /// The kind `Visitor` dispatches on. Elixir overrides this because its grammar gives
     /// `def`, `if` and `case` the same node kind, separable only from source text.
     fn dispatch_node_kind(&self, node: &Node, _source_file: &File) -> &'static str {
