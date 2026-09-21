@@ -47,6 +47,10 @@
           "endByte": 62
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -76,6 +80,10 @@
           "startByte": 43,
           "endByte": 55
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -107,6 +115,10 @@
           "endByte": 27
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -137,6 +149,10 @@
           "startByte": 0,
           "endByte": 711
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "partialFingerprints": {
         "file.path": "file_complexity.rb"
@@ -172,6 +188,10 @@
           "endByte": 710
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "main"
       },
@@ -205,6 +225,10 @@
           "endByte": 53
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -235,6 +259,10 @@
           "endByte": 650
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -264,6 +292,10 @@
           "startByte": 148,
           "endByte": 226
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     }

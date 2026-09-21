@@ -47,6 +47,10 @@
           "endByte": 264
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -76,6 +80,10 @@
           "startByte": 277,
           "endByte": 289
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -107,6 +115,10 @@
           "endByte": 44
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -137,6 +149,10 @@
           "startByte": 0,
           "endByte": 462
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "partialFingerprints": {
         "file.path": "file_complexity.py"
@@ -172,6 +188,10 @@
           "endByte": 461
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "main"
       },
@@ -205,6 +225,10 @@
           "endByte": 74
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -234,6 +258,10 @@
           "startByte": 136,
           "endByte": 461
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -265,6 +293,10 @@
           "endByte": 221
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -294,6 +326,10 @@
           "startByte": 0,
           "endByte": 471
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -326,6 +362,10 @@
           "endByte": 1310
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -356,6 +396,10 @@
           "startByte": 449,
           "endByte": 927
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     }

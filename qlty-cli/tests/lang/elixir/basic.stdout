@@ -60,6 +60,8 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -104,6 +106,8 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -135,6 +139,10 @@
           "endByte": 67
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -165,6 +173,10 @@
           "startByte": 0,
           "endByte": 899
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "partialFingerprints": {
         "file.path": "FileComplexity.ex"
@@ -200,6 +212,10 @@
           "endByte": 727
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "process"
       },
@@ -233,6 +249,10 @@
           "endByte": 53
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -262,6 +282,10 @@
           "startByte": 210,
           "endByte": 315
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -293,6 +317,10 @@
           "endByte": 570
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -322,6 +350,10 @@
           "startByte": 165,
           "endByte": 216
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     }

@@ -59,7 +59,12 @@ pub fn check(threshold: usize, source_file: Arc<File>, tree: &Tree) -> Vec<Issue
                     BASE_EFFORT_MINUTES,
                     EFFORT_MINUTES_PER_VALUE_DELTA,
                 ),
-                ..issue_for(&source_file, &function_capture.node)
+                ..issue_for(
+                    &source_file,
+                    &function_capture.node,
+                    threshold,
+                    return_count,
+                )
             });
         }
     }
@@ -96,7 +101,7 @@ mod test {
                         return"#
                     .trim(),
             ));
-            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), @r#"
+            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
             - tool: qlty
               driver: structure
               ruleKey: return-statements
@@ -118,6 +123,9 @@ mod test {
                   endColumn: 31
                   startByte: 0
                   endByte: 103
+              properties:
+                actual: 3
+                threshold: 1
             "#);
         }
     }
@@ -149,7 +157,7 @@ mod test {
                 }"#
                 .trim(),
             ));
-            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), @r#"
+            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
             - tool: qlty
               driver: structure
               ruleKey: return-statements
@@ -171,6 +179,9 @@ mod test {
                   endColumn: 18
                   startByte: 0
                   endByte: 118
+              properties:
+                actual: 3
+                threshold: 1
             "#);
         }
     }
@@ -204,7 +215,7 @@ mod test {
                 "#
                 .trim(),
             ));
-            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), @r#"
+            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
             - tool: qlty
               driver: structure
               ruleKey: return-statements
@@ -226,6 +237,9 @@ mod test {
                   endColumn: 24
                   startByte: 0
                   endByte: 162
+              properties:
+                actual: 4
+                threshold: 1
             "#);
         }
     }

@@ -60,6 +60,8 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -104,6 +106,8 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -135,6 +139,10 @@
           "endByte": 230
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -164,6 +172,10 @@
           "startByte": 359,
           "endByte": 376
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -195,6 +207,10 @@
           "startByte": 0,
           "endByte": 3633
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "partialFingerprints": {
         "file.path": "FileComplexity.cpp"
@@ -230,6 +246,10 @@
           "endByte": 402
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "func1"
       },
@@ -263,6 +283,10 @@
           "startByte": 404,
           "endByte": 767
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "partialFingerprints": {
         "function.name": "func2"
@@ -298,6 +322,10 @@
           "endByte": 1132
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "func3"
       },
@@ -331,6 +359,10 @@
           "startByte": 1134,
           "endByte": 1497
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "partialFingerprints": {
         "function.name": "func4"
@@ -366,6 +398,10 @@
           "endByte": 1862
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "func5"
       },
@@ -399,6 +435,10 @@
           "startByte": 1864,
           "endByte": 2227
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "partialFingerprints": {
         "function.name": "func6"
@@ -434,6 +474,10 @@
           "endByte": 2592
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "func7"
       },
@@ -467,6 +511,10 @@
           "startByte": 2594,
           "endByte": 2957
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "partialFingerprints": {
         "function.name": "func8"
@@ -502,6 +550,10 @@
           "endByte": 1480
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "complex"
       },
@@ -536,6 +588,10 @@
           "endByte": 1087
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "deeplyNested"
       },
@@ -569,6 +625,10 @@
           "endByte": 471
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -598,6 +658,10 @@
           "startByte": 140,
           "endByte": 182
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -629,6 +693,10 @@
           "endByte": 352
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -658,6 +726,10 @@
           "startByte": 543,
           "endByte": 717
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -689,6 +761,10 @@
           "endByte": 1082
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -718,6 +794,10 @@
           "startByte": 1273,
           "endByte": 1447
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -749,6 +829,10 @@
           "endByte": 1812
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -778,6 +862,10 @@
           "startByte": 2003,
           "endByte": 2177
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -809,6 +897,10 @@
           "endByte": 2542
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -839,6 +931,10 @@
           "endByte": 2907
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -868,6 +964,10 @@
           "startByte": 646,
           "endByte": 875
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -900,6 +1000,10 @@
           "endByte": 1480
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -930,6 +1034,10 @@
           "startByte": 109,
           "endByte": 556
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     }

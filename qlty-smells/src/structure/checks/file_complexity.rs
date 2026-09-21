@@ -39,7 +39,7 @@ pub fn check(threshold: usize, source_file: Arc<File>, tree: &Tree) -> Vec<Issue
                 BASE_EFFORT_MINUTES,
                 EFFORT_MINUTES_PER_VALUE_DELTA,
             ),
-            ..issue_for(&source_file, &tree.root_node())
+            ..issue_for(&source_file, &tree.root_node(), threshold, count)
         });
     }
 
@@ -83,7 +83,7 @@ mod test {
             "#
                 .trim(),
             ));
-            insta::assert_yaml_snapshot!(check(10, source_file.clone(), &source_file.parse()), @r#"
+            insta::assert_yaml_snapshot!(check(10, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
             - tool: qlty
               driver: structure
               ruleKey: file-complexity
@@ -105,6 +105,9 @@ mod test {
                   endColumn: 61
                   startByte: 0
                   endByte: 466
+              properties:
+                actual: 55
+                threshold: 10
               partialFingerprints:
                 file.path: STRING
             "#);

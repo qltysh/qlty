@@ -47,6 +47,10 @@
           "endByte": 116
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -77,6 +81,10 @@
           "startByte": 0,
           "endByte": 935
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "partialFingerprints": {
         "file.path": "FileComplexity.scala"
@@ -112,6 +120,10 @@
           "endByte": 433
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "complex"
       },
@@ -146,6 +158,10 @@
           "endByte": 91
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -175,6 +191,10 @@
           "startByte": 166,
           "endByte": 320
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
@@ -206,6 +226,10 @@
           "endByte": 210
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
@@ -236,6 +260,10 @@
           "startByte": 18,
           "endByte": 223
         }
+      },
+      "properties": {
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     }

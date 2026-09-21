@@ -54,7 +54,12 @@ pub fn check(threshold: usize, source_file: Arc<File>, tree: &Tree) -> Vec<Issue
                     BASE_EFFORT_MINUTES,
                     EFFORT_MINUTES_PER_VALUE_DELTA,
                 ),
-                ..issue_for(&source_file, &parameters_node)
+                ..issue_for(
+                    &source_file,
+                    &parameters_node,
+                    threshold,
+                    parameter_names.len(),
+                )
             });
         }
     }
@@ -67,6 +72,15 @@ mod test {
     use super::*;
 
     #[test]
+    fn zero_measurements_are_preserved() {
+        let source_file = Arc::new(File::from_string("python", "def f():\n    pass"));
+        let issues = check(0, source_file.clone(), &source_file.parse());
+
+        assert_eq!(issues[0].get_property_number("threshold"), 0.0);
+        assert_eq!(issues[0].get_property_number("actual"), 0.0);
+    }
+
+    #[test]
     fn parameters_go() {
         let source_file = Arc::new(File::from_string(
             "go",
@@ -76,7 +90,7 @@ mod test {
             "#,
         ));
 
-        insta::assert_yaml_snapshot!(check(5, source_file.clone(), &source_file.parse()), @r###"
+        insta::assert_yaml_snapshot!(check(5, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
         - tool: qlty
           driver: structure
           ruleKey: function-parameters
@@ -98,7 +112,10 @@ mod test {
               endColumn: 66
               startByte: 24
               endByte: 66
-        "###);
+          properties:
+            actual: 6
+            threshold: 5
+        "#);
     }
 
     #[test]
@@ -121,7 +138,7 @@ mod test {
                     pass"#
                 .trim(),
         ));
-        insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), @r#"
+        insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
         - tool: qlty
           driver: structure
           ruleKey: function-parameters
@@ -143,6 +160,9 @@ mod test {
               endColumn: 26
               startByte: 7
               endByte: 25
+          properties:
+            actual: 6
+            threshold: 1
         "#);
     }
 
@@ -175,7 +195,7 @@ mod test {
             "typescript",
             r#"function foo(a: any, b: any, c: any, d: any, e: any, f: any) {}"#.trim(),
         ));
-        insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), @r#"
+        insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
         - tool: qlty
           driver: structure
           ruleKey: function-parameters
@@ -197,6 +217,9 @@ mod test {
               endColumn: 61
               startByte: 12
               endByte: 60
+          properties:
+            actual: 6
+            threshold: 1
         "#);
     }
 
@@ -270,7 +293,7 @@ mod test {
                 end"#
                     .trim(),
             ));
-            insta::assert_yaml_snapshot!(check(5, source_file.clone(), &source_file.parse()), @r#"
+            insta::assert_yaml_snapshot!(check(5, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
             - tool: qlty
               driver: structure
               ruleKey: function-parameters
@@ -292,6 +315,9 @@ mod test {
                   endColumn: 26
                   startByte: 7
                   endByte: 25
+              properties:
+                actual: 6
+                threshold: 5
             "#);
         }
     }

@@ -17,14 +17,14 @@ const TOOL: &str = "qlty";
 const DRIVER: &str = "structure";
 const CONTEXT_LINES: usize = 10;
 
-pub fn issue_for(source_file: &Arc<File>, node: &Node) -> Issue {
+pub fn issue_for(source_file: &Arc<File>, node: &Node, threshold: usize, actual: usize) -> Issue {
     let path = source_file.path.to_string_lossy();
     let file_contents = source_file.contents.as_bytes();
     let snippet = std::str::from_utf8(&file_contents[node.start_byte()..node.end_byte()])
         .unwrap_or("")
         .to_string();
 
-    Issue {
+    let mut issue = Issue {
         snippet: truncate_snippet(&snippet),
         snippet_with_context: truncate_snippet(&snippet_with_context(
             source_file,
@@ -40,7 +40,10 @@ pub fn issue_for(source_file: &Arc<File>, node: &Node) -> Issue {
             range: Some(node.range().into()),
         }),
         ..Default::default()
-    }
+    };
+    issue.set_property_number("threshold", threshold as f64);
+    issue.set_property_number("actual", actual as f64);
+    issue
 }
 
 fn snippet_with_context(source_file: &Arc<File>, node: &Node, context_lines: usize) -> String {
