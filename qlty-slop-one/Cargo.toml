@@ -22,6 +22,7 @@ qlty-analysis.workspace = true
 qlty-config.workspace = true
 qlty-smells.workspace = true
 qlty-types.workspace = true
+rayon.workspace = true
 rustls.workspace = true
 regex.workspace = true
 serde.workspace = true

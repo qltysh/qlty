@@ -4,6 +4,7 @@ use clap::Args;
 use qlty_config::Library;
 use qlty_slop_one::{render_summary, render_text, Document, Evaluator, JevProvider, Options};
 use std::collections::HashSet;
+use std::num::NonZeroUsize;
 use std::path::PathBuf;
 
 #[derive(Args, Debug)]
@@ -46,6 +47,10 @@ pub struct SlopOne {
     /// Number of positive and negative factors in text output
     #[arg(long, default_value_t = 3)]
     pub top: usize,
+
+    /// Number of files to evaluate concurrently
+    #[arg(long, default_value_t = NonZeroUsize::new(4).expect("4 is nonzero"))]
+    pub jobs: NonZeroUsize,
 }
 
 #[derive(Clone, Copy, Debug, clap::ValueEnum)]
@@ -86,14 +91,14 @@ impl SlopOne {
             return CommandSuccess::ok();
         }
         let mut seen = HashSet::new();
-        let mut results = vec![];
+        let mut paths = vec![];
         for path in &self.files {
             let normalized = std::path::absolute(path)?;
-            if !seen.insert(normalized) {
-                continue;
+            if seen.insert(normalized) {
+                paths.push(path.clone());
             }
-            results.push(evaluator.evaluate(path));
         }
+        let results = evaluator.evaluate_all(&paths, self.jobs)?;
         let document = Document::new(evaluator.model_info(), results, evaluator.usage());
         if self.json {
             println!("{}", serde_json::to_string_pretty(&document)?);

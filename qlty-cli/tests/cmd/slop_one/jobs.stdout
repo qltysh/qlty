@@ -1,0 +1,37 @@
+PASS lib/simple.py  8.75/10 (pass above 5.00; Python)
+  Score is 3.75 points above the cutoff.
+  Reference score: 7.07; factors show changes from that reference.
+  Main factors raising the score:
+    +0.29  Overall difficulty of maintenance (Jev assessment 0.08)
+    +0.23  Duplicated logic (Jev assessment 0.00)
+    +0.20  Function complexity (0 findings)
+      Measurements: count +0.05; density +0.04; magnitude +0.06; coverage +0.05
+  Qlty measurements describe related properties of the same findings; their lines can overlap across factors.
+
+FAIL lib/tangled.py  1.21/10 (pass above 5.00; Python)
+  Score is 3.79 points below the cutoff.
+  Reference score: 7.07; factors show changes from that reference.
+  Main factors lowering the score:
+    -3.13  Similar code (1 findings; max duplicated lines 18, threshold 15; lines 17–34, 37–54)
+      Measurements: count -0.23; density -1.56; magnitude -0.22; coverage -1.11
+    -1.14  Nested control flow (1 findings; max nesting depth 6, threshold 5; lines 6–9)
+      Measurements: count -0.10; density -0.66; magnitude -0.19; coverage -0.19
+    -1.06  Function complexity (1 findings; max cyclomatic complexity 22, threshold 18; lines 1–14)
+      Measurements: count -0.08; density -0.72; magnitude -0.15; coverage -0.11
+  Main factors raising the score:
+    +0.13  File complexity (0 findings)
+      Measurements: count +0.04; density +0.02; magnitude +0.03; coverage +0.04
+    +0.08  Manually synchronized state (Jev assessment 0.02)
+    +0.01  Boolean logic (0 findings)
+      Measurements: count +0.00; density +0.00; magnitude +0.00; coverage +0.01
+  Qlty measurements describe related properties of the same findings; their lines can overlap across factors.
+
+SKIP tests/test_simple.py: Test file excluded: glob matches 'tests/**'. Use --include-tests to evaluate it.
+
+SKIP vendor/vendored.py: Configured file excluded: glob matches 'vendor/**'. Use --include-excluded to evaluate it.
+
+Summary of supplied files: 2 evaluated, 1 passed, 1 failed, 2 skipped, 0 errors.
+  Median file score: 4.98/10; pass rate: 50.0%.
+  Lowest-scoring files:
+    1.21/10  FAIL  lib/tangled.py
+    8.75/10  PASS  lib/simple.py

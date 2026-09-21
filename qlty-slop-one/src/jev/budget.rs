@@ -211,3 +211,29 @@ mod tests {
         assert_eq!(Budget::try_new(0.5).unwrap().summary().budget_usd, 0.5);
     }
 }
+
+#[cfg(test)]
+mod concurrency_tests {
+    use std::sync::{Arc, Mutex};
+    use std::thread;
+
+    use super::*;
+
+    #[test]
+    fn concurrent_reservations_never_exceed_the_limit() {
+        let per_request = MAX_REQUEST_TOKENS as f64 * PRICE_PER_MILLION_USD / 1e6;
+        let budget = Arc::new(Mutex::new(Budget::try_new(per_request * 3.0).unwrap()));
+        let handles: Vec<_> = (0..8)
+            .map(|_| {
+                let budget = Arc::clone(&budget);
+                thread::spawn(move || budget.lock().unwrap().reserve().is_ok())
+            })
+            .collect();
+        let successes = handles
+            .into_iter()
+            .map(|handle| handle.join().unwrap())
+            .filter(|reserved| *reserved)
+            .count();
+        assert_eq!(successes, 3);
+    }
+}

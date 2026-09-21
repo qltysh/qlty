@@ -1,6 +1,9 @@
 //! Orchestrate one file's evaluation.
 
+use std::num::NonZeroUsize;
 use std::path::{Path, PathBuf};
+
+use rayon::prelude::*;
 
 use serde_json::json;
 
@@ -60,6 +63,19 @@ impl Evaluator {
             Ok(outcome) => outcome,
             Err(error) => FileOutcome::failed(path, &error),
         }
+    }
+
+    /// Evaluate files on up to `jobs` worker threads. Results keep the input
+    /// order. Jev requests for different files overlap; the budget is shared
+    /// and reserved per attempt, so concurrent requests cannot overspend it.
+    pub fn evaluate_all(&self, paths: &[PathBuf], jobs: NonZeroUsize) -> Result<Vec<FileOutcome>> {
+        let pool = rayon::ThreadPoolBuilder::new()
+            .num_threads(jobs.get())
+            .build()
+            .map_err(|error| {
+                Error::Jev(format!("Could not start {jobs} worker threads: {error}"))
+            })?;
+        Ok(pool.install(|| paths.par_iter().map(|path| self.evaluate(path)).collect()))
     }
 
     fn evaluate_file(&self, path: &Path) -> Result<FileOutcome> {
@@ -224,6 +240,43 @@ fn python_repr(text: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn offline_evaluator() -> Evaluator {
+        Evaluator::new(Options {
+            cache_dir: std::env::temp_dir().join("slop-one-evaluate-tests"),
+            budget_usd: 0.0,
+            provider: JevProvider::TypeSafe,
+            offline: true,
+            include_tests: false,
+            include_excluded: false,
+        })
+        .unwrap()
+    }
+
+    #[test]
+    fn concurrent_evaluation_keeps_input_order() {
+        let paths: Vec<PathBuf> = (0..12)
+            .map(|i| PathBuf::from(format!("missing-{i}.py")))
+            .collect();
+        let outcomes = offline_evaluator()
+            .evaluate_all(&paths, NonZeroUsize::new(5).unwrap())
+            .unwrap();
+        let reported: Vec<&str> = outcomes.iter().map(FileOutcome::path).collect();
+        let expected: Vec<String> = paths
+            .iter()
+            .map(|path| path.display().to_string())
+            .collect();
+        assert_eq!(reported, expected);
+    }
+
+    #[test]
+    fn more_jobs_than_files_is_fine() {
+        let paths = vec![PathBuf::from("missing.py")];
+        let outcomes = offline_evaluator()
+            .evaluate_all(&paths, NonZeroUsize::new(64).unwrap())
+            .unwrap();
+        assert_eq!(outcomes.len(), 1);
+    }
 
     #[test]
     fn suffix_is_the_final_extension_with_its_dot() {

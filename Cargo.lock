@@ -3263,6 +3263,7 @@ dependencies = [
  "qlty-config",
  "qlty-smells",
  "qlty-types",
+ "rayon",
  "regex",
  "rustls",
  "serde",
