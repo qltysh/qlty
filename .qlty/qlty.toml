@@ -15,6 +15,8 @@ config_version = "0"
 
 exclude_patterns = [
     "**/fixtures/**",
+    "qlty-slop-one/src/assets/**",
+    "qlty-slop-one/grammar/**",
     "**/protos/**",
     "**/*.in/**",
     "**/*.test.ts/**",

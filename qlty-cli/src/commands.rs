@@ -18,6 +18,7 @@ mod panic;
 mod parse;
 mod patch;
 pub mod plugins;
+mod slop_one;
 mod smells;
 pub mod sources;
 mod telemetry;
@@ -28,6 +29,6 @@ mod version;
 pub use {
     build::Build, check::Check, completions::Completions, dashboard::Dashboard, deinit::Deinit,
     discord::Discord, docs::Docs, fmt::Fmt, init::Init, install::Install, metrics::Metrics,
-    panic::Panic, parse::Parse, patch::Patch, smells::Smells, telemetry::Telemetry,
-    upgrade::Upgrade, validate::Validate, version::Version,
+    panic::Panic, parse::Parse, patch::Patch, slop_one::SlopOne, smells::Smells,
+    telemetry::Telemetry, upgrade::Upgrade, validate::Validate, version::Version,
 };

@@ -1,0 +1,137 @@
+{
+ "name": "python_shebang",
+ "suffix": "",
+ "language": "Python",
+ "text": "#!/usr/bin/env python3\n\"\"\"Walk a tree of records and count the deep matches.\"\"\"\nimport sys\n\n\ndef count(records, limit):\n    total = 0\n    for record in records:\n        for group in record[\"groups\"]:\n            for item in group:\n                if item[\"kind\"] == \"match\":\n                    if item[\"score\"] > limit:\n                        if item[\"flag\"] or item[\"other\"] or item[\"third\"] or item[\"fourth\"] or item[\"fifth\"]:\n                            total += 1\n    return total\n\n\nif __name__ == \"__main__\":\n    print(count([], int(sys.argv[1])))\n",
+ "values": [
+  0.6931471805599453,
+  5.2631578947368425,
+  1.6094379124341003,
+  0.05263157894736842,
+  0.6931471805599453,
+  5.2631578947368425,
+  1.9459101490553132,
+  0.15789473684210525,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.6931471805599453,
+  5.2631578947368425,
+  3.1354942159291497,
+  0.5263157894736842,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0
+ ],
+ "summary": {
+  "boolean-logic": {
+   "count": 1,
+   "max_magnitude": 4.0,
+   "covered_lines": 1,
+   "locations": [
+    {
+     "start_line": 13,
+     "end_line": 13
+    }
+   ],
+   "max_actual": 4.0,
+   "threshold": 4,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Boolean depth"
+  },
+  "nested-control-flow": {
+   "count": 1,
+   "max_magnitude": 6.0,
+   "covered_lines": 3,
+   "locations": [
+    {
+     "start_line": 12,
+     "end_line": 14
+    }
+   ],
+   "max_actual": 6.0,
+   "threshold": 5,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Nesting depth"
+  },
+  "function-parameters": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 6,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Parameters"
+  },
+  "return-statements": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 6,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Return statements"
+  },
+  "file-complexity": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 50,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Cyclomatic complexity"
+  },
+  "function-complexity": {
+   "count": 1,
+   "max_magnitude": 22.0,
+   "covered_lines": 10,
+   "locations": [
+    {
+     "start_line": 6,
+     "end_line": 15
+    }
+   ],
+   "max_actual": 22.0,
+   "threshold": 18,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Cyclomatic complexity"
+  },
+  "identical-code": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 15,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Duplicated lines"
+  },
+  "similar-code": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 15,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Duplicated lines"
+  }
+ }
+}

@@ -67,3 +67,11 @@ impl From<git2::Error> for CommandError {
         }
     }
 }
+
+impl From<qlty_slop_one::Error> for CommandError {
+    fn from(error: qlty_slop_one::Error) -> Self {
+        CommandError::Unknown {
+            source: error.into(),
+        }
+    }
+}

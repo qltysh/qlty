@@ -1,0 +1,176 @@
+{
+ "source": "fn main() {\n    let x = 1;\n    let y = x + 1;\n}",
+ "language": "Rust",
+ "chunk_keys": [
+  "954c1601d0f91e4c114fa501100f0ab039b0e99e0f91af874c2c3cbf8b05cda7"
+ ],
+ "responses": [
+  {
+   "model": "jev-1.13.0",
+   "answers": {
+    "direct_unmaintainable": {
+     "type": "noul",
+     "noul": 0.66
+    },
+    "boilerplate": {
+     "type": "noul",
+     "noul": 0.45
+    },
+    "deep_reasoning": {
+     "type": "noul",
+     "noul": 0.76
+    },
+    "control_flow": {
+     "type": "score",
+     "score": 1.1,
+     "confidence": 0.82,
+     "legend": {
+      "0": "The execution path is straightforward and local.",
+      "1": "Following a path requires tracking several branches or state changes.",
+      "2": "Following a path requires repeatedly connecting distant branches and changing state."
+     },
+     "probabilities": {
+      "0": 0.01,
+      "1": 0.88,
+      "2": 0.11
+     }
+    },
+    "duplicated_logic": {
+     "type": "score",
+     "score": 1.82,
+     "confidence": 0.8,
+     "legend": {
+      "0": "No meaningful duplication; repeated structure is limited to trivial declarations or accessors.",
+      "1": "A few small blocks repeat with minor variations.",
+      "2": "Several substantial blocks repeat so that a behavior change would require editing multiple copies.",
+      "3": "Most of the logic is copied with variations, and the copies have already diverged or contain inconsistencies."
+     },
+     "probabilities": {
+      "0": 0.01,
+      "1": 0.17,
+      "2": 0.81,
+      "3": 0.01
+     }
+    },
+    "mirrored_state": {
+     "type": "score",
+     "score": 0.88,
+     "confidence": 0.12,
+     "legend": {
+      "0": "State is held in one authoritative place, or the code is effectively stateless.",
+      "1": "One piece of state is cached or mirrored, and it is invalidated or updated at a single clear point.",
+      "2": "Several values are mirrored or cached, and keeping them consistent depends on every writer remembering to update each copy or flag.",
+      "3": "Mirrored or cached state is updated inconsistently in the visible code, so some paths can leave the copies out of sync."
+     },
+     "probabilities": {
+      "0": 0.41000000000000003,
+      "1": 0.36,
+      "2": 0.19,
+      "3": 0.04
+     }
+    },
+    "hand_enumerated_data": {
+     "type": "score",
+     "score": 0.86,
+     "confidence": 0.44,
+     "legend": {
+      "0": "Related elements are held in arrays, collections, or objects and are processed generically; there is no hand enumeration.",
+      "1": "A small set of related elements is spelled out by hand in one or two places, and adding an element would touch only those places.",
+      "2": "A larger set of related elements is spelled out by hand in several methods, so adding or changing an element requires editing each method that enumerates them.",
+      "3": "Almost every method enumerates a large set of related elements by hand, with long hand-written expressions or key lists where one omitted or misordered element would be hard to notice."
+     },
+     "probabilities": {
+      "0": 0.35,
+      "1": 0.46,
+      "2": 0.18,
+      "3": 0.01
+     }
+    }
+   },
+   "usage": {
+    "input_tokens": 6364,
+    "output_tokens": 124
+   }
+  }
+ ],
+ "expected": {
+  "values": [
+   0.66,
+   0.45000000000000007,
+   0.76,
+   0.55,
+   0.6066666666666667,
+   0.2866666666666667,
+   0.2833333333333333
+  ],
+  "means": {
+   "direct_unmaintainable": 0.66,
+   "boilerplate": 0.45000000000000007,
+   "deep_reasoning": 0.76,
+   "control_flow": 0.55,
+   "duplicated_logic": 0.6066666666666667,
+   "mirrored_state": 0.2866666666666667,
+   "hand_enumerated_data": 0.2833333333333333
+  },
+  "assessments": {
+   "direct_unmaintainable": [
+    {
+     "start_line": 1,
+     "end_line": 4,
+     "value": 0.66,
+     "weight_bytes": 47
+    }
+   ],
+   "boilerplate": [
+    {
+     "start_line": 1,
+     "end_line": 4,
+     "value": 0.45,
+     "weight_bytes": 47
+    }
+   ],
+   "deep_reasoning": [
+    {
+     "start_line": 1,
+     "end_line": 4,
+     "value": 0.76,
+     "weight_bytes": 47
+    }
+   ],
+   "control_flow": [
+    {
+     "start_line": 1,
+     "end_line": 4,
+     "value": 0.55,
+     "weight_bytes": 47
+    }
+   ],
+   "duplicated_logic": [
+    {
+     "start_line": 1,
+     "end_line": 4,
+     "value": 0.6066666666666667,
+     "weight_bytes": 47
+    }
+   ],
+   "mirrored_state": [
+    {
+     "start_line": 1,
+     "end_line": 4,
+     "value": 0.2866666666666667,
+     "weight_bytes": 47
+    }
+   ],
+   "hand_enumerated_data": [
+    {
+     "start_line": 1,
+     "end_line": 4,
+     "value": 0.2833333333333333,
+     "weight_bytes": 47
+    }
+   ]
+  },
+  "model": "jev-1.13.0",
+  "excerpts": 1
+ }
+}

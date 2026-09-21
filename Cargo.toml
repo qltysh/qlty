@@ -58,6 +58,7 @@ keyring = { version = "3.6.2", features = [
     "linux-native",
 ] }
 lazy_static = "1.5.0"
+lithos-llm = { git = "https://github.com/lithoscomputer/lithos-llm.git", rev = "613b8d451bf73f07017a0affdf3c5635b9b54a3d" }
 log = "0.4.28"
 lzma-rs = "0.3.0"
 mac_address = "1.1.7"
@@ -77,6 +78,7 @@ qlty-config = { version = "0.644.0", path = "qlty-config" }
 qlty-coverage = { version = "0.644.0", path = "qlty-coverage" }
 qlty-formats = { version = "0.644.0", path = "qlty-formats" }
 qlty-plugins = { version = "0.644.0", path = "qlty-plugins" }
+qlty-slop-one = { version = "0.644.0", path = "qlty-slop-one" }
 qlty-smells = { version = "0.644.0", path = "qlty-smells" }
 qlty-test-utilities = { version = "0.644.0", path = "qlty-test-utilities" }
 qlty-types = { version = "0.644.0", path = "qlty-types" }
@@ -97,7 +99,7 @@ sentry = { version = "0.34.0", default-features = false, features = [
 ] }
 sentry-backtrace = "0.34.0"
 serde = { version = "1.0.228", features = ["derive", "rc"] }
-serde_json = { version = "1.0.145", features = ["preserve_order"] }
+serde_json = { version = "1.0.145", features = ["preserve_order", "float_roundtrip"] }
 serde-querystring = "0.3.0"
 serde_with = "3.14.1"
 serde_yaml = "0.9.34"
@@ -120,6 +122,7 @@ time = { version = "0.3.44", features = [
     "parsing",
 ] }
 tiny_http = "0.12.0"
+tokio = { version = "1.49.0", features = ["rt-multi-thread"] }
 toml = "0.8.23"
 toml_edit = "0.22.26"
 tracing = "0.1.41"
