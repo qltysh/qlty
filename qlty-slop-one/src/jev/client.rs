@@ -12,6 +12,7 @@ use lithos_llm::catalog::Catalog;
 use lithos_llm::credentials::ConventionalCredentials;
 use lithos_llm::types::{ErrorKind, State};
 use lithos_llm::{Client, Evaluation};
+use rayon::prelude::*;
 use serde::Serialize;
 use serde_json::{json, Map, Value};
 use tokio::runtime::Runtime;
@@ -303,13 +304,20 @@ impl Jev {
     }
 
     /// The seven byte-weighted means over the file's excerpts.
+    ///
+    /// Excerpts are requested concurrently on the current rayon pool, so a
+    /// large file is not a serial chain of round trips. Answers keep excerpt
+    /// order, and every attempt still reserves budget on its own.
     pub fn extract(&self, text: &str, language: Language) -> Result<JevFeatures> {
         let pieces = chunks(text);
-        let mut answers = Vec::with_capacity(pieces.len());
-        for (index, piece) in pieces.iter().enumerate() {
-            let state = RequestState::new(language, piece, index, pieces.len());
-            answers.push(self.request(&state)?);
-        }
+        let answers = pieces
+            .par_iter()
+            .enumerate()
+            .map(|(index, piece)| {
+                let state = RequestState::new(language, piece, index, pieces.len());
+                self.request(&state)
+            })
+            .collect::<Result<Vec<_>>>()?;
         aggregate(&pieces, &answers)
     }
 }

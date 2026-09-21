@@ -49,7 +49,7 @@ pub struct SlopOne {
     pub top: usize,
 
     /// Number of files to evaluate concurrently
-    #[arg(long, default_value_t = NonZeroUsize::new(4).expect("4 is nonzero"))]
+    #[arg(long, default_value_t = NonZeroUsize::new(16).expect("16 is nonzero"))]
     pub jobs: NonZeroUsize,
 }
 
