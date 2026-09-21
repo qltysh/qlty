@@ -132,7 +132,7 @@
       "commentLines": 0,
       "blankLines": 3,
       "complexity": 4,
-      "cyclomatic": 15,
+      "cyclomatic": 3,
       "lcom4": 0,
       "generatedAt": "[..]",
       "time": "2024-01-01T00:00:00+00:00"
@@ -155,7 +155,7 @@
       "commentLines": 0,
       "blankLines": 3,
       "complexity": 4,
-      "cyclomatic": 15,
+      "cyclomatic": 3,
       "lcom4": 0,
       "generatedAt": "[..]",
       "time": "2024-01-01T00:00:00+00:00"

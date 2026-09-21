@@ -310,7 +310,7 @@
       "commentLines": 0,
       "blankLines": 0,
       "complexity": 98,
-      "cyclomatic": 57,
+      "cyclomatic": 29,
       "lcom4": 0,
       "generatedAt": "[..]",
       "time": "[..]"
@@ -333,7 +333,7 @@
       "commentLines": 0,
       "blankLines": 0,
       "complexity": 1,
-      "cyclomatic": 4,
+      "cyclomatic": 2,
       "lcom4": 0,
       "generatedAt": "[..]",
       "time": "[..]"
@@ -356,7 +356,7 @@
       "commentLines": 0,
       "blankLines": 0,
       "complexity": 31,
-      "cyclomatic": 21,
+      "cyclomatic": 10,
       "lcom4": 0,
       "generatedAt": "[..]",
       "time": "[..]"
@@ -379,7 +379,7 @@
       "commentLines": 0,
       "blankLines": 3,
       "complexity": 6,
-      "cyclomatic": 17,
+      "cyclomatic": 5,
       "lcom4": 0,
       "generatedAt": "[..]",
       "time": "[..]"
@@ -402,7 +402,7 @@
       "commentLines": 6,
       "blankLines": 0,
       "complexity": 0,
-      "cyclomatic": 2,
+      "cyclomatic": 1,
       "lcom4": 0,
       "generatedAt": "[..]",
       "time": "[..]"
@@ -425,7 +425,7 @@
       "commentLines": 0,
       "blankLines": 0,
       "complexity": 1,
-      "cyclomatic": 7,
+      "cyclomatic": 5,
       "lcom4": 0,
       "generatedAt": "[..]",
       "time": "[..]"
@@ -471,7 +471,7 @@
       "commentLines": 0,
       "blankLines": 0,
       "complexity": 15,
-      "cyclomatic": 8,
+      "cyclomatic": 6,
       "lcom4": 0,
       "generatedAt": "[..]",
       "time": "[..]"
@@ -494,7 +494,7 @@
       "commentLines": 0,
       "blankLines": 0,
       "complexity": 0,
-      "cyclomatic": 7,
+      "cyclomatic": 1,
       "lcom4": 0,
       "generatedAt": "[..]",
       "time": "[..]"
@@ -517,7 +517,7 @@
       "commentLines": 0,
       "blankLines": 0,
       "complexity": 6,
-      "cyclomatic": 13,
+      "cyclomatic": 7,
       "lcom4": 0,
       "generatedAt": "[..]",
       "time": "[..]"
@@ -540,7 +540,7 @@
       "commentLines": 1,
       "blankLines": 0,
       "complexity": 2,
-      "cyclomatic": 5,
+      "cyclomatic": 3,
       "lcom4": 0,
       "generatedAt": "[..]",
       "time": "[..]"

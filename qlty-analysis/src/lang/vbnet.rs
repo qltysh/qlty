@@ -183,6 +183,27 @@ impl Language for VBNet {
         vec![Self::AND_ALSO, Self::OR_ELSE, Self::AND, Self::OR]
     }
 
+    fn short_circuit_operators(&self) -> Vec<&str> {
+        vec![Self::AND_ALSO, Self::OR_ELSE]
+    }
+
+    fn binary_operator(&self, node: &Node, source_file: &File) -> Option<String> {
+        // The grammar hides keyword operators, so read between the operands.
+        let left = node.child_by_field_name("left")?;
+        let right = node.child_by_field_name("right")?;
+        let between = source_file
+            .contents
+            .get(left.end_byte()..right.start_byte())?;
+
+        // A continued expression can include comments and `_` line continuations.
+        between
+            .lines()
+            .filter_map(|line| line.split('\'').next())
+            .flat_map(str::split_whitespace)
+            .find(|token| *token != "_")
+            .map(str::to_owned)
+    }
+
     fn field_nodes(&self) -> Vec<&str> {
         vec![Self::MEMBER_ACCESS]
     }

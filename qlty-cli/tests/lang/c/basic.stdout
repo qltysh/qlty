@@ -1027,7 +1027,7 @@
       "commentLines": 0,
       "blankLines": 3,
       "complexity": 4,
-      "cyclomatic": 15,
+      "cyclomatic": 13,
       "lcom4": 0,
       "generatedAt": "[..]",
       "time": "[..]"
@@ -1050,7 +1050,7 @@
       "commentLines": 0,
       "blankLines": 8,
       "complexity": 169,
-      "cyclomatic": 132,
+      "cyclomatic": 60,
       "lcom4": 0,
       "generatedAt": "[..]",
       "time": "[..]"
@@ -1073,7 +1073,7 @@
       "commentLines": 0,
       "blankLines": 1,
       "complexity": 27,
-      "cyclomatic": 37,
+      "cyclomatic": 21,
       "lcom4": 0,
       "generatedAt": "[..]",
       "time": "[..]"
@@ -1096,7 +1096,7 @@
       "commentLines": 0,
       "blankLines": 7,
       "complexity": 8,
-      "cyclomatic": 33,
+      "cyclomatic": 7,
       "lcom4": 0,
       "generatedAt": "[..]",
       "time": "[..]"
@@ -1119,7 +1119,7 @@
       "commentLines": 0,
       "blankLines": 1,
       "complexity": 26,
-      "cyclomatic": 17,
+      "cyclomatic": 11,
       "lcom4": 0,
       "generatedAt": "[..]",
       "time": "[..]"
@@ -1142,7 +1142,7 @@
       "commentLines": 0,
       "blankLines": 4,
       "complexity": 0,
-      "cyclomatic": 4,
+      "cyclomatic": 1,
       "lcom4": 0,
       "generatedAt": "[..]",
       "time": "[..]"
@@ -1165,7 +1165,7 @@
       "commentLines": 0,
       "blankLines": 2,
       "complexity": 7,
-      "cyclomatic": 15,
+      "cyclomatic": 8,
       "lcom4": 0,
       "generatedAt": "[..]",
       "time": "[..]"
