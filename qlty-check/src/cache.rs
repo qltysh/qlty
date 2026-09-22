@@ -11,26 +11,28 @@ use qlty_config::config::PluginDef;
 use qlty_config::version::QLTY_VERSION;
 use qlty_config::Workspace;
 use qlty_types::analysis::v1::Issue;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 use std::{collections::HashMap, fmt::Debug, path::PathBuf};
 use tracing::trace;
 
 #[derive(Debug, Clone)]
 pub struct IssueCache {
     pub cache: Box<dyn Cache>,
-    repository: Arc<RepositoryState>,
+    repository: Arc<OnceLock<Arc<RepositoryState>>>,
 }
 
 impl IssueCache {
     pub fn new(cache: Box<dyn Cache>) -> Self {
         Self {
             cache,
-            repository: Arc::new(RepositoryState::compute()),
+            repository: Arc::new(OnceLock::new()),
         }
     }
 
     pub fn repository(&self) -> Arc<RepositoryState> {
-        self.repository.clone()
+        self.repository
+            .get_or_init(|| Arc::new(RepositoryState::compute()))
+            .clone()
     }
 
     pub fn read(&self, cache_key: &IssuesCacheKey) -> Result<Option<IssuesCacheHit>> {
@@ -101,7 +103,8 @@ pub struct IssuesCacheHit {
 }
 
 /// Repository facts which are shared by every cache key within a run. Computing
-/// `dirty_paths` walks the whole working tree, so it is computed once and shared.
+/// `dirty_paths` walks the whole working tree, so it is computed lazily on first
+/// use and shared from there on.
 #[derive(Debug, Clone, Default)]
 pub struct RepositoryState {
     tree_sha: Option<String>,
@@ -412,6 +415,21 @@ mod test {
             contents_size: 0,
             language_name: None,
         }
+    }
+
+    #[test]
+    fn test_repository_state_is_not_computed_until_requested() {
+        let cache = IssueCache::new(Box::new(NullCache {}));
+
+        assert!(cache.repository.get().is_none());
+    }
+
+    #[test]
+    fn test_repository_state_is_computed_on_first_request() {
+        let cache = IssueCache::new(Box::new(NullCache {}));
+        cache.repository();
+
+        assert!(cache.repository.get().is_some());
     }
 
     #[test]
