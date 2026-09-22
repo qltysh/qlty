@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Serve CLI releases over HTTPS only. **Behavior change:** versions before v0.590.0 fetch the latest-release manifest over HTTP, so `qlty upgrade` and `qlty version` now fail on them with an error naming an `http://` URL. `qlty check`, `qlty fmt`, `qlty coverage publish`, and `qlty --version` are unaffected. To recover, run `qlty upgrade --version 0.644.0`, which skips the manifest lookup, or re-run the installer (`curl https://qlty.sh | sh` on macOS and Linux, `powershell -c "iwr https://qlty.sh | iex"` on Windows).
+
 ## v0.644.0 (2026-08-28)
 
 ### Fixed
@@ -55,7 +61,7 @@
 
 ### Fixed
 
-- Apply user-configured driver fields (such as `prepare_script`) to version-matched drivers for plugins with versioned drivers (eslint, stylelint, knip, golangci-lint, trufflehog, radarlint-*), instead of silently discarding them at plan time (#2822)
+- Apply user-configured driver fields (such as `prepare_script`) to version-matched drivers for plugins with versioned drivers (eslint, stylelint, knip, golangci-lint, trufflehog, radarlint-\*), instead of silently discarding them at plan time (#2822)
 
 ## v0.636.0 (2026-07-17)
 
