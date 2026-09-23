@@ -4,6 +4,21 @@
 
 CLI releases are now served over HTTPS only. Versions before v0.590.0 fetch the latest-release manifest over HTTP, so `qlty upgrade` and `qlty version` now fail on them with an error naming an `http://` URL. `qlty check`, `qlty fmt`, `qlty coverage publish`, and `qlty --version` are unaffected. To recover, run `qlty upgrade --version 0.644.0`, which skips the manifest lookup, or re-run the installer (`curl https://qlty.sh | sh` on macOS and Linux, `powershell -c "iwr https://qlty.sh | iex"` on Windows).
 
+## v0.645.0 (2026-09-23)
+
+### New
+
+- Expose `properties.threshold` and `properties.actual` on all eight maintainability smells in both native JSON and SARIF output, so consumers no longer need to parse messages for measurements and can read values beyond the configured threshold (#2851)
+
+### Improved
+
+- Compute repository cache state once per run instead of per invocation, making `qlty check` up to 4x faster on large repositories with per-file linters such as gitleaks (#2856)
+
+### Fixed
+
+- Exclude arithmetic, bitwise, and comparison operators from cyclomatic complexity, which previously inflated scores by counting non-branching operators as extra paths (#2852)
+- Include active check filters in issue cache keys, preventing a filtered check from caching an empty result that a later unfiltered check would incorrectly reuse (#2837)
+
 ## v0.644.0 (2026-08-28)
 
 ### Fixed
