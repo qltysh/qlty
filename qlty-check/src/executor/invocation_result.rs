@@ -500,6 +500,7 @@ impl InvocationResult {
             self.plan.settings.filters.clone(),
             Arc::new(configs.clone()),
             self.plan.plugin.affects_cache.clone(),
+            cache.repository(),
         );
 
         for target in &self.plan.targets {

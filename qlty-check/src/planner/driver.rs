@@ -165,6 +165,7 @@ impl DriverPlanner {
             self.settings.filters.clone(),
             Arc::new(self.plugin_configs.clone()),
             self.plugin.affects_cache.clone(),
+            self.issue_cache.repository(),
         );
 
         let items = self
