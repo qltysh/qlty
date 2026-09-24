@@ -14,6 +14,7 @@ pub struct PluginActivation {
     pub package_filters: Vec<String>,
     pub prefix: Option<String>,
     pub mode: IssueMode,
+    pub config_files: Vec<String>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -147,6 +148,14 @@ impl Renderer {
 
         if plugin.mode != IssueMode::Block {
             toml.push_str(&format!("mode = \"{}\"\n", plugin.mode.to_str()));
+        }
+
+        if !plugin.config_files.is_empty() {
+            toml.push_str("config_files = [\n");
+            for config_file in plugin.config_files.iter().sorted() {
+                toml.push_str(&format!("  \"{config_file}\",\n"));
+            }
+            toml.push_str("]\n");
         }
 
         Ok(toml)
@@ -419,6 +428,36 @@ drivers = [
 name = "foo"
 package_file = "foo"
 package_filters = ["filter1", "filter2"]
+"#
+            .trim()
+        );
+    }
+
+    #[test]
+    fn test_plugin_with_config_files() {
+        let renderer = Renderer::new(
+            &vec![],
+            &vec![PluginActivation {
+                name: "rubocop".to_string(),
+                version: Some("1.50.0".to_string()),
+                drivers: vec!["lint".to_string()],
+                config_files: vec!["custom_cop.rb".to_string()],
+                ..Default::default()
+            }],
+        );
+
+        assert_eq!(
+            strip_default_toml(renderer.render().unwrap()),
+            r#"
+[[plugin]]
+name = "rubocop"
+drivers = [
+  "lint",
+]
+version = "1.50.0"
+config_files = [
+  "custom_cop.rb",
+]
 "#
             .trim()
         );

@@ -1,0 +1,2 @@
+bin.name = "qlty"
+args = ["init", "--dry-run", "--no", "--no-upgrade-check"]

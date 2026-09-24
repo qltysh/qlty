@@ -1,3 +1,4 @@
+mod custom_enabler;
 mod initializer;
 mod renderer;
 mod scanner;
