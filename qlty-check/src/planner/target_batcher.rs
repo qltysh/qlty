@@ -243,7 +243,7 @@ fn normalize_config_path(
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::tool::null_tool::NullTool;
+    use crate::tool::shell_tool::ShellTool;
     use qlty_analysis::WorkspaceEntryKind;
     use qlty_config::config::{InvocationDirectoryDef, InvocationDirectoryType, PluginDef};
     use qlty_test_utilities::git::sample_repo;
@@ -288,7 +288,7 @@ mod test {
                     config_files: vec!["config1".into(), "config2".into()],
                     ..Default::default()
                 },
-                tool: Box::new(NullTool {
+                tool: Box::new(ShellTool {
                     plugin_name: "mock_plugin".to_string(),
                     plugin: Default::default(),
                     ..Default::default()
@@ -520,7 +520,7 @@ mod test {
                     config_files: vec!["config_file.json".into()],
                     ..Default::default()
                 },
-                tool: Box::new(NullTool {
+                tool: Box::new(ShellTool {
                     plugin_name: "mock_plugin".to_string(),
                     plugin: Default::default(),
                     ..Default::default()
