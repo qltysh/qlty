@@ -47,7 +47,7 @@ jobs:
           persist-credentials: false
 
       - name: Log into registry ${{ env.REGISTRY }}
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -113,7 +113,7 @@ jobs:
           merge-multiple: true
 
       - name: Log into registry ${{ env.REGISTRY }}
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
