@@ -1,0 +1,7 @@
+
+ ISSUES: 2[..]
+
+sample.sh:2:0
+    2:0  medium  formatter used workspace config  precedence-formatter:WORKSPACE[..]
+    2:0  medium  linter used workspace config     precedence-linter:WORKSPACE[..]
+[..]

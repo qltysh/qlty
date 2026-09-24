@@ -1,0 +1,30 @@
+config_version = "0"
+
+[plugins.definitions.precedence-linter]
+file_types = ["shell"]
+config_files = ["linter-results.txt"]
+exported_config_paths = [
+  "linter-results.txt",
+]
+
+[plugins.definitions.precedence-linter.drivers.lint]
+prepare_script = "mkdir ${linter} && echo type %1 > ${linter}/cat.cmd || echo type %1 > ${linter}/cat.cmd"
+script = "cat linter-results.txt"
+output_format = "regex"
+output_regex = "((?P<path>.*):(?P<line>-?\\d+):(?P<col>-?\\d+): (?P<code>\\S+) (?P<message>.+))\n"
+success_codes = [0]
+
+[plugins.definitions.precedence-formatter]
+file_types = ["shell"]
+config_files = ["formatter-results.txt"]
+exported_config_paths = [
+  "formatter-results.txt",
+]
+
+[plugins.definitions.precedence-formatter.drivers.fmt]
+driver_type = "formatter"
+prepare_script = "mkdir ${linter} && echo type %1 > ${linter}/cat.cmd || echo type %1 > ${linter}/cat.cmd"
+script = "cat formatter-results.txt"
+output_format = "regex"
+output_regex = "((?P<path>.*):(?P<line>-?\\d+):(?P<col>-?\\d+): (?P<code>\\S+) (?P<message>.+))\n"
+success_codes = [0]
