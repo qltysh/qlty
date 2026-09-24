@@ -17,7 +17,9 @@
     "uploaderTool": "qltysh/qlty-action-coverage",
     "publishCommand": "[..]qlty[..] coverage publish --dry-run --print --json --override-commit-sha 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67 --add-prefix rails/ --tag rails --no-validate lcov.info",
     "uploaderToolVersion": "v1.0.0",
-    "referenceType": "REFERENCE_TYPE_BRANCH"
+    "referenceType": "REFERENCE_TYPE_BRANCH",
+    "reference": "refs/heads/feature-branch-1",
+    "complete": true
   },
   "report_files": [
     {
