@@ -72,6 +72,28 @@ fn fixture_export_matches_python() {
 }
 
 #[test]
+fn fixture_comparison_accepts_the_musl_results() {
+    let expected: Value =
+        read_json_gz(&fixture_dir().join(format!("{FIXTURE}-explanations.json.gz"))).unwrap();
+    let mut produced = expected.clone();
+    produced["weeks"][1]["rows"][3]["factors"][2]["change"] = Value::from(0.24937869046968372);
+    produced["weeks"][1]["rows"][3]["other"] = Value::from(-0.04158345826664367);
+    assert!(json_differences(&expected, &produced).is_empty());
+}
+
+#[test]
+fn fixture_comparison_reports_a_changed_factor() {
+    let expected: Value =
+        read_json_gz(&fixture_dir().join(format!("{FIXTURE}-explanations.json.gz"))).unwrap();
+    let mut produced = expected.clone();
+    let change = expected["weeks"][1]["rows"][3]["factors"][2]["change"]
+        .as_f64()
+        .unwrap();
+    produced["weeks"][1]["rows"][3]["factors"][2]["change"] = Value::from(change + 1e-9);
+    assert_eq!(json_differences(&expected, &produced).len(), 1);
+}
+
+#[test]
 fn fixture_export_explains_the_visible_rows_only() {
     let run = RunDir::new(fixture_dir().join("run"));
     let (_output, produced) = export_to_temp(&run, &fixture_dir(), FIXTURE);
