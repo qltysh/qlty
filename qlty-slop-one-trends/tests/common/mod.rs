@@ -2,8 +2,19 @@
 
 use serde_json::Value;
 
+/// Allowed relative difference between two numbers. System math libraries
+/// round functions such as `exp` differently in the last bit, so musl and
+/// x86_64 macOS results differ from the Python fixtures by a few ULPs,
+/// about 1e-16 relative.
+const RELATIVE_TOLERANCE: f64 = 1e-12;
+
+/// Allowed absolute difference, for results near zero that come from
+/// subtracting nearly equal values. Scores show at most three decimals.
+const ABSOLUTE_TOLERANCE: f64 = 1e-12;
+
 /// Every leaf where `actual` differs from `expected`, as `path: expected != actual`.
-/// Numbers compare as `f64`; objects compare by key set and value.
+/// Numbers compare as `f64` within `RELATIVE_TOLERANCE` or `ABSOLUTE_TOLERANCE`;
+/// objects compare by key set and value.
 pub fn json_differences(expected: &Value, actual: &Value) -> Vec<String> {
     let mut differences = Vec::new();
     collect_differences("$", expected, actual, &mut differences);
@@ -48,7 +59,7 @@ fn collect_differences(path: &str, expected: &Value, actual: &Value, out: &mut V
             }
         }
         (Value::Number(expected), Value::Number(actual)) => {
-            if expected.as_f64() != actual.as_f64() {
+            if !numbers_close(expected.as_f64(), actual.as_f64()) {
                 out.push(format!("{path}: {expected} != {actual}"));
             }
         }
@@ -57,6 +68,18 @@ fn collect_differences(path: &str, expected: &Value, actual: &Value, out: &mut V
                 out.push(format!("{path}: {expected} != {actual}"));
             }
         }
+    }
+}
+
+fn numbers_close(expected: Option<f64>, actual: Option<f64>) -> bool {
+    match (expected, actual) {
+        (Some(expected), Some(actual)) => {
+            let difference = (expected - actual).abs();
+            expected == actual
+                || difference <= RELATIVE_TOLERANCE * expected.abs().max(actual.abs())
+                || difference <= ABSOLUTE_TOLERANCE
+        }
+        (expected, actual) => expected == actual,
     }
 }
 
