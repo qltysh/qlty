@@ -4,6 +4,12 @@
 
 CLI releases are now served over HTTPS only. Versions before v0.590.0 fetch the latest-release manifest over HTTP, so `qlty upgrade` and `qlty version` now fail on them with an error naming an `http://` URL. `qlty check`, `qlty fmt`, `qlty coverage publish`, and `qlty --version` are unaffected. To recover, run `qlty upgrade --version 0.644.0`, which skips the manifest lookup, or re-run the installer (`curl https://qlty.sh | sh` on macOS and Linux, `powershell -c "iwr https://qlty.sh | iex"` on Windows).
 
+## v0.646.0 (2026-09-25)
+
+### Improved
+
+- Bump the hadolint, swiftlint, and terraform plugins to hadolint 2.15.1 (adding Dockerfile rules DL3063, DL3065, and DL3066), swiftlint 0.65.1, and terraform 1.16.0 (#2859)
+
 ## v0.645.0 (2026-09-23)
 
 ### New
