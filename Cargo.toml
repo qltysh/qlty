@@ -27,6 +27,7 @@ bytesize = "1.3.0"
 cap = "0.1.2"
 cc = "1.2.17"
 chrono = "0.4.42"
+chrono-tz = "0.10.4"
 clap = { version = "4.5.48", features = ["derive", "wrap_help", "env"] }
 clap_complete = "4.5.34"
 cli-table = "0.4.9"
@@ -47,6 +48,7 @@ git2 = { version = "0.19.0", features = [
 glob = "0.3.3"
 globset = "0.4.15"
 http = "1.3.1"
+iana-time-zone = "0.1.63"
 ignore = "0.4.22"
 indicatif = "0.18.3"
 indoc = "2.0.6"
@@ -58,6 +60,7 @@ keyring = { version = "3.6.2", features = [
     "linux-native",
 ] }
 lazy_static = "1.5.0"
+lithos-llm = { git = "https://github.com/lithoscomputer/lithos-llm.git", rev = "2881ccbf4cc7487b29df08cb4d9cc1c542713f75" }
 log = "0.4.28"
 lzma-rs = "0.3.0"
 mac_address = "1.1.7"
@@ -77,6 +80,8 @@ qlty-config = { version = "0.646.0", path = "qlty-config" }
 qlty-coverage = { version = "0.646.0", path = "qlty-coverage" }
 qlty-formats = { version = "0.646.0", path = "qlty-formats" }
 qlty-plugins = { version = "0.646.0", path = "qlty-plugins" }
+qlty-slop-one = { version = "0.646.0", path = "qlty-slop-one" }
+qlty-slop-one-trends = { version = "0.646.0", path = "qlty-slop-one-trends" }
 qlty-smells = { version = "0.646.0", path = "qlty-smells" }
 qlty-test-utilities = { version = "0.646.0", path = "qlty-test-utilities" }
 qlty-types = { version = "0.646.0", path = "qlty-types" }
@@ -97,7 +102,7 @@ sentry = { version = "0.34.0", default-features = false, features = [
 ] }
 sentry-backtrace = "0.34.0"
 serde = { version = "1.0.228", features = ["derive", "rc"] }
-serde_json = { version = "1.0.145", features = ["preserve_order"] }
+serde_json = { version = "1.0.145", features = ["preserve_order", "float_roundtrip"] }
 serde-querystring = "0.3.0"
 serde_with = "3.14.1"
 serde_yaml = "0.9.34"
@@ -120,6 +125,7 @@ time = { version = "0.3.44", features = [
     "parsing",
 ] }
 tiny_http = "0.12.0"
+tokio = { version = "1.49.0", features = ["rt-multi-thread"] }
 toml = "0.8.23"
 toml_edit = "0.22.26"
 tracing = "0.1.41"

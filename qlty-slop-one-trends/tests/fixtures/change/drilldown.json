@@ -1,0 +1,159 @@
+[
+ {
+  "before_commit": null,
+  "commit": "1111111111111111111111111111111111111111",
+  "rows": []
+ },
+ {
+  "before_commit": "1111111111111111111111111111111111111111",
+  "commit": "2222222222222222222222222222222222222222",
+  "rows": [
+   {
+    "kind": "Split",
+    "before": [
+     {
+      "path": "big.rs",
+      "score": 3.0,
+      "mass": 100.0
+     }
+    ],
+    "after": [
+     {
+      "path": "part1.rs",
+      "score": 5.0,
+      "mass": 50.0
+     },
+     {
+      "path": "part2.rs",
+      "score": 7.0,
+      "mass": 60.0
+     }
+    ],
+    "before_score": 3.0,
+    "after_score": 6.090909090909091,
+    "before_mass": 100.0,
+    "after_mass": 110.0,
+    "contribution": 1.0658307210031348
+   },
+   {
+    "kind": "Changed",
+    "before": [
+     {
+      "path": "a.rs",
+      "score": 4.0,
+      "mass": 90.0
+     }
+    ],
+    "after": [
+     {
+      "path": "a.rs",
+      "score": 6.0,
+      "mass": 95.0
+     }
+    ],
+    "before_score": 4.0,
+    "after_score": 6.0,
+    "before_mass": 90.0,
+    "after_mass": 95.0,
+    "contribution": 0.6206896551724138
+   },
+   {
+    "kind": "Added",
+    "before": [],
+    "after": [
+     {
+      "path": "added.rs",
+      "score": 8.0,
+      "mass": 25.0
+     }
+    ],
+    "before_score": null,
+    "after_score": 8.0,
+    "before_mass": null,
+    "after_mass": 25.0,
+    "contribution": 0.25862068965517243
+   },
+   {
+    "kind": "Added",
+    "before": [],
+    "after": [
+     {
+      "path": "added_bad.rs",
+      "score": 2.0,
+      "mass": 15.0
+     }
+    ],
+    "before_score": null,
+    "after_score": 2.0,
+    "before_mass": null,
+    "after_mass": 15.0,
+    "contribution": -0.15517241379310345
+   },
+   {
+    "kind": "Removed",
+    "before": [
+     {
+      "path": "removed.rs",
+      "score": 2.0,
+      "mass": 10.0
+     }
+    ],
+    "after": [],
+    "before_score": 2.0,
+    "after_score": null,
+    "before_mass": 10.0,
+    "after_mass": null,
+    "contribution": 0.10344827586206896
+   },
+   {
+    "kind": "Renamed",
+    "before": [
+     {
+      "path": "old_name.rs",
+      "score": 6.0,
+      "mass": 40.0
+     }
+    ],
+    "after": [
+     {
+      "path": "new_name.rs",
+      "score": 6.5,
+      "mass": 40.0
+     }
+    ],
+    "before_score": 6.0,
+    "after_score": 6.5,
+    "before_mass": 40.0,
+    "after_mass": 40.0,
+    "contribution": 0.06896551724137931
+   },
+   {
+    "kind": "Merged",
+    "before": [
+     {
+      "path": "m1.rs",
+      "score": 7.0,
+      "mass": 20.0
+     },
+     {
+      "path": "m2.rs",
+      "score": 5.0,
+      "mass": 30.0
+     }
+    ],
+    "after": [
+     {
+      "path": "merged.rs",
+      "score": 6.0,
+      "mass": 45.0
+     }
+    ],
+    "before_score": 5.8,
+    "after_score": 6.0,
+    "before_mass": 50.0,
+    "after_mass": 45.0,
+    "contribution": 0.03448275862068969
+   }
+  ]
+ }
+]

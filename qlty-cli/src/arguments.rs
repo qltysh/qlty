@@ -106,6 +106,9 @@ pub enum Commands {
     /// Validate the project
     Validate(Validate),
 
+    /// Build the SlopOne code quality trends report, or score source files
+    SlopOne(SlopOne),
+
     /// Print the current Qlty CLI version
     Version(Version),
 }
@@ -138,6 +141,7 @@ impl Arguments {
             Commands::Parse(command) => command.execute(self),
             Commands::Patch(command) => command.execute(self),
             Commands::Plugins(command) => command.execute(self),
+            Commands::SlopOne(command) => command.execute(self),
             Commands::Smells(command) => command.execute(self),
             Commands::Sources(command) => command.execute(self),
             Commands::Telemetry(command) => command.execute(self),

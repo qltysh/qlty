@@ -1,0 +1,140 @@
+{
+ "name": "rust_boolean_depth.rs",
+ "suffix": ".rs",
+ "language": "Rust",
+ "text": "pub fn four(a: bool, b: bool, c: bool, d: bool, e: bool) -> bool {\n    a || b || c || d || e\n}\n\npub fn five(a: bool, b: bool, c: bool, d: bool, e: bool, f: bool) -> bool {\n    a || b || c || d || e || f\n}\n\npub fn six(a: bool, b: bool, c: bool, d: bool, e: bool, f: bool, g: bool) -> bool {\n    a && b && c && d && e && f && g\n}\n",
+ "values": [
+  1.0986122886681098,
+  18.181818181818183,
+  1.9459101490553132,
+  0.18181818181818182,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  1.0986122886681098,
+  18.181818181818183,
+  2.0794415416798357,
+  0.18181818181818182,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0
+ ],
+ "summary": {
+  "boolean-logic": {
+   "count": 2,
+   "max_magnitude": 6.0,
+   "covered_lines": 2,
+   "locations": [
+    {
+     "start_line": 6,
+     "end_line": 6
+    },
+    {
+     "start_line": 10,
+     "end_line": 10
+    }
+   ],
+   "max_actual": 6.0,
+   "threshold": 5,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Boolean depth"
+  },
+  "nested-control-flow": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 5,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Nesting depth"
+  },
+  "function-parameters": {
+   "count": 2,
+   "max_magnitude": 7.0,
+   "covered_lines": 2,
+   "locations": [
+    {
+     "start_line": 5,
+     "end_line": 5
+    },
+    {
+     "start_line": 9,
+     "end_line": 9
+    }
+   ],
+   "max_actual": 7.0,
+   "threshold": 6,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Parameters"
+  },
+  "return-statements": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 6,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Return statements"
+  },
+  "file-complexity": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 50,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Cyclomatic complexity"
+  },
+  "function-complexity": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 18,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Cyclomatic complexity"
+  },
+  "identical-code": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 15,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Duplicated lines"
+  },
+  "similar-code": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 15,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Duplicated lines"
+  }
+ }
+}

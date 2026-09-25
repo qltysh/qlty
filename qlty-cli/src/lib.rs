@@ -162,6 +162,19 @@ fn handle_result(
                     eprintln!();
                     eprintln!("For more information, try {}.", style("'--help'").bold());
                 }
+                CommandError::Explained {
+                    ref title,
+                    ref detail,
+                } => {
+                    error!("{}", title);
+                    eprintln!();
+                    eprintln!("{} {}", style("✖").red().bold(), style(title).bold());
+                    eprintln!();
+                    for line in detail {
+                        eprintln!("  {line}");
+                    }
+                    eprintln!();
+                }
                 CommandError::Config => {
                     error!("Config error");
                     eprintln!("❌ Config error");

@@ -1,0 +1,42 @@
+[
+ {
+  "label": "Week ending January 11, 2026",
+  "positive": null,
+  "negative": null,
+  "net": null,
+  "changed_groups": null,
+  "additions": null,
+  "removals": null,
+  "with_file_changes": {
+   "positive": null,
+   "negative": null,
+   "net": null
+  }
+ },
+ {
+  "label": "Week ending January 18, 2026",
+  "positive": 1.7899686520376177,
+  "negative": 0.0,
+  "net": 1.7899686520376177,
+  "changed_groups": 4,
+  "additions": {
+   "positive": 0.25862068965517243,
+   "negative": -0.15517241379310345,
+   "net": 0.10344827586206898,
+   "files": 2,
+   "unscored_files": 1
+  },
+  "removals": {
+   "positive": 0.10344827586206896,
+   "negative": 0.0,
+   "net": 0.10344827586206896,
+   "files": 1,
+   "unscored_files": 1
+  },
+  "with_file_changes": {
+   "positive": 2.1520376175548592,
+   "negative": -0.15517241379310345,
+   "net": 1.9968652037617558
+  }
+ }
+]

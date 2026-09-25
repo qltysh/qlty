@@ -1,0 +1,135 @@
+{
+ "name": "rust_duplicated.rs",
+ "suffix": ".rs",
+ "language": "Rust",
+ "text": "pub fn first(input: &[i64]) -> i64 {\n    let mut total = 0;\n    let mut count = 0;\n    let mut largest = i64::MIN;\n    let mut smallest = i64::MAX;\n    for value in input {\n        total += value;\n        count += 1;\n        if *value > largest {\n            largest = *value;\n        }\n        if *value < smallest {\n            smallest = *value;\n        }\n    }\n    if count == 0 {\n        return 0;\n    }\n    total / count + largest - smallest\n}\n\npub fn second(input: &[i64]) -> i64 {\n    let mut total = 0;\n    let mut count = 0;\n    let mut largest = i64::MIN;\n    let mut smallest = i64::MAX;\n    for value in input {\n        total += value;\n        count += 1;\n        if *value > largest {\n            largest = *value;\n        }\n        if *value < smallest {\n            smallest = *value;\n        }\n    }\n    if count == 0 {\n        return 0;\n    }\n    total / count + largest - smallest\n}\n\npub fn third(input: &[i64]) -> i64 {\n    let mut total = 0;\n    let mut count = 0;\n    let mut largest = i64::MIN;\n    let mut smallest = i64::MAX;\n    for value in input {\n        total += value;\n        count += 1;\n        if *value > largest {\n            largest = *value;\n        }\n        if *value < smallest {\n            smallest = *value;\n        }\n    }\n    if count == 0 {\n        return 0;\n    }\n    total / count + largest - smallest\n}\n",
+ "values": [
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.6931471805599453,
+  1.6129032258064515,
+  3.044522437723423,
+  0.967741935483871
+ ],
+ "summary": {
+  "boolean-logic": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 5,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Boolean depth"
+  },
+  "nested-control-flow": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 5,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Nesting depth"
+  },
+  "function-parameters": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 6,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Parameters"
+  },
+  "return-statements": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 6,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Return statements"
+  },
+  "file-complexity": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 50,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Cyclomatic complexity"
+  },
+  "function-complexity": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 18,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Cyclomatic complexity"
+  },
+  "identical-code": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 15,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Duplicated lines"
+  },
+  "similar-code": {
+   "count": 1,
+   "max_magnitude": 20.0,
+   "covered_lines": 60,
+   "locations": [
+    {
+     "start_line": 1,
+     "end_line": 20
+    },
+    {
+     "start_line": 22,
+     "end_line": 41
+    },
+    {
+     "start_line": 43,
+     "end_line": 62
+    }
+   ],
+   "max_actual": 20.0,
+   "threshold": 15,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Duplicated lines"
+  }
+ }
+}

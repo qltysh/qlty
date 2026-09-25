@@ -15,6 +15,9 @@ config_version = "0"
 
 exclude_patterns = [
     "**/fixtures/**",
+    "qlty-slop-one/src/assets/**",
+    "qlty-slop-one/grammar/**",
+    "qlty-slop-one-trends/assets/**",
     "**/protos/**",
     "**/*.in/**",
     "**/*.test.ts/**",
@@ -56,3 +59,7 @@ match.plugins = ["markdownlint"]
 match.rules = ["markdownlint:MD024"]
 match.file_patterns = ["CHANGELOG.md"]
 set.ignored = "true"
+
+# A cold build of qlty-cli (e.g. after Cargo.lock changes) can exceed the default 600s timeout
+[plugins.definitions.clippy.drivers.lint]
+timeout = 900
