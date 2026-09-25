@@ -1,0 +1,310 @@
+{
+ "source": "def handler_0(value):  # λ ünïcode ✨ 0\n    return value * 0\n\ndef handler_1(value):  # λ ünïcode ✨ 1\n    return value * 1\n\ndef handler_2(value):  # λ ünïcode ✨ 2\n    return value * 2\n\ndef handler_3(value):  # λ ünïcode ✨ 3\n    return value * 3\n\ndef handler_4(value):  # λ ünïcode ✨ 4\n    return value * 4\n\ndef handler_5(value):  # λ ünïcode ✨ 5\n    return value * 5\n\ndef handler_6(value):  # λ ünïcode ✨ 6\n    return value * 6\n\ndef handler_7(value):  # λ ünïcode ✨ 7\n    return value * 7\n\ndef handler_8(value):  # λ ünïcode ✨ 8\n    return value * 8\n\ndef handler_9(value):  # λ ünïcode ✨ 9\n    return value * 9\n\ndef handler_10(value):  # λ ünïcode ✨ 10\n    return value * 10\n\ndef handler_11(value):  # λ ünïcode ✨ 11\n    return value * 11\n\ndef handler_12(value):  # λ ünïcode ✨ 12\n    return value * 12\n\ndef handler_13(value):  # λ ünïcode ✨ 13\n    return value * 13\n\ndef handler_14(value):  # λ ünïcode ✨ 14\n    return value * 14\n\ndef handler_15(value):  # λ ünïcode ✨ 15\n    return value * 15\n\ndef handler_16(value):  # λ ünïcode ✨ 16\n    return value * 16\n\ndef handler_17(value):  # λ ünïcode ✨ 17\n    return value * 17\n\ndef handler_18(value):  # λ ünïcode ✨ 18\n    return value * 18\n\ndef handler_19(value):  # λ ünïcode ✨ 19\n    return value * 19\n\ndef handler_20(value):  # λ ünïcode ✨ 20\n    return value * 20\n\ndef handler_21(value):  # λ ünïcode ✨ 21\n    return value * 21\n\ndef handler_22(value):  # λ ünïcode ✨ 22\n    return value * 22\n\ndef handler_23(value):  # λ ünïcode ✨ 23\n    return value * 23\n\ndef handler_24(value):  # λ ünïcode ✨ 24\n    return value * 24\n\ndef handler_25(value):  # λ ünïcode ✨ 25\n    return value * 25\n\ndef handler_26(value):  # λ ünïcode ✨ 26\n    return value * 26\n\ndef handler_27(value):  # λ ünïcode ✨ 27\n    return value * 27\n\ndef handler_28(value):  # λ ünïcode ✨ 28\n    return value * 28\n\ndef handler_29(value):  # λ ünïcode ✨ 29\n    return value * 29\n\ndef handler_30(value):  # λ ünïcode ✨ 30\n    return value * 30\n\ndef handler_31(value):  # λ ünïcode ✨ 31\n    return value * 31\n\ndef handler_32(value):  # λ ünïcode ✨ 32\n    return value * 32\n\ndef handler_33(value):  # λ ünïcode ✨ 33\n    return value * 33\n\ndef handler_34(value):  # λ ünïcode ✨ 34\n    return value * 34\n\ndef handler_35(value):  # λ ünïcode ✨ 35\n    return value * 35\n\ndef handler_36(value):  # λ ünïcode ✨ 36\n    return value * 36\n\ndef handler_37(value):  # λ ünïcode ✨ 37\n    return value * 37\n\ndef handler_38(value):  # λ ünïcode ✨ 38\n    return value * 38\n\ndef handler_39(value):  # λ ünïcode ✨ 39\n    return value * 39\n\ndef handler_40(value):  # λ ünïcode ✨ 40\n    return value * 40\n\ndef handler_41(value):  # λ ünïcode ✨ 41\n    return value * 41\n\ndef handler_42(value):  # λ ünïcode ✨ 42\n    return value * 42\n\ndef handler_43(value):  # λ ünïcode ✨ 43\n    return value * 43\n\ndef handler_44(value):  # λ ünïcode ✨ 44\n    return value * 44\n\ndef handler_45(value):  # λ ünïcode ✨ 45\n    return value * 45\n\ndef handler_46(value):  # λ ünïcode ✨ 46\n    return value * 46\n\ndef handler_47(value):  # λ ünïcode ✨ 47\n    return value * 47\n\ndef handler_48(value):  # λ ünïcode ✨ 48\n    return value * 48\n\ndef handler_49(value):  # λ ünïcode ✨ 49\n    return value * 49\n\ndef handler_50(value):  # λ ünïcode ✨ 50\n    return value * 50\n\ndef handler_51(value):  # λ ünïcode ✨ 51\n    return value * 51\n\ndef handler_52(value):  # λ ünïcode ✨ 52\n    return value * 52\n\ndef handler_53(value):  # λ ünïcode ✨ 53\n    return value * 53\n\ndef handler_54(value):  # λ ünïcode ✨ 54\n    return value * 54\n\ndef handler_55(value):  # λ ünïcode ✨ 55\n    return value * 55\n\ndef handler_56(value):  # λ ünïcode ✨ 56\n    return value * 56\n\ndef handler_57(value):  # λ ünïcode ✨ 57\n    return value * 57\n\ndef handler_58(value):  # λ ünïcode ✨ 58\n    return value * 58\n\ndef handler_59(value):  # λ ünïcode ✨ 59\n    return value * 59\n\ndef handler_60(value):  # λ ünïcode ✨ 60\n    return value * 60\n\ndef handler_61(value):  # λ ünïcode ✨ 61\n    return value * 61\n\ndef handler_62(value):  # λ ünïcode ✨ 62\n    return value * 62\n\ndef handler_63(value):  # λ ünïcode ✨ 63\n    return value * 63\n\ndef handler_64(value):  # λ ünïcode ✨ 64\n    return value * 64\n\ndef handler_65(value):  # λ ünïcode ✨ 65\n    return value * 65\n\ndef handler_66(value):  # λ ünïcode ✨ 66\n    return value * 66\n\ndef handler_67(value):  # λ ünïcode ✨ 67\n    return value * 67\n\ndef handler_68(value):  # λ ünïcode ✨ 68\n    return value * 68\n\ndef handler_69(value):  # λ ünïcode ✨ 69\n    return value * 69\n\ndef handler_70(value):  # λ ünïcode ✨ 70\n    return value * 70\n\ndef handler_71(value):  # λ ünïcode ✨ 71\n    return value * 71\n\ndef handler_72(value):  # λ ünïcode ✨ 72\n    return value * 72\n\ndef handler_73(value):  # λ ünïcode ✨ 73\n    return value * 73\n\ndef handler_74(value):  # λ ünïcode ✨ 74\n    return value * 74\n\ndef handler_75(value):  # λ ünïcode ✨ 75\n    return value * 75\n\ndef handler_76(value):  # λ ünïcode ✨ 76\n    return value * 76\n\ndef handler_77(value):  # λ ünïcode ✨ 77\n    return value * 77\n\ndef handler_78(value):  # λ ünïcode ✨ 78\n    return value * 78\n\ndef handler_79(value):  # λ ünïcode ✨ 79\n    return value * 79\n\ndef handler_80(value):  # λ ünïcode ✨ 80\n    return value * 80\n\ndef handler_81(value):  # λ ünïcode ✨ 81\n    return value * 81\n\ndef handler_82(value):  # λ ünïcode ✨ 82\n    return value * 82\n\ndef handler_83(value):  # λ ünïcode ✨ 83\n    return value * 83\n\ndef handler_84(value):  # λ ünïcode ✨ 84\n    return value * 84\n\ndef handler_85(value):  # λ ünïcode ✨ 85\n    return value * 85\n\ndef handler_86(value):  # λ ünïcode ✨ 86\n    return value * 86\n\ndef handler_87(value):  # λ ünïcode ✨ 87\n    return value * 87\n\ndef handler_88(value):  # λ ünïcode ✨ 88\n    return value * 88\n\ndef handler_89(value):  # λ ünïcode ✨ 89\n    return value * 89\n\ndef handler_90(value):  # λ ünïcode ✨ 90\n    return value * 90\n\ndef handler_91(value):  # λ ünïcode ✨ 91\n    return value * 91\n\ndef handler_92(value):  # λ ünïcode ✨ 92\n    return value * 92\n\ndef handler_93(value):  # λ ünïcode ✨ 93\n    return value * 93\n\ndef handler_94(value):  # λ ünïcode ✨ 94\n    return value * 94\n\ndef handler_95(value):  # λ ünïcode ✨ 95\n    return value * 95\n\ndef handler_96(value):  # λ ünïcode ✨ 96\n    return value * 96\n\ndef handler_97(value):  # λ ünïcode ✨ 97\n    return value * 97\n\ndef handler_98(value):  # λ ünïcode ✨ 98\n    return value * 98\n\ndef handler_99(value):  # λ ünïcode ✨ 99\n    return value * 99\n\ndef handler_100(value):  # λ ünïcode ✨ 100\n    return value * 100\n\ndef handler_101(value):  # λ ünïcode ✨ 101\n    return value * 101\n\ndef handler_102(value):  # λ ünïcode ✨ 102\n    return value * 102\n\ndef handler_103(value):  # λ ünïcode ✨ 103\n    return value * 103\n\ndef handler_104(value):  # λ ünïcode ✨ 104\n    return value * 104\n\ndef handler_105(value):  # λ ünïcode ✨ 105\n    return value * 105\n\ndef handler_106(value):  # λ ünïcode ✨ 106\n    return value * 106\n\ndef handler_107(value):  # λ ünïcode ✨ 107\n    return value * 107\n\ndef handler_108(value):  # λ ünïcode ✨ 108\n    return value * 108\n\ndef handler_109(value):  # λ ünïcode ✨ 109\n    return value * 109\n\ndef handler_110(value):  # λ ünïcode ✨ 110\n    return value * 110\n\ndef handler_111(value):  # λ ünïcode ✨ 111\n    return value * 111\n\ndef handler_112(value):  # λ ünïcode ✨ 112\n    return value * 112\n\ndef handler_113(value):  # λ ünïcode ✨ 113\n    return value * 113\n\ndef handler_114(value):  # λ ünïcode ✨ 114\n    return value * 114\n\ndef handler_115(value):  # λ ünïcode ✨ 115\n    return value * 115\n\ndef handler_116(value):  # λ ünïcode ✨ 116\n    return value * 116\n\ndef handler_117(value):  # λ ünïcode ✨ 117\n    return value * 117\n\ndef handler_118(value):  # λ ünïcode ✨ 118\n    return value * 118\n\ndef handler_119(value):  # λ ünïcode ✨ 119\n    return value * 119\n\ndef handler_120(value):  # λ ünïcode ✨ 120\n    return value * 120\n\ndef handler_121(value):  # λ ünïcode ✨ 121\n    return value * 121\n\ndef handler_122(value):  # λ ünïcode ✨ 122\n    return value * 122\n\ndef handler_123(value):  # λ ünïcode ✨ 123\n    return value * 123\n\ndef handler_124(value):  # λ ünïcode ✨ 124\n    return value * 124\n\ndef handler_125(value):  # λ ünïcode ✨ 125\n    return value * 125\n\ndef handler_126(value):  # λ ünïcode ✨ 126\n    return value * 126\n\ndef handler_127(value):  # λ ünïcode ✨ 127\n    return value * 127\n\ndef handler_128(value):  # λ ünïcode ✨ 128\n    return value * 128\n\ndef handler_129(value):  # λ ünïcode ✨ 129\n    return value * 129\n\ndef handler_130(value):  # λ ünïcode ✨ 130\n    return value * 130\n\ndef handler_131(value):  # λ ünïcode ✨ 131\n    return value * 131\n\ndef handler_132(value):  # λ ünïcode ✨ 132\n    return value * 132\n\ndef handler_133(value):  # λ ünïcode ✨ 133\n    return value * 133\n\ndef handler_134(value):  # λ ünïcode ✨ 134\n    return value * 134\n\ndef handler_135(value):  # λ ünïcode ✨ 135\n    return value * 135\n\ndef handler_136(value):  # λ ünïcode ✨ 136\n    return value * 136\n\ndef handler_137(value):  # λ ünïcode ✨ 137\n    return value * 137\n\ndef handler_138(value):  # λ ünïcode ✨ 138\n    return value * 138\n\ndef handler_139(value):  # λ ünïcode ✨ 139\n    return value * 139\n\ndef handler_140(value):  # λ ünïcode ✨ 140\n    return value * 140\n\ndef handler_141(value):  # λ ünïcode ✨ 141\n    return value * 141\n\ndef handler_142(value):  # λ ünïcode ✨ 142\n    return value * 142\n\ndef handler_143(value):  # λ ünïcode ✨ 143\n    return value * 143\n\ndef handler_144(value):  # λ ünïcode ✨ 144\n    return value * 144\n\ndef handler_145(value):  # λ ünïcode ✨ 145\n    return value * 145\n\ndef handler_146(value):  # λ ünïcode ✨ 146\n    return value * 146\n\ndef handler_147(value):  # λ ünïcode ✨ 147\n    return value * 147\n\ndef handler_148(value):  # λ ünïcode ✨ 148\n    return value * 148\n\ndef handler_149(value):  # λ ünïcode ✨ 149\n    return value * 149\n\ndef handler_150(value):  # λ ünïcode ✨ 150\n    return value * 150\n\ndef handler_151(value):  # λ ünïcode ✨ 151\n    return value * 151\n\ndef handler_152(value):  # λ ünïcode ✨ 152\n    return value * 152\n\ndef handler_153(value):  # λ ünïcode ✨ 153\n    return value * 153\n\ndef handler_154(value):  # λ ünïcode ✨ 154\n    return value * 154\n\ndef handler_155(value):  # λ ünïcode ✨ 155\n    return value * 155\n\ndef handler_156(value):  # λ ünïcode ✨ 156\n    return value * 156\n\ndef handler_157(value):  # λ ünïcode ✨ 157\n    return value * 157\n\ndef handler_158(value):  # λ ünïcode ✨ 158\n    return value * 158\n\ndef handler_159(value):  # λ ünïcode ✨ 159\n    return value * 159\n\ndef handler_160(value):  # λ ünïcode ✨ 160\n    return value * 160\n\ndef handler_161(value):  # λ ünïcode ✨ 161\n    return value * 161\n\ndef handler_162(value):  # λ ünïcode ✨ 162\n    return value * 162\n\ndef handler_163(value):  # λ ünïcode ✨ 163\n    return value * 163\n\ndef handler_164(value):  # λ ünïcode ✨ 164\n    return value * 164\n\ndef handler_165(value):  # λ ünïcode ✨ 165\n    return value * 165\n\ndef handler_166(value):  # λ ünïcode ✨ 166\n    return value * 166\n\ndef handler_167(value):  # λ ünïcode ✨ 167\n    return value * 167\n\ndef handler_168(value):  # λ ünïcode ✨ 168\n    return value * 168\n\ndef handler_169(value):  # λ ünïcode ✨ 169\n    return value * 169\n\ndef handler_170(value):  # λ ünïcode ✨ 170\n    return value * 170\n\ndef handler_171(value):  # λ ünïcode ✨ 171\n    return value * 171\n\ndef handler_172(value):  # λ ünïcode ✨ 172\n    return value * 172\n\ndef handler_173(value):  # λ ünïcode ✨ 173\n    return value * 173\n\ndef handler_174(value):  # λ ünïcode ✨ 174\n    return value * 174\n\ndef handler_175(value):  # λ ünïcode ✨ 175\n    return value * 175\n\ndef handler_176(value):  # λ ünïcode ✨ 176\n    return value * 176\n\ndef handler_177(value):  # λ ünïcode ✨ 177\n    return value * 177\n\ndef handler_178(value):  # λ ünïcode ✨ 178\n    return value * 178\n\ndef handler_179(value):  # λ ünïcode ✨ 179\n    return value * 179\n\ndef handler_180(value):  # λ ünïcode ✨ 180\n    return value * 180\n\ndef handler_181(value):  # λ ünïcode ✨ 181\n    return value * 181\n\ndef handler_182(value):  # λ ünïcode ✨ 182\n    return value * 182\n\ndef handler_183(value):  # λ ünïcode ✨ 183\n    return value * 183\n\ndef handler_184(value):  # λ ünïcode ✨ 184\n    return value * 184\n\ndef handler_185(value):  # λ ünïcode ✨ 185\n    return value * 185\n\ndef handler_186(value):  # λ ünïcode ✨ 186\n    return value * 186\n\ndef handler_187(value):  # λ ünïcode ✨ 187\n    return value * 187\n\ndef handler_188(value):  # λ ünïcode ✨ 188\n    return value * 188\n\ndef handler_189(value):  # λ ünïcode ✨ 189\n    return value * 189\n\ndef handler_190(value):  # λ ünïcode ✨ 190\n    return value * 190\n\ndef handler_191(value):  # λ ünïcode ✨ 191\n    return value * 191\n\ndef handler_192(value):  # λ ünïcode ✨ 192\n    return value * 192\n\ndef handler_193(value):  # λ ünïcode ✨ 193\n    return value * 193\n\ndef handler_194(value):  # λ ünïcode ✨ 194\n    return value * 194\n\ndef handler_195(value):  # λ ünïcode ✨ 195\n    return value * 195\n\ndef handler_196(value):  # λ ünïcode ✨ 196\n    return value * 196\n\ndef handler_197(value):  # λ ünïcode ✨ 197\n    return value * 197\n\ndef handler_198(value):  # λ ünïcode ✨ 198\n    return value * 198\n\ndef handler_199(value):  # λ ünïcode ✨ 199\n    return value * 199\n\ndef handler_200(value):  # λ ünïcode ✨ 200\n    return value * 200\n\ndef handler_201(value):  # λ ünïcode ✨ 201\n    return value * 201\n\ndef handler_202(value):  # λ ünïcode ✨ 202\n    return value * 202\n\ndef handler_203(value):  # λ ünïcode ✨ 203\n    return value * 203\n\ndef handler_204(value):  # λ ünïcode ✨ 204\n    return value * 204\n\ndef handler_205(value):  # λ ünïcode ✨ 205\n    return value * 205\n\ndef handler_206(value):  # λ ünïcode ✨ 206\n    return value * 206\n\ndef handler_207(value):  # λ ünïcode ✨ 207\n    return value * 207\n\ndef handler_208(value):  # λ ünïcode ✨ 208\n    return value * 208\n\ndef handler_209(value):  # λ ünïcode ✨ 209\n    return value * 209\n\ndef handler_210(value):  # λ ünïcode ✨ 210\n    return value * 210\n\ndef handler_211(value):  # λ ünïcode ✨ 211\n    return value * 211\n\ndef handler_212(value):  # λ ünïcode ✨ 212\n    return value * 212\n\ndef handler_213(value):  # λ ünïcode ✨ 213\n    return value * 213\n\ndef handler_214(value):  # λ ünïcode ✨ 214\n    return value * 214\n\ndef handler_215(value):  # λ ünïcode ✨ 215\n    return value * 215\n\ndef handler_216(value):  # λ ünïcode ✨ 216\n    return value * 216\n\ndef handler_217(value):  # λ ünïcode ✨ 217\n    return value * 217\n\ndef handler_218(value):  # λ ünïcode ✨ 218\n    return value * 218\n\ndef handler_219(value):  # λ ünïcode ✨ 219\n    return value * 219\n\ndef handler_220(value):  # λ ünïcode ✨ 220\n    return value * 220\n\ndef handler_221(value):  # λ ünïcode ✨ 221\n    return value * 221\n\ndef handler_222(value):  # λ ünïcode ✨ 222\n    return value * 222\n\ndef handler_223(value):  # λ ünïcode ✨ 223\n    return value * 223\n\ndef handler_224(value):  # λ ünïcode ✨ 224\n    return value * 224\n\ndef handler_225(value):  # λ ünïcode ✨ 225\n    return value * 225\n\ndef handler_226(value):  # λ ünïcode ✨ 226\n    return value * 226\n\ndef handler_227(value):  # λ ünïcode ✨ 227\n    return value * 227\n\ndef handler_228(value):  # λ ünïcode ✨ 228\n    return value * 228\n\ndef handler_229(value):  # λ ünïcode ✨ 229\n    return value * 229\n\ndef handler_230(value):  # λ ünïcode ✨ 230\n    return value * 230\n\ndef handler_231(value):  # λ ünïcode ✨ 231\n    return value * 231\n\ndef handler_232(value):  # λ ünïcode ✨ 232\n    return value * 232\n\ndef handler_233(value):  # λ ünïcode ✨ 233\n    return value * 233\n\ndef handler_234(value):  # λ ünïcode ✨ 234\n    return value * 234\n\ndef handler_235(value):  # λ ünïcode ✨ 235\n    return value * 235\n\ndef handler_236(value):  # λ ünïcode ✨ 236\n    return value * 236\n\ndef handler_237(value):  # λ ünïcode ✨ 237\n    return value * 237\n\ndef handler_238(value):  # λ ünïcode ✨ 238\n    return value * 238\n\ndef handler_239(value):  # λ ünïcode ✨ 239\n    return value * 239\n\ndef handler_240(value):  # λ ünïcode ✨ 240\n    return value * 240\n\ndef handler_241(value):  # λ ünïcode ✨ 241\n    return value * 241\n\ndef handler_242(value):  # λ ünïcode ✨ 242\n    return value * 242\n\ndef handler_243(value):  # λ ünïcode ✨ 243\n    return value * 243\n\ndef handler_244(value):  # λ ünïcode ✨ 244\n    return value * 244\n\ndef handler_245(value):  # λ ünïcode ✨ 245\n    return value * 245\n\ndef handler_246(value):  # λ ünïcode ✨ 246\n    return value * 246\n\ndef handler_247(value):  # λ ünïcode ✨ 247\n    return value * 247\n\ndef handler_248(value):  # λ ünïcode ✨ 248\n    return value * 248\n\ndef handler_249(value):  # λ ünïcode ✨ 249\n    return value * 249\n\ndef handler_250(value):  # λ ünïcode ✨ 250\n    return value * 250\n\ndef handler_251(value):  # λ ünïcode ✨ 251\n    return value * 251\n\ndef handler_252(value):  # λ ünïcode ✨ 252\n    return value * 252\n\ndef handler_253(value):  # λ ünïcode ✨ 253\n    return value * 253\n\ndef handler_254(value):  # λ ünïcode ✨ 254\n    return value * 254\n\ndef handler_255(value):  # λ ünïcode ✨ 255\n    return value * 255\n\ndef handler_256(value):  # λ ünïcode ✨ 256\n    return value * 256\n\ndef handler_257(value):  # λ ünïcode ✨ 257\n    return value * 257\n\ndef handler_258(value):  # λ ünïcode ✨ 258\n    return value * 258\n\ndef handler_259(value):  # λ ünïcode ✨ 259\n    return value * 259\n\ndef handler_260(value):  # λ ünïcode ✨ 260\n    return value * 260\n\ndef handler_261(value):  # λ ünïcode ✨ 261\n    return value * 261\n\ndef handler_262(value):  # λ ünïcode ✨ 262\n    return value * 262\n\ndef handler_263(value):  # λ ünïcode ✨ 263\n    return value * 263\n\ndef handler_264(value):  # λ ünïcode ✨ 264\n    return value * 264\n\ndef handler_265(value):  # λ ünïcode ✨ 265\n    return value * 265\n\ndef handler_266(value):  # λ ünïcode ✨ 266\n    return value * 266\n\ndef handler_267(value):  # λ ünïcode ✨ 267\n    return value * 267\n\ndef handler_268(value):  # λ ünïcode ✨ 268\n    return value * 268\n\ndef handler_269(value):  # λ ünïcode ✨ 269\n    return value * 269\n\ndef handler_270(value):  # λ ünïcode ✨ 270\n    return value * 270\n\ndef handler_271(value):  # λ ünïcode ✨ 271\n    return value * 271\n\ndef handler_272(value):  # λ ünïcode ✨ 272\n    return value * 272\n\ndef handler_273(value):  # λ ünïcode ✨ 273\n    return value * 273\n\ndef handler_274(value):  # λ ünïcode ✨ 274\n    return value * 274\n\ndef handler_275(value):  # λ ünïcode ✨ 275\n    return value * 275\n\ndef handler_276(value):  # λ ünïcode ✨ 276\n    return value * 276\n\ndef handler_277(value):  # λ ünïcode ✨ 277\n    return value * 277\n\ndef handler_278(value):  # λ ünïcode ✨ 278\n    return value * 278\n\ndef handler_279(value):  # λ ünïcode ✨ 279\n    return value * 279\n\ndef handler_280(value):  # λ ünïcode ✨ 280\n    return value * 280\n\ndef handler_281(value):  # λ ünïcode ✨ 281\n    return value * 281\n\ndef handler_282(value):  # λ ünïcode ✨ 282\n    return value * 282\n\ndef handler_283(value):  # λ ünïcode ✨ 283\n    return value * 283\n\ndef handler_284(value):  # λ ünïcode ✨ 284\n    return value * 284\n\ndef handler_285(value):  # λ ünïcode ✨ 285\n    return value * 285\n\ndef handler_286(value):  # λ ünïcode ✨ 286\n    return value * 286\n\ndef handler_287(value):  # λ ünïcode ✨ 287\n    return value * 287\n\ndef handler_288(value):  # λ ünïcode ✨ 288\n    return value * 288\n\ndef handler_289(value):  # λ ünïcode ✨ 289\n    return value * 289\n\ndef handler_290(value):  # λ ünïcode ✨ 290\n    return value * 290\n\ndef handler_291(value):  # λ ünïcode ✨ 291\n    return value * 291\n\ndef handler_292(value):  # λ ünïcode ✨ 292\n    return value * 292\n\ndef handler_293(value):  # λ ünïcode ✨ 293\n    return value * 293\n\ndef handler_294(value):  # λ ünïcode ✨ 294\n    return value * 294\n\ndef handler_295(value):  # λ ünïcode ✨ 295\n    return value * 295\n\ndef handler_296(value):  # λ ünïcode ✨ 296\n    return value * 296\n\ndef handler_297(value):  # λ ünïcode ✨ 297\n    return value * 297\n\ndef handler_298(value):  # λ ünïcode ✨ 298\n    return value * 298\n\ndef handler_299(value):  # λ ünïcode ✨ 299\n    return value * 299\n\ndef handler_300(value):  # λ ünïcode ✨ 300\n    return value * 300\n\ndef handler_301(value):  # λ ünïcode ✨ 301\n    return value * 301\n\ndef handler_302(value):  # λ ünïcode ✨ 302\n    return value * 302\n\ndef handler_303(value):  # λ ünïcode ✨ 303\n    return value * 303\n\ndef handler_304(value):  # λ ünïcode ✨ 304\n    return value * 304\n\ndef handler_305(value):  # λ ünïcode ✨ 305\n    return value * 305\n\ndef handler_306(value):  # λ ünïcode ✨ 306\n    return value * 306\n\ndef handler_307(value):  # λ ünïcode ✨ 307\n    return value * 307\n\ndef handler_308(value):  # λ ünïcode ✨ 308\n    return value * 308\n\ndef handler_309(value):  # λ ünïcode ✨ 309\n    return value * 309\n\ndef handler_310(value):  # λ ünïcode ✨ 310\n    return value * 310\n\ndef handler_311(value):  # λ ünïcode ✨ 311\n    return value * 311\n\ndef handler_312(value):  # λ ünïcode ✨ 312\n    return value * 312\n\ndef handler_313(value):  # λ ünïcode ✨ 313\n    return value * 313\n\ndef handler_314(value):  # λ ünïcode ✨ 314\n    return value * 314\n\ndef handler_315(value):  # λ ünïcode ✨ 315\n    return value * 315\n\ndef handler_316(value):  # λ ünïcode ✨ 316\n    return value * 316\n\ndef handler_317(value):  # λ ünïcode ✨ 317\n    return value * 317\n\ndef handler_318(value):  # λ ünïcode ✨ 318\n    return value * 318\n\ndef handler_319(value):  # λ ünïcode ✨ 319\n    return value * 319\n\ndef handler_320(value):  # λ ünïcode ✨ 320\n    return value * 320\n\ndef handler_321(value):  # λ ünïcode ✨ 321\n    return value * 321\n\ndef handler_322(value):  # λ ünïcode ✨ 322\n    return value * 322\n\ndef handler_323(value):  # λ ünïcode ✨ 323\n    return value * 323\n\ndef handler_324(value):  # λ ünïcode ✨ 324\n    return value * 324\n\ndef handler_325(value):  # λ ünïcode ✨ 325\n    return value * 325\n\ndef handler_326(value):  # λ ünïcode ✨ 326\n    return value * 326\n\ndef handler_327(value):  # λ ünïcode ✨ 327\n    return value * 327\n\ndef handler_328(value):  # λ ünïcode ✨ 328\n    return value * 328\n\ndef handler_329(value):  # λ ünïcode ✨ 329\n    return value * 329\n\ndef handler_330(value):  # λ ünïcode ✨ 330\n    return value * 330\n\ndef handler_331(value):  # λ ünïcode ✨ 331\n    return value * 331\n\ndef handler_332(value):  # λ ünïcode ✨ 332\n    return value * 332\n\ndef handler_333(value):  # λ ünïcode ✨ 333\n    return value * 333\n\ndef handler_334(value):  # λ ünïcode ✨ 334\n    return value * 334\n\ndef handler_335(value):  # λ ünïcode ✨ 335\n    return value * 335\n\ndef handler_336(value):  # λ ünïcode ✨ 336\n    return value * 336\n\ndef handler_337(value):  # λ ünïcode ✨ 337\n    return value * 337\n\ndef handler_338(value):  # λ ünïcode ✨ 338\n    return value * 338\n\ndef handler_339(value):  # λ ünïcode ✨ 339\n    return value * 339\n\ndef handler_340(value):  # λ ünïcode ✨ 340\n    return value * 340\n\ndef handler_341(value):  # λ ünïcode ✨ 341\n    return value * 341\n\ndef handler_342(value):  # λ ünïcode ✨ 342\n    return value * 342\n\ndef handler_343(value):  # λ ünïcode ✨ 343\n    return value * 343\n\ndef handler_344(value):  # λ ünïcode ✨ 344\n    return value * 344\n\ndef handler_345(value):  # λ ünïcode ✨ 345\n    return value * 345\n\ndef handler_346(value):  # λ ünïcode ✨ 346\n    return value * 346\n\ndef handler_347(value):  # λ ünïcode ✨ 347\n    return value * 347\n\ndef handler_348(value):  # λ ünïcode ✨ 348\n    return value * 348\n\ndef handler_349(value):  # λ ünïcode ✨ 349\n    return value * 349\n\ndef handler_350(value):  # λ ünïcode ✨ 350\n    return value * 350\n\ndef handler_351(value):  # λ ünïcode ✨ 351\n    return value * 351\n\ndef handler_352(value):  # λ ünïcode ✨ 352\n    return value * 352\n\ndef handler_353(value):  # λ ünïcode ✨ 353\n    return value * 353\n\ndef handler_354(value):  # λ ünïcode ✨ 354\n    return value * 354\n\ndef handler_355(value):  # λ ünïcode ✨ 355\n    return value * 355\n\ndef handler_356(value):  # λ ünïcode ✨ 356\n    return value * 356\n\ndef handler_357(value):  # λ ünïcode ✨ 357\n    return value * 357\n\ndef handler_358(value):  # λ ünïcode ✨ 358\n    return value * 358\n\ndef handler_359(value):  # λ ünïcode ✨ 359\n    return value * 359\n\ndef handler_360(value):  # λ ünïcode ✨ 360\n    return value * 360\n\ndef handler_361(value):  # λ ünïcode ✨ 361\n    return value * 361\n\ndef handler_362(value):  # λ ünïcode ✨ 362\n    return value * 362\n\ndef handler_363(value):  # λ ünïcode ✨ 363\n    return value * 363\n\ndef handler_364(value):  # λ ünïcode ✨ 364\n    return value * 364\n\ndef handler_365(value):  # λ ünïcode ✨ 365\n    return value * 365\n\ndef handler_366(value):  # λ ünïcode ✨ 366\n    return value * 366\n\ndef handler_367(value):  # λ ünïcode ✨ 367\n    return value * 367\n\ndef handler_368(value):  # λ ünïcode ✨ 368\n    return value * 368\n\ndef handler_369(value):  # λ ünïcode ✨ 369\n    return value * 369\n\ndef handler_370(value):  # λ ünïcode ✨ 370\n    return value * 370\n\ndef handler_371(value):  # λ ünïcode ✨ 371\n    return value * 371\n\ndef handler_372(value):  # λ ünïcode ✨ 372\n    return value * 372\n\ndef handler_373(value):  # λ ünïcode ✨ 373\n    return value * 373\n\ndef handler_374(value):  # λ ünïcode ✨ 374\n    return value * 374\n\ndef handler_375(value):  # λ ünïcode ✨ 375\n    return value * 375\n\ndef handler_376(value):  # λ ünïcode ✨ 376\n    return value * 376\n\ndef handler_377(value):  # λ ünïcode ✨ 377\n    return value * 377\n\ndef handler_378(value):  # λ ünïcode ✨ 378\n    return value * 378\n\ndef handler_379(value):  # λ ünïcode ✨ 379\n    return value * 379\n\ndef handler_380(value):  # λ ünïcode ✨ 380\n    return value * 380\n\ndef handler_381(value):  # λ ünïcode ✨ 381\n    return value * 381\n\ndef handler_382(value):  # λ ünïcode ✨ 382\n    return value * 382\n\ndef handler_383(value):  # λ ünïcode ✨ 383\n    return value * 383\n\ndef handler_384(value):  # λ ünïcode ✨ 384\n    return value * 384\n\ndef handler_385(value):  # λ ünïcode ✨ 385\n    return value * 385\n\ndef handler_386(value):  # λ ünïcode ✨ 386\n    return value * 386\n\ndef handler_387(value):  # λ ünïcode ✨ 387\n    return value * 387\n\ndef handler_388(value):  # λ ünïcode ✨ 388\n    return value * 388\n\ndef handler_389(value):  # λ ünïcode ✨ 389\n    return value * 389\n\ndef handler_390(value):  # λ ünïcode ✨ 390\n    return value * 390\n\ndef handler_391(value):  # λ ünïcode ✨ 391\n    return value * 391\n\ndef handler_392(value):  # λ ünïcode ✨ 392\n    return value * 392\n\ndef handler_393(value):  # λ ünïcode ✨ 393\n    return value * 393\n\ndef handler_394(value):  # λ ünïcode ✨ 394\n    return value * 394\n\ndef handler_395(value):  # λ ünïcode ✨ 395\n    return value * 395\n\ndef handler_396(value):  # λ ünïcode ✨ 396\n    return value * 396\n\ndef handler_397(value):  # λ ünïcode ✨ 397\n    return value * 397\n\ndef handler_398(value):  # λ ünïcode ✨ 398\n    return value * 398\n\ndef handler_399(value):  # λ ünïcode ✨ 399\n    return value * 399\n\ndef handler_400(value):  # λ ünïcode ✨ 400\n    return value * 400\n\ndef handler_401(value):  # λ ünïcode ✨ 401\n    return value * 401\n\ndef handler_402(value):  # λ ünïcode ✨ 402\n    return value * 402\n\ndef handler_403(value):  # λ ünïcode ✨ 403\n    return value * 403\n\ndef handler_404(value):  # λ ünïcode ✨ 404\n    return value * 404\n\ndef handler_405(value):  # λ ünïcode ✨ 405\n    return value * 405\n\ndef handler_406(value):  # λ ünïcode ✨ 406\n    return value * 406\n\ndef handler_407(value):  # λ ünïcode ✨ 407\n    return value * 407\n\ndef handler_408(value):  # λ ünïcode ✨ 408\n    return value * 408\n\ndef handler_409(value):  # λ ünïcode ✨ 409\n    return value * 409\n\ndef handler_410(value):  # λ ünïcode ✨ 410\n    return value * 410\n\ndef handler_411(value):  # λ ünïcode ✨ 411\n    return value * 411\n\ndef handler_412(value):  # λ ünïcode ✨ 412\n    return value * 412\n\ndef handler_413(value):  # λ ünïcode ✨ 413\n    return value * 413\n\ndef handler_414(value):  # λ ünïcode ✨ 414\n    return value * 414\n\ndef handler_415(value):  # λ ünïcode ✨ 415\n    return value * 415\n\ndef handler_416(value):  # λ ünïcode ✨ 416\n    return value * 416\n\ndef handler_417(value):  # λ ünïcode ✨ 417\n    return value * 417\n\ndef handler_418(value):  # λ ünïcode ✨ 418\n    return value * 418\n\ndef handler_419(value):  # λ ünïcode ✨ 419\n    return value * 419\n\ndef handler_420(value):  # λ ünïcode ✨ 420\n    return value * 420\n\ndef handler_421(value):  # λ ünïcode ✨ 421\n    return value * 421\n\ndef handler_422(value):  # λ ünïcode ✨ 422\n    return value * 422\n\ndef handler_423(value):  # λ ünïcode ✨ 423\n    return value * 423\n\ndef handler_424(value):  # λ ünïcode ✨ 424\n    return value * 424\n\ndef handler_425(value):  # λ ünïcode ✨ 425\n    return value * 425\n\ndef handler_426(value):  # λ ünïcode ✨ 426\n    return value * 426\n\ndef handler_427(value):  # λ ünïcode ✨ 427\n    return value * 427\n\ndef handler_428(value):  # λ ünïcode ✨ 428\n    return value * 428\n\ndef handler_429(value):  # λ ünïcode ✨ 429\n    return value * 429\n\n",
+ "language": "Python",
+ "chunk_byte_lengths": [
+  17958,
+  12672
+ ],
+ "chunk_keys": [
+  "a86908ed66ca44ed232082462c544666c0b7bbd9bba0d62ca79a4fbd467d39ad",
+  "aa189d9c33422594911eada37a1be5f361a96e167ceeda0aa2f4a282bed95850"
+ ],
+ "responses": [
+  {
+   "model": "jev-1.13.0",
+   "answers": {
+    "direct_unmaintainable": {
+     "type": "noul",
+     "noul": 0.66
+    },
+    "boilerplate": {
+     "type": "noul",
+     "noul": 0.45
+    },
+    "deep_reasoning": {
+     "type": "noul",
+     "noul": 0.76
+    },
+    "control_flow": {
+     "type": "score",
+     "score": 1.1,
+     "confidence": 0.82,
+     "legend": {
+      "0": "The execution path is straightforward and local.",
+      "1": "Following a path requires tracking several branches or state changes.",
+      "2": "Following a path requires repeatedly connecting distant branches and changing state."
+     },
+     "probabilities": {
+      "0": 0.01,
+      "1": 0.88,
+      "2": 0.11
+     }
+    },
+    "duplicated_logic": {
+     "type": "score",
+     "score": 1.82,
+     "confidence": 0.8,
+     "legend": {
+      "0": "No meaningful duplication; repeated structure is limited to trivial declarations or accessors.",
+      "1": "A few small blocks repeat with minor variations.",
+      "2": "Several substantial blocks repeat so that a behavior change would require editing multiple copies.",
+      "3": "Most of the logic is copied with variations, and the copies have already diverged or contain inconsistencies."
+     },
+     "probabilities": {
+      "0": 0.01,
+      "1": 0.17,
+      "2": 0.81,
+      "3": 0.01
+     }
+    },
+    "mirrored_state": {
+     "type": "score",
+     "score": 0.88,
+     "confidence": 0.12,
+     "legend": {
+      "0": "State is held in one authoritative place, or the code is effectively stateless.",
+      "1": "One piece of state is cached or mirrored, and it is invalidated or updated at a single clear point.",
+      "2": "Several values are mirrored or cached, and keeping them consistent depends on every writer remembering to update each copy or flag.",
+      "3": "Mirrored or cached state is updated inconsistently in the visible code, so some paths can leave the copies out of sync."
+     },
+     "probabilities": {
+      "0": 0.41000000000000003,
+      "1": 0.36,
+      "2": 0.19,
+      "3": 0.04
+     }
+    },
+    "hand_enumerated_data": {
+     "type": "score",
+     "score": 0.86,
+     "confidence": 0.44,
+     "legend": {
+      "0": "Related elements are held in arrays, collections, or objects and are processed generically; there is no hand enumeration.",
+      "1": "A small set of related elements is spelled out by hand in one or two places, and adding an element would touch only those places.",
+      "2": "A larger set of related elements is spelled out by hand in several methods, so adding or changing an element requires editing each method that enumerates them.",
+      "3": "Almost every method enumerates a large set of related elements by hand, with long hand-written expressions or key lists where one omitted or misordered element would be hard to notice."
+     },
+     "probabilities": {
+      "0": 0.35,
+      "1": 0.46,
+      "2": 0.18,
+      "3": 0.01
+     }
+    }
+   },
+   "usage": {
+    "input_tokens": 6364,
+    "output_tokens": 124
+   }
+  },
+  {
+   "model": "jev-1.13.0",
+   "answers": {
+    "direct_unmaintainable": {
+     "type": "noul",
+     "noul": 0.21
+    },
+    "boilerplate": {
+     "type": "noul",
+     "noul": 0.84
+    },
+    "deep_reasoning": {
+     "type": "noul",
+     "noul": 0.24
+    },
+    "control_flow": {
+     "type": "score",
+     "score": 0.18,
+     "confidence": 0.73,
+     "legend": {
+      "0": "The execution path is straightforward and local.",
+      "1": "Following a path requires tracking several branches or state changes.",
+      "2": "Following a path requires repeatedly connecting distant branches and changing state."
+     },
+     "probabilities": {
+      "0": 0.82,
+      "1": 0.18,
+      "2": 0.0
+     }
+    },
+    "duplicated_logic": {
+     "type": "score",
+     "score": 0.97,
+     "confidence": 0.79,
+     "legend": {
+      "0": "No meaningful duplication; repeated structure is limited to trivial declarations or accessors.",
+      "1": "A few small blocks repeat with minor variations.",
+      "2": "Several substantial blocks repeat so that a behavior change would require editing multiple copies.",
+      "3": "Most of the logic is copied with variations, and the copies have already diverged or contain inconsistencies."
+     },
+     "probabilities": {
+      "0": 0.12,
+      "1": 0.79,
+      "2": 0.09,
+      "3": 0.0
+     }
+    },
+    "mirrored_state": {
+     "type": "score",
+     "score": 0.9,
+     "confidence": 0.77,
+     "legend": {
+      "0": "State is held in one authoritative place, or the code is effectively stateless.",
+      "1": "One piece of state is cached or mirrored, and it is invalidated or updated at a single clear point.",
+      "2": "Several values are mirrored or cached, and keeping them consistent depends on every writer remembering to update each copy or flag.",
+      "3": "Mirrored or cached state is updated inconsistently in the visible code, so some paths can leave the copies out of sync."
+     },
+     "probabilities": {
+      "0": 0.16,
+      "1": 0.8,
+      "2": 0.01,
+      "3": 0.03
+     }
+    },
+    "hand_enumerated_data": {
+     "type": "score",
+     "score": 0.13,
+     "confidence": 0.87,
+     "legend": {
+      "0": "Related elements are held in arrays, collections, or objects and are processed generically; there is no hand enumeration.",
+      "1": "A small set of related elements is spelled out by hand in one or two places, and adding an element would touch only those places.",
+      "2": "A larger set of related elements is spelled out by hand in several methods, so adding or changing an element requires editing each method that enumerates them.",
+      "3": "Almost every method enumerates a large set of related elements by hand, with long hand-written expressions or key lists where one omitted or misordered element would be hard to notice."
+     },
+     "probabilities": {
+      "0": 0.91,
+      "1": 0.05,
+      "2": 0.04,
+      "3": 0.0
+     }
+    }
+   },
+   "usage": {
+    "input_tokens": 2099,
+    "output_tokens": 124
+   }
+  }
+ ],
+ "expected": {
+  "values": [
+   0.47382957884427035,
+   0.6113476983349658,
+   0.544869735553379,
+   0.35969245837414304,
+   0.4894482533463924,
+   0.2935618674502122,
+   0.18404244205027748
+  ],
+  "means": {
+   "direct_unmaintainable": 0.47382957884427035,
+   "boilerplate": 0.6113476983349658,
+   "deep_reasoning": 0.544869735553379,
+   "control_flow": 0.35969245837414304,
+   "duplicated_logic": 0.4894482533463924,
+   "mirrored_state": 0.2935618674502122,
+   "hand_enumerated_data": 0.18404244205027748
+  },
+  "assessments": {
+   "direct_unmaintainable": [
+    {
+     "start_line": 1,
+     "end_line": 762,
+     "value": 0.66,
+     "weight_bytes": 17958
+    },
+    {
+     "start_line": 763,
+     "end_line": 1290,
+     "value": 0.21,
+     "weight_bytes": 12672
+    }
+   ],
+   "boilerplate": [
+    {
+     "start_line": 1,
+     "end_line": 762,
+     "value": 0.45,
+     "weight_bytes": 17958
+    },
+    {
+     "start_line": 763,
+     "end_line": 1290,
+     "value": 0.84,
+     "weight_bytes": 12672
+    }
+   ],
+   "deep_reasoning": [
+    {
+     "start_line": 1,
+     "end_line": 762,
+     "value": 0.76,
+     "weight_bytes": 17958
+    },
+    {
+     "start_line": 763,
+     "end_line": 1290,
+     "value": 0.24,
+     "weight_bytes": 12672
+    }
+   ],
+   "control_flow": [
+    {
+     "start_line": 1,
+     "end_line": 762,
+     "value": 0.55,
+     "weight_bytes": 17958
+    },
+    {
+     "start_line": 763,
+     "end_line": 1290,
+     "value": 0.09,
+     "weight_bytes": 12672
+    }
+   ],
+   "duplicated_logic": [
+    {
+     "start_line": 1,
+     "end_line": 762,
+     "value": 0.6066666666666667,
+     "weight_bytes": 17958
+    },
+    {
+     "start_line": 763,
+     "end_line": 1290,
+     "value": 0.3233333333333333,
+     "weight_bytes": 12672
+    }
+   ],
+   "mirrored_state": [
+    {
+     "start_line": 1,
+     "end_line": 762,
+     "value": 0.2866666666666667,
+     "weight_bytes": 17958
+    },
+    {
+     "start_line": 763,
+     "end_line": 1290,
+     "value": 0.30333333333333334,
+     "weight_bytes": 12672
+    }
+   ],
+   "hand_enumerated_data": [
+    {
+     "start_line": 1,
+     "end_line": 762,
+     "value": 0.2833333333333333,
+     "weight_bytes": 17958
+    },
+    {
+     "start_line": 763,
+     "end_line": 1290,
+     "value": 0.043333333333333335,
+     "weight_bytes": 12672
+    }
+   ]
+  },
+  "model": "jev-1.13.0",
+  "excerpts": 2
+ }
+}

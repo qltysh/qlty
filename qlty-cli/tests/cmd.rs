@@ -162,6 +162,11 @@ fn smells_tests() {
 }
 
 #[test]
+fn slop_one_tests() {
+    setup_and_run_test_cases("tests/cmd/slop_one/**/*.toml");
+}
+
+#[test]
 fn sources_tests() {
     setup_and_run_test_cases("tests/cmd/sources/**/*.toml");
 }

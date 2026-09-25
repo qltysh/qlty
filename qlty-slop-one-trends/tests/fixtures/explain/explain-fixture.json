@@ -1,0 +1,209 @@
+{
+ "repository": "https://example.invalid/fixture",
+ "project": "fixture",
+ "model": {
+  "id": "maintainability-003-actual-magnitudes",
+  "sha256": "75abf3e26f868eb12b567bbe2af45ef97fd6a3fbaf27eed0bc303f822c8a4d35",
+  "extractor_profile": "qlty-actual-magnitudes-001",
+  "components": 640,
+  "features": 39,
+  "threshold_risk": 0.6073781128742494,
+  "threshold_score": 5.0,
+  "score_scale": "threshold-centered-1-10-v1",
+  "training": {
+   "candidate": "all_actual",
+   "files": 304,
+   "projects": 5,
+   "languages": [
+    "Java"
+   ],
+   "label_draws": 64,
+   "projects_per_component": 2,
+   "config": {
+    "model": "logistic",
+    "features": "combined",
+    "balanced": true,
+    "C": 0.01,
+    "depth": 4,
+    "min_leaf": 10
+   },
+   "features_sha256": "8aacd2680427d27e362614534c1d47c9f175ff7d8bb83ad12d2e10fd4bb050cf",
+   "benchmark_metrics": {
+    "precision": 0.9016393442622951,
+    "recall": 0.8333333333333334,
+    "f1": 0.8661417322834646,
+    "accuracy": 0.944078947368421,
+    "tp": 55,
+    "fp": 6,
+    "fn": 11,
+    "tn": 232,
+    "n": 304
+   },
+   "scope": "Refitted on the existing exposed 304-file Java benchmark. Other languages and function-level predictions are not validated by this benchmark.",
+   "threshold_method": "Minimum precision/recall margin then F1 rule on project-held-out predictions. Existing exposed labels; not an independent test."
+  },
+  "measurement_policy": {
+   "id": "actual-magnitudes-rust5-cyclomatic",
+   "boolean_thresholds": {
+    "default": 4,
+    "Rust": 5
+   },
+   "magnitude": "Every maximum magnitude uses Qlty properties.actual: depth, count, cyclomatic complexity, or duplicated lines. Finding count, density, and coverage remain separate inputs.",
+   "qlty_commit": "7460e0bc34845c7208321d9ec1eb234ae51b2950",
+   "parent_model_sha256": "2515e5465edc8bf02c0623daaa07281031ce7a965bc158ea9bb8d8dd92d518d9",
+   "rationale": "User-authorized migration to actual magnitudes throughout scoring and reports; preserves Rust threshold 5 and the cyclomatic-complexity fix."
+  },
+  "score_meaning": "Relative maintainability score; higher is better. Not a calibrated human grade."
+ },
+ "interval": "week",
+ "weeks": [
+  {
+   "week_start": "2026-01-05",
+   "week_end_exclusive": "2026-01-12",
+   "as_of": "2026-01-12T00:00:00+00:00",
+   "partial": false,
+   "commit": "cccccccccccccccccccccccccccccccccccccccc",
+   "committed_at": "2026-01-05T12:00:00+00:00",
+   "first_parent_index": 0,
+   "summary": {
+    "candidate_files": 4,
+    "files": 4,
+    "fails": 2,
+    "errors": 0,
+    "inline_only_skips": 0,
+    "loc": 40,
+    "mass": 73.18092604597476,
+    "maintainable_fraction": null,
+    "median": null,
+    "loc_weighted_mean": null
+   },
+   "test_paths_excluded": 0,
+   "analysis_errors": [],
+   "change": null
+  },
+  {
+   "week_start": "2026-01-12",
+   "week_end_exclusive": "2026-01-19",
+   "as_of": "2026-01-19T00:00:00+00:00",
+   "partial": false,
+   "commit": "dddddddddddddddddddddddddddddddddddddddd",
+   "committed_at": "2026-01-12T12:00:00+00:00",
+   "first_parent_index": 1,
+   "summary": {
+    "candidate_files": 5,
+    "files": 5,
+    "fails": 2,
+    "errors": 0,
+    "inline_only_skips": 0,
+    "loc": 50,
+    "mass": 87.72559035420433,
+    "maintainable_fraction": null,
+    "median": null,
+    "loc_weighted_mean": null
+   },
+   "test_paths_excluded": 0,
+   "analysis_errors": [],
+   "change": {
+    "positive": 1.75855007354569,
+    "negative": 0.0,
+    "net": 1.75855007354569,
+    "compared_groups": 3,
+    "changed_groups": 2,
+    "compared_previous_mass": 59.76451818097601,
+    "previous_project_mass": 73.18092604597476,
+    "comparison_coverage_of_retained_scored_mass": 1.0,
+    "contributions": [
+     {
+      "before_paths": [
+       "lib/report.py"
+      ],
+      "after_paths": [
+       "lib/report.py"
+      ],
+      "before_score": 1.857747179415807,
+      "after_score": 4.461935864269217,
+      "before_mass": 25.622023622035435,
+      "after_mass": 23.045407685048602,
+      "previous_mass_share": 0.35011887668569275,
+      "score_change": 2.6041886848534097,
+      "contribution": 0.9117756170184673,
+      "matching": [],
+      "changed": true
+     },
+     {
+      "before_paths": [
+       "lib/big.py"
+      ],
+      "after_paths": [
+       "lib/big_a.py",
+       "lib/big_b.py"
+      ],
+      "before_score": 2.8401143033495124,
+      "after_score": 4.829927250525547,
+      "before_mass": 31.142494558940577,
+      "after_mass": 40.23796057393214,
+      "previous_mass_share": 0.4255548028918874,
+      "score_change": 1.9898129471760342,
+      "contribution": 0.8467744565272228,
+      "matching": [],
+      "changed": true
+     },
+     {
+      "before_paths": [
+       "lib/tiny.py"
+      ],
+      "after_paths": [
+       "lib/tiny.py"
+      ],
+      "before_score": 8.33065546398792,
+      "after_score": 8.33065546398792,
+      "before_mass": 3.0,
+      "after_mass": 3.0,
+      "previous_mass_share": 0.040994288567970535,
+      "score_change": 0.0,
+      "contribution": 0.0,
+      "matching": [],
+      "changed": false
+     }
+    ],
+    "uncompared_groups": [],
+    "unresolved_movements": [],
+    "additions": {
+     "summary": {
+      "candidate_files": 1,
+      "files": 1,
+      "fails": 0,
+      "errors": 0,
+      "inline_only_skips": 0,
+      "loc": 10,
+      "mass": 21.44222209522358,
+      "maintainable_fraction": null,
+      "median": null,
+      "loc_weighted_mean": null
+     },
+     "files": [
+      "lib/added.py"
+     ]
+    },
+    "removals": {
+     "summary": {
+      "candidate_files": 1,
+      "files": 1,
+      "fails": 0,
+      "errors": 0,
+      "inline_only_skips": 0,
+      "loc": 10,
+      "mass": 13.416407864998739,
+      "maintainable_fraction": null,
+      "median": null,
+      "loc_weighted_mean": null
+     },
+     "files": [
+      "lib/removed.py"
+     ]
+    },
+    "structural_groups": 1
+   }
+  }
+ ]
+}

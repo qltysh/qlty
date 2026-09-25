@@ -1,0 +1,36 @@
+{
+  "text": "unsafe extern \"C\" {\n    fn c_function(value: i32) -> i32;\n}\n\npub fn raw_address(value: &i32) -> *const i32 {\n    &raw const *value\n}\n\n",
+  "line_map": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "excluded_modules": [
+    {
+      "name": "tests",
+      "start_line": 9,
+      "end_line": 18,
+      "reason": "inline module named test or tests"
+    }
+  ],
+  "has_code": true,
+  "info": {
+    "policy": "rust-inline-tests-001",
+    "original_lines": 18,
+    "analyzed_lines": 8,
+    "excluded_lines": 10,
+    "excluded_modules": [
+      {
+        "name": "tests",
+        "start_line": 9,
+        "end_line": 18,
+        "reason": "inline module named test or tests"
+      }
+    ]
+  }
+}

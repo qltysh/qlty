@@ -80,7 +80,7 @@ CLI releases are now served over HTTPS only. Versions before v0.590.0 fetch the 
 
 ### Fixed
 
-- Apply user-configured driver fields (such as `prepare_script`) to version-matched drivers for plugins with versioned drivers (eslint, stylelint, knip, golangci-lint, trufflehog, radarlint-*), instead of silently discarding them at plan time (#2822)
+- Apply user-configured driver fields (such as `prepare_script`) to version-matched drivers for plugins with versioned drivers (eslint, stylelint, knip, golangci-lint, trufflehog, radarlint-\*), instead of silently discarding them at plan time (#2822)
 
 ## v0.636.0 (2026-07-17)
 

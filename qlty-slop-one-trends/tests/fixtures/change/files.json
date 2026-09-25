@@ -1,0 +1,465 @@
+{
+ "model": {
+  "id": "fixture",
+  "sha256": "fixture-model",
+  "threshold_score": 5.0,
+  "score_scale": "threshold-centered-1-10-v1"
+ },
+ "interval": "week",
+ "weeks": [
+  {
+   "week_start": "2026-01-05",
+   "week_end_exclusive": "2026-01-12T00:00:00-04:00",
+   "as_of": "2026-01-12T00:00:00-04:00",
+   "partial": false,
+   "commit": "1111111111111111111111111111111111111111",
+   "committed_at": "2026-01-12T00:00:00-04:00",
+   "first_parent_index": 10,
+   "files": [
+    {
+     "path": "a.rs",
+     "blob": "b-a.rs",
+     "suffix": ".rs",
+     "version": "b-a.rs.rs",
+     "source_sha256": "s-a.rs",
+     "score": 4.0,
+     "score_scale": "threshold-centered-1-10-v1",
+     "passed": false,
+     "language": "Rust",
+     "code_lines": 90,
+     "cyclomatic": 3,
+     "mass": 90.0,
+     "measurement_key": "k-a1"
+    },
+    {
+     "path": "old_name.rs",
+     "blob": "b-old_name.rs",
+     "suffix": ".rs",
+     "version": "b-old_name.rs.rs",
+     "source_sha256": "s-old_name.rs",
+     "score": 6.0,
+     "score_scale": "threshold-centered-1-10-v1",
+     "passed": true,
+     "language": "Rust",
+     "code_lines": 40,
+     "cyclomatic": 3,
+     "mass": 40.0,
+     "measurement_key": "k-old"
+    },
+    {
+     "path": "big.rs",
+     "blob": "b-big.rs",
+     "suffix": ".rs",
+     "version": "b-big.rs.rs",
+     "source_sha256": "s-big.rs",
+     "score": 3.0,
+     "score_scale": "threshold-centered-1-10-v1",
+     "passed": false,
+     "language": "Rust",
+     "code_lines": 100,
+     "cyclomatic": 3,
+     "mass": 100.0,
+     "measurement_key": "k-big"
+    },
+    {
+     "path": "m1.rs",
+     "blob": "b-m1.rs",
+     "suffix": ".rs",
+     "version": "b-m1.rs.rs",
+     "source_sha256": "s-m1.rs",
+     "score": 7.0,
+     "score_scale": "threshold-centered-1-10-v1",
+     "passed": true,
+     "language": "Rust",
+     "code_lines": 20,
+     "cyclomatic": 3,
+     "mass": 20.0,
+     "measurement_key": "k-m1"
+    },
+    {
+     "path": "m2.rs",
+     "blob": "b-m2.rs",
+     "suffix": ".rs",
+     "version": "b-m2.rs.rs",
+     "source_sha256": "s-m2.rs",
+     "score": 5.0,
+     "score_scale": "threshold-centered-1-10-v1",
+     "passed": false,
+     "language": "Rust",
+     "code_lines": 30,
+     "cyclomatic": 3,
+     "mass": 30.0,
+     "measurement_key": "k-m2"
+    },
+    {
+     "path": "removed.rs",
+     "blob": "b-removed.rs",
+     "suffix": ".rs",
+     "version": "b-removed.rs.rs",
+     "source_sha256": "s-removed.rs",
+     "score": 2.0,
+     "score_scale": "threshold-centered-1-10-v1",
+     "passed": false,
+     "language": "Rust",
+     "code_lines": 10,
+     "cyclomatic": 3,
+     "mass": 10.0,
+     "measurement_key": "k-removed"
+    },
+    {
+     "path": "unscored.rs",
+     "blob": "b-unscored.rs",
+     "suffix": ".rs",
+     "version": "b-unscored.rs.rs",
+     "source_sha256": "s-unscored.rs",
+     "error": "Qlty did not parse this source file."
+    }
+   ],
+   "summary": {
+    "candidate_files": 7,
+    "files": 6,
+    "fails": 4,
+    "errors": 1,
+    "inline_only_skips": 0,
+    "loc": 290,
+    "mass": 290.0,
+    "maintainable_fraction": 0.20689655172413793,
+    "median": 4.5,
+    "loc_weighted_mean": 4.172413793103448
+   },
+   "test_paths_excluded": 0,
+   "test_exclusions": [],
+   "source_exclusions": {
+    "files": 0,
+    "by_category": {}
+   },
+   "analysis_errors": [
+    {
+     "path": "unscored.rs",
+     "error": "Qlty did not parse this source file."
+    }
+   ],
+   "change": null
+  },
+  {
+   "week_start": "2026-01-12",
+   "week_end_exclusive": "2026-01-19T00:00:00-04:00",
+   "as_of": "2026-01-19T00:00:00-04:00",
+   "partial": false,
+   "commit": "2222222222222222222222222222222222222222",
+   "committed_at": "2026-01-19T00:00:00-04:00",
+   "first_parent_index": 20,
+   "files": [
+    {
+     "path": "a.rs",
+     "blob": "b-a.rs",
+     "suffix": ".rs",
+     "version": "b-a.rs.rs",
+     "source_sha256": "s-a.rs",
+     "score": 6.0,
+     "score_scale": "threshold-centered-1-10-v1",
+     "passed": true,
+     "language": "Rust",
+     "code_lines": 95,
+     "cyclomatic": 3,
+     "mass": 95.0,
+     "measurement_key": "k-a2"
+    },
+    {
+     "path": "new_name.rs",
+     "blob": "b-new_name.rs",
+     "suffix": ".rs",
+     "version": "b-new_name.rs.rs",
+     "source_sha256": "s-new_name.rs",
+     "score": 6.5,
+     "score_scale": "threshold-centered-1-10-v1",
+     "passed": true,
+     "language": "Rust",
+     "code_lines": 40,
+     "cyclomatic": 3,
+     "mass": 40.0,
+     "measurement_key": "k-new"
+    },
+    {
+     "path": "part1.rs",
+     "blob": "b-part1.rs",
+     "suffix": ".rs",
+     "version": "b-part1.rs.rs",
+     "source_sha256": "s-part1.rs",
+     "score": 5.0,
+     "score_scale": "threshold-centered-1-10-v1",
+     "passed": false,
+     "language": "Rust",
+     "code_lines": 50,
+     "cyclomatic": 3,
+     "mass": 50.0,
+     "measurement_key": "k-p1"
+    },
+    {
+     "path": "part2.rs",
+     "blob": "b-part2.rs",
+     "suffix": ".rs",
+     "version": "b-part2.rs.rs",
+     "source_sha256": "s-part2.rs",
+     "score": 7.0,
+     "score_scale": "threshold-centered-1-10-v1",
+     "passed": true,
+     "language": "Rust",
+     "code_lines": 60,
+     "cyclomatic": 3,
+     "mass": 60.0,
+     "measurement_key": "k-p2"
+    },
+    {
+     "path": "merged.rs",
+     "blob": "b-merged.rs",
+     "suffix": ".rs",
+     "version": "b-merged.rs.rs",
+     "source_sha256": "s-merged.rs",
+     "score": 6.0,
+     "score_scale": "threshold-centered-1-10-v1",
+     "passed": true,
+     "language": "Rust",
+     "code_lines": 45,
+     "cyclomatic": 3,
+     "mass": 45.0,
+     "measurement_key": "k-merged"
+    },
+    {
+     "path": "added.rs",
+     "blob": "b-added.rs",
+     "suffix": ".rs",
+     "version": "b-added.rs.rs",
+     "source_sha256": "s-added.rs",
+     "score": 8.0,
+     "score_scale": "threshold-centered-1-10-v1",
+     "passed": true,
+     "language": "Rust",
+     "code_lines": 25,
+     "cyclomatic": 3,
+     "mass": 25.0,
+     "measurement_key": "k-added"
+    },
+    {
+     "path": "added_bad.rs",
+     "blob": "b-added_bad.rs",
+     "suffix": ".rs",
+     "version": "b-added_bad.rs.rs",
+     "source_sha256": "s-added_bad.rs",
+     "score": 2.0,
+     "score_scale": "threshold-centered-1-10-v1",
+     "passed": false,
+     "language": "Rust",
+     "code_lines": 15,
+     "cyclomatic": 3,
+     "mass": 15.0,
+     "measurement_key": "k-bad"
+    },
+    {
+     "path": "added_unscored.rs",
+     "blob": "b-added_unscored.rs",
+     "suffix": ".rs",
+     "version": "b-added_unscored.rs.rs",
+     "source_sha256": "s-added_unscored.rs",
+     "error": "Source is empty or contains binary data"
+    }
+   ],
+   "summary": {
+    "candidate_files": 8,
+    "files": 7,
+    "fails": 2,
+    "errors": 1,
+    "inline_only_skips": 0,
+    "loc": 330,
+    "mass": 330.0,
+    "maintainable_fraction": 0.803030303030303,
+    "median": 6.0,
+    "loc_weighted_mean": 6.0606060606060606
+   },
+   "test_paths_excluded": 0,
+   "test_exclusions": [],
+   "source_exclusions": {
+    "files": 0,
+    "by_category": {}
+   },
+   "analysis_errors": [
+    {
+     "path": "added_unscored.rs",
+     "error": "Source is empty or contains binary data"
+    }
+   ],
+   "change": {
+    "positive": 1.7899686520376177,
+    "negative": 0.0,
+    "net": 1.7899686520376177,
+    "compared_groups": 4,
+    "changed_groups": 4,
+    "compared_previous_mass": 280.0,
+    "previous_project_mass": 290.0,
+    "comparison_coverage_of_retained_scored_mass": 1.0,
+    "contributions": [
+     {
+      "before_paths": [
+       "big.rs"
+      ],
+      "after_paths": [
+       "part1.rs",
+       "part2.rs"
+      ],
+      "before_score": 3.0,
+      "after_score": 6.090909090909091,
+      "before_mass": 100.0,
+      "after_mass": 110.0,
+      "previous_mass_share": 0.3448275862068966,
+      "score_change": 3.090909090909091,
+      "contribution": 1.0658307210031348,
+      "matching": [
+       {
+        "old": "big.rs",
+        "new": "part1.rs",
+        "kind": "inferred_split",
+        "unique_lines": 30,
+        "shared_lines": 40,
+        "target_lines": 50,
+        "overlap": 0.8
+       },
+       {
+        "old": "big.rs",
+        "new": "part2.rs",
+        "kind": "inferred_split",
+        "unique_lines": 40,
+        "shared_lines": 50,
+        "target_lines": 60,
+        "overlap": 0.8333333333333334
+       }
+      ],
+      "changed": true
+     },
+     {
+      "before_paths": [
+       "a.rs"
+      ],
+      "after_paths": [
+       "a.rs"
+      ],
+      "before_score": 4.0,
+      "after_score": 6.0,
+      "before_mass": 90.0,
+      "after_mass": 95.0,
+      "previous_mass_share": 0.3103448275862069,
+      "score_change": 2.0,
+      "contribution": 0.6206896551724138,
+      "matching": [],
+      "changed": true
+     },
+     {
+      "before_paths": [
+       "old_name.rs"
+      ],
+      "after_paths": [
+       "new_name.rs"
+      ],
+      "before_score": 6.0,
+      "after_score": 6.5,
+      "before_mass": 40.0,
+      "after_mass": 40.0,
+      "previous_mass_share": 0.13793103448275862,
+      "score_change": 0.5,
+      "contribution": 0.06896551724137931,
+      "matching": [
+       {
+        "old": "old_name.rs",
+        "new": "new_name.rs",
+        "kind": "git_rename",
+        "similarity": "R092"
+       }
+      ],
+      "changed": true
+     },
+     {
+      "before_paths": [
+       "m1.rs",
+       "m2.rs"
+      ],
+      "after_paths": [
+       "merged.rs"
+      ],
+      "before_score": 5.8,
+      "after_score": 6.0,
+      "before_mass": 50.0,
+      "after_mass": 45.0,
+      "previous_mass_share": 0.1724137931034483,
+      "score_change": 0.20000000000000018,
+      "contribution": 0.03448275862068969,
+      "matching": [
+       {
+        "old": "m1.rs",
+        "new": "merged.rs",
+        "kind": "inferred_merge",
+        "unique_lines": 15,
+        "shared_lines": 18,
+        "target_lines": 20,
+        "overlap": 0.9
+       },
+       {
+        "old": "m2.rs",
+        "new": "merged.rs",
+        "kind": "inferred_merge",
+        "unique_lines": 20,
+        "shared_lines": 25,
+        "target_lines": 30,
+        "overlap": 0.8333333333333334
+       }
+      ],
+      "changed": true
+     }
+    ],
+    "uncompared_groups": [],
+    "unresolved_movements": [],
+    "additions": {
+     "summary": {
+      "candidate_files": 3,
+      "files": 2,
+      "fails": 1,
+      "errors": 1,
+      "inline_only_skips": 0,
+      "loc": 40,
+      "mass": 40.0,
+      "maintainable_fraction": 0.625,
+      "median": 5.0,
+      "loc_weighted_mean": 5.75
+     },
+     "files": [
+      "added.rs",
+      "added_bad.rs",
+      "added_unscored.rs"
+     ]
+    },
+    "removals": {
+     "summary": {
+      "candidate_files": 2,
+      "files": 1,
+      "fails": 1,
+      "errors": 1,
+      "inline_only_skips": 0,
+      "loc": 10,
+      "mass": 10.0,
+      "maintainable_fraction": 0.0,
+      "median": 2.0,
+      "loc_weighted_mean": 2.0
+     },
+     "files": [
+      "removed.rs",
+      "unscored.rs"
+     ]
+    },
+    "structural_groups": 2,
+    "rename_only_sensitivity": {
+     "positive": 1.7899686520376177,
+     "negative": 0.0,
+     "net": 1.7899686520376177
+    }
+   }
+  }
+ ]
+}

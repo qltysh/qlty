@@ -1,0 +1,10 @@
+[
+ {
+  "period_start": "2026-09-01",
+  "commit": "c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2",
+  "title": "Checkout refactor",
+  "body": "The checkout module lost two points.",
+  "kind": "Changed",
+  "effect": "negative"
+ }
+]

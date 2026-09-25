@@ -1,0 +1,4 @@
+ERROR lib/other.py: No cached Jev answers for this file; run once without --offline.
+
+Summary of supplied files: 0 evaluated, 0 passed, 0 failed, 0 skipped, 1 errors.
+  Median score: unavailable; pass rate: unavailable (no evaluated files).
