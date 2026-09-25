@@ -4,6 +4,12 @@
 
 CLI releases are now served over HTTPS only. Versions before v0.590.0 fetch the latest-release manifest over HTTP, so `qlty upgrade` and `qlty version` now fail on them with an error naming an `http://` URL. `qlty check`, `qlty fmt`, `qlty coverage publish`, and `qlty --version` are unaffected. To recover, run `qlty upgrade --version 0.644.0`, which skips the manifest lookup, or re-run the installer (`curl https://qlty.sh | sh` on macOS and Linux, `powershell -c "iwr https://qlty.sh | iex"` on Windows).
 
+## v0.647.0 (2026-09-25)
+
+### New
+
+- Add `qlty slop-one`, which scores a source file's maintainability from 1 to 10 and builds a weekly and monthly trends report for a whole repository as a self-contained HTML file (#2861). Thanks to @fhwang for the contribution!
+
 ## v0.646.0 (2026-09-25)
 
 ### Improved
