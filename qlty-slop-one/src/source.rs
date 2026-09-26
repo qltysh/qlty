@@ -42,8 +42,16 @@ pub fn source_text(path: &Path) -> Result<String> {
     if metadata.len() > MAX_SOURCE_BYTES {
         return Err(Error::SourceTooLarge(path.to_path_buf()));
     }
-    let raw = fs::read(path)?;
-    let bytes = raw.strip_prefix(UTF8_BOM).unwrap_or(&raw);
+    source_text_from_bytes(path, &fs::read(path)?)
+}
+
+/// [`source_text`] for contents already in memory, such as a blob from Git.
+/// `path` names the file in errors.
+pub fn source_text_from_bytes(path: &Path, raw: &[u8]) -> Result<String> {
+    if raw.len() as u64 > MAX_SOURCE_BYTES {
+        return Err(Error::SourceTooLarge(path.to_path_buf()));
+    }
+    let bytes = raw.strip_prefix(UTF8_BOM).unwrap_or(raw);
     let decoded =
         std::str::from_utf8(bytes).map_err(|_| Error::SourceNotUtf8(path.to_path_buf()))?;
     let text = decoded.replace("\r\n", "\n").replace('\r', "\n");
@@ -708,6 +716,22 @@ fn final_item() {}
     fn source_text_keeps_a_second_bom_as_content() {
         let file = write_source("\u{feff}\u{feff}".as_bytes());
         assert_eq!(source_text(file.path()).unwrap(), "\u{feff}");
+    }
+
+    #[test]
+    fn source_text_from_bytes_normalizes_like_a_file() {
+        assert_eq!(
+            source_text_from_bytes(Path::new("blob.py"), b"\xEF\xBB\xBFa\r\nb\rc\n").unwrap(),
+            "a\nb\nc\n"
+        );
+    }
+
+    #[test]
+    fn source_text_from_bytes_rejects_binary_data() {
+        assert!(matches!(
+            source_text_from_bytes(Path::new("blob.py"), b"x\x00").unwrap_err(),
+            Error::SourceEmptyOrBinary(_)
+        ));
     }
 
     #[test]

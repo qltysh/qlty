@@ -1,9 +1,13 @@
-use crate::{Arguments, CommandError, CommandSuccess};
+use crate::git_hook::{self, RefUpdate};
+use crate::{Arguments, CommandError, CommandSuccess, Trigger};
 use anyhow::anyhow;
 use chrono::{Months, NaiveDate, Utc};
 use clap::{Args, Subcommand};
 use qlty_config::Library;
-use qlty_slop_one::{render_summary, render_text, Document, Evaluator, JevProvider, Options};
+use qlty_slop_one::{
+    render_comparisons, render_summary, render_text, Change, ComparisonSummary, Document,
+    Evaluator, Framing, JevProvider, Options, PromptMode, Revisions, TextOptions,
+};
 use qlty_slop_one_trends::periods::local_timezone;
 use qlty_slop_one_trends::pipeline::{self, ReportOptions};
 use std::collections::HashSet;
@@ -11,16 +15,21 @@ use std::env;
 use std::num::NonZeroUsize;
 use std::path::PathBuf;
 
+mod changes;
 mod trends;
 mod ui;
 
-use ui::{explain_scoring, explain_trends, FileProgress, ReportProgress};
+use ui::{allow_push, explain_scoring, explain_trends, FileProgress, ReportProgress};
 
 const DEFAULT_TOP: usize = 3;
+const DEFAULT_COMPARISON_TOP: usize = 5;
 const DEFAULT_SCORING_BUDGET_USD: f64 = 1.0;
+const DEFAULT_MAX_DROP: f64 = 1.0;
 
 /// With no files, builds the trends report for the current repository and
-/// opens it. With files, scores them and prints the results.
+/// opens it. With files, scores them and prints the results. With
+/// `--upstream` or `--upstream-from-pre-push`, compares changed files with
+/// their earlier versions and fails when one declined.
 #[derive(Args, Debug)]
 #[command(args_conflicts_with_subcommands = true)]
 pub struct SlopOne {
@@ -78,9 +87,44 @@ pub struct SlopOne {
     #[arg(long, help_heading = "Scoring options")]
     pub model_info: bool,
 
-    /// Number of positive and negative factors in text output (default: 3)
+    /// Number of positive and negative factors in text output (default: 3, or 5 when comparing)
     #[arg(long, help_heading = "Scoring options")]
     pub top: Option<usize>,
+
+    /// Compare the files changed since the merge base with REF against their versions there
+    #[arg(
+        long,
+        value_name = "REF",
+        help_heading = "Comparison options",
+        conflicts_with_all = ["files", "upstream_from_pre_push"]
+    )]
+    pub upstream: Option<String>,
+
+    /// Compare the commits being pushed, read from a Git pre-push hook's stdin
+    #[arg(long, help_heading = "Comparison options", conflicts_with = "files")]
+    pub upstream_from_pre_push: bool,
+
+    /// Largest score drop allowed before a changed file counts as declined (default: 1)
+    #[arg(long, value_name = "POINTS", help_heading = "Comparison options")]
+    pub max_drop: Option<f64>,
+
+    /// What runs the comparison; pre-push reports a blocked push, lets errors through, and can be skipped with Enter
+    #[arg(
+        long,
+        value_enum,
+        default_value = "manual",
+        help_heading = "Comparison options"
+    )]
+    pub trigger: Trigger,
+
+    /// What the prompt printed for declined files asks a coding agent to do (default: recommend)
+    #[arg(
+        long,
+        value_enum,
+        value_name = "MODE",
+        help_heading = "Comparison options"
+    )]
+    pub prompt: Option<Prompt>,
 }
 
 #[derive(Subcommand, Debug)]
@@ -95,6 +139,21 @@ pub enum Provider {
     Typesafe,
     Vercel,
     Openrouter,
+}
+
+#[derive(Clone, Copy, Debug, clap::ValueEnum)]
+pub enum Prompt {
+    Recommend,
+    Refactor,
+}
+
+impl From<Prompt> for PromptMode {
+    fn from(prompt: Prompt) -> Self {
+        match prompt {
+            Prompt::Recommend => Self::Recommend,
+            Prompt::Refactor => Self::Refactor,
+        }
+    }
 }
 
 impl From<Provider> for JevProvider {
@@ -118,6 +177,16 @@ impl SlopOne {
                     message: "--budget must be a finite, nonnegative dollar amount".to_owned(),
                 });
             }
+        }
+        if self.upstream.is_some() || self.upstream_from_pre_push {
+            return self.compare();
+        }
+        if self.max_drop.is_some() || self.prompt.is_some() || self.trigger != Trigger::Manual {
+            return Err(CommandError::InvalidOptions {
+                message:
+                    "--max-drop, --prompt, and --trigger apply with --upstream or --upstream-from-pre-push"
+                        .to_owned(),
+            });
         }
         if self.files.is_empty() && !self.model_info {
             self.report()
@@ -183,26 +252,9 @@ impl SlopOne {
     }
 
     fn score(&self) -> Result<CommandSuccess, CommandError> {
-        if self.since.is_some() || self.output.is_some() || self.no_open {
-            return Err(CommandError::InvalidOptions {
-                message: "--since, --output, and --no-open apply to the trends report".to_owned(),
-            });
-        }
-        let top = self.top.unwrap_or(DEFAULT_TOP);
-        if !(1..=15).contains(&top) {
-            return Err(CommandError::InvalidOptions {
-                message: "--top must be between 1 and 15".to_string(),
-            });
-        }
-        let evaluator = Evaluator::new(Options {
-            cache_dir: self.cache_dir()?,
-            budget_usd: self.budget.unwrap_or(DEFAULT_SCORING_BUDGET_USD),
-            provider: self.provider.into(),
-            offline: self.offline,
-            include_tests: self.include_tests,
-            include_excluded: self.include_excluded,
-        })
-        .map_err(explain_scoring)?;
+        self.reject_report_options()?;
+        let top = self.top(DEFAULT_TOP)?;
+        let evaluator = self.evaluator()?;
         if self.model_info && self.files.is_empty() {
             println!("{}", serde_json::to_string_pretty(&evaluator.model_info())?);
             return CommandSuccess::ok();
@@ -244,6 +296,172 @@ impl SlopOne {
             fail: document.passed == Some(false),
             ..Default::default()
         })
+    }
+
+    fn reject_report_options(&self) -> Result<(), CommandError> {
+        if self.since.is_some() || self.output.is_some() || self.no_open {
+            return Err(CommandError::InvalidOptions {
+                message: "--since, --output, and --no-open apply to the trends report".to_owned(),
+            });
+        }
+        Ok(())
+    }
+
+    fn top(&self, default: usize) -> Result<usize, CommandError> {
+        let top = self.top.unwrap_or(default);
+        if !(1..=15).contains(&top) {
+            return Err(CommandError::InvalidOptions {
+                message: "--top must be between 1 and 15".to_string(),
+            });
+        }
+        Ok(top)
+    }
+
+    fn evaluator(&self) -> Result<Evaluator, CommandError> {
+        Evaluator::new(Options {
+            cache_dir: self.cache_dir()?,
+            budget_usd: self.budget.unwrap_or(DEFAULT_SCORING_BUDGET_USD),
+            provider: self.provider.into(),
+            offline: self.offline,
+            include_tests: self.include_tests,
+            include_excluded: self.include_excluded,
+        })
+        .map_err(explain_scoring)
+    }
+
+    /// Checks the options first, so a mistyped hook still fails loudly. After
+    /// that, as a pre-push hook, nothing but a declined file blocks the push.
+    fn compare(&self) -> Result<CommandSuccess, CommandError> {
+        self.reject_report_options()?;
+        if self.model_info {
+            return Err(CommandError::InvalidOptions {
+                message: "--model-info does not apply when comparing changes".to_owned(),
+            });
+        }
+        let top = self.top(DEFAULT_COMPARISON_TOP)?;
+        let max_drop = self.max_drop.unwrap_or(DEFAULT_MAX_DROP);
+        if !max_drop.is_finite() || max_drop < 0.0 {
+            return Err(CommandError::InvalidOptions {
+                message: "--max-drop must be a finite, nonnegative number of points".to_owned(),
+            });
+        }
+        let framing = match self.trigger {
+            Trigger::PrePush => Framing::PrePush,
+            _ => Framing::Standalone,
+        };
+        let result = self.compare_changes(top, max_drop, framing);
+        match (result, framing) {
+            (Err(error), Framing::PrePush) => Ok(allow_push(error)),
+            (result, _) => result,
+        }
+    }
+
+    fn compare_changes(
+        &self,
+        top: usize,
+        max_drop: f64,
+        framing: Framing,
+    ) -> Result<CommandSuccess, CommandError> {
+        let cwd = env::current_dir()?;
+        let (changes, revisions) = match &self.upstream {
+            Some(upstream) => {
+                if framing == Framing::PrePush {
+                    git_hook::exit_on_enter();
+                }
+                let found = changes::since_upstream(&cwd, upstream)?;
+                let revisions = Revisions::WorkingTree {
+                    upstream: upstream.clone(),
+                    merge_base: found.merge_base,
+                };
+                (found.changes, revisions)
+            }
+            None => {
+                let Some(input) = git_hook::read_pre_push_stdin()? else {
+                    return CommandSuccess::ok();
+                };
+                if framing == Framing::PrePush {
+                    git_hook::exit_on_enter();
+                }
+                let pushed = changes::being_pushed(&cwd, &RefUpdate::parse_all(&input)?)?;
+                for local_ref in &pushed.without_base {
+                    eprintln!(
+                        "SlopOne skipped {local_ref}: none of its commits are on a remote yet, so there is nothing to compare with."
+                    );
+                }
+                (pushed.changes, Revisions::Pushed(pushed.revisions))
+            }
+        };
+        let options = TextOptions {
+            top,
+            max_drop,
+            framing,
+            prompt: self.prompt.map_or(PromptMode::Recommend, PromptMode::from),
+            revisions,
+        };
+        self.report_comparisons(&changes, &options)
+    }
+
+    fn report_comparisons(
+        &self,
+        changes: &[Change],
+        options: &TextOptions,
+    ) -> Result<CommandSuccess, CommandError> {
+        let evaluator = self.evaluator()?;
+        let progress = FileProgress::new(changes.len());
+        let comparisons = evaluator
+            .compare_all_with(changes, self.jobs, options.max_drop, &|_| {
+                progress.file_done()
+            })
+            .map_err(|error| {
+                progress.finish();
+                explain_scoring(error)
+            })?;
+        progress.finish();
+        let summary = ComparisonSummary::of(&comparisons, options.max_drop);
+        if self.json {
+            let document = Document::compared(
+                evaluator.model_info(),
+                &comparisons,
+                evaluator.usage(),
+                options.max_drop,
+            );
+            println!("{}", serde_json::to_string_pretty(&document)?);
+        } else {
+            println!("{}", render_comparisons(&comparisons, options));
+        }
+        if options.framing == Framing::PrePush {
+            if summary.error_files > 0 {
+                eprintln!(
+                    "SlopOne could not score {}; errors do not block the push.",
+                    plural(summary.error_files, "changed file")
+                );
+            }
+            if summary.declined_files > 0 {
+                eprintln!(
+                    "Push blocked: {} declined. The output above is a refactoring prompt for your coding agent.",
+                    plural(summary.declined_files, "changed file")
+                );
+                eprintln!(
+                    "Only a developer should decide to skip this check with git push --no-verify."
+                );
+            }
+        } else if summary.error_files > 0 {
+            return Err(CommandError::Unknown {
+                source: anyhow!("{} file(s) could not be evaluated", summary.error_files),
+            });
+        }
+        Ok(CommandSuccess {
+            fail: !summary.passed,
+            ..Default::default()
+        })
+    }
+}
+
+fn plural(count: usize, noun: &str) -> String {
+    if count == 1 {
+        format!("{count} {noun}")
+    } else {
+        format!("{count} {noun}s")
     }
 }
 

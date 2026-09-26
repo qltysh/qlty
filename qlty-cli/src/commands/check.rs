@@ -1,4 +1,5 @@
 use crate::format::SarifFormatter;
+use crate::git_hook;
 use crate::ui::ApplyMode;
 use crate::ui::ErrorsFormatter;
 use crate::ui::Steps;
@@ -14,10 +15,7 @@ use qlty_config::Workspace;
 use qlty_formats::{Formatter, JsonFormatter};
 use qlty_types::analysis::v1::ExecutionVerb;
 use qlty_types::analysis::v1::Level;
-use std::io::BufRead as _;
-use std::io::{self, Read};
 use std::path::PathBuf;
-use std::thread;
 use tracing::debug;
 use tracing::info;
 use tracing::warn;
@@ -153,7 +151,7 @@ impl Check {
         workspace.prepare_sources(self.skip_source_fetch)?;
 
         let git_hook_stdin = if self.upstream_from_pre_push {
-            match Self::read_pre_push_stdin()? {
+            match git_hook::read_pre_push_stdin()? {
                 Some(content) => GitHookStdin::Content(content),
                 None => {
                     info!("No commits to push, skipping checks");
@@ -192,7 +190,7 @@ impl Check {
             }
 
             if self.trigger == Trigger::PreCommit || self.trigger == Trigger::PrePush {
-                self.spawn_exit_on_enter_thread();
+                git_hook::exit_on_enter();
             }
 
             let executor = Executor::new(&plan);
@@ -234,23 +232,6 @@ impl Check {
         }
 
         CommandSuccess::ok()
-    }
-
-    fn spawn_exit_on_enter_thread(&self) {
-        eprintln!("Tap {} to skip...", style("enter").bold(),);
-
-        thread::spawn(move || loop {
-            let mut input = String::new();
-
-            if let Ok(tty) = std::fs::File::open("/dev/tty") {
-                let mut tty_reader = io::BufReader::new(tty);
-                tty_reader.read_line(&mut input).ok();
-
-                if input == "\n" {
-                    std::process::exit(0);
-                }
-            }
-        });
     }
 
     fn format_after_fix(&self, settings: &Settings, report: &Report) -> Result<Report> {
@@ -393,17 +374,6 @@ impl Check {
                     }
                 }
             }
-        }
-    }
-
-    fn read_pre_push_stdin() -> Result<Option<String>> {
-        let mut buffer = String::new();
-        io::stdin().read_to_string(&mut buffer)?;
-
-        if buffer.trim().is_empty() {
-            Ok(None)
-        } else {
-            Ok(Some(buffer))
         }
     }
 
