@@ -9,7 +9,11 @@ use std::path::Path;
 use std::os::unix::fs::PermissionsExt as _;
 
 #[derive(Args, Debug)]
-pub struct Install {}
+pub struct Install {
+    /// Also block pushes that make changed files score worse with qlty slop-one
+    #[arg(long)]
+    pub slop_one: bool,
+}
 
 const QLTY_HOOKS_DIR: &str = ".qlty/hooks";
 
@@ -20,7 +24,14 @@ impl Install {
         fs::create_dir_all(QLTY_HOOKS_DIR)?;
 
         install_hook("pre-commit", include_str!("./pre_commit.sh"))?;
-        install_hook("pre-push", include_str!("./pre_push.sh"))?;
+        if self.slop_one {
+            install_hook("pre-push", include_str!("./pre_push_slop_one.sh"))?;
+            println!(
+                "The pre-push hook also runs qlty slop-one, which needs TYPESAFE_API_KEY. Without it, SlopOne warns and lets pushes through."
+            );
+        } else {
+            install_hook("pre-push", include_str!("./pre_push.sh"))?;
+        }
 
         CommandSuccess::ok()
     }

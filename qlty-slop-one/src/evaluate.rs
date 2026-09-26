@@ -14,7 +14,7 @@ use crate::model::{Model, ModelInfo, Observed};
 use crate::report::{Evaluated, FileOutcome, Skipped};
 use crate::scope::Exclusion;
 use crate::scope::Scope;
-use crate::source::{source_text, PreparedSource};
+use crate::source::{source_text, source_text_from_bytes, PreparedSource};
 
 /// Options for one invocation.
 #[derive(Clone, Debug)]
@@ -64,7 +64,7 @@ impl Evaluator {
     /// except a missing credential or an exhausted budget, which no file can
     /// get past and which therefore stop the run.
     pub fn evaluate(&self, path: &Path) -> Result<FileOutcome> {
-        match self.evaluate_file(path) {
+        match self.evaluate_file(path, None) {
             Ok(outcome) => Ok(outcome),
             Err(error) if error.is_fatal() => Err(error),
             Err(error) => Ok(FileOutcome::failed(path, &error)),
@@ -85,13 +85,7 @@ impl Evaluator {
         jobs: NonZeroUsize,
         on_file: &(dyn Fn(&FileOutcome) + Sync),
     ) -> Result<Vec<FileOutcome>> {
-        let pool = rayon::ThreadPoolBuilder::new()
-            .num_threads(jobs.get())
-            .build()
-            .map_err(|error| {
-                Error::Jev(format!("Could not start {jobs} worker threads: {error}"))
-            })?;
-        pool.install(|| {
+        thread_pool(jobs)?.install(|| {
             paths
                 .par_iter()
                 .map(|path| {
@@ -103,8 +97,10 @@ impl Evaluator {
         })
     }
 
-    fn evaluate_file(&self, path: &Path) -> Result<FileOutcome> {
-        if !path.is_file() {
+    /// Evaluate the file at `path`, reading it from disk unless `raw` holds
+    /// its contents.
+    pub(crate) fn evaluate_file(&self, path: &Path, raw: Option<&[u8]>) -> Result<FileOutcome> {
+        if raw.is_none() && !path.is_file() {
             return Err(Error::NotASourceFile(path.to_path_buf()));
         }
         let include_tests = self.options.include_tests || self.options.include_excluded;
@@ -134,7 +130,10 @@ impl Evaluator {
         };
         let mut text = None;
         if exclusion.is_none() {
-            let contents = source_text(path)?;
+            let contents = match raw {
+                Some(raw) => source_text_from_bytes(path, raw)?,
+                None => source_text(path)?,
+            };
             if !include_excluded {
                 exclusion = scope.source_exclusion(Some(&contents))?;
             }
@@ -194,8 +193,16 @@ impl Evaluator {
             language: measurement.language.display_name(),
             source_scope: serde_json::to_value(prepared.info())?,
             explanation,
+            features: score.features,
         }))
     }
+}
+
+pub(crate) fn thread_pool(jobs: NonZeroUsize) -> Result<rayon::ThreadPool> {
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(jobs.get())
+        .build()
+        .map_err(|error| Error::Jev(format!("Could not start {jobs} worker threads: {error}")))
 }
 
 /// The kebab-case name serde gives an enum, as the Python dicts spelled it.

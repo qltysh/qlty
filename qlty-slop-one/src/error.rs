@@ -72,6 +72,15 @@ impl Error {
     pub fn is_fatal(&self) -> bool {
         matches!(self, Self::MissingCredential(_) | Self::BudgetExhausted)
     }
+
+    /// Whether the file is not source code SlopOne can read at all, such as
+    /// an image or a README, rather than source that failed to analyze.
+    pub fn is_unsupported_source(&self) -> bool {
+        matches!(
+            self,
+            Self::UnknownLanguage | Self::SourceNotUtf8(_) | Self::SourceEmptyOrBinary(_)
+        )
+    }
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

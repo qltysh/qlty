@@ -20,7 +20,7 @@ use qlty_slop_one_trends::periods::Interval;
 use qlty_slop_one_trends::pipeline::{Observer, Stage};
 use qlty_slop_one_trends::run::Manifest;
 
-use crate::CommandError;
+use crate::{CommandError, CommandSuccess};
 
 const SIGNUP_URL: &str = "https://typesafe.ai/";
 const OPENROUTER_KEYS_URL: &str = "https://openrouter.ai/settings/keys";
@@ -586,6 +586,27 @@ pub fn explain_scoring(error: qlty_slop_one::Error) -> CommandError {
             source: other.into(),
         },
     }
+}
+
+/// Reports an error in a pre-push hook as a warning and lets the push
+/// continue: only a declined file blocks a push.
+pub fn allow_push(error: CommandError) -> CommandSuccess {
+    eprintln!(
+        "{} {}",
+        style("⚠").yellow().bold(),
+        style("SlopOne could not check this push, so it does not block it.").bold()
+    );
+    match error {
+        CommandError::Explained { title, detail } => {
+            eprintln!("  {title}");
+            for line in detail {
+                eprintln!("  {line}");
+            }
+        }
+        CommandError::Unknown { source } => eprintln!("  {source:#}"),
+        other => eprintln!("  {other}"),
+    }
+    CommandSuccess::default()
 }
 
 fn explained(title: &str, detail: &[&str]) -> CommandError {

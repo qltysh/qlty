@@ -206,3 +206,25 @@ fn init_network_tests() {
 fn git_based_check_tests() {
     setup_and_run_diff_test_cases("tests/cmd/check/diff_tests/*.toml");
 }
+
+fn install_githooks(args: &[&str]) -> String {
+    let fixture = tempfile::tempdir().unwrap();
+    let root = fixture.path();
+    fs::create_dir_all(root.join(".qlty")).unwrap();
+    fs::write(root.join(".qlty/qlty.toml"), "config_version = \"0\"\n").unwrap();
+    let _repository = qlty_test_utilities::git::init(root);
+    let output = run_qlty(root, &[&["githooks", "install"], args].concat());
+    assert!(output.status.success());
+    fs::read_to_string(root.join(".qlty/hooks/pre-push.sh")).unwrap()
+}
+
+#[test]
+fn githooks_install_leaves_slop_one_out_by_default() {
+    assert!(!install_githooks(&[]).contains("slop-one"));
+}
+
+#[test]
+fn githooks_install_with_slop_one_adds_it_to_the_pre_push_hook() {
+    assert!(install_githooks(&["--slop-one"])
+        .contains("qlty slop-one --trigger pre-push --upstream-from-pre-push"));
+}

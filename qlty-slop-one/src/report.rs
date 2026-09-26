@@ -5,8 +5,10 @@ use std::path::Path;
 use serde::Serialize;
 use serde_json::Value;
 
+use crate::compare::ComparisonSummary;
 use crate::features::Field;
 use crate::jev::Usage;
+use crate::measure::LineSpan;
 use crate::model::{Explanation, ModelInfo, Observed};
 use crate::scoring::format_score;
 
@@ -26,6 +28,9 @@ pub struct Evaluated {
     pub source_scope: Value,
     #[serde(flatten)]
     pub explanation: Explanation,
+    /// The 39 model inputs in feature order.
+    #[serde(skip)]
+    pub features: Vec<f64>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -164,6 +169,9 @@ pub struct Document {
     pub evaluated: usize,
     pub summary: Summary,
     pub usage: Usage,
+    /// Present only when files were compared with their earlier versions.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub comparison: Option<ComparisonSummary>,
 }
 
 impl Document {
@@ -186,12 +194,13 @@ impl Document {
             results,
             summary,
             usage,
+            comparison: None,
         }
     }
 }
 
 /// Python's `format(value, 'g')` for the integral magnitudes SlopOne reports.
-fn format_general(value: f64) -> String {
+pub(crate) fn format_general(value: f64) -> String {
     if value.fract() == 0.0 && value.abs() < 1e16 {
         format!("{}", value as i64)
     } else {
@@ -222,6 +231,15 @@ pub fn render_text(outcome: &FileOutcome, top: usize) -> String {
         explanation.threshold_score,
         result.language
     )];
+    lines.extend(detail_lines(result, top));
+    lines.join("\n")
+}
+
+/// The lines [`render_text`] prints under a file's status line: the margin,
+/// any excluded test modules, and the main factors.
+pub(crate) fn detail_lines(result: &Evaluated, top: usize) -> Vec<String> {
+    let explanation = &result.explanation;
+    let mut lines = vec![];
     let margin = explanation.score_margin;
     if margin == 0.0 {
         lines.push("  Score is at the cutoff.".to_string());
@@ -236,20 +254,7 @@ pub fn render_text(outcome: &FileOutcome, top: usize) -> String {
             "  Score is {distance} points {direction} the cutoff."
         ));
     }
-    if let Some(modules) = result
-        .source_scope
-        .get("excluded_modules")
-        .and_then(Value::as_array)
-    {
-        if !modules.is_empty() {
-            lines.push(format!(
-                "  Excluded {} inline test module(s); analyzed {} of {} lines. Locations refer to the original file.",
-                modules.len(),
-                result.source_scope["analyzed_lines"],
-                result.source_scope["original_lines"]
-            ));
-        }
-    }
+    lines.extend(excluded_modules_line(result));
     let negative: Vec<_> = explanation
         .factors
         .iter()
@@ -287,21 +292,9 @@ pub fn render_text(outcome: &FileOutcome, top: usize) -> String {
                             format_general(summary.threshold as f64)
                         ));
                     }
-                    let locations: Vec<String> = summary
-                        .locations
-                        .iter()
-                        .take(3)
-                        .map(|span| {
-                            if span.start_line == span.end_line {
-                                span.start_line.to_string()
-                            } else {
-                                format!("{}–{}", span.start_line, span.end_line)
-                            }
-                        })
-                        .collect();
-                    if !locations.is_empty() {
+                    if let Some(lines) = line_ranges(&summary.locations) {
                         detail.push_str("; lines ");
-                        detail.push_str(&locations.join(", "));
+                        detail.push_str(&lines);
                     }
                     detail
                 }
@@ -330,7 +323,39 @@ pub fn render_text(outcome: &FileOutcome, top: usize) -> String {
     {
         lines.push("  Qlty measurements describe related properties of the same findings; their lines can overlap across factors.".to_string());
     }
-    lines.join("\n")
+    lines
+}
+
+/// The first three line ranges, such as `17–34, 37–54`.
+pub(crate) fn line_ranges(locations: &[LineSpan]) -> Option<String> {
+    let ranges: Vec<String> = locations
+        .iter()
+        .take(3)
+        .map(|span| {
+            if span.start_line == span.end_line {
+                span.start_line.to_string()
+            } else {
+                format!("{}–{}", span.start_line, span.end_line)
+            }
+        })
+        .collect();
+    (!ranges.is_empty()).then(|| ranges.join(", "))
+}
+
+/// Notes inline Rust test modules left out of the analysis, if any.
+pub(crate) fn excluded_modules_line(result: &Evaluated) -> Option<String> {
+    let modules = result
+        .source_scope
+        .get("excluded_modules")
+        .and_then(Value::as_array)?;
+    (!modules.is_empty()).then(|| {
+        format!(
+            "  Excluded {} inline test module(s); analyzed {} of {} lines. Locations refer to the original file.",
+            modules.len(),
+            result.source_scope["analyzed_lines"],
+            result.source_scope["original_lines"]
+        )
+    })
 }
 
 pub fn render_summary(summary: &Summary) -> String {
@@ -379,6 +404,7 @@ mod tests {
             path: path.to_string(),
             language: "Python",
             source_scope: Value::Null,
+            features: vec![],
             explanation: Explanation {
                 passed,
                 score,
