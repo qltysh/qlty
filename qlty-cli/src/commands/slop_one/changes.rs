@@ -513,6 +513,6 @@ mod tests {
         let changes = since_upstream(&dir.path().join("sub"), "HEAD")
             .unwrap()
             .changes;
-        assert_eq!(paths(&changes), ["../a.py"]);
+        assert_eq!(changes[0].path, Path::new("..").join("a.py"));
     }
 }
