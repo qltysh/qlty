@@ -222,7 +222,7 @@ body:has(dialog[open]) { overflow: hidden; }
 .status-line { color: var(--muted); font-size: .875rem; }
 /* The refactor pill floats over the list in every state, so the action is
    discoverable before anything is checked. */
-.floating-bar { position: absolute; left: 50%; bottom: 4.5rem; z-index: 2; display: flex; align-items: center; gap: .25rem; -webkit-user-select: none; user-select: none; padding: .375rem .375rem .375rem 1.25rem; border-radius: 999px; background: var(--ink); color: var(--paper); box-shadow: 0 10px 28px rgb(20 25 20 / 28%), 0 0 0 1px rgb(255 255 255 / 8%) inset; font-size: .875rem; white-space: nowrap; transform: translateX(-50%); }
+.floating-bar { position: absolute; left: 50%; bottom: .75rem; z-index: 2; display: flex; align-items: center; gap: .25rem; -webkit-user-select: none; user-select: none; padding: .375rem .375rem .375rem 1.25rem; border-radius: 999px; background: var(--ink); color: var(--paper); box-shadow: 0 10px 28px rgb(20 25 20 / 28%), 0 0 0 1px rgb(255 255 255 / 8%) inset; font-size: .875rem; white-space: nowrap; transform: translateX(-50%); }
 .floating-bar .count { font-weight: 500; font-variant-numeric: tabular-nums; }
 .floating-bar .count.quiet { color: rgb(255 255 255 / 75%); font-weight: 400; }
 .floating-bar .divider { width: 1px; height: 1.25rem; margin: 0 .5rem 0 .75rem; background: rgb(255 255 255 / 20%); }
