@@ -7,6 +7,7 @@ use crate::{tool::ToolType, ui::ProgressTask, Tool};
 use anyhow::{bail, Context, Result};
 use itertools::Itertools;
 use qlty_analysis::utils::fs::path_to_native_string;
+use qlty_config::config::PluginDef;
 use serde_json::Value;
 use sha2::Digest;
 use std::env::split_paths;
@@ -253,33 +254,36 @@ impl Composer {
 
         let mut lock_file_staged = false;
 
-        if php_package.plugin.package_filters.is_empty() {
-            let package_file = php_package
-                .plugin
-                .package_file
-                .as_ref()
-                .with_context(|| "Missing package_file in plugin definition")?;
-
-            let package_file_path = PathBuf::from(package_file);
-            if let Some(parent_dir) = package_file_path.parent() {
-                let lock_file = parent_dir.join("composer.lock");
-
-                if lock_file.exists() {
-                    let staging_lock_file = install_dir.join("composer.lock");
-                    debug!(
-                        "Staging lock file from {:?} to {:?} with dev packages collapsed",
-                        lock_file, staging_lock_file
-                    );
-                    let lock_contents = std::fs::read_to_string(&lock_file)?;
-                    let staged_lock_contents =
-                        Self::collapse_dev_packages(&lock_contents).unwrap_or(lock_contents);
-                    std::fs::write(staging_lock_file, staged_lock_contents)?;
-                    lock_file_staged = true;
-                }
-            }
+        if let Some(lock_file) = Self::lock_file_to_stage(&php_package.plugin)? {
+            let staging_lock_file = install_dir.join("composer.lock");
+            debug!(
+                "Staging lock file from {:?} to {:?} with dev packages collapsed",
+                lock_file, staging_lock_file
+            );
+            let lock_contents = std::fs::read_to_string(&lock_file)?;
+            let staged_lock_contents =
+                Self::collapse_dev_packages(&lock_contents).unwrap_or(lock_contents);
+            std::fs::write(staging_lock_file, staged_lock_contents)?;
+            lock_file_staged = true;
         }
 
         Ok(lock_file_staged)
+    }
+
+    pub fn lock_file_to_stage(plugin: &PluginDef) -> Result<Option<PathBuf>> {
+        if !plugin.package_filters.is_empty() {
+            return Ok(None);
+        }
+
+        let package_file = plugin
+            .package_file
+            .as_ref()
+            .with_context(|| "Missing package_file in plugin definition")?;
+
+        Ok(PathBuf::from(package_file)
+            .parent()
+            .map(|parent_dir| parent_dir.join("composer.lock"))
+            .filter(|lock_file| lock_file.exists()))
     }
 }
 
@@ -414,18 +418,6 @@ pub mod test {
     #[test]
     fn test_update_existing_composer_json() {
         with_php_package(|pkg, tempdir, _| {
-            let existing_composer_file = PathBuf::from(pkg.directory()).join("composer.json");
-            std::fs::write(
-                &existing_composer_file,
-                r#"
-                {
-                    "require": {
-                        "tool": "1.0.0"
-                    }
-                }"#,
-            )
-            .unwrap();
-
             let package_file = tempdir.path().join("user-composer.json");
             std::fs::write(
                 &package_file,
@@ -449,6 +441,18 @@ pub mod test {
 
             pkg.plugin.package_file = Some(path_to_string(package_file));
             reroute_tools_root(tempdir, pkg);
+
+            let existing_composer_file = PathBuf::from(pkg.directory()).join("composer.json");
+            std::fs::write(
+                &existing_composer_file,
+                r#"
+                {
+                    "require": {
+                        "tool": "1.0.0"
+                    }
+                }"#,
+            )
+            .unwrap();
 
             Composer::update_composer_json(pkg).unwrap();
 
