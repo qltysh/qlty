@@ -4,7 +4,7 @@ use super::installations::initialize_installation;
 use super::runnable_archive::RunnableArchive;
 use super::Tool;
 use super::ToolType;
-use crate::tool::{finalize_installation_from_cmd_result, RuntimeTool};
+use crate::tool::{finalize_installation_from_cmd_result, update_package_hash, RuntimeTool};
 use crate::ui::{ProgressBar, ProgressTask};
 use anyhow::{bail, Context, Result};
 use composer::Composer;
@@ -127,7 +127,14 @@ impl Tool for PhpPackage {
     }
 
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
-        sha.update(self.name().as_bytes());
+        update_package_hash(self, sha)?;
+
+        if self.plugin.package_file.is_some() {
+            if let Some(lock_file) = Composer::lock_file_to_stage(&self.plugin)? {
+                sha.update(b"composer.lock");
+                std::io::copy(&mut std::fs::File::open(lock_file)?, sha)?;
+            }
+        }
 
         Ok(())
     }
@@ -498,5 +505,85 @@ pub mod test {
 
             Ok(())
         });
+    }
+
+    fn php_package_with_package_file(package_file: &std::path::Path) -> PhpPackage {
+        PhpPackage {
+            cmd: default_command_builder(),
+            name: "tool".into(),
+            plugin: PluginDef {
+                package: Some("test".to_string()),
+                version: Some("1.0.0".to_string()),
+                package_file: Some(package_file.to_str().unwrap().to_string()),
+                ..Default::default()
+            },
+            runtime: super::Php {
+                version: "1.0.0".to_string(),
+            },
+        }
+    }
+
+    #[test]
+    fn php_package_directory_name_differs_by_package_file_contents() {
+        let temp_path = tempdir().unwrap();
+        let file_a = temp_path.path().join("a.json");
+        let file_b = temp_path.path().join("b.json");
+        std::fs::write(&file_a, r#"{"require": {"a/a": "1.0"}}"#).unwrap();
+        std::fs::write(&file_b, r#"{"require": {"b/b": "1.0"}}"#).unwrap();
+
+        assert_ne!(
+            php_package_with_package_file(&file_a).directory_name(),
+            php_package_with_package_file(&file_b).directory_name()
+        );
+    }
+
+    #[test]
+    fn php_package_directory_name_differs_by_lock_file_contents() {
+        let dir_a = tempdir().unwrap();
+        let dir_b = tempdir().unwrap();
+        let file_a = dir_a.path().join("composer.json");
+        let file_b = dir_b.path().join("composer.json");
+        std::fs::write(&file_a, "{}").unwrap();
+        std::fs::write(&file_b, "{}").unwrap();
+        std::fs::write(dir_a.path().join("composer.lock"), r#"{"packages": []}"#).unwrap();
+        std::fs::write(dir_b.path().join("composer.lock"), r#"{"packages": [{}]}"#).unwrap();
+
+        assert_ne!(
+            php_package_with_package_file(&file_a).directory_name(),
+            php_package_with_package_file(&file_b).directory_name()
+        );
+    }
+
+    #[test]
+    fn php_package_directory_name_differs_by_lock_file_presence() {
+        let dir_a = tempdir().unwrap();
+        let dir_b = tempdir().unwrap();
+        let file_a = dir_a.path().join("composer.json");
+        let file_b = dir_b.path().join("composer.json");
+        std::fs::write(&file_a, "{}").unwrap();
+        std::fs::write(&file_b, "{}").unwrap();
+        std::fs::write(dir_a.path().join("composer.lock"), "").unwrap();
+
+        assert_ne!(
+            php_package_with_package_file(&file_a).directory_name(),
+            php_package_with_package_file(&file_b).directory_name()
+        );
+    }
+
+    #[test]
+    fn php_package_directory_name_ignores_lock_file_with_package_filters() {
+        let dir_a = tempdir().unwrap();
+        let dir_b = tempdir().unwrap();
+        let file_a = dir_a.path().join("composer.json");
+        let file_b = dir_b.path().join("composer.json");
+        std::fs::write(&file_a, "{}").unwrap();
+        std::fs::write(&file_b, "{}").unwrap();
+        std::fs::write(dir_a.path().join("composer.lock"), r#"{"packages": []}"#).unwrap();
+        let mut pkg_a = php_package_with_package_file(&file_a);
+        let mut pkg_b = php_package_with_package_file(&file_b);
+        pkg_a.plugin.package_filters = vec!["tool".to_string()];
+        pkg_b.plugin.package_filters = vec!["tool".to_string()];
+
+        assert_eq!(pkg_a.directory_name(), pkg_b.directory_name());
     }
 }

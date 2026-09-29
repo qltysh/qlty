@@ -114,6 +114,39 @@ pub fn global_tools_root() -> String {
     )
 }
 
+pub fn update_package_hash<T: Tool + ?Sized>(tool: &T, sha: &mut sha2::Sha256) -> Result<()> {
+    if let Some(runtime) = tool.runtime() {
+        runtime.update_hash(sha)?;
+    }
+
+    if let Some(plugin) = tool.plugin() {
+        if let Some(package) = plugin.package {
+            sha.update(&package);
+        }
+
+        if let Some(version) = plugin.version {
+            sha.update(&version);
+        }
+
+        let mut extra_packages = plugin.extra_packages.clone();
+        extra_packages.sort_by(|a, b| a.name.cmp(&b.name));
+
+        for package in extra_packages {
+            sha.update(&package.name);
+            sha.update(&package.version);
+        }
+
+        if let Some(package_file) = plugin.package_file {
+            sha.update(std::fs::read_to_string(package_file)?);
+        }
+
+        for filter in &plugin.package_filters {
+            sha.update(filter);
+        }
+    }
+    Ok(())
+}
+
 fn lock_error() -> Error {
     Error::other("Failed to acquire lock for tool installation")
 }
@@ -165,36 +198,7 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
-        if let Some(runtime) = self.runtime() {
-            runtime.update_hash(sha)?;
-        }
-
-        if let Some(plugin) = self.plugin() {
-            if let Some(package) = plugin.package {
-                sha.update(&package);
-            }
-
-            if let Some(version) = plugin.version {
-                sha.update(&version);
-            }
-
-            let mut extra_packages = plugin.extra_packages.clone();
-            extra_packages.sort_by(|a, b| a.name.cmp(&b.name));
-
-            for package in extra_packages {
-                sha.update(&package.name);
-                sha.update(&package.version);
-            }
-
-            if let Some(package_file) = plugin.package_file {
-                sha.update(std::fs::read_to_string(package_file)?);
-            }
-
-            for filter in &plugin.package_filters {
-                sha.update(filter);
-            }
-        }
-        Ok(())
+        update_package_hash(self, sha)
     }
 
     fn pre_setup(&self, task: &ProgressTask) -> Result<()> {
