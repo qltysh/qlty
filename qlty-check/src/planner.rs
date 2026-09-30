@@ -76,6 +76,7 @@ pub struct Planner {
 impl Planner {
     pub fn new(verb: ExecutionVerb, settings: &Settings) -> Result<Self> {
         let workspace = Workspace::for_root(&settings.root)?;
+        workspace.library()?.create()?;
         let cache = Self::build_cache(&workspace, settings)?;
         let issue_cache = IssueCache::new(cache.clone());
 
@@ -380,11 +381,8 @@ impl Planner {
 
     fn build_cache(workspace: &Workspace, settings: &Settings) -> Result<Box<dyn Cache>> {
         if settings.cache {
-            let library = workspace.library()?;
-            library.create()?;
-
             Ok(Box::new(FilesystemCache::new(
-                library.results_dir().join("issues"),
+                workspace.library()?.results_dir().join("issues"),
                 "protos",
             )))
         } else {
