@@ -4,6 +4,14 @@
 
 CLI releases are now served over HTTPS only. Versions before v0.590.0 fetch the latest-release manifest over HTTP, so `qlty upgrade` and `qlty version` now fail on them with an error naming an `http://` URL. `qlty check`, `qlty fmt`, `qlty coverage publish`, and `qlty --version` are unaffected. To recover, run `qlty upgrade --version 0.644.0`, which skips the manifest lookup, or re-run the installer (`curl https://qlty.sh | sh` on macOS and Linux, `powershell -c "iwr https://qlty.sh | iex"` on Windows).
 
+## v0.650.0 (2026-09-30)
+
+### Fixed
+
+- Give PHPStan its own temp directory per repository so concurrent runs on different PHPStan major versions no longer delete each other's cached DI containers, which caused `Unable to include ... Container_*.php` failures (#2873)
+- Key PHP tool sandboxes on `composer.json` and `composer.lock` contents instead of just the tool name, so each repository runs against its own packages instead of whichever repository installed first (fixing stale coding standards, "Referenced sniff X does not exist", and phantom PHPStan findings). PHP tools are reinstalled once after upgrading (#2872)
+- Lower the slop-one report's floating bar closer to the bottom of the page (#2869)
+
 ## v0.649.0 (2026-09-26)
 
 ### New
