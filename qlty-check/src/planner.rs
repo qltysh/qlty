@@ -379,10 +379,10 @@ impl Planner {
     }
 
     fn build_cache(workspace: &Workspace, settings: &Settings) -> Result<Box<dyn Cache>> {
-        if settings.cache {
-            let library = workspace.library()?;
-            library.create()?;
+        let library = workspace.library()?;
+        library.create()?;
 
+        if settings.cache {
             Ok(Box::new(FilesystemCache::new(
                 library.results_dir().join("issues"),
                 "protos",

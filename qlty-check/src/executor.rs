@@ -61,7 +61,6 @@ impl Executor {
     }
 
     pub fn install_and_invoke(&self) -> Result<Results> {
-        self.plan.workspace.library()?.create()?;
         let install_messages = self.install()?;
         if self.plan.install_only {
             return Ok(Results::new(install_messages, vec![], vec![], vec![]));
