@@ -9,6 +9,7 @@ RUN cargo chef prepare
 
 FROM chef AS builder
 COPY --from=planner /app/recipe.json .
+COPY rust-toolchain.toml .
 # The line compiles dependencies. Since it's before the COPY line
 # it will be cached and not re-run unless the dependencies change.
 RUN cargo chef cook --release
