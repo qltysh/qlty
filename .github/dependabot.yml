@@ -14,7 +14,7 @@ updates:
     cooldown:
       default-days: 7
   - package-ecosystem: "npm"
-    directory: "/plugins"
+    directory: "/qlty-plugins/plugins"
     schedule:
       interval: "weekly"
     cooldown:
