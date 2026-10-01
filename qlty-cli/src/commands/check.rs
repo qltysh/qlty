@@ -149,6 +149,7 @@ impl Check {
 
         let workspace = Workspace::require_initialized()?;
         workspace.prepare_sources(self.skip_source_fetch)?;
+        workspace.library()?.auto_prune();
 
         let git_hook_stdin = if self.upstream_from_pre_push {
             match git_hook::read_pre_push_stdin()? {
