@@ -1,6 +1,7 @@
 use anyhow::Result;
 use console::style;
 use qlty_check::Report;
+use qlty_config::Workspace;
 
 #[derive(Debug)]
 pub struct ErrorsFormatter {
@@ -17,7 +18,7 @@ impl ErrorsFormatter {
 
 impl ErrorsFormatter {
     pub fn write_to(&self, writer: &mut dyn std::io::Write) -> Result<()> {
-        let cwd = std::env::current_dir().expect("Unable to identify current directory");
+        let cwd = Workspace::invoked_from();
 
         for invocation in &self.report.invocations {
             let absolute_outfile_path = invocation.outfile_path();

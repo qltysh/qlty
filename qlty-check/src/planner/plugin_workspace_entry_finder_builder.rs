@@ -81,7 +81,7 @@ impl PluginWorkspaceEntryFinderBuilder {
         matchers.push(Box::new(file_matcher));
 
         matchers.push(Box::new(PrefixMatcher::new(
-            path_to_string(Workspace::current_dir()),
+            path_to_string(Workspace::invoked_from()),
             self.root.to_owned(),
         )));
 
@@ -107,7 +107,7 @@ impl PluginWorkspaceEntryFinderBuilder {
     }
 
     fn compute_source(&mut self) -> Result<()> {
-        let cwd = Workspace::current_dir();
+        let cwd = Workspace::invoked_from();
 
         self.source = Some(match self.mode {
             TargetMode::All | TargetMode::Sample(_) => Arc::new(AllSource::new(self.root.clone())),

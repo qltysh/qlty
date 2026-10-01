@@ -1,7 +1,10 @@
 use super::{LanguagesShebangMatcher, OrMatcher, TargetMode};
 use crate::{
     git::GitDiff,
-    workspace_entries::{matchers::ExcludeGroupsMatcher, AndMatcher, LanguageGlobsMatcher},
+    utils::fs::path_to_string,
+    workspace_entries::{
+        matchers::ExcludeGroupsMatcher, AndMatcher, LanguageGlobsMatcher, PrefixMatcher,
+    },
     AllSource, ArgsSource, DiffSource, FileMatcher, WorkspaceEntryFinder, WorkspaceEntryMatcher,
     WorkspaceEntrySource,
 };
@@ -9,7 +12,7 @@ use anyhow::{bail, Result};
 use qlty_config::{
     config::exclude_group::ExcludeGroup,
     issue_transformer::{IssueTransformer, NullIssueTransformer},
-    QltyConfig,
+    QltyConfig, Workspace,
 };
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tracing::debug;
@@ -28,7 +31,7 @@ impl Default for WorkspaceEntryFinderBuilder {
     fn default() -> Self {
         Self {
             mode: TargetMode::All,
-            root: std::env::current_dir().unwrap(),
+            root: Workspace::current_dir(),
             paths: Vec::new(),
             config: QltyConfig::default(),
             exclude_tests: true,
@@ -72,6 +75,15 @@ impl WorkspaceEntryFinderBuilder {
 
         // Files only
         matcher.push(Box::new(FileMatcher));
+
+        // Only files under the directory qlty was invoked from
+        let invoked_from = Workspace::invoked_from();
+        if invoked_from.starts_with(&self.root) {
+            matcher.push(Box::new(PrefixMatcher::new(
+                path_to_string(invoked_from),
+                self.root.clone(),
+            )));
+        }
 
         // Exclude explicit excludes and tests
         let mut exclude_patterns = self.config.exclude_patterns.clone();

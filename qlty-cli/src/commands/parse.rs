@@ -7,6 +7,7 @@ use qlty_config::Workspace;
 use std::io::Write;
 use std::path::PathBuf;
 
+use crate::arguments::invoked_path;
 use crate::{Arguments, CommandError, CommandSuccess};
 
 #[derive(Args, Debug)]
@@ -16,6 +17,7 @@ pub struct Parse {
     pub locations: bool,
 
     /// The path to a file to parse
+    #[arg(value_parser = invoked_path)]
     pub file: PathBuf,
 }
 

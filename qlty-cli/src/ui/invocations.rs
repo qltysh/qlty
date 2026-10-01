@@ -5,6 +5,7 @@ use console::style;
 use num_format::{Locale, ToFormattedString as _};
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_check::{executor::InvocationStatus, Report};
+use qlty_config::Workspace;
 use tabwriter::TabWriter;
 
 pub fn print_invocations(
@@ -35,7 +36,7 @@ pub fn print_invocations(
         writeln!(writer)?;
     }
 
-    let cwd = std::env::current_dir().expect("Unable to identify current directory");
+    let cwd = Workspace::invoked_from();
     let mut tw = TabWriter::new(vec![]);
 
     tw.write_all(

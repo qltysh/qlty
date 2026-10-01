@@ -6,6 +6,13 @@
     "filesAnalyzed": 53,
     "startTime": "[..]",
     "finishTime": "[..]",
+    "commitMessage": "initial/n",
+    "committedAt": "2024-01-01T00:00:00+00:00",
+    "committerEmail": "test@codeclimate.com",
+    "committerName": "TEST",
+    "authorEmail": "test@codeclimate.com",
+    "authorName": "TEST",
+    "authoredAt": "2024-01-01T00:00:00+00:00",
     "generatedAt": "[..]",
     "time": "[..]"
   },
@@ -56,7 +63,7 @@
         [..]
         [..]
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -102,7 +109,7 @@
         [..]
         [..]
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -148,7 +155,7 @@
         [..]
         [..]
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -194,7 +201,7 @@
         [..]
         [..]
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -240,7 +247,7 @@
         [..]
         [..]
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -286,7 +293,7 @@
         [..]
         [..]
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -324,7 +331,7 @@
       "partialFingerprints": {
         "file.path": "FileComplexity.swift"
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -362,7 +369,7 @@
       "partialFingerprints": {
         "file.path": "NestedControl.swift"
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -400,7 +407,7 @@
       "partialFingerprints": {
         "file.path": "file_complexity.swift"
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -438,7 +445,7 @@
       "partialFingerprints": {
         "file.path": "nested_control.swift"
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -476,7 +483,7 @@
       "partialFingerprints": {
         "function.name": "main"
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -514,7 +521,7 @@
       "partialFingerprints": {
         "function.name": "f2"
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -552,7 +559,7 @@
       "partialFingerprints": {
         "function.name": "multipleConditions"
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -590,7 +597,7 @@
       "partialFingerprints": {
         "function.name": "main"
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -628,7 +635,7 @@
       "partialFingerprints": {
         "function.name": "f2"
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -662,7 +669,7 @@
         [..]
         [..]
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -696,7 +703,7 @@
         [..]
         [..]
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -730,7 +737,7 @@
         [..]
         [..]
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -764,7 +771,7 @@
         [..]
         [..]
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -798,7 +805,7 @@
         [..]
         [..]
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
       "analysisId": "[..]",
@@ -832,7 +839,7 @@
         [..]
         [..]
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     }
   ],
   "stats": [

@@ -1,3 +1,4 @@
+use crate::arguments::invoked_path;
 use crate::export::AnalysisExport;
 use crate::{Arguments, CommandError, CommandSuccess};
 use anyhow::Result;
@@ -53,7 +54,7 @@ pub struct Build {
     #[arg(long)]
     pub fetch_sources: bool,
 
-    #[arg(long)]
+    #[arg(long, value_parser = invoked_path)]
     output_path: Option<PathBuf>,
 }
 
