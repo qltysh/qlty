@@ -7,6 +7,9 @@ use anyhow::{bail, Context, Result};
 use git2::Repository;
 use ignore::{Walk, WalkBuilder};
 use std::path::{Path, PathBuf};
+use std::sync::OnceLock;
+
+static INVOKED_FROM: OnceLock<PathBuf> = OnceLock::new();
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
 pub struct Workspace {
@@ -96,6 +99,29 @@ impl Workspace {
         Ok(self.library()?.qlty_config_path())
     }
 
+    /// The directory the user ran qlty from, like git's prefix. The process
+    /// may have since changed into the workspace root.
+    pub fn invoked_from() -> PathBuf {
+        INVOKED_FROM
+            .get()
+            .cloned()
+            .unwrap_or_else(Self::current_dir)
+    }
+
+    /// Changes the process into the enclosing git repository root, so
+    /// root-relative paths resolve correctly from a subdirectory.
+    pub fn enter_root() -> Result<()> {
+        let invoked_from = Self::invoked_from();
+
+        if let Some(root) = Self::closest_git_repository_path(&invoked_from) {
+            std::env::set_current_dir(&root)
+                .with_context(|| format!("Failed to change directory to {}", root.display()))?;
+        }
+
+        INVOKED_FROM.get_or_init(|| invoked_from);
+        Ok(())
+    }
+
     pub fn current_dir() -> PathBuf {
         let curdir = std::env::current_dir().expect("current dir");
         let canonical = curdir.canonicalize().unwrap_or(curdir);
@@ -108,7 +134,7 @@ impl Workspace {
     }
 
     pub fn assert_git_directory_root() -> Result<PathBuf> {
-        let current = Self::current_dir();
+        let current = Self::invoked_from();
         let git_repository = Self::closest_git_repository_path(&current);
 
         if git_repository.is_none() {
@@ -128,7 +154,7 @@ impl Workspace {
         Ok(git_repository.unwrap())
     }
     pub fn assert_within_initialized_project() -> Result<PathBuf> {
-        let current = Self::current_dir();
+        let current = Self::invoked_from();
         let git_repository = Self::closest_git_repository_path(&current);
 
         if git_repository.is_none() {
@@ -146,7 +172,7 @@ impl Workspace {
     }
 
     pub fn assert_within_git_directory() -> Result<PathBuf> {
-        let current = Self::current_dir();
+        let current = Self::invoked_from();
         let git_repository = Self::closest_git_repository_path(&current);
 
         if git_repository.is_none() {

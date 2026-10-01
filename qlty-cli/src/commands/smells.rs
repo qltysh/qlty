@@ -1,3 +1,4 @@
+use crate::arguments::invoked_path;
 use crate::format::SarifFormatter;
 use crate::ui::Highlighter;
 use crate::ui::Steps;
@@ -55,6 +56,7 @@ pub struct Smells {
     sarif: bool,
 
     /// Files to analyze
+    #[arg(value_parser = invoked_path)]
     pub paths: Vec<PathBuf>,
 }
 
@@ -178,7 +180,11 @@ impl Smells {
                 _ => vec![],
             }
         } else {
-            self.paths.clone()
+            let root = Workspace::current_dir();
+            self.paths
+                .iter()
+                .map(|path| path.strip_prefix(&root).unwrap_or(path).to_path_buf())
+                .collect()
         };
 
         let settings = qlty_smells::duplication::Settings {
@@ -268,7 +274,7 @@ impl Smells {
     }
 
     fn write_stdout_text(&self, workspace: &Workspace, issues: &[Issue]) -> Result<()> {
-        let cwd = std::env::current_dir().expect("Unable to identify current directory");
+        let cwd = Workspace::invoked_from();
         let issues_by_path = issues
             .iter()
             .into_group_map_by(|issue| issue.path().map(PathBuf::from));

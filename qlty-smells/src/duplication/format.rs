@@ -1,11 +1,12 @@
 use console::style;
 use qlty_analysis::Report;
+use qlty_config::Workspace;
 use similar::{ChangeTag, TextDiff};
 use std::path::PathBuf;
 
 pub fn report_duplications(report: &Report, diff: bool) {
     println!();
-    let cwd = std::env::current_dir().expect("Unable to identify current directory");
+    let cwd = Workspace::invoked_from();
     let mut i = 0;
 
     for (_, issues) in report.duplication_issues_by_duplication() {

@@ -232,6 +232,18 @@ fn deinit_from_a_subdirectory_is_rejected() {
 }
 
 #[test]
+fn githooks_install_from_a_subdirectory_installs_into_the_repository_root() {
+    let fixture = tempfile::tempdir().unwrap();
+    let root = fixture.path();
+    fs::create_dir_all(root.join(".qlty")).unwrap();
+    fs::create_dir_all(root.join("sub")).unwrap();
+    fs::write(root.join(".qlty/qlty.toml"), "config_version = \"0\"\n").unwrap();
+    let _repository = qlty_test_utilities::git::init(root);
+    run_qlty(&root.join("sub"), &["githooks", "install"]);
+    assert!(root.join(".git/hooks/pre-commit").exists());
+}
+
+#[test]
 fn githooks_install_leaves_slop_one_out_by_default() {
     assert!(!install_githooks(&[]).contains("slop-one"));
 }
