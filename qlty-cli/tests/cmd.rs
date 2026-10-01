@@ -144,6 +144,57 @@ fn filtered_check_does_not_pollute_unfiltered_issue_cache() {
 }
 
 #[test]
+fn check_from_a_subdirectory_reads_affects_cache_files_from_the_root() {
+    let fixture = tempfile::tempdir().unwrap();
+    let root = fixture.path();
+    fs::create_dir_all(root.join(".qlty")).unwrap();
+    fs::create_dir_all(root.join("sub")).unwrap();
+    fs::write(
+        root.join(".gitignore"),
+        ".qlty/logs\n.qlty/out\n.qlty/results\n.qlty/sources\n.qlty/tmp\n.qlty/plugin_cachedir\n",
+    )
+    .unwrap();
+    fs::write(root.join("marker.txt"), "one\n").unwrap();
+    fs::write(root.join("sub/sample.js"), "const answer = 42;\n").unwrap();
+    fs::write(
+        root.join(".qlty/qlty.toml"),
+        indoc! {r#"
+            config_version = "0"
+
+            [plugins.definitions.cache-repro]
+            file_types = ["javascript"]
+            known_good_version = "1.0.0"
+
+            [plugins.definitions.cache-repro.drivers.lint]
+            script = "echo ${target}:1 LINT: reproducible lint issue"
+            success_codes = [0]
+            output = "stdout"
+            output_format = "regex"
+            output_regex = '((?P<path>.*):(?P<line>-?\d+) (?P<code>\S+): (?P<message>.+))'
+            output_level = "high"
+            cache_results = true
+
+            [[plugin]]
+            name = "cache-repro"
+            version = "1.0.0"
+            affects_cache = ["marker.txt"]
+        "#},
+    )
+    .unwrap();
+
+    let _repository = qlty_test_utilities::git::init(root);
+    let cache_directory = Library::new(root).unwrap().cache_directory().unwrap();
+    let _cache_cleanup = CacheCleanup(cache_directory);
+    let args = ["check", "--all", "--no-upgrade-check", "--no-progress"];
+
+    run_qlty(&root.join("sub"), &args);
+    fs::write(root.join("marker.txt"), "two\n").unwrap();
+    run_qlty(&root.join("sub"), &args);
+
+    assert_eq!(fs::read_dir(root.join(".qlty/out")).unwrap().count(), 2);
+}
+
+#[test]
 fn fmt_tests() {
     setup_and_run_test_cases("tests/cmd/fmt/*.toml");
 }
@@ -216,6 +267,18 @@ fn install_githooks(args: &[&str]) -> String {
     let output = run_qlty(root, &[&["githooks", "install"], args].concat());
     assert!(output.status.success());
     fs::read_to_string(root.join(".qlty/hooks/pre-push.sh")).unwrap()
+}
+
+#[test]
+fn githooks_install_from_a_subdirectory_installs_into_the_repository_root() {
+    let fixture = tempfile::tempdir().unwrap();
+    let root = fixture.path();
+    fs::create_dir_all(root.join(".qlty")).unwrap();
+    fs::create_dir_all(root.join("sub")).unwrap();
+    fs::write(root.join(".qlty/qlty.toml"), "config_version = \"0\"\n").unwrap();
+    let _repository = qlty_test_utilities::git::init(root);
+    run_qlty(&root.join("sub"), &["githooks", "install"]);
+    assert!(root.join(".git/hooks/pre-commit").exists());
 }
 
 #[test]

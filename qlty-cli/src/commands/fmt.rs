@@ -6,7 +6,7 @@ use duct::cmd;
 use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Settings};
 use qlty_config::Workspace;
 use qlty_types::analysis::v1::ExecutionVerb;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Args, Debug)]
 pub struct Fmt {
@@ -77,7 +77,7 @@ impl Fmt {
 
         if self.index || self.index_file.is_some() {
             let paths: Vec<PathBuf> = report.formatted.iter().map(|f| f.path.clone()).collect();
-            self.git_add(&paths)?;
+            self.git_add(&plan.workspace.root, &paths)?;
         }
 
         let mut formatter =
@@ -110,7 +110,7 @@ impl Fmt {
         Ok(())
     }
 
-    fn git_add(&self, paths: &[PathBuf]) -> Result<()> {
+    fn git_add(&self, root: &Path, paths: &[PathBuf]) -> Result<()> {
         let mut args = vec!["add"];
 
         for path in paths {
@@ -120,7 +120,7 @@ impl Fmt {
         }
 
         if args.len() > 1 {
-            cmd("git", &args).run()?;
+            cmd("git", &args).dir(root).run()?;
         }
 
         Ok(())

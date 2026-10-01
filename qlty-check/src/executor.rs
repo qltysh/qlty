@@ -642,7 +642,7 @@ impl Executor {
 
     fn cleanup_config_files(&self, loaded_config_files: &[String]) -> Result<()> {
         for config_file in loaded_config_files {
-            std::fs::remove_file(Path::new(config_file)).ok();
+            std::fs::remove_file(self.plan.workspace.root.join(config_file)).ok();
         }
 
         Ok(())

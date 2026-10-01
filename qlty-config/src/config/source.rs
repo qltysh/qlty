@@ -37,7 +37,9 @@ impl SourceDef {
             Ok(Box::new(DefaultSource {}))
         } else if self.directory.is_some() {
             Ok(Box::new(LocalSource {
-                root: self.directory.clone().unwrap(),
+                root: library
+                    .workspace_root
+                    .join(self.directory.as_ref().unwrap()),
             }))
         } else if self.repository.is_some() {
             if self.tag.is_some() && self.branch.is_some() {
