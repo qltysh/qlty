@@ -15,7 +15,7 @@ exports[`linter=spectral fixture=openapi version=6.15.0 1`] = `
           "startLine": 1,
         },
       },
-      "message": "Info object must have "contact" object.",
+      "message": "Info object must have "contact" object.%0ADocumentation: https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#info-contact",
       "mode": "MODE_COMMENT",
       "ruleKey": "info-contact",
       "snippet": "openapi: 3.0.0
@@ -58,7 +58,7 @@ components:
           "startLine": 1,
         },
       },
-      "message": "Info "description" must be present and non-empty string.",
+      "message": "Info "description" must be present and non-empty string.%0ADocumentation: https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#info-description",
       "mode": "MODE_COMMENT",
       "ruleKey": "info-description",
       "snippet": "openapi: 3.0.0
@@ -101,7 +101,7 @@ components:
           "startLine": 1,
         },
       },
-      "message": "OpenAPI "servers" must be present and non-empty array.",
+      "message": "OpenAPI "servers" must be present and non-empty array.%0ADocumentation: https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas3-api-servers",
       "mode": "MODE_COMMENT",
       "ruleKey": "oas3-api-servers",
       "snippet": "openapi: 3.0.0
@@ -144,7 +144,7 @@ components:
           "startLine": 1,
         },
       },
-      "message": "must have required property "info".",
+      "message": "must have required property "info".%0ADocumentation: https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas3-schema",
       "mode": "MODE_COMMENT",
       "ruleKey": "oas3-schema",
       "snippet": "openapi: 3.0.0
@@ -187,7 +187,7 @@ components:
           "startLine": 1,
         },
       },
-      "message": "must have required property "paths".",
+      "message": "must have required property "paths".%0ADocumentation: https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas3-schema",
       "mode": "MODE_COMMENT",
       "ruleKey": "oas3-schema",
       "snippet": "openapi: 3.0.0
@@ -230,7 +230,7 @@ components:
           "startLine": 10,
         },
       },
-      "message": "Potentially unused component has been detected.",
+      "message": "Potentially unused component has been detected.%0ADocumentation: https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas3-unused-component",
       "mode": "MODE_COMMENT",
       "ruleKey": "oas3-unused-component",
       "snippet": "    TestSchema:
