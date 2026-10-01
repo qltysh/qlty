@@ -4,6 +4,12 @@
 
 CLI releases are now served over HTTPS only. Versions before v0.590.0 fetch the latest-release manifest over HTTP, so `qlty upgrade` and `qlty version` now fail on them with an error naming an `http://` URL. `qlty check`, `qlty fmt`, `qlty coverage publish`, and `qlty --version` are unaffected. To recover, run `qlty upgrade --version 0.644.0`, which skips the manifest lookup, or re-run the installer (`curl https://qlty.sh | sh` on macOS and Linux, `powershell -c "iwr https://qlty.sh | iex"` on Windows).
 
+## v0.651.0 (2026-10-01)
+
+### Fixed
+
+- Create the repository library (including the plugin cache directory) even when running with `--no-cache`, so installing PHP tools such as PHPStan no longer fails on Windows with "PHP temp directory ... does not exist or is not writable to Composer" (#2875)
+
 ## v0.650.0 (2026-09-30)
 
 ### Fixed
