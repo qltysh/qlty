@@ -7,11 +7,13 @@ on:
     paths:
       - "qlty-*/**"
       - "Cargo.*"
+      - "rust-toolchain.toml"
       - ".github/workflows/cli.yml"
   pull_request:
     paths:
       - "qlty-*/**"
       - "Cargo.*"
+      - "rust-toolchain.toml"
       - ".github/workflows/cli.yml"
 
 permissions:
@@ -44,8 +46,6 @@ jobs:
 
       - name: Install Rust toolchain
         uses: actions-rust-lang/setup-rust-toolchain@2fcdc490d667999e01ddbbf0f2823181beef6b39
-        with:
-          toolchain: stable
 
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@16edcff251c6bb06f6878981359f84b77b28e7e2

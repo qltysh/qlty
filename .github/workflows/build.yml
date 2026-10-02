@@ -7,11 +7,13 @@ on:
       - .github/workflows/build.yml
       - qlty-*
       - Cargo.*
+      - rust-toolchain.toml
   pull_request:
     paths:
       - .github/workflows/build.yml
       - qlty-*
       - Cargo.*
+      - rust-toolchain.toml
   workflow_dispatch:
 permissions:
   contents: read
@@ -73,10 +75,11 @@ jobs:
           persist-credentials: false
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
+        uses: actions-rust-lang/setup-rust-toolchain@2fcdc490d667999e01ddbbf0f2823181beef6b39
         with:
-          toolchain: stable
-          targets: ${{ matrix.target }}
+          target: ${{ matrix.target }}
+          cache: false
+          rustflags: ""
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0
