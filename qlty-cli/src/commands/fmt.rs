@@ -66,7 +66,6 @@ impl Fmt {
 
         let workspace = Workspace::require_initialized()?;
         workspace.prepare_sources(self.skip_source_fetch)?;
-        workspace.library()?.auto_prune();
 
         let settings = self.build_settings()?;
         let plan = Planner::new(ExecutionVerb::Fmt, &settings)?.compute()?;
