@@ -33,7 +33,7 @@ use qlty_analysis::join_path_string;
 use qlty_analysis::utils::fs::path_to_native_string;
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_config::config::{PluginDef, PluginEnvironment};
-use qlty_config::Library;
+use qlty_config::{Library, Workspace};
 use qlty_types::analysis::v1::Installation;
 use regex::Regex;
 use sha2::Digest;
@@ -786,7 +786,8 @@ pub trait Tool: Debug + Sync + Send {
             .replace(
                 "${cachedir}",
                 &path_to_native_string(join_path_string!(
-                    std::env::current_dir().unwrap(),
+                    Workspace::assert_within_git_directory()
+                        .unwrap_or_else(|_| std::env::current_dir().unwrap()),
                     ".qlty",
                     "plugin_cachedir"
                 )),
@@ -1185,7 +1186,7 @@ mod test {
                 path_to_native_string(tool.directory()),
                 path_to_native_string(tool.runtime().unwrap().directory()),
                 path_to_native_string(path_to_string(join_path_string!(
-                    std::env::current_dir().unwrap(),
+                    PathBuf::from(env!("CARGO_MANIFEST_DIR")).parent().unwrap(),
                     ".qlty",
                     "plugin_cachedir"
                 ))),
