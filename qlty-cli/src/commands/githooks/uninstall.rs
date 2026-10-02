@@ -3,7 +3,6 @@ use anyhow::{Context as _, Result};
 use clap::Args;
 use qlty_config::Workspace;
 use std::fs;
-use std::path::Path;
 
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
@@ -13,11 +12,11 @@ pub struct Uninstall {}
 
 impl Uninstall {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
-        Workspace::require_initialized()?;
+        let root = Workspace::require_initialized()?.root;
 
         #[cfg(unix)]
         {
-            let git_hooks_dir = Path::new(".git").join("hooks");
+            let git_hooks_dir = root.join(".git").join("hooks");
             let hooks = [
                 git_hooks_dir.join("pre-commit"),
                 git_hooks_dir.join("pre-push"),
@@ -43,7 +42,7 @@ impl Uninstall {
             }
         }
 
-        let qlty_hooks_dir = Path::new(".qlty").join("hooks");
+        let qlty_hooks_dir = root.join(".qlty").join("hooks");
         fs::remove_dir_all(&qlty_hooks_dir)
             .with_context(|| format!("Failed to remove {} directory", qlty_hooks_dir.display()))?;
 

@@ -2,7 +2,7 @@ use crate::format::SarifFormatter;
 use crate::ui::Highlighter;
 use crate::ui::Steps;
 use crate::{Arguments, CommandError, CommandSuccess};
-use anyhow::{Context, Result};
+use anyhow::Result;
 use clap::Args;
 use console::{style, Emoji};
 use itertools::Itertools;
@@ -104,7 +104,7 @@ impl Smells {
 
         steps.start(SPARKLES, "Reporting... ");
         println!();
-        self.write_stdout(&workspace, &report)?;
+        self.write_stdout(&report)?;
 
         CommandSuccess::ok()
     }
@@ -210,7 +210,7 @@ impl Smells {
         Ok(executor.report())
     }
 
-    fn write_stdout(&self, workspace: &Workspace, report: &Report) -> Result<()> {
+    fn write_stdout(&self, report: &Report) -> Result<()> {
         if self.json {
             self.write_stdout_json(&report.issues)
         } else if self.sarif {
@@ -218,7 +218,7 @@ impl Smells {
             formatter.write_to(&mut std::io::stdout())?;
             Ok(())
         } else {
-            self.write_stdout_text(workspace, &report.issues)
+            self.write_stdout_text(&report.issues)
         }
     }
 
@@ -267,7 +267,7 @@ impl Smells {
         format!("Analyzing{}...", suffix)
     }
 
-    fn write_stdout_text(&self, workspace: &Workspace, issues: &[Issue]) -> Result<()> {
+    fn write_stdout_text(&self, issues: &[Issue]) -> Result<()> {
         let cwd = std::env::current_dir().expect("Unable to identify current directory");
         let issues_by_path = issues
             .iter()
@@ -275,15 +275,12 @@ impl Smells {
 
         println!();
 
+        // Paths are relative to the cwd, which WorkspaceEntryFinderBuilder uses as its root
         for path in issues_by_path.keys().sorted() {
-            let mut path_buf = workspace.root.clone();
-            path_buf.push(path.clone().unwrap());
+            let relative_path = path.clone().unwrap();
+            let path_buf = cwd.join(&relative_path);
 
-            let path_relative_to_cwd = path_buf
-                .strip_prefix(&cwd)
-                .with_context(|| format!("Unable to strip prefix {:?} from {:?}", cwd, path_buf))?;
-
-            println!("{}", style(path_relative_to_cwd.display()).cyan());
+            println!("{}", style(relative_path.display()).cyan());
 
             let mut highlighter = None;
 

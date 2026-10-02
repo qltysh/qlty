@@ -19,27 +19,27 @@ const QLTY_HOOKS_DIR: &str = ".qlty/hooks";
 
 impl Install {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
-        Workspace::require_initialized()?;
+        let root = Workspace::require_initialized()?.root;
 
-        fs::create_dir_all(QLTY_HOOKS_DIR)?;
+        fs::create_dir_all(root.join(QLTY_HOOKS_DIR))?;
 
-        install_hook("pre-commit", include_str!("./pre_commit.sh"))?;
+        install_hook(&root, "pre-commit", include_str!("./pre_commit.sh"))?;
         if self.slop_one {
-            install_hook("pre-push", include_str!("./pre_push_slop_one.sh"))?;
+            install_hook(&root, "pre-push", include_str!("./pre_push_slop_one.sh"))?;
             println!(
                 "The pre-push hook also runs qlty slop-one, which needs TYPESAFE_API_KEY. Without it, SlopOne warns and lets pushes through."
             );
         } else {
-            install_hook("pre-push", include_str!("./pre_push.sh"))?;
+            install_hook(&root, "pre-push", include_str!("./pre_push.sh"))?;
         }
 
         CommandSuccess::ok()
     }
 }
 
-fn install_hook(hook_name: &str, contents: &str) -> Result<()> {
+fn install_hook(root: &Path, hook_name: &str, contents: &str) -> Result<()> {
     let script_filename = format!("{}.sh", hook_name);
-    let hook_script_path = Path::new(QLTY_HOOKS_DIR).join(script_filename.clone());
+    let hook_script_path = root.join(QLTY_HOOKS_DIR).join(script_filename.clone());
     fs::write(&hook_script_path, contents).with_context(|| {
         format!(
             "Failed to write {} hook to {}",
@@ -48,7 +48,7 @@ fn install_hook(hook_name: &str, contents: &str) -> Result<()> {
         )
     })?;
 
-    let git_hooks_dir = Path::new(".git").join("hooks");
+    let git_hooks_dir = root.join(".git").join("hooks");
 
     if !git_hooks_dir.exists() {
         fs::create_dir_all(&git_hooks_dir).with_context(|| {

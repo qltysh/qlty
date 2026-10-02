@@ -12,7 +12,11 @@ use qlty_config::version::QLTY_VERSION;
 use qlty_config::Workspace;
 use qlty_types::analysis::v1::Issue;
 use std::sync::{Arc, OnceLock};
-use std::{collections::HashMap, fmt::Debug, path::PathBuf};
+use std::{
+    collections::HashMap,
+    fmt::Debug,
+    path::{Path, PathBuf},
+};
 use tracing::trace;
 
 #[derive(Debug, Clone)]
@@ -323,14 +327,14 @@ impl IssuesCacheKey {
         driver_name: String,
         filters: Vec<CheckFilter>,
         configs: Arc<Vec<PluginConfigFile>>,
-        affects_cache: Vec<String>,
+        root: &Path,
         repository: Arc<RepositoryState>,
     ) -> Self {
         let mut cache_busters = HashMap::new();
 
-        for affect_cache in affects_cache.iter().sorted() {
+        for affect_cache in plugin.affects_cache.iter().sorted() {
             let path = PathBuf::from(affect_cache);
-            let contents = std::fs::read_to_string(&path).unwrap_or("".to_string());
+            let contents = std::fs::read_to_string(root.join(&path)).unwrap_or("".to_string());
             cache_busters.insert(path, contents);
         }
 

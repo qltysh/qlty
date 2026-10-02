@@ -499,7 +499,7 @@ impl InvocationResult {
             self.invocation.driver_name.clone(),
             self.plan.settings.filters.clone(),
             Arc::new(configs.clone()),
-            self.plan.plugin.affects_cache.clone(),
+            &self.plan.workspace.root,
             cache.repository(),
         );
 

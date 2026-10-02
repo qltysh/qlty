@@ -171,7 +171,10 @@ impl Build {
         } else {
             let output_path = match self.output_path {
                 Some(ref path) => path.clone(),
-                None => PathBuf::from(".qlty/builds").join(report.metadata.build_id.clone()),
+                None => workspace
+                    .root
+                    .join(".qlty/builds")
+                    .join(report.metadata.build_id.clone()),
             };
 
             AnalysisExport::new(&report, &output_path, false).export()?;

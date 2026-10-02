@@ -14,6 +14,7 @@ const AUTO_PRUNE_INTERVAL: Duration = Duration::from_secs(24 * 60 * 60);
 
 #[derive(Debug, Clone)]
 pub struct Library {
+    pub workspace_root: PathBuf,
     pub local_root: PathBuf,
     pub tmp_dir: PathBuf,
 }
@@ -50,6 +51,7 @@ impl Library {
 
     pub fn new(workspace_root: &Path) -> Result<Self> {
         Ok(Self {
+            workspace_root: workspace_root.to_path_buf(),
             local_root: workspace_root.join(".qlty"),
             tmp_dir: env::temp_dir().join("qlty"),
         })
