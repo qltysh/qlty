@@ -10,7 +10,8 @@ use anyhow::Result;
 use clap::Args;
 use console::{style, Emoji};
 use qlty_check::planner::Plan;
-use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Report, Settings};
+use qlty_check::ui::ProgressBar as _;
+use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Progress, Report, Settings};
 use qlty_config::Workspace;
 use qlty_formats::{Formatter, JsonFormatter};
 use qlty_types::analysis::v1::ExecutionVerb;
@@ -149,6 +150,12 @@ impl Check {
 
         let workspace = Workspace::require_initialized()?;
         workspace.prepare_sources(self.skip_source_fetch)?;
+
+        let progress = Progress::new(!self.no_progress, 1);
+        let task = progress.task("Pruning", "old cache files...");
+        workspace.library()?.auto_prune();
+        task.clear();
+        progress.clear();
 
         let git_hook_stdin = if self.upstream_from_pre_push {
             match git_hook::read_pre_push_stdin()? {

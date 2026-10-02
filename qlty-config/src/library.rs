@@ -3,10 +3,14 @@ use anyhow::Result;
 use std::os::unix::fs::PermissionsExt;
 use std::{
     env, fs,
+    io::ErrorKind,
     path::{Path, PathBuf},
+    time::{Duration, SystemTime},
 };
-use tracing::error;
+use tracing::{error, warn};
 use walkdir::WalkDir;
+
+const AUTO_PRUNE_INTERVAL: Duration = Duration::from_secs(24 * 60 * 60);
 
 #[derive(Debug, Clone)]
 pub struct Library {
@@ -185,20 +189,51 @@ impl Library {
             .join(self.local_fingerprint()))
     }
 
+    pub fn auto_prune(&self) {
+        let result = self
+            .cache_directory()
+            .and_then(|cache_directory| Self::auto_prune_dirs(&cache_directory, &self.local_root));
+
+        if let Err(err) = result {
+            warn!("Failed to auto-prune cache: {:?}", err);
+        }
+    }
+
+    // Prunes through the local .qlty paths, which are real directories when symlinking fails
+    fn auto_prune_dirs(cache_directory: &Path, local_root: &Path) -> Result<()> {
+        let marker = cache_directory.join(".last_prune");
+
+        if let Ok(modified) = fs::metadata(&marker).and_then(|metadata| metadata.modified()) {
+            if modified.elapsed().unwrap_or_default() < AUTO_PRUNE_INTERVAL {
+                return Ok(());
+            }
+        }
+
+        fs::create_dir_all(cache_directory)?;
+        fs::File::create(&marker)?.set_modified(SystemTime::now())?;
+        Self::prune_stale(local_root)
+    }
+
+    fn prune_stale(root: &Path) -> Result<()> {
+        if root.join("logs").exists() {
+            Self::prune_dir(&root.join("logs"), 7)?;
+        }
+
+        if root.join("out").exists() {
+            Self::prune_dir(&root.join("out"), 3)?;
+        }
+
+        if root.join("results").join("issues").exists() {
+            Self::prune_dir(&root.join("results").join("issues"), 1)?;
+        }
+
+        Ok(())
+    }
+
     pub fn prune(&self) -> Result<()> {
         let cache_directory = self.cache_directory()?;
 
-        if cache_directory.join("logs").exists() {
-            self.prune_dir(&cache_directory.join("logs"), 7)?;
-        }
-
-        if cache_directory.join("out").exists() {
-            self.prune_dir(&cache_directory.join("out"), 3)?;
-        }
-
-        if cache_directory.join("results").join("issues").exists() {
-            self.prune_dir(&cache_directory.join("results").join("issues"), 1)?;
-        }
+        Self::prune_stale(&cache_directory)?;
 
         if cache_directory.join("plugin_cachedir").exists() {
             for entry in fs::read_dir(cache_directory.join("plugin_cachedir"))? {
@@ -216,17 +251,25 @@ impl Library {
         Ok(())
     }
 
-    fn prune_dir(&self, dir: &Path, days: u32) -> Result<()> {
+    fn prune_dir(dir: &Path, days: u32) -> Result<()> {
         for entry in fs::read_dir(dir)? {
             let entry = entry?;
             let path = entry.path();
 
             if path.is_file() {
-                let metadata = fs::metadata(&path)?;
+                let metadata = match fs::metadata(&path) {
+                    Ok(metadata) => metadata,
+                    Err(err) if err.kind() == ErrorKind::NotFound => continue,
+                    Err(err) => return Err(err.into()),
+                };
                 let usage_time = std::cmp::max(metadata.accessed()?, metadata.modified()?);
 
-                if usage_time.elapsed()?.as_secs() > days as u64 * 24 * 60 * 60 {
-                    fs::remove_file(&path)?;
+                if usage_time.elapsed().unwrap_or_default().as_secs() > days as u64 * 24 * 60 * 60 {
+                    // Concurrent qlty runs may prune the same directory
+                    match fs::remove_file(&path) {
+                        Err(err) if err.kind() != ErrorKind::NotFound => return Err(err.into()),
+                        _ => {}
+                    }
                 }
             }
         }
@@ -323,7 +366,22 @@ impl Library {
 #[cfg(unix)]
 mod test {
     use super::*;
+    use std::fs::FileTimes;
     use tempfile::TempDir;
+
+    fn write_file_aged(path: &Path, age: Duration) {
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(path, "").unwrap();
+        let time = SystemTime::now() - age;
+        fs::File::options()
+            .write(true)
+            .open(path)
+            .unwrap()
+            .set_times(FileTimes::new().set_accessed(time).set_modified(time))
+            .unwrap();
+    }
+
+    const FOUR_DAYS: Duration = Duration::from_secs(4 * 24 * 60 * 60);
 
     fn setup() -> (TempDir, Library, PathBuf, PathBuf) {
         let temp_dir = TempDir::new().unwrap();
@@ -381,5 +439,94 @@ mod test {
 
         assert!(link.is_dir());
         assert!(fs::read_link(&link).is_err());
+    }
+
+    #[test]
+    fn auto_prune_removes_stale_out_files() {
+        let cache_dir = TempDir::new().unwrap();
+        let stale = cache_dir.path().join("out").join("invoke-stale.yaml");
+        write_file_aged(&stale, FOUR_DAYS);
+
+        Library::auto_prune_dirs(cache_dir.path(), cache_dir.path()).unwrap();
+
+        assert!(!stale.exists());
+    }
+
+    #[test]
+    fn auto_prune_keeps_fresh_out_files() {
+        let cache_dir = TempDir::new().unwrap();
+        let fresh = cache_dir.path().join("out").join("invoke-fresh.yaml");
+        write_file_aged(&fresh, Duration::ZERO);
+
+        Library::auto_prune_dirs(cache_dir.path(), cache_dir.path()).unwrap();
+
+        assert!(fresh.exists());
+    }
+
+    #[test]
+    fn auto_prune_keeps_plugin_cachedir() {
+        let cache_dir = TempDir::new().unwrap();
+        let plugin_cache = cache_dir.path().join("plugin_cachedir").join("cache.bin");
+        write_file_aged(&plugin_cache, FOUR_DAYS);
+
+        Library::auto_prune_dirs(cache_dir.path(), cache_dir.path()).unwrap();
+
+        assert!(plugin_cache.exists());
+    }
+
+    #[test]
+    fn auto_prune_skips_when_recently_pruned() {
+        let cache_dir = TempDir::new().unwrap();
+        write_file_aged(&cache_dir.path().join(".last_prune"), Duration::ZERO);
+        let stale = cache_dir.path().join("out").join("invoke-stale.yaml");
+        write_file_aged(&stale, FOUR_DAYS);
+
+        Library::auto_prune_dirs(cache_dir.path(), cache_dir.path()).unwrap();
+
+        assert!(stale.exists());
+    }
+
+    #[test]
+    fn auto_prune_runs_when_last_prune_expired() {
+        let cache_dir = TempDir::new().unwrap();
+        write_file_aged(
+            &cache_dir.path().join(".last_prune"),
+            Duration::from_secs(25 * 60 * 60),
+        );
+        let stale = cache_dir.path().join("out").join("invoke-stale.yaml");
+        write_file_aged(&stale, FOUR_DAYS);
+
+        Library::auto_prune_dirs(cache_dir.path(), cache_dir.path()).unwrap();
+
+        assert!(!stale.exists());
+    }
+
+    #[test]
+    fn auto_prune_refreshes_expired_marker() {
+        let cache_dir = TempDir::new().unwrap();
+        let marker = cache_dir.path().join(".last_prune");
+        write_file_aged(&marker, Duration::from_secs(25 * 60 * 60));
+
+        Library::auto_prune_dirs(cache_dir.path(), cache_dir.path()).unwrap();
+
+        let age = fs::metadata(&marker)
+            .unwrap()
+            .modified()
+            .unwrap()
+            .elapsed()
+            .unwrap();
+        assert!(age < AUTO_PRUNE_INTERVAL);
+    }
+
+    #[test]
+    fn auto_prune_removes_stale_files_under_local_root() {
+        let cache_dir = TempDir::new().unwrap();
+        let local_root = TempDir::new().unwrap();
+        let stale = local_root.path().join("out").join("invoke-stale.yaml");
+        write_file_aged(&stale, FOUR_DAYS);
+
+        Library::auto_prune_dirs(cache_dir.path(), local_root.path()).unwrap();
+
+        assert!(!stale.exists());
     }
 }
