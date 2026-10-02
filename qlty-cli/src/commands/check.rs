@@ -1,3 +1,4 @@
+use crate::arguments::invoked_path;
 use crate::format::SarifFormatter;
 use crate::git_hook;
 use crate::ui::ApplyMode;
@@ -133,6 +134,7 @@ pub struct Check {
     upstream_from_pre_push: bool,
 
     /// Files to analyze
+    #[arg(value_parser = invoked_path)]
     pub paths: Vec<PathBuf>,
 
     /// Install tools only, do not run checks

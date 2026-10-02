@@ -1,3 +1,4 @@
+use crate::arguments::invoked_path;
 use crate::ui::Steps;
 use crate::{Arguments, CommandError, CommandSuccess};
 use anyhow::Result;
@@ -66,6 +67,7 @@ pub struct Metrics {
     json: bool,
 
     /// Files to analyze
+    #[arg(value_parser = invoked_path)]
     pub paths: Vec<PathBuf>,
 }
 
@@ -216,7 +218,7 @@ impl Metrics {
 }
 
 fn print_functions_report(report: &Report) -> Result<()> {
-    let cwd = std::env::current_dir()?;
+    let cwd = Workspace::invoked_from();
 
     for (path, function_stats) in report.function_stats_by_path() {
         print_path(&path, &cwd);

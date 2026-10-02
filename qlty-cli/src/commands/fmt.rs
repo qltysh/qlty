@@ -1,3 +1,4 @@
+use crate::arguments::invoked_path;
 use crate::ui::{ApplyMode, TextFormatter};
 use crate::{Arguments, CommandError, CommandSuccess, Trigger};
 use anyhow::Result;
@@ -49,10 +50,11 @@ pub struct Fmt {
     pub index: bool,
 
     /// Format files in the specified Git index file
-    #[arg(long, conflicts_with = "index")]
+    #[arg(long, conflicts_with = "index", value_parser = invoked_path)]
     pub index_file: Option<PathBuf>,
 
     /// Files to analyze
+    #[arg(value_parser = invoked_path)]
     pub paths: Vec<PathBuf>,
 
     /// Skip fetching sources before formatting

@@ -5,6 +5,9 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 use console::style;
 use qlty_config::version::LONG_VERSION;
+use qlty_config::Workspace;
+use std::convert::Infallible;
+use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about = "This is qlty, the Qlty command line interface.", long_version = LONG_VERSION.as_str(), long_about = None)]
@@ -113,6 +116,14 @@ pub enum Commands {
     Version(Version),
 }
 
+impl Commands {
+    // Coverage treats the cwd as the report root and can run without git, and
+    // SlopOne resolves its own paths against the cwd.
+    fn runs_from_workspace_root(&self) -> bool {
+        !matches!(self, Commands::Coverage(_) | Commands::SlopOne(_))
+    }
+}
+
 impl Arguments {
     pub fn execute(&self) -> Result<CommandSuccess, CommandError> {
         if self.command.is_none() {
@@ -120,7 +131,13 @@ impl Arguments {
             return CommandSuccess::ok();
         }
 
-        match &self.command.as_ref().unwrap() {
+        let command = self.command.as_ref().unwrap();
+
+        if command.runs_from_workspace_root() {
+            Workspace::enter_root()?;
+        }
+
+        match command {
             Commands::Auth(command) => command.execute(self),
             Commands::Build(command) => command.execute(self),
             Commands::Cache(command) => command.execute(self),
@@ -228,6 +245,12 @@ impl Arguments {
             style("`.").dim()
         );
     }
+}
+
+/// Resolves a path argument against the directory qlty was invoked from, before
+/// the process changes into the workspace root.
+pub fn invoked_path(path: &str) -> Result<PathBuf, Infallible> {
+    Ok(Workspace::invoked_from().join(path))
 }
 
 pub fn is_subcommand(subcommand: &str) -> bool {

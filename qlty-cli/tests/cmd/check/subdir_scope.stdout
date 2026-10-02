@@ -1,0 +1,6 @@
+ JOBS: 1 
+
+Plugin  Result   Targets   Time   Debug File
+exists  Success  1 target  [..].[..]s  ../.qlty/out/invoke-[..].yaml
+
+Checked 1 file
