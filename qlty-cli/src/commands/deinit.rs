@@ -15,10 +15,8 @@ pub struct Deinit {
 
 impl Deinit {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
-        Workspace::assert_within_git_directory()?;
-
-        let current_dir = std::env::current_dir().expect("Unable to identify current directory");
-        let qlty_dir = current_dir.join(".qlty");
+        let root = Workspace::assert_git_directory_root()?;
+        let qlty_dir = root.join(".qlty");
 
         if qlty_dir.exists() {
             if self.yes

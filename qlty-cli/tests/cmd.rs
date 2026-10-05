@@ -219,6 +219,19 @@ fn install_githooks(args: &[&str]) -> String {
 }
 
 #[test]
+fn deinit_from_a_subdirectory_is_rejected() {
+    let fixture = tempfile::tempdir().unwrap();
+    let root = fixture.path();
+    fs::create_dir_all(root.join(".qlty")).unwrap();
+    fs::create_dir_all(root.join("sub/.qlty")).unwrap();
+    fs::write(root.join(".qlty/qlty.toml"), "config_version = \"0\"\n").unwrap();
+    let _repository = qlty_test_utilities::git::init(root);
+    let output = run_qlty(&root.join("sub"), &["deinit", "--yes"]);
+    assert!(!output.status.success());
+    assert!(root.join("sub/.qlty").exists());
+}
+
+#[test]
 fn githooks_install_leaves_slop_one_out_by_default() {
     assert!(!install_githooks(&[]).contains("slop-one"));
 }
