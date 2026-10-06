@@ -4,6 +4,13 @@
 
 CLI releases are now served over HTTPS only. Versions before v0.590.0 fetch the latest-release manifest over HTTP, so `qlty upgrade` and `qlty version` now fail on them with an error naming an `http://` URL. `qlty check`, `qlty fmt`, `qlty coverage publish`, and `qlty --version` are unaffected. To recover, run `qlty upgrade --version 0.644.0`, which skips the manifest lookup, or re-run the installer (`curl https://qlty.sh | sh` on macOS and Linux, `powershell -c "iwr https://qlty.sh | iex"` on Windows).
 
+## v0.652.0 (2026-10-05)
+
+### Fixed
+
+- Require `qlty deinit` to run at the repository root like `qlty init`, instead of removing `.qlty` from the current directory. Run from a subdirectory it now fails with "This must be run at the root of a Git repository" rather than deleting a stray `sub/.qlty` while leaving the real configuration in place (#2904)
+- Automatically prune stale `.qlty/out/invoke-*.yaml` and other cache files during `qlty check`, at most once every 24 hours, so invocation files no longer accumulate indefinitely (one repository had built up ~349k files / 1.6 GB). Pruning is best-effort, never clears the plugin cache, and does not run during `qlty build` or `qlty fmt` (#2886)
+
 ## v0.651.0 (2026-10-01)
 
 ### Fixed
