@@ -43,10 +43,9 @@ impl ConfigDocument {
                 .get(name)
                 .context("Plugin not found")?;
 
-            &plugin
-                .known_good_version
-                .clone()
-                .context("No known good version for plugin")?
+            &plugin.known_good_version.clone().with_context(|| {
+                format!("No known good version for plugin {name}, specify one with --version")
+            })?
         };
 
         if self.document.get("plugin").is_none() {
@@ -221,7 +220,7 @@ version = "1.0.0"
                 .upgrade_plugin("upgradeable", &None)
                 .unwrap_err()
                 .to_string(),
-            "No known good version for plugin"
+            "No known good version for plugin upgradeable, specify one with --version"
         );
     }
 
