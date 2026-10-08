@@ -4,6 +4,16 @@
 
 CLI releases are now served over HTTPS only. Versions before v0.590.0 fetch the latest-release manifest over HTTP, so `qlty upgrade` and `qlty version` now fail on them with an error naming an `http://` URL. `qlty check`, `qlty fmt`, `qlty coverage publish`, and `qlty --version` are unaffected. To recover, run `qlty upgrade --version 0.644.0`, which skips the manifest lookup, or re-run the installer (`curl https://qlty.sh | sh` on macOS and Linux, `powershell -c "iwr https://qlty.sh | iex"` on Windows).
 
+## v0.653.0 (2026-10-08)
+
+### Improved
+
+- Bump the semgrep and trufflehog plugins to semgrep 1.179.0 and trufflehog 3.97.4. This fixes fresh semgrep installs that began failing on 2026-10-08 with `ImportError: cannot import name 'eval_type_backport'` after pydantic 2.14.0 removed that function (#2910, #2907)
+
+### Fixed
+
+- Pin `qlty plugins upgrade <name>` (run without a version) to the plugin's validated `known_good_version` instead of the unvalidated `latest_version`, matching `qlty init`. When a plugin has no `known_good_version`, the command now fails with "No known good version for plugin" instead of reporting success without changing anything (#2909)
+
 ## v0.652.0 (2026-10-05)
 
 ### Fixed
