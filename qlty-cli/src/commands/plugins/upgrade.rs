@@ -43,12 +43,9 @@ impl ConfigDocument {
                 .get(name)
                 .context("Plugin not found")?;
 
-            &plugin.latest_version.clone().unwrap_or_else(|| {
-                plugin
-                    .known_good_version
-                    .clone()
-                    .unwrap_or("latest".to_string())
-            })
+            &plugin.known_good_version.clone().with_context(|| {
+                format!("No known good version for plugin {name}, specify one with --version")
+            })?
         };
 
         if self.document.get("plugin").is_none() {
@@ -116,6 +113,7 @@ config_version = "0"
 [plugins.definitions.upgradeable]
 file_types = ["ALL"]
 latest_version = "1.1.0"
+known_good_version = "1.0.5"
 
 [plugins.definitions.upgradeable.drivers.lint]
 script = "ls -l ${target}"
@@ -142,6 +140,7 @@ config_version = "0"
 [plugins.definitions.upgradeable]
 file_types = ["ALL"]
 latest_version = "1.1.0"
+known_good_version = "1.0.5"
 
 [plugins.definitions.upgradeable.drivers.lint]
 script = "ls -l ${target}"
@@ -150,7 +149,7 @@ output = "pass_fail"
 
 [[plugin]]
 name = "upgradeable"
-version = "1.1.0"
+version = "1.0.5"
         "#;
 
         assert_eq!(config.document.to_string().trim(), expected.trim());
@@ -181,6 +180,48 @@ version = "1.0.0"
         let mut config = ConfigDocument::new(&workspace).unwrap();
 
         assert!(config.upgrade_plugin("actual_typo", &None).is_err());
+    }
+
+    #[test]
+    fn test_upgrade_plugin_without_known_good_version() {
+        let (temp_dir, _) = sample_repo();
+        let temp_path = temp_dir.path().to_path_buf();
+
+        fs::create_dir_all(&temp_path.join(path_to_native_string(".qlty"))).ok();
+        fs::write(
+            &temp_path.join(path_to_native_string(".qlty/qlty.toml")),
+            r#"
+config_version = "0"
+
+[plugins.definitions.upgradeable]
+file_types = ["ALL"]
+latest_version = "1.1.0"
+
+[plugins.definitions.upgradeable.drivers.lint]
+script = "ls -l ${target}"
+success_codes = [0]
+output = "pass_fail"
+
+[[plugin]]
+name = "upgradeable"
+version = "1.0.0"
+            "#,
+        )
+        .ok();
+
+        let workspace = Workspace {
+            root: temp_path.clone(),
+        };
+
+        let mut config = ConfigDocument::new(&workspace).unwrap();
+
+        assert_eq!(
+            config
+                .upgrade_plugin("upgradeable", &None)
+                .unwrap_err()
+                .to_string(),
+            "No known good version for plugin upgradeable, specify one with --version"
+        );
     }
 
     #[test]
