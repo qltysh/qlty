@@ -1,7 +1,7 @@
 use crate::{
     cache::{IssueCache, IssuesCacheKey},
     command::ExecResult,
-    planner::{check_filters::CheckFilters, InvocationPlan},
+    planner::InvocationPlan,
     results::FormattedFile,
 };
 use anyhow::{Context, Result};
@@ -497,7 +497,7 @@ impl InvocationResult {
             self.plan.tool.clone(),
             Arc::new(self.plan.plugin.clone()),
             self.invocation.driver_name.clone(),
-            CheckFilters::from_settings(&self.plan.settings),
+            self.plan.settings.check_filters.clone(),
             Arc::new(configs.clone()),
             self.plan.plugin.affects_cache.clone(),
             cache.repository(),

@@ -11,7 +11,7 @@ use clap::Args;
 use console::{style, Emoji};
 use qlty_check::planner::Plan;
 use qlty_check::ui::ProgressBar as _;
-use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Progress, Report, Settings};
+use qlty_check::{planner::Planner, CheckFilters, Executor, Processor, Progress, Report, Settings};
 use qlty_config::Workspace;
 use qlty_formats::{Formatter, JsonFormatter};
 use qlty_types::analysis::v1::ExecutionVerb;
@@ -248,7 +248,7 @@ impl Check {
     fn format_after_fix(&self, settings: &Settings, report: &Report) -> Result<Report> {
         debug!("Format after fix: {:?}", report.fixed);
         let mut settings = settings.clone();
-        settings.filters = vec![];
+        settings.check_filters.filters = vec![];
         settings.paths = report
             .fixed
             .iter()
@@ -318,8 +318,8 @@ impl Check {
         settings.jobs = self.jobs;
         settings.progress = !self.no_progress;
         settings.formatters = !self.no_formatters;
-        settings.filters = CheckFilter::from_optional_list(self.filter.clone());
-        settings.skips = CheckFilter::from_optional_list(self.skip.clone());
+        settings.check_filters =
+            CheckFilters::from_optional_lists(self.filter.clone(), self.skip.clone());
         settings.upstream = self.compute_upstream(workspace, git_hook_stdin)?;
         settings.level = self.level;
         settings.fail_level = if self.no_fail {

@@ -1,7 +1,7 @@
-use crate::planner::check_filters::CheckFilters;
 use crate::planner::config_files::PluginConfigFile;
 use crate::planner::target::Target;
 use crate::tool::Tool;
+use crate::CheckFilters;
 use anyhow::{Context, Result};
 use git2::{Repository, Status};
 use itertools::Itertools;

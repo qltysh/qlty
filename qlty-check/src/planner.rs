@@ -9,7 +9,6 @@ use crate::planner::config_files::plugin_configs;
 use crate::planner::config_files::PluginConfigFile;
 use crate::Settings;
 use anyhow::{bail, Error, Result};
-use check_filters::CheckFilters;
 use console::style;
 use document_url_generator::DocumentUrlGenerator;
 use itertools::Itertools;
@@ -257,7 +256,7 @@ impl Planner {
         }
 
         self.transformers
-            .push(Box::new(CheckFilters::from_settings(&self.settings)));
+            .push(Box::new(self.settings.check_filters.clone()));
 
         self.transformers.push(Box::new(LevelFilter {
             level: self.settings.level,
@@ -347,8 +346,7 @@ impl Planner {
             fix_enabled: self.settings.fix,
             allow_unsafe: self.settings.r#unsafe,
             auth_token: self.settings.auth_token.clone(),
-            filters: self.settings.filters.clone(),
-            skips: self.settings.skips.clone(),
+            check_filters: self.settings.check_filters.clone(),
             workspace: self.workspace.clone(),
             config: self.config.clone(),
             issue_cache: self.issue_cache.clone(),

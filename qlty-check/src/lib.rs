@@ -22,6 +22,6 @@ pub use planner::Planner;
 pub use processor::Processor;
 pub use report::Report;
 pub use results::Results;
-pub use settings::{CheckFilter, Settings};
+pub use settings::{CheckFilter, CheckFilters, Settings};
 pub use tool::Tool;
 pub use ui::Progress;

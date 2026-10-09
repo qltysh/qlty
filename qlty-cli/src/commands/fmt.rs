@@ -3,7 +3,7 @@ use crate::{Arguments, CommandError, CommandSuccess, Trigger};
 use anyhow::Result;
 use clap::Args;
 use duct::cmd;
-use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Settings};
+use qlty_check::{planner::Planner, CheckFilters, Executor, Processor, Settings};
 use qlty_config::Workspace;
 use qlty_types::analysis::v1::ExecutionVerb;
 use std::path::PathBuf;
@@ -138,8 +138,8 @@ impl Fmt {
         settings.all = (self.sample.unwrap_or(0) > 0) || self.all;
         settings.jobs = self.jobs;
         settings.progress = !self.no_progress;
-        settings.filters = CheckFilter::from_optional_list(self.filter.clone());
-        settings.skips = CheckFilter::from_optional_list(self.skip.clone());
+        settings.check_filters =
+            CheckFilters::from_optional_lists(self.filter.clone(), self.skip.clone());
         settings.upstream = self.upstream.clone();
         settings.index = self.index;
         settings.index_file = self.index_file.clone();

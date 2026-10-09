@@ -1,4 +1,5 @@
 use super::{ActivePlugin, Planner};
+use crate::CheckFilter;
 use anyhow::bail;
 use anyhow::{anyhow, Result};
 use qlty_analysis::workspace_entries::TargetMode;
@@ -11,20 +12,24 @@ const ALL: &str = "ALL";
 
 pub fn enabled_plugins(planner: &Planner) -> Result<Vec<ActivePlugin>> {
     let active_plugins = configure_plugins(planner)?;
-    let filtered_plugins = filter_plugins(planner, &active_plugins)?;
-    skip_plugins(planner, &active_plugins, filtered_plugins)
+    let check_filters = &planner.settings.check_filters;
+    let filtered_plugins = filter_plugins(&check_filters.filters, &active_plugins)?;
+    skip_plugins(&check_filters.skips, &active_plugins, filtered_plugins)
 }
 
-fn filter_plugins(planner: &Planner, active_plugins: &[ActivePlugin]) -> Result<Vec<ActivePlugin>> {
-    if planner.settings.filters.is_empty() {
+fn filter_plugins(
+    filters: &[CheckFilter],
+    active_plugins: &[ActivePlugin],
+) -> Result<Vec<ActivePlugin>> {
+    if filters.is_empty() {
         return Ok(active_plugins.to_vec());
     }
 
-    warn!("Filtering plugins: {:?}", planner.settings.filters);
+    warn!("Filtering plugins: {filters:?}");
 
     let mut filtered_plugins = vec![];
 
-    for filter in planner.settings.filters.iter() {
+    for filter in filters {
         let plugin_name = &filter.plugin;
 
         let plugins: Vec<ActivePlugin> = active_plugins
@@ -48,25 +53,23 @@ fn filter_plugins(planner: &Planner, active_plugins: &[ActivePlugin]) -> Result<
 // A skip with a rule key keeps the plugin running; its issues are dropped later
 // by the CheckFilters transformer.
 fn skip_plugins(
-    planner: &Planner,
+    skips: &[CheckFilter],
     active_plugins: &[ActivePlugin],
     filtered_plugins: Vec<ActivePlugin>,
 ) -> Result<Vec<ActivePlugin>> {
-    if planner.settings.skips.is_empty() {
+    if skips.is_empty() {
         return Ok(filtered_plugins);
     }
 
-    warn!("Skipping plugins: {:?}", planner.settings.skips);
+    warn!("Skipping plugins: {skips:?}");
 
-    for skip in planner.settings.skips.iter() {
+    for skip in skips {
         if !active_plugins.iter().any(|p| p.name == skip.plugin) {
             bail!("Plugin not found: {}", skip.plugin);
         }
     }
 
-    let skipped_plugin_names: Vec<&String> = planner
-        .settings
-        .skips
+    let skipped_plugin_names: Vec<&String> = skips
         .iter()
         .filter(|skip| skip.rule_key.is_none())
         .map(|skip| &skip.plugin)
@@ -598,7 +601,7 @@ mod test {
 
         assert_eq!(plugins.len(), 2);
 
-        planner.settings.filters = vec![CheckFilter {
+        planner.settings.check_filters.filters = vec![CheckFilter {
             plugin: "enabled".to_string(),
             rule_key: None,
         }];
@@ -843,7 +846,7 @@ mod test {
     #[test]
     fn test_skip_removes_plugin() {
         let mut planner = build_planner_with_plugins(&["eslint", "rubocop"]);
-        planner.settings.skips = vec![skip("rubocop")];
+        planner.settings.check_filters.skips = vec![skip("rubocop")];
 
         let plugins = enabled_plugins(&planner).unwrap();
 
@@ -854,7 +857,7 @@ mod test {
     #[test]
     fn test_skip_with_rule_key_keeps_plugin() {
         let mut planner = build_planner_with_plugins(&["eslint", "rubocop"]);
-        planner.settings.skips = vec![skip("rubocop:Style/StringLiterals")];
+        planner.settings.check_filters.skips = vec![skip("rubocop:Style/StringLiterals")];
 
         let plugins = enabled_plugins(&planner).unwrap();
 
@@ -864,7 +867,7 @@ mod test {
     #[test]
     fn test_skip_unknown_plugin_errors() {
         let mut planner = build_planner_with_plugins(&["eslint"]);
-        planner.settings.skips = vec![skip("unknown")];
+        planner.settings.check_filters.skips = vec![skip("unknown")];
 
         let error = enabled_plugins(&planner).unwrap_err();
 
@@ -874,7 +877,7 @@ mod test {
     #[test]
     fn test_skip_every_plugin_errors() {
         let mut planner = build_planner_with_plugins(&["eslint", "rubocop"]);
-        planner.settings.skips = vec![skip("eslint"), skip("rubocop")];
+        planner.settings.check_filters.skips = vec![skip("eslint"), skip("rubocop")];
 
         let error = enabled_plugins(&planner).unwrap_err();
 
@@ -884,8 +887,8 @@ mod test {
     #[test]
     fn test_skip_subtracts_from_filter() {
         let mut planner = build_planner_with_plugins(&["eslint", "rubocop", "shellcheck"]);
-        planner.settings.filters = vec![skip("eslint"), skip("rubocop")];
-        planner.settings.skips = vec![skip("rubocop")];
+        planner.settings.check_filters.filters = vec![skip("eslint"), skip("rubocop")];
+        planner.settings.check_filters.skips = vec![skip("rubocop")];
 
         let plugins = enabled_plugins(&planner).unwrap();
 
@@ -896,8 +899,8 @@ mod test {
     #[test]
     fn test_skip_plugin_outside_filter_is_accepted() {
         let mut planner = build_planner_with_plugins(&["eslint", "rubocop"]);
-        planner.settings.filters = vec![skip("eslint")];
-        planner.settings.skips = vec![skip("rubocop")];
+        planner.settings.check_filters.filters = vec![skip("eslint")];
+        planner.settings.check_filters.skips = vec![skip("rubocop")];
 
         let plugins = enabled_plugins(&planner).unwrap();
 

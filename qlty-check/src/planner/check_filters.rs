@@ -1,21 +1,6 @@
-use crate::{CheckFilter, Settings};
+use crate::CheckFilters;
 use qlty_config::config::issue_transformer::IssueTransformer;
 use qlty_types::analysis::v1::Issue;
-
-#[derive(Debug, Clone)]
-pub struct CheckFilters {
-    pub filters: Vec<CheckFilter>,
-    pub skips: Vec<CheckFilter>,
-}
-
-impl CheckFilters {
-    pub fn from_settings(settings: &Settings) -> Self {
-        Self {
-            filters: settings.filters.clone(),
-            skips: settings.skips.clone(),
-        }
-    }
-}
 
 impl IssueTransformer for CheckFilters {
     fn transform(&self, issue: Issue) -> Option<Issue> {
@@ -43,6 +28,7 @@ impl IssueTransformer for CheckFilters {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::CheckFilter;
 
     fn issue(tool: &str, rule_key: &str) -> Issue {
         Issue {

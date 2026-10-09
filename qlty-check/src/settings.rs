@@ -15,8 +15,7 @@ pub struct Settings {
     pub cache: bool,
     pub jobs: Option<u32>,
     pub sample: Option<usize>,
-    pub filters: Vec<CheckFilter>,
-    pub skips: Vec<CheckFilter>,
+    pub check_filters: CheckFilters,
     pub upstream: Option<String>,
     pub index: bool,
     pub index_file: Option<PathBuf>,
@@ -44,8 +43,7 @@ impl Default for Settings {
             cache: true,
             jobs: None,
             sample: None,
-            filters: vec![],
-            skips: vec![],
+            check_filters: CheckFilters::default(),
             upstream: None,
             index: false,
             index_file: None,
@@ -57,6 +55,21 @@ impl Default for Settings {
             emit_existing_issues: false,
             auth_token: None,
             install_only: false,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct CheckFilters {
+    pub filters: Vec<CheckFilter>,
+    pub skips: Vec<CheckFilter>,
+}
+
+impl CheckFilters {
+    pub fn from_optional_lists(filters: Option<String>, skips: Option<String>) -> Self {
+        Self {
+            filters: CheckFilter::from_optional_list(filters),
+            skips: CheckFilter::from_optional_list(skips),
         }
     }
 }
