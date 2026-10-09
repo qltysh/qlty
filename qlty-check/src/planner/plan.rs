@@ -2,7 +2,7 @@ use super::InvocationPlan;
 use crate::cache::IssueCache;
 use crate::cache::IssuesCacheHit;
 use crate::executor::staging_area::StagingArea;
-use crate::settings::CheckFilter;
+use crate::settings::CheckFilters;
 use crate::tool::Tool;
 use qlty_analysis::workspace_entries::TargetMode;
 use qlty_config::config::issue_transformer::IssueTransformer;
@@ -24,7 +24,7 @@ pub struct Plan {
     pub fix_enabled: bool,
     pub allow_unsafe: bool,
     pub auth_token: Option<String>,
-    pub filters: Vec<CheckFilter>,
+    pub check_filters: CheckFilters,
     pub config: QltyConfig,
     pub workspace: Workspace,
     pub jobs: usize,
