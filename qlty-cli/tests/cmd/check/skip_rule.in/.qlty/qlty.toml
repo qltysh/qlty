@@ -1,0 +1,16 @@
+config_version = "0"
+
+[plugins.definitions.exists]
+file_types = ["shell"]
+
+[plugins.definitions.exists.drivers.lint]
+script = "echo sample.sh:1 RuleA: first issue && echo sample.sh:2 RuleB: second issue"
+success_codes = [0]
+output = "stdout"
+output_format = "regex"
+output_regex = "((?P<path>.*):(?P<line>-?\\d+) (?P<code>\\S+): (?P<message>.+))"
+output_level = "high"
+
+[[plugin]]
+name = "exists"
+version = "1.0.0"

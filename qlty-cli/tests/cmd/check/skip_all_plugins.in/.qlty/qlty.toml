@@ -1,0 +1,13 @@
+config_version = "0"
+
+[plugins.definitions.alpha]
+file_types = ["shell"]
+
+[plugins.definitions.alpha.drivers.lint]
+script = "false"
+success_codes = [0]
+output = "pass_fail"
+
+[[plugin]]
+name = "alpha"
+version = "1.0.0"
