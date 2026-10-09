@@ -34,6 +34,10 @@ pub struct Fmt {
     #[arg(long)]
     filter: Option<String>,
 
+    /// Skip plugins or checks
+    #[arg(long)]
+    skip: Option<String>,
+
     #[arg(value_enum, long, default_value = "manual")]
     trigger: Trigger,
 
@@ -135,6 +139,7 @@ impl Fmt {
         settings.jobs = self.jobs;
         settings.progress = !self.no_progress;
         settings.filters = CheckFilter::from_optional_list(self.filter.clone());
+        settings.skips = CheckFilter::from_optional_list(self.skip.clone());
         settings.upstream = self.upstream.clone();
         settings.index = self.index;
         settings.index_file = self.index_file.clone();

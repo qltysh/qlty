@@ -25,6 +25,7 @@ pub struct Plan {
     pub allow_unsafe: bool,
     pub auth_token: Option<String>,
     pub filters: Vec<CheckFilter>,
+    pub skips: Vec<CheckFilter>,
     pub config: QltyConfig,
     pub workspace: Workspace,
     pub jobs: usize,

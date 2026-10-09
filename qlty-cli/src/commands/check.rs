@@ -90,6 +90,10 @@ pub struct Check {
     #[arg(long)]
     filter: Option<String>,
 
+    /// Skip plugins or checks
+    #[arg(long)]
+    skip: Option<String>,
+
     #[arg(value_enum, long, hide = true, default_value = "manual")]
     trigger: Trigger,
 
@@ -315,6 +319,7 @@ impl Check {
         settings.progress = !self.no_progress;
         settings.formatters = !self.no_formatters;
         settings.filters = CheckFilter::from_optional_list(self.filter.clone());
+        settings.skips = CheckFilter::from_optional_list(self.skip.clone());
         settings.upstream = self.compute_upstream(workspace, git_hook_stdin)?;
         settings.level = self.level;
         settings.fail_level = if self.no_fail {

@@ -256,9 +256,8 @@ impl Planner {
             self.transformers.push(Box::new(ignore.clone()));
         }
 
-        self.transformers.push(Box::new(CheckFilters {
-            filters: self.settings.filters.clone(),
-        }));
+        self.transformers
+            .push(Box::new(CheckFilters::from_settings(&self.settings)));
 
         self.transformers.push(Box::new(LevelFilter {
             level: self.settings.level,
@@ -349,6 +348,7 @@ impl Planner {
             allow_unsafe: self.settings.r#unsafe,
             auth_token: self.settings.auth_token.clone(),
             filters: self.settings.filters.clone(),
+            skips: self.settings.skips.clone(),
             workspace: self.workspace.clone(),
             config: self.config.clone(),
             issue_cache: self.issue_cache.clone(),

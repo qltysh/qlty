@@ -8,7 +8,7 @@ use super::{
 use crate::{
     cache::{IssueCache, IssuesCacheHit, IssuesCacheKey},
     executor::staging_area::StagingArea,
-    planner::{target_batcher::TargetBatcher, InvocationPlan},
+    planner::{check_filters::CheckFilters, target_batcher::TargetBatcher, InvocationPlan},
     utils::generate_random_id,
     Tool,
 };
@@ -162,7 +162,7 @@ impl DriverPlanner {
             self.tool.clone(),
             Arc::new(self.plugin.clone()),
             self.driver_name.clone(),
-            self.settings.filters.clone(),
+            CheckFilters::from_settings(&self.settings),
             Arc::new(self.plugin_configs.clone()),
             self.plugin.affects_cache.clone(),
             self.issue_cache.repository(),

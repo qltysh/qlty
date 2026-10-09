@@ -166,6 +166,7 @@ impl Executor {
 
         let mut transformers: Vec<Box<dyn IssueTransformer>> = vec![Box::new(CheckFilters {
             filters: self.plan.filters.clone(),
+            skips: self.plan.skips.clone(),
         })];
 
         transformers.push(Box::new(SourceExtractor {
