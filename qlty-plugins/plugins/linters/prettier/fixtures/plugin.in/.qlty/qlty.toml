@@ -1,0 +1,11 @@
+config_version = "0"
+
+[[source]]
+name = "default"
+default = true
+
+[[plugin]]
+name = "prettier"
+version = "3.6.2"
+package_file = "package.json"
+package_filters = ["prettier", "typescript"]
