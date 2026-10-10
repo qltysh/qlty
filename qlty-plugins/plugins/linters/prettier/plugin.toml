@@ -37,6 +37,9 @@ package_file_candidate_filters = ["prettier"]
 
 [plugins.definitions.prettier.drivers.format]
 script = "prettier --config ${config_file} -w ${target}"
+# Prettier loads plugins named in its config by resolving them from the current
+# working directory, so it must run from the tool install where they are
+# installed. Covered by fixtures/plugin.in.
 runs_from = { type = "tool_directory" }
 batch_by = "config_file"
 success_codes = [0] # https://prettier.io/docs/cli#exit-codes
