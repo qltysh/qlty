@@ -37,10 +37,15 @@ package_file_candidate_filters = ["prettier"]
 
 [plugins.definitions.prettier.drivers.format]
 script = "prettier --config ${config_file} -w ${target}"
-# Prettier loads plugins named in its config by resolving them from the current
-# working directory, so it must run from the tool install where they are
-# installed. Covered by fixtures/plugin.in.
-runs_from = { type = "tool_directory" }
+# Prettier reads .prettierignore only from its working directory, so it has to
+# run from the staging root like the other formatters. It also resolves plugins
+# named in its config from the working directory with ES module rules, which
+# ignore NODE_PATH, so the prepare script links the tool install's node_modules
+# into the staging root first. Node creates a junction on Windows, which needs
+# no privilege, and a symlink elsewhere. Covered by fixtures/plugin.in and
+# fixtures/ignore.in.
+runs_from = { type = "root" }
+prepare_script = "node -e \"const fs=require('fs');fs.existsSync('node_modules')||fs.symlinkSync(process.argv[1],'node_modules','junction')\" \"${linter}/node_modules\""
 batch_by = "config_file"
 success_codes = [0] # https://prettier.io/docs/cli#exit-codes
 cache_results = true
