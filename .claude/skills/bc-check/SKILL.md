@@ -74,7 +74,7 @@ Don't narrate the investigation. Your reply is the report below and nothing else
 ## Backwards-compatibility review
 
 **Target:** <PR #N / branch <name> / current branch>
-**Verdict:** <safe / risky — needs mitigation / blocker — do not merge as-is>
+**Verdict:** <High — do not merge as-is / Medium — mitigate before merging / Low — safe to merge / None — safe to merge>
 **Affected runtime contexts:** <local developers / CI customers / Qlty Cloud — contexts with findings, or none>
 
 - **<High / Medium / Low>** · <affected contexts> · `path/to/file.rs:123` — <what breaks, for whom, under what circumstances>. Fix: <recommendation>.
@@ -82,7 +82,7 @@ Don't narrate the investigation. Your reply is the report below and nothing else
 <repeat, most severe first>
 ```
 
-Keep each finding to a few sentences. The verdict is **blocker** if any finding is high, **risky** if any finding is medium, and **safe** otherwise. If there are zero findings, still emit the report with "Verdict: safe" and "No findings." in place of the list.
+Keep each finding to a few sentences. The verdict is the highest severity among the findings. If there are zero findings, still emit the report with "Verdict: None — safe to merge" and "No findings." in place of the list.
 
 A finding at the right level of detail:
 
