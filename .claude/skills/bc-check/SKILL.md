@@ -32,11 +32,11 @@ or a release is blocked by red CI). A confirmed break here is high severity. Be 
 
 Qlty Cloud runs builds on behalf of customers and invokes the qlty CLI
 directly. The commands currently relied on include `qlty sources fetch`,
-`qlty config validate`, `qlty fmt --skip-source-fetch`,
-`qlty check --install-only --skip-source-fetch` (with `--skip-errored-plugins`
-and `--upstream` or `--all`), `qlty init`, `qlty install`, and `qlty build`.
-A backwards-incompatible change that affects any of these commands or flags,
-or the config/source formats they depend on, causes a **Qlty
+`qlty config validate`, `qlty fmt`, `qlty check`, `qlty init`,
+`qlty install`, and `qlty build`. Qlty Cloud passes specific arguments to
+some of these commands today, but those arguments are subject to change.
+A backwards-incompatible change that affects any of these commands or their
+arguments, or the config/source formats they depend on, causes a **Qlty
 Cloud outage** — every customer's builds fail at once until we can ship a
 coordinated fix. A confirmed break here is high severity, and the
 recommendation must say the PR needs a coordinated Qlty Cloud update before
