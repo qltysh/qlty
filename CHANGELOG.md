@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.654.0 (2026-10-13)
+
+### New
+
+- Add a `--skip` flag to `qlty check` and `qlty fmt`, the counterpart to `--filter`: run every enabled plugin except the ones listed (for example `qlty check --skip eslint` or `qlty check --filter eslint,rubocop --skip rubocop`). A `plugin` entry removes the plugin entirely while a `plugin:rule` entry keeps it running and drops matching issues. An unknown name fails with `Plugin not found: <name>`, and skipping every enabled plugin fails with `All enabled plugins were skipped` (#2913)
+
+### Fixed
+
+- Run the prettier formatter from the staging root like every other formatter so the staged `.prettierignore` is honored, fixing ignored files still being reformatted. A prepare script links the tool install's `node_modules` into the staging root so bare plugin names in `.prettierrc` continue to resolve (#2916)
+
 ## Notice: CLI releases served over HTTPS only (2026-09-14)
 
 CLI releases are now served over HTTPS only. Versions before v0.590.0 fetch the latest-release manifest over HTTP, so `qlty upgrade` and `qlty version` now fail on them with an error naming an `http://` URL. `qlty check`, `qlty fmt`, `qlty coverage publish`, and `qlty --version` are unaffected. To recover, run `qlty upgrade --version 0.644.0`, which skips the manifest lookup, or re-run the installer (`curl https://qlty.sh | sh` on macOS and Linux, `powershell -c "iwr https://qlty.sh | iex"` on Windows).
