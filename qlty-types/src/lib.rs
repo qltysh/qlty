@@ -249,6 +249,7 @@ pub fn level_from_str(level: &str) -> analysis::v1::Level {
         "medium" => analysis::v1::Level::Medium,
         "low" => analysis::v1::Level::Low,
         "fmt" => analysis::v1::Level::Fmt,
+        "note" => analysis::v1::Level::Note,
         _ => analysis::v1::Level::Unspecified,
     }
 }
@@ -389,5 +390,30 @@ impl Add for tests::v1::CoverageSummary {
 impl AddAssign for tests::v1::CoverageSummary {
     fn add_assign(&mut self, other: Self) {
         *self = *self + other;
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn level_from_str_parses_every_named_level() {
+        let levels: Vec<_> = ["High", "medium", "low", "fmt", "note", "info"]
+            .iter()
+            .map(|level| level_from_str(level))
+            .collect();
+
+        assert_eq!(
+            levels,
+            vec![
+                analysis::v1::Level::High,
+                analysis::v1::Level::Medium,
+                analysis::v1::Level::Low,
+                analysis::v1::Level::Fmt,
+                analysis::v1::Level::Note,
+                analysis::v1::Level::Unspecified,
+            ]
+        );
     }
 }
