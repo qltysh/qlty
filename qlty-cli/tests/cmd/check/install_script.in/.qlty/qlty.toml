@@ -1,0 +1,14 @@
+config_version = "0"
+
+[plugins.definitions.greeter]
+file_types = ["shell"]
+install_script = "install.sh"
+
+[plugins.definitions.greeter.drivers.lint]
+script = "sh ${linter}/greet.sh ${target}"
+success_codes = [0]
+output = "pass_fail"
+
+[[plugin]]
+name = "greeter"
+version = "1.0.0"
