@@ -6,7 +6,6 @@ pub mod staging_area;
 
 use self::staging_area::{load_config_file_from_qlty_dir, load_config_file_from_repository};
 use crate::llm::Fixer;
-use crate::planner::check_filters::CheckFilters;
 use crate::planner::config_files::config_globset;
 use crate::planner::source_extractor::SourceExtractor;
 use crate::Tool;
@@ -164,9 +163,8 @@ impl Executor {
         let mut invocations = vec![];
         self.plan.workspace.library()?.create()?;
 
-        let mut transformers: Vec<Box<dyn IssueTransformer>> = vec![Box::new(CheckFilters {
-            filters: self.plan.filters.clone(),
-        })];
+        let mut transformers: Vec<Box<dyn IssueTransformer>> =
+            vec![Box::new(self.plan.check_filters.clone())];
 
         transformers.push(Box::new(SourceExtractor {
             staging_area: self.plan.staging_area.clone(),

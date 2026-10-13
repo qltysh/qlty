@@ -1,0 +1,6 @@
+
+ ISSUES: 1 
+
+sample.sh:2:0
+    2:0  high    second issue  exists:RuleB
+

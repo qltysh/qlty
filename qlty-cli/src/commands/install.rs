@@ -44,7 +44,7 @@ impl Install {
 
         if let Some(filter) = &self.filter {
             warn!("Filtering plugins: {}", filter);
-            settings.filters = vec![CheckFilter {
+            settings.check_filters.filters = vec![CheckFilter {
                 plugin: filter.clone(),
                 rule_key: None,
             }];

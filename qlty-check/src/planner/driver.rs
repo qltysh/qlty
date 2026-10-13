@@ -162,7 +162,7 @@ impl DriverPlanner {
             self.tool.clone(),
             Arc::new(self.plugin.clone()),
             self.driver_name.clone(),
-            self.settings.filters.clone(),
+            self.settings.check_filters.clone(),
             Arc::new(self.plugin_configs.clone()),
             self.plugin.affects_cache.clone(),
             self.issue_cache.repository(),

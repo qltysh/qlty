@@ -62,10 +62,7 @@ fn check_tests() {
     setup_and_run_test_cases("tests/cmd/check/*.toml");
 }
 
-#[test]
-fn filtered_check_does_not_pollute_unfiltered_issue_cache() {
-    let fixture = tempfile::tempdir().unwrap();
-    let root = fixture.path();
+fn write_cache_repro_fixture(root: &Path) {
     fs::create_dir_all(root.join(".qlty")).unwrap();
     fs::write(
         root.join(".gitignore"),
@@ -103,6 +100,13 @@ fn filtered_check_does_not_pollute_unfiltered_issue_cache() {
         "#},
     )
     .unwrap();
+}
+
+#[test]
+fn filtered_check_does_not_pollute_unfiltered_issue_cache() {
+    let fixture = tempfile::tempdir().unwrap();
+    let root = fixture.path();
+    write_cache_repro_fixture(root);
 
     let _repository = qlty_test_utilities::git::init(root);
     let cache_directory = Library::new(root).unwrap().cache_directory().unwrap();
@@ -140,6 +144,52 @@ fn filtered_check_does_not_pollute_unfiltered_issue_cache() {
         command_output(&unfiltered).contains("reproducible lint issue"),
         "{}",
         command_output(&unfiltered)
+    );
+}
+
+#[test]
+fn skipped_check_does_not_pollute_unskipped_issue_cache() {
+    let fixture = tempfile::tempdir().unwrap();
+    let root = fixture.path();
+    write_cache_repro_fixture(root);
+
+    let _repository = qlty_test_utilities::git::init(root);
+    let cache_directory = Library::new(root).unwrap().cache_directory().unwrap();
+    let _cache_cleanup = CacheCleanup(cache_directory);
+
+    let skipped = run_qlty(
+        root,
+        &[
+            "check",
+            "--all",
+            "--no-formatters",
+            "--skip=cache-repro:LINT",
+            "--no-upgrade-check",
+            "--no-progress",
+        ],
+    );
+    assert!(skipped.status.success(), "{}", command_output(&skipped));
+
+    let unskipped = run_qlty(
+        root,
+        &[
+            "check",
+            "--all",
+            "--no-formatters",
+            "--no-upgrade-check",
+            "--no-progress",
+        ],
+    );
+    assert_eq!(
+        unskipped.status.code(),
+        Some(1),
+        "a plain check reused the skipped cache entry\n{}",
+        command_output(&unskipped)
+    );
+    assert!(
+        command_output(&unskipped).contains("reproducible lint issue"),
+        "{}",
+        command_output(&unskipped)
     );
 }
 

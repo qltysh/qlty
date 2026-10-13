@@ -1,7 +1,7 @@
 use crate::planner::config_files::PluginConfigFile;
 use crate::planner::target::Target;
 use crate::tool::Tool;
-use crate::CheckFilter;
+use crate::CheckFilters;
 use anyhow::{Context, Result};
 use git2::{Repository, Status};
 use itertools::Itertools;
@@ -156,7 +156,7 @@ struct InvocationCacheKey {
     tool: Box<dyn Tool>,
     plugin: Arc<PluginDef>,
     driver_name: String,
-    filters: Vec<CheckFilter>,
+    check_filters: CheckFilters,
     affects_cache: HashMap<PathBuf, String>,
     configs: Arc<Vec<PluginConfigFile>>,
 }
@@ -300,8 +300,12 @@ impl InvocationCacheKey {
         digest.add("tool", &self.tool.directory());
         digest.add("driver_name", &self.driver_name);
 
-        for filter in &self.filters {
+        for filter in &self.check_filters.filters {
             digest.add(&format!("check.filter.{filter}"), "true");
+        }
+
+        for skip in &self.check_filters.skips {
+            digest.add(&format!("check.skip.{skip}"), "true");
         }
 
         for config in self.configs.clone().iter().sorted() {
@@ -321,7 +325,7 @@ impl IssuesCacheKey {
         tool: Box<dyn Tool>,
         plugin: Arc<PluginDef>,
         driver_name: String,
-        filters: Vec<CheckFilter>,
+        check_filters: CheckFilters,
         configs: Arc<Vec<PluginConfigFile>>,
         affects_cache: Vec<String>,
         repository: Arc<RepositoryState>,
@@ -341,7 +345,7 @@ impl IssuesCacheKey {
                 tool: tool.clone(),
                 plugin: plugin.clone(),
                 driver_name,
-                filters,
+                check_filters,
                 affects_cache: cache_busters,
                 configs,
             }

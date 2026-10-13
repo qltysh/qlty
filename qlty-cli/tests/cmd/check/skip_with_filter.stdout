@@ -1,0 +1,12 @@
+
+ ISSUES: 1 
+
+:0:0
+    0:0  high    alpha failed  alpha:fail
+
+ JOBS: 1 
+
+Plugin  Result   Targets   Time   Debug File
+alpha   Success  1 target  [..]s  .qlty/out/invoke-[..].yaml
+
+Checked 1 file
