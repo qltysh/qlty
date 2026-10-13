@@ -12,6 +12,7 @@ latest_version = "8.29.1"
 known_good_version = "8.29.1"
 version_command = "gitleaks version"
 config_files = [".gitleaks.toml"]
+affects_cache = [".gitleaksignore"]
 description = "SAST tool for detecting and preventing hardcoded secrets like passwords, api keys, and tokens in git repos"
 security = true
 

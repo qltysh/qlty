@@ -30,8 +30,9 @@ Gitleaks will be automatically enabled by `qlty init` if a `.gitleaks.toml` conf
 ## Configuration files
 
 - [`.gitleaks.toml`](https://github.com/gitleaks/gitleaks/tree/master?tab=readme-ov-file#configuration)
+- [`.gitleaksignore`](https://github.com/gitleaks/gitleaks/tree/master?tab=readme-ov-file#gitleaksignore)
 
-To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Gitleaks.
+To keep your project tidy, you can move `.gitleaks.toml` into `.qlty/configs` and Qlty will find and use it when running Gitleaks. `.gitleaksignore` must stay at the repository root, where Gitleaks reads it. Because Qlty scans files without Git history, its fingerprints have no commit prefix, for example `src/settings.py:aws-access-token:12`.
 
 ## Languages and file types
 
