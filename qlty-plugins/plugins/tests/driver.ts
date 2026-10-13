@@ -1,4 +1,4 @@
-import { execFile, ExecOptions } from "child_process";
+import { ChildProcess, execFile, ExecOptions, spawn } from "child_process";
 import Debug, { Debugger } from "debug";
 import * as fs from "fs";
 import * as os from "os";
@@ -16,6 +16,33 @@ interface Issue {
 }
 
 const execFilePromise = util.promisify(execFile);
+
+// execFile's own timeout only signals the direct child. Installers spawn npm,
+// pip and gem, which outlive qlty on Windows, so the whole tree is killed.
+const killProcessTree = async (child: ChildProcess) => {
+  if (
+    child.pid === undefined ||
+    child.exitCode !== null ||
+    child.signalCode !== null
+  ) {
+    return;
+  }
+
+  if (process.platform === "win32") {
+    await execFilePromise("taskkill", [
+      "/pid",
+      String(child.pid),
+      "/T",
+      "/F",
+    ]).catch(() => undefined);
+  } else {
+    try {
+      process.kill(-child.pid, "SIGKILL");
+    } catch {
+      /* already exited */
+    }
+  }
+};
 
 const FIXTURES_DIR = "fixtures";
 const TEMP_PREFIX = "plugins_";
@@ -167,19 +194,21 @@ export class QltyDriver {
       );
 
       try {
-        await this.runQltyCmd(args, {
-          env: this.checkEnv(),
-          timeout: INSTALL_ATTEMPT_TIMEOUT_MS,
-        });
+        const result = await this.runQltyCmdWithTimeout(
+          args,
+          { env: this.checkEnv() },
+          INSTALL_ATTEMPT_TIMEOUT_MS,
+        );
+        this.debug("Install attempt %d succeeded\n%s", attempt, result.stderr);
         return;
       } catch (error) {
         lastError = error;
         const err = error as {
-          killed?: boolean;
+          timedOut?: boolean;
           code?: unknown;
           stderr?: string;
         };
-        const reason = err.killed
+        const reason = err.timedOut
           ? `timed out after ${INSTALL_ATTEMPT_TIMEOUT_MS} ms`
           : `exited with ${err.code}`;
         this.debug(
@@ -309,6 +338,60 @@ export class QltyDriver {
       argStr.split(" ").filter((arg) => arg.length > 0),
       execOptions,
     );
+  }
+
+  async runQltyCmdWithTimeout(
+    argStr: string,
+    execOptions: ExecOptions,
+    timeoutMs: number,
+  ): Promise<{ stdout: string; stderr: string }> {
+    this.debug("Running qlty %s", argStr);
+    const [file, args, options] = this.buildExecArgs(
+      argStr.split(" "),
+      execOptions,
+    );
+
+    // execFile does not forward `detached` to spawn, so spawn is used
+    // directly. A detached child leads its own process group on POSIX, which
+    // lets the whole group be killed. Windows uses taskkill /T instead.
+    return new Promise((resolve, reject) => {
+      const child = spawn(file, args, {
+        ...options,
+        detached: process.platform !== "win32",
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+
+      let stdout = "";
+      let stderr = "";
+      child.stdout.on("data", (chunk) => (stdout += chunk));
+      child.stderr.on("data", (chunk) => (stderr += chunk));
+
+      let timedOut = false;
+      const timer = setTimeout(() => {
+        timedOut = true;
+        void killProcessTree(child);
+      }, timeoutMs);
+
+      child.on("error", (error) => {
+        clearTimeout(timer);
+        reject(Object.assign(error, { stdout, stderr, timedOut }));
+      });
+
+      child.on("close", (code, signal) => {
+        clearTimeout(timer);
+        if (code === 0 && !timedOut) {
+          resolve({ stdout, stderr });
+          return;
+        }
+
+        const error = new Error(
+          `Command failed: ${file} ${args.join(" ")}\n${stderr}`,
+        );
+        reject(
+          Object.assign(error, { code, signal, stdout, stderr, timedOut }),
+        );
+      });
+    });
   }
 
   async runQlty(
