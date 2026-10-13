@@ -23,6 +23,15 @@ const TEMP_SUBDIR = ".qlty/tmp";
 const SNAPSHOTS_DIR = "__snapshots__";
 export const REPO_ROOT = path.resolve(__dirname, "..");
 
+// Tool installation downloads runtimes and packages, so it gets its own
+// retry loop and time budget instead of counting against the check timeout.
+const INSTALL_ATTEMPTS = 3;
+const INSTALL_ATTEMPT_TIMEOUT_MS = 10 * 60 * 1000;
+const INSTALL_RETRY_DELAY_MS = 5 * 1000;
+export const SETUP_TIMEOUT_MS =
+  INSTALL_ATTEMPTS * (INSTALL_ATTEMPT_TIMEOUT_MS + INSTALL_RETRY_DELAY_MS) +
+  60 * 1000;
+
 let TMPDIR = os.tmpdir();
 if (process.platform === "win32") {
   // Manually override on Windows to avoid using 8.3 style paths, which throw off some snapshot comparisons
@@ -140,6 +149,59 @@ export class QltyDriver {
         `plugins enable ${this.linterName}=${linterVersion}`,
       );
     }
+
+    await this.installTools();
+  }
+
+  async installTools() {
+    const args = `check --all --no-cache --no-progress --install-only --filter=${this.linterName}`;
+    let lastError: unknown;
+
+    for (let attempt = 1; attempt <= INSTALL_ATTEMPTS; attempt++) {
+      this.debug(
+        "Installing tools for %s@%s (attempt %d of %d)",
+        this.linterName,
+        this.linterVersion,
+        attempt,
+        INSTALL_ATTEMPTS,
+      );
+
+      try {
+        await this.runQltyCmd(args, {
+          env: this.checkEnv(),
+          timeout: INSTALL_ATTEMPT_TIMEOUT_MS,
+        });
+        return;
+      } catch (error) {
+        lastError = error;
+        const err = error as {
+          killed?: boolean;
+          code?: unknown;
+          stderr?: string;
+        };
+        const reason = err.killed
+          ? `timed out after ${INSTALL_ATTEMPT_TIMEOUT_MS} ms`
+          : `exited with ${err.code}`;
+        this.debug(
+          "Install attempt %d %s\n%s",
+          attempt,
+          reason,
+          err.stderr ?? "",
+        );
+
+        if (attempt < INSTALL_ATTEMPTS) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, INSTALL_RETRY_DELAY_MS * attempt),
+          );
+        }
+      }
+    }
+
+    const message =
+      lastError instanceof Error ? lastError.message : String(lastError);
+    throw new Error(
+      `Installing tools for ${this.linterName}@${this.linterVersion} failed after ${INSTALL_ATTEMPTS} attempts: ${message}`,
+    );
   }
 
   tearDown() {
@@ -205,13 +267,7 @@ export class QltyDriver {
     let output = { stdout: "", stderr: "" };
     let exitCode = 0;
     try {
-      const env = {
-        ...executionEnv(this.sandboxPath ?? ""),
-        QLTY_LOG_STDERR: "1",
-        QLTY_LOG: process.env.QLTY_LOG ?? "debug",
-      };
-
-      output = await this.runQltyCmd(fullArgs, { env });
+      output = await this.runQltyCmd(fullArgs, { env: this.checkEnv() });
     } catch (error) {
       const err = error as {
         code: number;
@@ -234,6 +290,14 @@ export class QltyDriver {
       outputJson,
       ...output,
     });
+  }
+
+  checkEnv() {
+    return {
+      ...executionEnv(this.sandboxPath ?? ""),
+      QLTY_LOG_STDERR: "1",
+      QLTY_LOG: process.env.QLTY_LOG ?? "debug",
+    };
   }
 
   async runQltyCmd(

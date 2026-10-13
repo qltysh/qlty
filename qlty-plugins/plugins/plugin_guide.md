@@ -165,6 +165,8 @@ npm test ${PLUGIN_NAME}
 
 e.g. `npm test reek`
 
+Before each check runs, the harness installs the plugin's tools and runtime with `qlty check --install-only`. That step retries up to three times with its own time budget, so a transient download failure or a slow package install does not count against the check's timeout.
+
 ## Debug
 
 You can use `DEBUG=qlty:MY_PLUGIN` env variable to get debug logs which include a path to the sandbox for a given plugin or `DEBUG=qlty:*` for all of them.
