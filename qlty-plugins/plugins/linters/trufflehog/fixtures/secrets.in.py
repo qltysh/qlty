@@ -5,7 +5,7 @@ aws_secret_access_key = "Tg0pz8Jii8hkLx4+PnUisM8GmKs3a2DK+EXAMPLE"
 # The below keys are copied from https://github.com/dustin-decker/secretsandstuff
 github_secret = "369963c1434c377428ca8531fbc46c0c43d037a0"
 
-basic_auth = "https://admin:admin@the-internet.herokuapp.com/basic_auth"
+basic_auth = "https://admin:admin@basic-auth.qltysoftware.com/basic_auth"
 
 priv_key = '''
 -----BEGIN OPENSSH PRIVATE KEY-----
