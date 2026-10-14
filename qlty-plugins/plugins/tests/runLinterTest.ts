@@ -109,11 +109,9 @@ export const getVersionsForTarget = (
       return [getKnownGoodVersion(dirname, linterName)];
     }
 
-    if (OPTIONS.latestVersionOnly) {
-      return [getLatestSnapshotVersion(prefix, snapshotsDir)];
-    }
-
-    return uniqueVersionsList;
+    return OPTIONS.latestVersionOnly
+      ? [getLatestSnapshotVersion(prefix, snapshotsDir)]
+      : uniqueVersionsList;
   }
 };
 
