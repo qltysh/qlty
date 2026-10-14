@@ -15,11 +15,6 @@ on:
           - latest
           - pre-release
         default: latest
-      tap_only:
-        description: "Only publish the Homebrew formula to the tap, skipping the install tests and the S3 promotion"
-        required: false
-        type: boolean
-        default: false
   workflow_call:
     inputs:
       version:
@@ -60,7 +55,6 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
   test:
     name: ${{ matrix.runner }}
-    if: ${{ !inputs.tap_only }}
     needs: resolve
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -80,7 +74,6 @@ jobs:
         run: ${{ matrix.command }} && ~/.qlty/bin/qlty version --no-upgrade-check
         shell: sh
   promote:
-    if: ${{ !inputs.tap_only }}
     permissions:
       contents: read
       id-token: write
@@ -107,7 +100,7 @@ jobs:
           INPUTS_CHANNEL: ${{ inputs.channel }}
           VARS_QLTY_RELEASE_AWS_S3_DESTINATION: ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}
   homebrew-tap:
-    if: ${{ !cancelled() && inputs.channel == 'latest' && needs.resolve.result == 'success' && (needs.promote.result == 'success' || inputs.tap_only) }}
+    if: inputs.channel == 'latest'
     needs: [resolve, promote]
     runs-on: ubuntu-latest
     steps:
