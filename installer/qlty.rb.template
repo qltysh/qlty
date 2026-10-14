@@ -1,6 +1,7 @@
 class Qlty < Formula
   desc "Code quality toolkit"
   homepage "https://qlty.sh"
+  license "BUSL-1.1"
   version "{{VERSION}}"
   if OS.mac?
     if Hardware::CPU.arm?
@@ -63,5 +64,10 @@ class Qlty < Formula
     # Install any leftover files in pkgshare; these are probably config or
     # sample files.
     pkgshare.install(*leftover_contents) unless leftover_contents.empty?
+  end
+
+  test do
+    assert_match "qlty #{version}", shell_output("#{bin}/qlty --version")
+    assert_match "qlty", shell_output("#{bin}/qlty --help")
   end
 end

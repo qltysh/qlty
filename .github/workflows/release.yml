@@ -141,3 +141,4 @@ jobs:
       channel: ${{ inputs.pre-release && 'pre-release' || 'latest' }}
     secrets:
       QLTY_RELEASE_AWS_ROLE_ARN: ${{ secrets.QLTY_RELEASE_AWS_ROLE_ARN }}
+      QLTY_APP_PRIVATE_KEY: ${{ secrets.QLTY_APP_PRIVATE_KEY }}
