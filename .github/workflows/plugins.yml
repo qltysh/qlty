@@ -56,6 +56,18 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Measure small-file writes with Defender on
+        if: contains(matrix.os, 'windows')
+        shell: pwsh
+        run: |
+          Get-MpComputerStatus | Select-Object RealTimeProtectionEnabled, IsTamperProtected, AntivirusEnabled | Format-List
+          $dir = Join-Path $env:RUNNER_TEMP "fsbench-before"
+          New-Item -ItemType Directory -Force -Path $dir | Out-Null
+          $sw = [System.Diagnostics.Stopwatch]::StartNew()
+          foreach ($i in 1..20000) { [System.IO.File]::WriteAllText("$dir\$i.txt", "x") }
+          $sw.Stop()
+          "20000 files written in $($sw.Elapsed.TotalSeconds.ToString('F1')) s"
+
       # Defender's real-time scan blocks every file write on the runner, and the
       # plugin tests write tens of thousands of small files through npm, pip and
       # gem installs. The VM is discarded after the job.
@@ -63,6 +75,18 @@ jobs:
         if: contains(matrix.os, 'windows')
         shell: pwsh
         run: Set-MpPreference -DisableRealtimeMonitoring $true
+
+      - name: Measure small-file writes with Defender off
+        if: contains(matrix.os, 'windows')
+        shell: pwsh
+        run: |
+          Get-MpComputerStatus | Select-Object RealTimeProtectionEnabled, IsTamperProtected, AntivirusEnabled | Format-List
+          $dir = Join-Path $env:RUNNER_TEMP "fsbench-after"
+          New-Item -ItemType Directory -Force -Path $dir | Out-Null
+          $sw = [System.Diagnostics.Stopwatch]::StartNew()
+          foreach ($i in 1..20000) { [System.IO.File]::WriteAllText("$dir\$i.txt", "x") }
+          $sw.Stop()
+          "20000 files written in $($sw.Elapsed.TotalSeconds.ToString('F1')) s"
 
       - name: Use Node.js
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
