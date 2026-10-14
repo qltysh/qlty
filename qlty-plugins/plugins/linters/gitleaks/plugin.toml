@@ -11,12 +11,14 @@ file_types = ["ALL"]
 latest_version = "8.29.1"
 known_good_version = "8.29.1"
 version_command = "gitleaks version"
-config_files = [".gitleaks.toml", ".gitleaks.config"]
+config_files = [".gitleaks.toml"]
+affects_cache = [".gitleaksignore"]
 description = "SAST tool for detecting and preventing hardcoded secrets like passwords, api keys, and tokens in git repos"
 security = true
 
 [plugins.definitions.gitleaks.drivers.lint]
-script = "gitleaks detect --no-git --source=${target} --exit-code=101 -f sarif -r ${tmpfile}"
+script = "gitleaks detect --no-git --source=${target} --exit-code=101 -f sarif -r ${tmpfile} ${config_script}"
+config_script = "--config ${config_file}"
 success_codes = [0, 101]
 output = "tmpfile"
 output_format = "sarif"
