@@ -91,6 +91,12 @@ jobs:
             command: powershell -Command -
             version: 0.447.0
 
+          - os: Windows
+            name: Windows / pwsh
+            runner: windows-latest
+            file: $Env:INSTALL_PS1
+            command: pwsh -Command -
+
     container:
       image: ${{ matrix.container }}
 
