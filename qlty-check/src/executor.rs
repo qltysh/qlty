@@ -20,6 +20,7 @@ pub use driver::Driver;
 use ignore::{DirEntry, WalkBuilder, WalkState};
 use install_error::install_error_message;
 pub use invocation_result::{InvocationResult, InvocationStatus};
+use invocation_script::compute_prepare_script;
 pub use invocation_script::{compute_invocation_script, plan_target_list};
 use itertools::Itertools;
 use qlty_analysis::utils::fs::path_to_string;
@@ -129,7 +130,8 @@ impl Executor {
     }
 
     pub fn run_prepare_scripts(&self) -> Result<()> {
-        let mut prepare_scripts: HashMap<String, &InvocationPlan> = HashMap::new();
+        let mut prepare_scripts: HashMap<(String, String, PathBuf), &InvocationPlan> =
+            HashMap::new();
 
         self.plan
             .invocations
@@ -142,16 +144,24 @@ impl Executor {
                 }
             })
             .for_each(|invocation: &InvocationPlan| {
-                if invocation.driver.prepare_script.is_some() {
-                    // Prevent multiple prepare scripts for the same driver and plugin and
-                    // store invocation plan to run the prepare script later
-                    prepare_scripts.insert(invocation.invocation_label(), invocation);
+                if let Some(prepare_script) = &invocation.driver.prepare_script {
+                    // Prepare once per driver, expanded script, and working directory.
+                    prepare_scripts.insert(
+                        (
+                            invocation.invocation_label(),
+                            compute_prepare_script(invocation, prepare_script),
+                            invocation.invocation_directory.clone(),
+                        ),
+                        invocation,
+                    );
                 }
             });
 
-        for (key, invocation) in prepare_scripts {
-            let task = self.progress.task(&key, "Running prepare script...");
-            invocation.driver.run_prepare_script(invocation, &task)?;
+        for ((label, script, _), invocation) in prepare_scripts {
+            let task = self.progress.task(&label, "Running prepare script...");
+            invocation
+                .driver
+                .run_prepare_script(invocation, &script, &task)?;
             task.clear();
         }
 

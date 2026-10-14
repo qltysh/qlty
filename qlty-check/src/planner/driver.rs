@@ -15,7 +15,7 @@ use crate::{
 use anyhow::{bail, Result};
 use qlty_analysis::{workspace_entries::TargetMode, WorkspaceEntry};
 use qlty_config::{
-    config::{DriverDef, DriverType, PluginDef, TargetType},
+    config::{DriverBatchBy, DriverDef, DriverType, PluginDef, TargetType},
     Workspace,
 };
 use qlty_types::analysis::v1::ExecutionVerb;
@@ -219,10 +219,10 @@ impl DriverPlanner {
         };
 
         for driver_target_batch in target_batcher.compute(&targets)? {
-            let plugin_configs = if driver_target_batch.config_file.is_some() {
-                vec![driver_target_batch.config_file.unwrap().clone()]
-            } else {
-                self.plugin_configs.clone()
+            let plugin_configs = match driver_target_batch.config_file {
+                Some(config_file) => vec![config_file],
+                None if self.driver.batch_by == DriverBatchBy::ConfigFile => vec![],
+                None => self.plugin_configs.clone(),
             };
 
             let invocation_directory =

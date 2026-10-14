@@ -27,6 +27,12 @@ pub fn compute_invocation_script(plan: &InvocationPlan) -> Result<String> {
     Ok(base_script)
 }
 
+pub fn compute_prepare_script(plan: &InvocationPlan, prepare_script: &str) -> String {
+    let script = replace_config_script(plan, prepare_script.to_string());
+    let script = script.replace("${linter}", &path_to_native_string(plan.tool.directory()));
+    replace_config_file(plan, script)
+}
+
 fn replace_autoload_script(plan: &InvocationPlan, script: String) -> String {
     if script.contains("${autoload_script}") {
         if plan.plugin.package_file.is_some() {
@@ -145,8 +151,12 @@ pub fn plan_target_list(plan: &InvocationPlan) -> String {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{executor::driver::test::build_driver, planner::target::Target, tool::ruby::Ruby};
-    use qlty_analysis::{WorkspaceEntry, WorkspaceEntryKind};
+    use crate::{
+        executor::driver::test::build_driver,
+        planner::{config_files::PluginConfigFile, target::Target},
+        tool::ruby::Ruby,
+    };
+    use qlty_analysis::WorkspaceEntryKind;
     use qlty_config::{
         config::{InvocationDirectoryDef, PluginDef},
         Workspace,
@@ -154,23 +164,14 @@ mod test {
     use qlty_types::analysis::v1::ExecutionVerb;
     use std::{path::PathBuf, sync::Arc, time::SystemTime};
 
-    #[test]
-    fn test_target_list() {
-        let workspace_root = PathBuf::from("/var/root");
-
-        let plan = InvocationPlan {
-            target_root: workspace_root.clone(),
-            workspace_entries: Arc::new(vec![WorkspaceEntry {
-                path: PathBuf::from("nested_dir/basic.in.py"),
-                content_modified: SystemTime::now(),
-                language_name: None,
-                contents_size: 0,
-                kind: WorkspaceEntryKind::File,
-            }]),
-            invocation_id: "".to_string(),
+    fn build_plan() -> InvocationPlan {
+        InvocationPlan {
+            target_root: PathBuf::from("/var/root"),
+            workspace_entries: Arc::new(vec![]),
+            invocation_id: String::new(),
             verb: ExecutionVerb::Check,
             workspace: Workspace {
-                root: workspace_root,
+                root: PathBuf::from("/var/root"),
             },
             settings: Default::default(),
             runtime: None,
@@ -181,6 +182,15 @@ mod test {
             driver_name: "test".to_string(),
             driver: build_driver(vec![], vec![]),
             plugin_configs: vec![],
+            targets: vec![],
+            invocation_directory: PathBuf::from("/var/root"),
+            invocation_directory_def: InvocationDirectoryDef::default(),
+        }
+    }
+
+    #[test]
+    fn test_target_list() {
+        let plan = InvocationPlan {
             targets: vec![Target {
                 path: PathBuf::from("nested_dir"),
                 content_modified: SystemTime::now(),
@@ -193,6 +203,7 @@ mod test {
                 kind: InvocationDirectoryType::RootOrParentWith,
                 path: Some("nested_dir".to_string()),
             },
+            ..build_plan()
         };
 
         let target_list = plan_target_list(&plan);
@@ -209,28 +220,7 @@ mod test {
         let invocation_directory = PathBuf::from("/var/root/nested_dir");
 
         let plan = InvocationPlan {
-            target_root: PathBuf::from(invocation_directory.clone()),
-            workspace_entries: Arc::new(vec![WorkspaceEntry {
-                path: PathBuf::from("nested_dir/basic.in.py"),
-                content_modified: SystemTime::now(),
-                language_name: None,
-                contents_size: 0,
-                kind: WorkspaceEntryKind::File,
-            }]),
-            invocation_id: "".to_string(),
-            verb: ExecutionVerb::Check,
-            workspace: Workspace {
-                root: PathBuf::from("/var/root"),
-            },
-            settings: Default::default(),
-            runtime: None,
-            runtime_version: None,
-            plugin_name: "test".to_string(),
-            plugin: PluginDef::default(),
-            tool: Ruby::new_tool(""),
-            driver_name: "test".to_string(),
-            driver: build_driver(vec![], vec![]),
-            plugin_configs: vec![],
+            target_root: invocation_directory.clone(),
             targets: vec![Target {
                 path: PathBuf::from("nested_dir"),
                 content_modified: SystemTime::now(),
@@ -239,7 +229,7 @@ mod test {
                 kind: WorkspaceEntryKind::Directory,
             }],
             invocation_directory,
-            invocation_directory_def: InvocationDirectoryDef::default(),
+            ..build_plan()
         };
 
         let target_list = plan_target_list(&plan);
@@ -253,28 +243,7 @@ mod test {
         let target_path = PathBuf::from("nested_dir/basic.in.py");
 
         let plan = InvocationPlan {
-            target_root: PathBuf::from(invocation_directory.clone()),
-            workspace_entries: Arc::new(vec![WorkspaceEntry {
-                path: target_path.clone(),
-                content_modified: SystemTime::now(),
-                language_name: None,
-                contents_size: 0,
-                kind: WorkspaceEntryKind::File,
-            }]),
-            invocation_id: "".to_string(),
-            verb: ExecutionVerb::Check,
-            workspace: Workspace {
-                root: PathBuf::from("/var/root"),
-            },
-            settings: Default::default(),
-            runtime: None,
-            runtime_version: None,
-            plugin_name: "test".to_string(),
-            plugin: PluginDef::default(),
-            tool: Ruby::new_tool(""),
-            driver_name: "test".to_string(),
-            driver: build_driver(vec![], vec![]),
-            plugin_configs: vec![],
+            target_root: invocation_directory.clone(),
             targets: vec![Target {
                 path: target_path.clone(),
                 content_modified: SystemTime::now(),
@@ -283,7 +252,7 @@ mod test {
                 kind: WorkspaceEntryKind::File,
             }],
             invocation_directory,
-            invocation_directory_def: InvocationDirectoryDef::default(),
+            ..build_plan()
         };
 
         let target_list = plan_target_list(&plan);
@@ -296,30 +265,8 @@ mod test {
 
     #[test]
     fn test_replace_autoload_script() {
-        let mut driver = build_driver(vec![], vec![]);
-        driver.autoload_script = Some("autoload.php".to_string());
-
-        let mut plan = InvocationPlan {
-            target_root: PathBuf::from("/var/root"),
-            workspace_entries: Arc::new(vec![]),
-            invocation_id: "".to_string(),
-            verb: ExecutionVerb::Check,
-            workspace: Workspace {
-                root: PathBuf::from("/var/root"),
-            },
-            settings: Default::default(),
-            runtime: None,
-            runtime_version: None,
-            plugin_name: "test".to_string(),
-            plugin: PluginDef::default(),
-            tool: Ruby::new_tool(""),
-            driver_name: "test".to_string(),
-            driver,
-            plugin_configs: vec![],
-            targets: vec![],
-            invocation_directory: PathBuf::from("/var/root"),
-            invocation_directory_def: InvocationDirectoryDef::default(),
-        };
+        let mut plan = build_plan();
+        plan.driver.autoload_script = Some("autoload.php".to_string());
 
         let script = "autoload_script: ${autoload_script}".to_string();
         let script = replace_autoload_script(&plan, script);
@@ -331,5 +278,35 @@ mod test {
         let script = replace_autoload_script(&plan, script);
 
         assert_eq!(script, "autoload_script: autoload.php");
+    }
+
+    #[test]
+    fn test_compute_prepare_script_with_config_file() {
+        let mut plan = build_plan();
+        plan.driver.config_script = Some("--config ${config_file}".to_string());
+        plan.plugin_configs = vec![PluginConfigFile {
+            path: PathBuf::from("/var/root/.tflint.hcl"),
+            contents: String::new(),
+        }];
+
+        let script = compute_prepare_script(&plan, "tflint --init ${config_script}");
+
+        assert_eq!(
+            script,
+            format!(
+                "tflint --init --config {}",
+                path_to_native_string("/var/root/.tflint.hcl")
+            )
+        );
+    }
+
+    #[test]
+    fn test_compute_prepare_script_without_config_file() {
+        let mut plan = build_plan();
+        plan.driver.config_script = Some("--config ${config_file}".to_string());
+
+        let script = compute_prepare_script(&plan, "tflint --init ${config_script}");
+
+        assert_eq!(script, "tflint --init ");
     }
 }
