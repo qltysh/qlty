@@ -1,4 +1,4 @@
-import { execFile, ExecOptions } from "child_process";
+import { ChildProcess, execFile, ExecOptions, spawn } from "child_process";
 import Debug, { Debugger } from "debug";
 import * as fs from "fs";
 import * as os from "os";
@@ -17,11 +17,47 @@ interface Issue {
 
 const execFilePromise = util.promisify(execFile);
 
+// execFile's own timeout only signals the direct child. Installers spawn npm,
+// pip and gem, which outlive qlty on Windows, so the whole tree is killed.
+const killProcessTree = async (child: ChildProcess) => {
+  if (
+    child.pid === undefined ||
+    child.exitCode !== null ||
+    child.signalCode !== null
+  ) {
+    return;
+  }
+
+  if (process.platform === "win32") {
+    await execFilePromise("taskkill", [
+      "/pid",
+      String(child.pid),
+      "/T",
+      "/F",
+    ]).catch(() => undefined);
+  } else {
+    try {
+      process.kill(-child.pid, "SIGKILL");
+    } catch {
+      /* already exited */
+    }
+  }
+};
+
 const FIXTURES_DIR = "fixtures";
 const TEMP_PREFIX = "plugins_";
 const TEMP_SUBDIR = ".qlty/tmp";
 const SNAPSHOTS_DIR = "__snapshots__";
 export const REPO_ROOT = path.resolve(__dirname, "..");
+
+// Tool installation downloads runtimes and packages, so it gets its own
+// retry loop and time budget instead of counting against the check timeout.
+const INSTALL_ATTEMPTS = 3;
+const INSTALL_ATTEMPT_TIMEOUT_MS = 10 * 60 * 1000;
+const INSTALL_RETRY_DELAY_MS = 5 * 1000;
+export const SETUP_TIMEOUT_MS =
+  INSTALL_ATTEMPTS * (INSTALL_ATTEMPT_TIMEOUT_MS + INSTALL_RETRY_DELAY_MS) +
+  60 * 1000;
 
 let TMPDIR = os.tmpdir();
 if (process.platform === "win32") {
@@ -140,6 +176,61 @@ export class QltyDriver {
         `plugins enable ${this.linterName}=${linterVersion}`,
       );
     }
+
+    await this.installTools();
+  }
+
+  async installTools() {
+    const args = `check --all --no-cache --no-progress --install-only --filter=${this.linterName}`;
+    let lastError: unknown;
+
+    for (let attempt = 1; attempt <= INSTALL_ATTEMPTS; attempt++) {
+      this.debug(
+        "Installing tools for %s@%s (attempt %d of %d)",
+        this.linterName,
+        this.linterVersion,
+        attempt,
+        INSTALL_ATTEMPTS,
+      );
+
+      try {
+        const result = await this.runQltyCmdWithTimeout(
+          args,
+          { env: this.checkEnv() },
+          INSTALL_ATTEMPT_TIMEOUT_MS,
+        );
+        this.debug("Install attempt %d succeeded\n%s", attempt, result.stderr);
+        return;
+      } catch (error) {
+        lastError = error;
+        const err = error as {
+          timedOut?: boolean;
+          code?: unknown;
+          stderr?: string;
+        };
+        const reason = err.timedOut
+          ? `timed out after ${INSTALL_ATTEMPT_TIMEOUT_MS} ms`
+          : `exited with ${err.code}`;
+        this.debug(
+          "Install attempt %d %s\n%s",
+          attempt,
+          reason,
+          err.stderr ?? "",
+        );
+
+        if (attempt < INSTALL_ATTEMPTS) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, INSTALL_RETRY_DELAY_MS * attempt),
+          );
+        }
+      }
+    }
+
+    const message =
+      lastError instanceof Error ? lastError.message : String(lastError);
+    throw new Error(
+      `Installing tools for ${this.linterName}@${this.linterVersion} failed after ${INSTALL_ATTEMPTS} attempts: ${message}`,
+    );
   }
 
   tearDown() {
@@ -205,13 +296,7 @@ export class QltyDriver {
     let output = { stdout: "", stderr: "" };
     let exitCode = 0;
     try {
-      const env = {
-        ...executionEnv(this.sandboxPath ?? ""),
-        QLTY_LOG_STDERR: "1",
-        QLTY_LOG: process.env.QLTY_LOG ?? "debug",
-      };
-
-      output = await this.runQltyCmd(fullArgs, { env });
+      output = await this.runQltyCmd(fullArgs, { env: this.checkEnv() });
     } catch (error) {
       const err = error as {
         code: number;
@@ -236,6 +321,14 @@ export class QltyDriver {
     });
   }
 
+  checkEnv() {
+    return {
+      ...executionEnv(this.sandboxPath ?? ""),
+      QLTY_LOG_STDERR: "1",
+      QLTY_LOG: process.env.QLTY_LOG ?? "debug",
+    };
+  }
+
   async runQltyCmd(
     argStr: string,
     execOptions?: ExecOptions,
@@ -245,6 +338,60 @@ export class QltyDriver {
       argStr.split(" ").filter((arg) => arg.length > 0),
       execOptions,
     );
+  }
+
+  async runQltyCmdWithTimeout(
+    argStr: string,
+    execOptions: ExecOptions,
+    timeoutMs: number,
+  ): Promise<{ stdout: string; stderr: string }> {
+    this.debug("Running qlty %s", argStr);
+    const [file, args, options] = this.buildExecArgs(
+      argStr.split(" "),
+      execOptions,
+    );
+
+    // execFile does not forward `detached` to spawn, so spawn is used
+    // directly. A detached child leads its own process group on POSIX, which
+    // lets the whole group be killed. Windows uses taskkill /T instead.
+    return new Promise((resolve, reject) => {
+      const child = spawn(file, args, {
+        ...options,
+        detached: process.platform !== "win32",
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+
+      let stdout = "";
+      let stderr = "";
+      child.stdout.on("data", (chunk) => (stdout += chunk));
+      child.stderr.on("data", (chunk) => (stderr += chunk));
+
+      let timedOut = false;
+      const timer = setTimeout(() => {
+        timedOut = true;
+        void killProcessTree(child);
+      }, timeoutMs);
+
+      child.on("error", (error) => {
+        clearTimeout(timer);
+        reject(Object.assign(error, { stdout, stderr, timedOut }));
+      });
+
+      child.on("close", (code, signal) => {
+        clearTimeout(timer);
+        if (code === 0 && !timedOut) {
+          resolve({ stdout, stderr });
+          return;
+        }
+
+        const error = new Error(
+          `Command failed: ${file} ${args.join(" ")}\n${stderr}`,
+        );
+        reject(
+          Object.assign(error, { code, signal, stdout, stderr, timedOut }),
+        );
+      });
+    });
   }
 
   async runQlty(
