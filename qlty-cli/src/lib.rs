@@ -3,6 +3,7 @@ mod arguments;
 mod attestation;
 pub mod auth;
 mod commands;
+pub mod docs_export;
 mod errors;
 pub mod exe_name;
 pub mod export;
