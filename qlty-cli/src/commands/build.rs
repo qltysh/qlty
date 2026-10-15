@@ -32,7 +32,7 @@ pub struct Build {
     #[arg(long)]
     pub backfill: bool,
 
-    /// Generate AI fixes (requires OpenAI API key)
+    /// Generate AI fixes (requires Qlty Cloud authentication)
     #[arg(long)]
     pub ai: bool,
 

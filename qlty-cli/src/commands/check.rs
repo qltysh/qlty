@@ -50,11 +50,11 @@ pub struct Check {
     #[arg(long, conflicts_with = "fix")]
     pub no_fix: bool,
 
-    /// Generate AI fixes (requires OpenAI API key)
+    /// Generate AI fixes (requires Qlty Cloud authentication)
     #[arg(long)]
     pub ai: bool,
 
-    /// Allow unsafe fixes
+    /// Allow fixes for rules that may produce incorrect results and require careful human review
     #[arg(long)]
     pub r#unsafe: bool,
 
@@ -117,7 +117,7 @@ pub struct Check {
     #[arg(long)]
     pub print_errors: bool,
 
-    /// Minimium level of issues to fail on
+    /// Minimum level of issues to fail on
     #[arg(long, value_enum, default_value = "fmt")]
     fail_level: Level,
 

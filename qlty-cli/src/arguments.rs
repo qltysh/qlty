@@ -40,7 +40,7 @@ pub enum Commands {
     /// Generate or install Qlty CLI shell completions
     Completions(Completions),
 
-    /// Print current version
+    /// Show, validate, and migrate configuration
     Config(config::Arguments),
 
     /// View, transform, and publish code coverage
