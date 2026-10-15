@@ -153,3 +153,45 @@ jobs:
           git add Formula/qlty.rb
           git commit -m "qlty ${VERSION}"
           git push origin HEAD:main
+  cli-docs:
+    if: inputs.channel == 'latest'
+    needs: [resolve, promote]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/create-github-app-token@7e473efe3cb98aa54f8d4bac15400b15fad77d94 # v2
+        id: app-token
+        with:
+          app-id: ${{ vars.QLTY_APP_ID }}
+          private-key: ${{ secrets.QLTY_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: cloud
+          permission-actions: write
+
+      - name: Regenerate CLI reference docs
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          RESOLVED_VERSION: ${{ needs.resolve.outputs.version }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          VERSION="v${RESOLVED_VERSION#v}"
+          TITLE="Regenerate CLI reference for ${VERSION}"
+          DISPATCHED_AT="$(date -u -d "-60 seconds" +%Y-%m-%dT%H:%M:%SZ)"
+          gh workflow run cli_docs_release.yml --repo "${OWNER}/cloud" --ref main -f version="${VERSION}"
+
+          RUN_ID=""
+          for _ in $(seq 1 30); do
+            sleep 10
+            RUN_ID="$(gh run list --repo "${OWNER}/cloud" --workflow cli_docs_release.yml --event workflow_dispatch --limit 20 \
+              --json databaseId,displayTitle,createdAt \
+              --jq "[.[] | select(.displayTitle == \"${TITLE}\" and .createdAt >= \"${DISPATCHED_AT}\")] | first | .databaseId // empty")"
+            if [ -n "$RUN_ID" ]; then
+              break
+            fi
+          done
+          if [ -z "$RUN_ID" ]; then
+            echo "::error::Could not find the dispatched cli_docs_release.yml run in ${OWNER}/cloud"
+            exit 1
+          fi
+
+          echo "Watching https://github.com/${OWNER}/cloud/actions/runs/${RUN_ID}"
+          gh run watch "$RUN_ID" --repo "${OWNER}/cloud" --exit-status --interval 30
