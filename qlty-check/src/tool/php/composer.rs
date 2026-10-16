@@ -5,20 +5,19 @@ use crate::tool::node::package_json::PackageJson;
 use crate::ui::ProgressBar;
 use crate::{tool::ToolType, ui::ProgressTask, Tool};
 use anyhow::{bail, Context, Result};
-use itertools::Itertools;
 use qlty_analysis::utils::fs::path_to_native_string;
 use qlty_config::config::PluginDef;
 use serde_json::Value;
 use sha2::Digest;
-use std::env::split_paths;
 use std::path::PathBuf;
 use tracing::{debug, error, info, warn};
 
-use super::PhpPackage;
+use super::{Php, PhpPackage};
 
 #[derive(Debug, Clone)]
 pub struct Composer {
     pub cmd: Box<dyn CommandBuilder>,
+    pub runtime: Php,
 }
 
 impl Tool for Composer {
@@ -34,8 +33,13 @@ impl Tool for Composer {
         None
     }
 
+    fn runtime(&self) -> Option<Box<dyn Tool>> {
+        Some(Box::new(self.runtime.clone()))
+    }
+
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
         sha.update(self.name().as_bytes());
+        self.runtime.update_hash(sha)?;
 
         Ok(())
     }
@@ -62,12 +66,6 @@ impl Tool for Composer {
 
     fn clone_box(&self) -> Box<dyn Tool> {
         Box::new(self.clone())
-    }
-
-    fn extra_env_paths(&self) -> Result<Vec<String>> {
-        std::env::var("PATH")
-            .with_context(|| "PATH environment variable not found for composer")
-            .map(|path| split_paths(&path).map(path_to_native_string).collect_vec())
     }
 }
 
@@ -293,12 +291,58 @@ pub mod test {
     use crate::tool::{
         command_builder::test::{reroute_tools_root, stub_cmd},
         php::{test::with_php_package, Php},
+        test::expanded_base_shell_path,
     };
     use qlty_analysis::utils::fs::path_to_string;
     use qlty_config::config::PluginDef;
+    use std::env::join_paths;
     use std::path::PathBuf;
     use std::sync::{Arc, Mutex};
     use tempfile::tempdir;
+
+    #[test]
+    fn composer_directory_name_differs_by_runtime_version() {
+        with_php_package(|pkg, _, _| {
+            pkg.runtime.version = "8.3.30".to_string();
+            let first_directory = pkg.composer().directory_name();
+            pkg.runtime.version = "8.4.18".to_string();
+
+            assert_ne!(first_directory, pkg.composer().directory_name());
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_composer_env() {
+        with_php_package(|pkg, _, _| {
+            let composer = pkg.composer();
+            let env = composer.env()?;
+            let mut paths = vec![
+                path_to_native_string(PathBuf::from(composer.directory()).join("bin")),
+                composer.directory(),
+                pkg.runtime.directory(),
+            ];
+            paths.extend(expanded_base_shell_path());
+
+            assert_eq!(
+                env.get("PATH"),
+                Some(&path_to_native_string(join_paths(paths).unwrap()))
+            );
+            assert_eq!(
+                env.get("PHPRC"),
+                Some(&path_to_native_string(
+                    PathBuf::from(pkg.runtime.directory()).join("php.ini")
+                ))
+            );
+            assert_eq!(
+                env.get("PHP_INI_SCAN_DIR"),
+                Some(&path_to_native_string(
+                    PathBuf::from(pkg.runtime.directory()).join("conf.d")
+                ))
+            );
+            Ok(())
+        });
+    }
 
     #[test]
     fn test_filter_composer() {

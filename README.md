@@ -343,9 +343,25 @@ Quality metrics are available for C, C++, C#, Elixir, Go, Java, JavaScript, Kotl
 
 Qlty CLI is available for MacOS, Linux, and Windows on x86 and ARM platforms.
 
-### Additional requirements for PHP linters
+### PHP runtimes
 
-Certain PHP linters require a working installation of PHP available in your `$PATH`. To install PHP, use [Homebrew](https://brew.sh/) or an alternative method.
+Qlty downloads a standalone PHP runtime with bundled extensions for PHP linters. The default is PHP 8.3.30. To select an exact PHP version locally and in Cloud builds, add this to `.qlty/qlty.toml`:
+
+```toml
+[runtimes.enabled]
+php = "8.4.18"
+```
+
+This uses [StaticPHP builds](https://github.com/crazywhalecc/static-php-cli) for Linux and macOS on x86_64 and ARM64, and Windows on x86_64. The macOS builds require macOS 12 or later. Available versions depend on the platform: see the [Linux/macOS archives](https://dl.static-php.dev/static-php-cli/common/) and [Windows archives](https://dl.static-php.dev/static-php-cli/windows/spc-max/). An unavailable version fails installation; Qlty does not fall back to system PHP.
+
+Managed PHP uses its own `php.ini` and extension configuration. If your tools need extensions outside the bundled set, or a PHP version unavailable as a standalone build, use the PHP installation in your `PATH`:
+
+```toml
+[runtimes.enabled]
+php = "system"
+```
+
+System mode preserves `PHPRC` and `PHP_INI_SCAN_DIR`. In Cloud builds, it uses the PHP installed in the runner image.
 
 ---
 
