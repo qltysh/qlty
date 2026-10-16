@@ -236,7 +236,38 @@ mod test {
     fn test_hidden_arg_absent() {
         let export = export();
         let check = find_command(&export, &["check"]);
-        assert!(!arg_ids(&check["args"]).contains(&"trigger".to_owned()));
+        assert!(!arg_ids(&check["args"]).contains(&"json".to_owned()));
+    }
+
+    #[test]
+    fn test_check_trigger_default_value() {
+        let export = export();
+        let trigger = find_arg(find_command(&export, &["check"]), "trigger");
+        assert_eq!(trigger["default_values"], json!(["manual"]));
+    }
+
+    #[test]
+    fn test_check_trigger_possible_values() {
+        let export = export();
+        let trigger = find_arg(find_command(&export, &["check"]), "trigger");
+        assert_eq!(
+            trigger["possible_values"],
+            json!(["manual", "ide", "agent", "pre-commit", "pre-push", "build"])
+        );
+    }
+
+    #[test]
+    fn test_check_trigger_has_help() {
+        let export = export();
+        let trigger = find_arg(find_command(&export, &["check"]), "trigger");
+        assert!(trigger["help"].is_string());
+    }
+
+    #[test]
+    fn test_fmt_trigger_has_help() {
+        let export = export();
+        let trigger = find_arg(find_command(&export, &["fmt"]), "trigger");
+        assert!(trigger["help"].is_string());
     }
 
     #[test]

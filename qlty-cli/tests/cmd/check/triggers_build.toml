@@ -1,0 +1,4 @@
+bin.name = "qlty"
+args = ["check", "--all", "--no-cache", "--trigger", "build"]
+status.code = 1
+fs.base = "triggers.in"
