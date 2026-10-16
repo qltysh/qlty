@@ -1,3 +1,4 @@
+mod cli_reference;
 mod cmd;
 mod helpers;
 mod lang;
