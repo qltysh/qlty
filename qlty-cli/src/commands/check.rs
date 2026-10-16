@@ -126,7 +126,15 @@ pub struct Check {
     #[arg(long, verbatim_doc_comment)]
     skip: Option<String>,
 
-    #[arg(value_enum, long, hide = true, default_value = "manual")]
+    /// Run as this trigger, so only plugins whose `triggers` include it run
+    ///
+    /// Each plugin's `triggers` list in qlty.toml names the triggers it runs
+    /// on. A plugin with no `triggers` list runs on every trigger. Qlty's git
+    /// hooks pass `pre-commit` to `qlty fmt` and `pre-push` to `qlty check`.
+    ///
+    /// Examples:
+    ///   --trigger pre-push                    Run only plugins that run on pre-push
+    #[arg(value_enum, long, verbatim_doc_comment, default_value = "manual")]
     trigger: Trigger,
 
     /// Print verbose output

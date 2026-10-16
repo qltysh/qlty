@@ -54,7 +54,15 @@ pub struct Fmt {
     #[arg(long, verbatim_doc_comment)]
     skip: Option<String>,
 
-    #[arg(value_enum, long, default_value = "manual")]
+    /// Run as this trigger, so only formatters whose `triggers` include it run
+    ///
+    /// Each plugin's `triggers` list in qlty.toml names the triggers it runs
+    /// on. A plugin with no `triggers` list runs on every trigger. Qlty's git
+    /// hooks pass `pre-commit` to `qlty fmt` and `pre-push` to `qlty check`.
+    ///
+    /// Examples:
+    ///   --trigger pre-commit                  Run only formatters that run on pre-commit
+    #[arg(value_enum, long, verbatim_doc_comment, default_value = "manual")]
     trigger: Trigger,
 
     /// Print verbose output
