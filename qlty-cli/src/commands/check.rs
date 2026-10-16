@@ -86,12 +86,44 @@ pub struct Check {
     #[arg(short, long)]
     pub jobs: Option<u32>,
 
-    /// Filter by plugin or check
-    #[arg(long)]
+    /// Only run these plugins, or only report these rules (comma-separated)
+    ///
+    /// Each entry is a plugin name (`eslint`) or a plugin and rule joined by a
+    /// colon (`eslint:no-unused-vars`). A plugin name runs only that plugin. A
+    /// rule runs its plugin but reports only issues for that rule.
+    ///
+    /// Examples:
+    ///   --filter eslint                       Run only eslint
+    ///   --filter eslint,rubocop               Run only eslint and rubocop
+    ///   --filter eslint:no-unused-vars        Report only eslint's no-unused-vars issues
+    ///   --filter eslint,rubocop:Style/StringLiterals
+    ///                                         Report all eslint issues and only
+    ///                                         rubocop's Style/StringLiterals issues
+    ///
+    /// Use with --skip to remove plugins or rules from what --filter selects.
+    #[arg(long, verbatim_doc_comment)]
     filter: Option<String>,
 
-    /// Skip plugins or checks
-    #[arg(long)]
+    /// Don't run these plugins, or don't report these rules (comma-separated)
+    ///
+    /// Each entry is a plugin name (`rubocop`) or a plugin and rule joined by a
+    /// colon (`rubocop:Style/StringLiterals`). A plugin name stops that plugin
+    /// from running. A rule still runs its plugin but drops issues for that rule.
+    ///
+    /// Examples:
+    ///   --skip rubocop                        Run every plugin except rubocop
+    ///   --skip rubocop,shellcheck             Run every plugin except rubocop and shellcheck
+    ///   --skip rubocop:Style/StringLiterals   Run every plugin; drop that one rubocop rule
+    ///
+    /// With --filter, --filter picks what runs first and --skip removes from it.
+    /// When both match, --skip wins:
+    ///   --filter eslint,rubocop --skip rubocop
+    ///                                         Run only eslint
+    ///   --filter eslint --skip eslint:no-console
+    ///                                         Run only eslint; drop its no-console issues
+    ///
+    /// Every plugin named must be enabled, and skipping every plugin is an error.
+    #[arg(long, verbatim_doc_comment)]
     skip: Option<String>,
 
     #[arg(value_enum, long, hide = true, default_value = "manual")]

@@ -19,7 +19,7 @@ pub struct Install {
     #[arg(short, long)]
     pub jobs: Option<u32>,
 
-    /// Filter by plugin or check
+    /// Only install this plugin (for example, `eslint`)
     #[arg(long)]
     filter: Option<String>,
 

@@ -30,12 +30,28 @@ pub struct Fmt {
     #[arg(long)]
     pub jobs: Option<u32>,
 
-    /// Filter by plugin or check
-    #[arg(long)]
+    /// Only run these formatter plugins (comma-separated)
+    ///
+    /// Examples:
+    ///   --filter prettier                     Run only prettier
+    ///   --filter prettier,black               Run only prettier and black
+    ///
+    /// Use with --skip to remove plugins from what --filter selects.
+    #[arg(long, verbatim_doc_comment)]
     filter: Option<String>,
 
-    /// Skip plugins or checks
-    #[arg(long)]
+    /// Don't run these formatter plugins (comma-separated)
+    ///
+    /// Examples:
+    ///   --skip prettier                       Run every formatter except prettier
+    ///   --skip prettier,black                 Run every formatter except prettier and black
+    ///
+    /// With --filter, --filter picks what runs first and --skip removes from it.
+    /// When both match, --skip wins:
+    ///   --filter prettier,black --skip black  Run only prettier
+    ///
+    /// Every plugin named must be enabled, and skipping every plugin is an error.
+    #[arg(long, verbatim_doc_comment)]
     skip: Option<String>,
 
     #[arg(value_enum, long, default_value = "manual")]
