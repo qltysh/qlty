@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.657.0 (2026-10-16)
+
+### Improved
+
+- Show the `--trigger` flag in `qlty check --help` (it was previously hidden) and describe it in `qlty fmt --help`. The help explains that `--trigger` runs only the plugins whose `triggers` list in `qlty.toml` includes that trigger (a plugin with no list runs on every trigger), names the trigger each installed hook passes (`pre-commit` for `qlty fmt`, `pre-push` for `qlty check`), and lists the default (`manual`) and all values. Plugin selection behavior is unchanged (#2943)
+
 ## v0.656.0 (2026-10-16)
 
 - Add a hidden `qlty cli-reference` command that prints the CLI command tree as JSON
