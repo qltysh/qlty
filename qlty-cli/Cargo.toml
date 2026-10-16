@@ -23,6 +23,12 @@ test = false
 path = "src/main.rs"
 name = "qlty"
 
+[[bin]]
+bench = false
+test = false
+path = "src/bin/generate_cli_docs.rs"
+name = "qlty-generate-cli-docs"
+
 [[test]]
 name = "integration"
 path = "tests/tests.rs"
