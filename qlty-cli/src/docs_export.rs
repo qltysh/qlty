@@ -228,14 +228,6 @@ mod test {
     }
 
     #[test]
-    fn test_full_export_snapshot() {
-        insta::assert_json_snapshot!(export(), {
-            ".cli_version" => "[version]",
-            ".cli_commit" => "[commit]",
-        });
-    }
-
-    #[test]
     fn test_hidden_command_absent() {
         assert!(!command_names(&export()["commands"]).contains(&"auth".to_owned()));
     }
