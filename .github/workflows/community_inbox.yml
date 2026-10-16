@@ -1,0 +1,37 @@
+name: Community inbox
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+  discussion:
+    types: [created]
+
+# This workflow runs on pull_request_target so it can read the Slack webhook
+# secret for pull requests from forks. It must never check out or execute code
+# from the event, and it must never interpolate user-controlled text (titles,
+# bodies) into shell commands or the Slack payload. Only the author's login,
+# the item number, and the GitHub-generated URL are posted.
+permissions: {}
+
+jobs:
+  notify:
+    if: >-
+      ${{
+        !endsWith(github.actor, '[bot]') &&
+        !contains(
+          fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'),
+          github.event.issue.author_association
+            || github.event.pull_request.author_association
+            || github.event.discussion.author_association
+        )
+      }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        with:
+          webhook: ${{ secrets.COMMUNITY_INBOX_SLACK_WEBHOOK }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: "New ${{ github.event.issue && 'issue' || github.event.pull_request && 'pull request' || 'discussion' }} from ${{ github.actor }}: <${{ github.event.issue.html_url || github.event.pull_request.html_url || github.event.discussion.html_url }}|${{ github.repository }}#${{ github.event.issue.number || github.event.pull_request.number || github.event.discussion.number }}>"
