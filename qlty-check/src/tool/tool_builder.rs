@@ -151,7 +151,7 @@ impl ToolBuilder<'_> {
             Runtime::Ruby => Some("3.3.7".to_owned()),
             Runtime::Rust => Some("1.77.2".to_owned()),
             Runtime::Java => Some("22.0.1+8".to_owned()),
-            Runtime::Php => Some("8.3.7".to_owned()),
+            Runtime::Php => Some("8.3.30".to_owned()),
         }
     }
 
