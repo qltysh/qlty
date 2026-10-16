@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.655.0 (2026-10-16)
+
+### Fixed
+
+- Pass the repository's `.gitleaks.toml` to gitleaks with `--config` so allowlists and custom rules are honored instead of silently ignored (gitleaks only auto-discovers the config when `--source` is a directory, but qlty scans one file per invocation). Also add `.gitleaksignore` to the plugin's cache key so edits to it invalidate cached results, and drop the unrecognized `.gitleaks.config` config file name (#2919)
+- Parse `note` as a level in `qlty.toml` triage and ignore config. `level_from_str` previously returned `Level::Unspecified` for `note`, so `[[triage]] set.level = "note"` left issues with no level, and `match.levels = ["note"]` (and `[[ignore]] levels = ["note"]`) failed to match note-level issues (#2922)
+
 ## v0.654.0 (2026-10-13)
 
 ### New
