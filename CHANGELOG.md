@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.656.0 (2026-10-16)
+
+- Add a hidden `qlty cli-reference` command that prints the CLI command tree as JSON, so generated reference docs can run it from an installed release instead of building the repository from source (#2940)
+
 ## v0.655.0 (2026-10-16)
 
 ### Fixed
