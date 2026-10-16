@@ -62,8 +62,6 @@ pub struct Fmt {
     ///
     /// Examples:
     ///   --trigger pre-commit                  Run only formatters that run on pre-commit
-    ///
-    /// To leave one formatter out of a single run, use --skip instead.
     #[arg(value_enum, long, verbatim_doc_comment, default_value = "manual")]
     trigger: Trigger,
 

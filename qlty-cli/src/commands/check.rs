@@ -134,8 +134,6 @@ pub struct Check {
     ///
     /// Examples:
     ///   --trigger pre-push                    Run only plugins that run on pre-push
-    ///
-    /// To leave one plugin out of a single run, use --skip instead.
     #[arg(value_enum, long, verbatim_doc_comment, default_value = "manual")]
     trigger: Trigger,
 
