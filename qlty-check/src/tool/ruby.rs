@@ -505,6 +505,10 @@ pub mod test {
 
     #[test]
     fn test_ruby_binary_install_feature_flag() {
+        let _lock = ENV_LOCK.lock().unwrap_or_else(|err| {
+            ENV_LOCK.clear_poison();
+            err.into_inner()
+        });
         let version = "1.0.0".to_string();
 
         let ruby_fingerprint = Ruby {
