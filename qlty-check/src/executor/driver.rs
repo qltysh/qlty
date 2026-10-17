@@ -44,7 +44,6 @@ use anyhow::Context;
 use anyhow::Result;
 use duct::Expression;
 use itertools::Itertools;
-use qlty_analysis::utils::fs::path_to_native_string;
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_config::config::DriverDef;
 use qlty_config::config::InvocationDirectoryType;
@@ -494,15 +493,15 @@ impl Driver {
         parser
     }
 
-    pub fn run_prepare_script(&self, plan: &InvocationPlan, task: &ProgressTask) -> Result<()> {
+    pub fn run_prepare_script(
+        &self,
+        plan: &InvocationPlan,
+        script: &str,
+        task: &ProgressTask,
+    ) -> Result<()> {
         plan.tool.pre_setup(task)?;
         plan.tool.setup(task)?;
 
-        let script = self
-            .prepare_script
-            .clone()
-            .unwrap()
-            .replace("${linter}", &path_to_native_string(plan.tool.directory()));
         let cmd_wrapper = Command::new(None, script);
         let rerun = cmd_wrapper.script;
         let dir = plan.invocation_directory.clone();
@@ -570,7 +569,10 @@ impl Driver {
 pub mod test {
     use super::*;
     use crate::{executor::plan_target_list, planner::target::Target, tool::ruby::Ruby};
-    use qlty_analysis::{utils::fs::path_to_string, WorkspaceEntry, WorkspaceEntryKind};
+    use qlty_analysis::{
+        utils::fs::{path_to_native_string, path_to_string},
+        WorkspaceEntry, WorkspaceEntryKind,
+    };
     use qlty_config::{
         config::{
             DriverType, InvocationDirectoryDef, OutputDestination, PluginDef, TargetDef, TargetType,

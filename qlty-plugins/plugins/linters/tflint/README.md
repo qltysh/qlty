@@ -39,11 +39,13 @@ TFLint analyzes: HCL Terraform configuration files (`.tf`, `.tfvars`).
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running TFLint.
 
+Qlty passes each Terraform directory's nearest `.tflint.hcl` to TFLint, so one configuration file at the repository root covers Terraform in every subdirectory. A `.tflint.hcl` in a subdirectory takes precedence for the Terraform below it.
+
 ## Troubleshooting
 
 **tflint reports no issues on Terraform code that has obvious problems.**
 tflint requires provider-specific rule plugins (for example `tflint-ruleset-aws`) to lint provider-specific resources. Without a plugin, tflint only checks generic Terraform syntax.
-Create a `.tflint.hcl` configuration file that installs and enables the relevant ruleset plugin for your cloud provider, then run `tflint --init`.
+Create a `.tflint.hcl` configuration file that installs and enables the relevant ruleset plugin for your cloud provider. Qlty runs `tflint --init` with that configuration before linting.
 
 **tflint fails with "Failed to initialize plugins" on first run.**
 tflint downloads rule plugins from GitHub on first use. In air-gapped environments or CI with restricted outbound network, the download fails.
