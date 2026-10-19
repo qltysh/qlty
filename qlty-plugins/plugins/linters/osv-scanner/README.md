@@ -47,6 +47,10 @@ Split large lockfiles across subdirectory packages, or add the affected file to 
 OSV-Scanner only checks lockfiles and SBOM files against the [OSV database](https://osv.dev/). If no lockfile is present (for example a project using `npm` without committing `package-lock.json`) it has nothing to scan.
 Ensure your lockfile is committed to version control and is not listed in `.gitignore`.
 
+**OSV-Scanner reports vulnerabilities in Gradle dependencies your build no longer uses.**
+OSV-Scanner checks every component listed in `gradle/verification-metadata.xml`, and [Gradle does not remove unused entries](https://docs.gradle.org/current/userguide/dependency_verification.html#cleaning_up_verification_file) from that file when you drop or upgrade a dependency.
+Delete the file and regenerate it with `./gradlew --write-verification-metadata sha256 help`, or use [dependency locking](https://docs.gradle.org/current/userguide/dependency_locking.html) so OSV-Scanner reads `gradle.lockfile` instead.
+
 ## Links
 
 - [Osv-scanner on GitHub](https://github.com/google/osv-scanner)
