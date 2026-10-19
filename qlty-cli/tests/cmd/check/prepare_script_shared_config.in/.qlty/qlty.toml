@@ -1,0 +1,20 @@
+config_version = "0"
+
+[plugins.definitions.prepare]
+file_types = ["terraform"]
+config_files = [".prepare-config"]
+
+[plugins.definitions.prepare.drivers.lint]
+# A second preparation in the same directory fails because it already exists.
+prepare_script = "mkdir ${config_script}"
+config_script = "prepared"
+# Each target directory must have been prepared.
+script = "cd prepared"
+runs_from = { type = "target_directory" }
+batch_by = "config_file"
+success_codes = [0]
+output = "pass_fail"
+
+[[plugin]]
+name = "prepare"
+version = "1.0.0"

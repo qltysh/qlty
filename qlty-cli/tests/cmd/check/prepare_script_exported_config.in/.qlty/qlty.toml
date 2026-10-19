@@ -1,0 +1,9 @@
+config_version = "0"
+
+[[source]]
+name = "shared"
+directory = "shared"
+
+[[plugin]]
+name = "prepare"
+version = "1.0.0"

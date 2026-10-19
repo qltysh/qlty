@@ -1,0 +1,15 @@
+config_version = "0"
+
+[plugins.definitions.prepare]
+file_types = ["terraform"]
+config_files = ["config.yml"]
+exported_config_paths = ["config.yml"]
+
+[plugins.definitions.prepare.drivers.lint]
+prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd && ls -l ${config_script}"
+config_script = "${config_file}"
+script = "ls -l ${config_script}"
+runs_from = { type = "target_directory" }
+batch_by = "config_file"
+success_codes = [0]
+output = "pass_fail"

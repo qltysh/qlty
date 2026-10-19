@@ -62,67 +62,6 @@ fn check_tests() {
     setup_and_run_test_cases("tests/cmd/check/*.toml");
 }
 
-#[test]
-fn prepare_scripts_run_once_per_directory_with_shared_config() {
-    let fixture = tempfile::tempdir().unwrap();
-    let root = fixture.path();
-    fs::create_dir_all(root.join(".qlty")).unwrap();
-    fs::write(root.join(".prepare-config"), "").unwrap();
-    fs::write(
-        root.join(".qlty/qlty.toml"),
-        indoc! {r#"
-            config_version = "0"
-
-            [plugins.definitions.prepare-repro]
-            file_types = ["terraform"]
-            config_files = [".prepare-config"]
-
-            [plugins.definitions.prepare-repro.drivers.lint]
-            prepare_script = "echo ${config_script}>> prepared.txt"
-            config_script = "prepared"
-            script = "exit 0"
-            runs_from = { type = "target_directory" }
-            batch_by = "config_file"
-            success_codes = [0]
-            output = "pass_fail"
-
-            [[plugin]]
-            name = "prepare-repro"
-            version = "1.0.0"
-        "#},
-    )
-    .unwrap();
-    for directory in ["a", "b"] {
-        fs::create_dir(root.join(directory)).unwrap();
-        for file in ["main.tf", "variables.tf"] {
-            fs::write(root.join(directory).join(file), "# Terraform\n").unwrap();
-        }
-    }
-    let _repository = qlty_test_utilities::git::init(root);
-    let _cache_cleanup = CacheCleanup(Library::new(root).unwrap().cache_directory().unwrap());
-
-    let output = run_qlty(
-        root,
-        &[
-            "check",
-            "--all",
-            "--no-cache",
-            "--no-upgrade-check",
-            "--no-progress",
-        ],
-    );
-    assert!(output.status.success(), "{}", command_output(&output));
-    for directory in ["a", "b"] {
-        let runs =
-            fs::read_to_string(root.join(directory).join("prepared.txt")).unwrap_or_default();
-        assert_eq!(
-            runs.lines().map(str::trim).collect::<Vec<_>>(),
-            ["prepared"],
-            "expected one preparation in {directory}"
-        );
-    }
-}
-
 fn write_cache_repro_fixture(root: &Path) {
     fs::create_dir_all(root.join(".qlty")).unwrap();
     fs::write(
