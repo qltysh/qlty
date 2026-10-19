@@ -4,6 +4,11 @@ config_version = "0"
 file_types = ["terraform"]
 config_files = [".prepare-config"]
 
+[[plugins.definitions.prepare.environment]]
+# Git is outside the default plugin PATH on Windows.
+name = "PATH"
+value = "${env.PATH}"
+
 [plugins.definitions.prepare.drivers.lint]
 # The fixture's git reset restores the tracked empty file after each test.
 prepare_script = "echo ${config_script}>> prepared.txt"
