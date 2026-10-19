@@ -1,3 +1,2 @@
 bin.name = "qlty"
 args = ["check", "--all", "--no-cache", "--no-progress", "--no-upgrade-check"]
-fs.sandbox = true

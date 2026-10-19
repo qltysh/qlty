@@ -5,11 +5,11 @@ file_types = ["terraform"]
 config_files = [".prepare-config"]
 
 [plugins.definitions.prepare.drivers.lint]
-# A second preparation in the same directory fails because it already exists.
-prepare_script = "mkdir ${config_script}"
+# The fixture's git reset restores the tracked empty file after each test.
+prepare_script = "echo ${config_script}>> prepared.txt"
 config_script = "prepared"
-# Each target directory must have been prepared.
-script = "cd prepared"
+# Each target directory must be prepared exactly once, on every platform.
+script = "git diff --no-index --ignore-space-at-eol --exit-code expected.txt prepared.txt"
 runs_from = { type = "target_directory" }
 batch_by = "config_file"
 success_codes = [0]
