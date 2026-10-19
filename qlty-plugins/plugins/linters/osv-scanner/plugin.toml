@@ -17,6 +17,7 @@ globs = [
   # Gradle (Android/Java/Kotlin)
   "**/buildscript-gradle.lockfile",
   "**/gradle.lockfile",
+  "**/gradle/verification-metadata.xml",
   "**/pom.xml",
 
   # Node

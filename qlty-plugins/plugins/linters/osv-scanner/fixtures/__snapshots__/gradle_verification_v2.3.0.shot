@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=osv-scanner fixture=gradle_verification version=2.3.0 1`] = `
+Child Object Structure: {
+  "tool": "string",
+  "ruleKey": "string",
+  "message": "string",
+  "level": "string",
+  "category": "string",
+  "documentationUrl": "string",
+  "location": {
+    "path": "string"
+  },
+  "mode": "string"
+}
+`;
