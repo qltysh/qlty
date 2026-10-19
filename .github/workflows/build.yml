@@ -127,7 +127,7 @@ jobs:
           subject-path: ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }}
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: artifacts-${{ env.BINARY_NAME }}-${{ matrix.target }}
           if-no-files-found: error
@@ -172,7 +172,7 @@ jobs:
           STEPS_DATA_OUTPUTS_SHA_AARCH64_LINUX: ${{ steps.data.outputs.sha_aarch64_linux }}
           STEPS_DATA_OUTPUTS_SHA_X86_64_LINUX: ${{ steps.data.outputs.sha_x86_64_linux }}
       - name: Upload Homebrew formula
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: artifacts-homebrew
           if-no-files-found: error
@@ -182,7 +182,7 @@ jobs:
         env:
           STEPS_DATA_OUTPUTS_VERSION: ${{ steps.data.outputs.version }}
       - name: Upload manifest
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: artifacts-manifest
           if-no-files-found: error
