@@ -139,13 +139,7 @@ fn sarif_schema_errors(sarif: &Value) -> Vec<String> {
 }
 
 #[test]
-#[ignore = "SARIF output is not yet valid SARIF 2.1.0 (https://github.com/qltysh/qlty/issues/2701); set QLTY_SARIF_SCHEMA_TESTS=1"]
 fn check_sarif_output_is_valid_sarif() {
-    if std::env::var_os("QLTY_SARIF_SCHEMA_TESTS").is_none() {
-        eprintln!("skipping: set QLTY_SARIF_SCHEMA_TESTS=1");
-        return;
-    }
-
     let sarif = sarif_output(&[
         "check",
         "--all",
@@ -160,13 +154,7 @@ fn check_sarif_output_is_valid_sarif() {
 }
 
 #[test]
-#[ignore = "SARIF output is not yet valid SARIF 2.1.0 (https://github.com/qltysh/qlty/issues/2701); set QLTY_SARIF_SCHEMA_TESTS=1"]
 fn smells_sarif_output_is_valid_sarif() {
-    if std::env::var_os("QLTY_SARIF_SCHEMA_TESTS").is_none() {
-        eprintln!("skipping: set QLTY_SARIF_SCHEMA_TESTS=1");
-        return;
-    }
-
     let sarif = sarif_output(&["smells", "--all", "--sarif", "--no-upgrade-check"]);
 
     assert_eq!(sarif_schema_errors(&sarif), Vec::<String>::new());

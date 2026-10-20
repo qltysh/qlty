@@ -3,14 +3,14 @@ source: qlty-cli/src/format/sarif.rs
 expression: json_value
 ---
 {
-  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
   "version": "2.1.0",
   "runs": [
     {
       "tool": {
         "driver": {
           "name": "qlty",
-          "informationUri": "https://github.com/qlty/qlty",
+          "informationUri": "https://github.com/qltysh/qlty",
           "semanticVersion": "[version]",
           "version": "[version_string]",
           "releaseDateUtc": "[date]",
@@ -25,33 +25,10 @@ expression: json_value
           ],
           "notifications": [
             {
-              "level": "note",
-              "message": {
-                "text": "Info message\n\nDetailed info"
-              },
-              "descriptor": {
-                "id": "qlty:message:INFO",
-                "name": "test-module",
-                "shortDescription": {
-                  "text": "Info message"
-                },
-                "fullDescription": {
-                  "text": "Detailed info"
-                }
-              }
+              "id": "qlty:message:INFO"
             },
             {
-              "level": "warning",
-              "message": {
-                "text": "Warning message"
-              },
-              "descriptor": {
-                "id": "qlty:message:WARNING",
-                "name": "warning-module",
-                "shortDescription": {
-                  "text": "Warning message"
-                }
-              }
+              "id": "qlty:message:WARNING"
             }
           ]
         }
@@ -112,46 +89,62 @@ expression: json_value
           ],
           "fixes": [
             {
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "src/test.rs"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "startLine": 10,
+                        "startColumn": 5,
+                        "endLine": 10,
+                        "endColumn": 20
+                      },
+                      "insertedContent": {
+                        "text": "safeCode()"
+                      }
+                    }
+                  ]
+                }
+              ],
               "description": {
                 "text": "Fix by replacing with safer code"
-              },
-              "replacements": [
-                {
-                  "deletedRegion": {
-                    "startLine": 10,
-                    "startColumn": 5,
-                    "endLine": 10,
-                    "endColumn": 20
-                  },
-                  "insertedContent": {
-                    "text": "safeCode()"
-                  }
-                }
-              ]
+              }
             },
             {
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "src/test.rs"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "startLine": 10,
+                        "startColumn": 5,
+                        "endLine": 10,
+                        "endColumn": 20
+                      },
+                      "insertedContent": {
+                        "text": "differentSolution()"
+                      }
+                    }
+                  ]
+                }
+              ],
               "description": {
                 "text": "Alternative fix"
-              },
-              "replacements": [
-                {
-                  "deletedRegion": {
-                    "startLine": 10,
-                    "startColumn": 5,
-                    "endLine": 10,
-                    "endColumn": 20
-                  },
-                  "insertedContent": {
-                    "text": "differentSolution()"
-                  }
-                }
-              ]
+              }
             }
           ],
           "taxa": [
             {
               "id": "vulnerability",
-              "name": "vulnerability"
+              "toolComponent": {
+                "name": "qlty-categories"
+              }
             }
           ],
           "properties": {
@@ -187,7 +180,49 @@ expression: json_value
           "taxa": [
             {
               "id": "lint",
+              "toolComponent": {
+                "name": "qlty-categories"
+              }
+            }
+          ]
+        }
+      ],
+      "taxonomies": [
+        {
+          "name": "qlty-categories",
+          "taxa": [
+            {
+              "id": "vulnerability",
+              "name": "vulnerability"
+            },
+            {
+              "id": "lint",
               "name": "lint"
+            }
+          ]
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "toolExecutionNotifications": [
+            {
+              "level": "note",
+              "message": {
+                "text": "Info message\n\nDetailed info"
+              },
+              "descriptor": {
+                "id": "qlty:message:INFO"
+              }
+            },
+            {
+              "level": "warning",
+              "message": {
+                "text": "Warning message"
+              },
+              "descriptor": {
+                "id": "qlty:message:WARNING"
+              }
             }
           ]
         }

@@ -54,6 +54,7 @@ lazy_static.workspace = true
 mac_address.workspace = true
 pbjson-types.workspace = true
 pathdiff.workspace = true
+percent-encoding.workspace = true
 qlty-analysis.workspace = true
 qlty-check.workspace = true
 qlty-cloud.workspace = true

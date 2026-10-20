@@ -73,6 +73,7 @@ path-absolutize = "3.1.1"
 pathdiff = "0.2.3"
 pbjson = "0.7.0"
 pbjson-types = "0.7.0"
+percent-encoding = "2.3.2"
 prost = "0.13.5"
 qlty-analysis = { version = "0.657.0", path = "qlty-analysis" }
 qlty-check = { version = "0.657.0", path = "qlty-check" }
