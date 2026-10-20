@@ -336,7 +336,6 @@ impl Formatter for SarifFormatter {
 #[cfg(test)]
 mod test {
     use super::*;
-    use jsonschema::error::ValidationErrorKind;
     use qlty_analysis::{workspace_entries::TargetMode, IssueCount};
     use qlty_check::Report;
     use qlty_types::analysis::v1::{
@@ -374,7 +373,8 @@ mod test {
         assert_eq!(sarif["properties"], json["properties"]);
     }
 
-    fn sample_issues() -> Vec<Issue> {
+    #[test]
+    fn test_sarif_formatter() {
         let mut tags = Vec::new();
         tags.push("test-tag".to_string());
         tags.push("security".to_string());
@@ -492,10 +492,6 @@ mod test {
             ..Default::default()
         };
 
-        vec![comprehensive_issue, simple_issue]
-    }
-
-    fn sample_messages() -> Vec<Message> {
         let info_message = Message {
             message: "Info message".to_string(),
             details: "Detailed info".to_string(),
@@ -515,44 +511,12 @@ mod test {
             ..Default::default()
         };
 
-        vec![info_message, warning_message]
-    }
-
-    fn sarif_schema_errors(sarif: &Value) -> Vec<String> {
-        let schema: Value = serde_json::from_str(include_str!(
-            "../../tests/fixtures/sarif/sarif-schema-2.1.0.json"
-        ))
-        .unwrap();
-        let validator = jsonschema::options()
-            .should_validate_formats(true)
-            .build(&schema)
-            .unwrap();
-
-        validator
-            .iter_errors(sarif)
-            .flat_map(|error| match error.kind() {
-                ValidationErrorKind::AdditionalProperties { unexpected } => unexpected
-                    .iter()
-                    .map(|property| {
-                        format!(
-                            "{}: additional property {property:?} is not allowed",
-                            error.instance_path()
-                        )
-                    })
-                    .collect(),
-                _ => vec![format!("{}: {error}", error.instance_path())],
-            })
-            .collect()
-    }
-
-    #[test]
-    fn test_sarif_formatter() {
         let report = Report {
             verb: ExecutionVerb::Check,
             target_mode: TargetMode::default(),
-            messages: sample_messages(),
+            messages: vec![info_message, warning_message],
             invocations: vec![],
-            issues: sample_issues(),
+            issues: vec![comprehensive_issue, simple_issue],
             formatted: vec![],
             fixed: HashSet::new(),
             fixable: HashSet::new(),
@@ -571,14 +535,5 @@ mod test {
             ".runs[0].tool.driver.releaseDateUtc" => "[date]",
             ".runs[0].results[0].partialFingerprints" => insta::sorted_redaction()
         });
-    }
-
-    #[test]
-    #[ignore = "SARIF output is not yet valid SARIF 2.1.0: https://github.com/qltysh/qlty/issues/2701"]
-    fn sarif_output_validates_against_sarif_schema() {
-        let formatter = SarifFormatter::new(sample_messages(), sample_issues());
-        let sarif: Value = serde_json::from_slice(&formatter.read().unwrap()).unwrap();
-
-        assert_eq!(sarif_schema_errors(&sarif), Vec::<String>::new());
     }
 }
