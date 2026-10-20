@@ -39,7 +39,9 @@ impl Tool for Composer {
 
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
         sha.update(self.name().as_bytes());
-        self.runtime.update_hash(sha)?;
+        if !self.runtime.is_system() {
+            self.runtime.update_hash(sha)?;
+        }
 
         Ok(())
     }
@@ -295,7 +297,7 @@ pub mod test {
     };
     use qlty_analysis::utils::fs::path_to_string;
     use qlty_config::config::PluginDef;
-    use std::env::join_paths;
+    use std::env::{join_paths, split_paths};
     use std::path::PathBuf;
     use std::sync::{Arc, Mutex};
     use tempfile::tempdir;
@@ -322,6 +324,7 @@ pub mod test {
                 composer.directory(),
                 pkg.runtime.directory(),
             ];
+            paths.extend(split_paths(&std::env::var("PATH").unwrap()).map(path_to_native_string));
             paths.extend(expanded_base_shell_path());
 
             assert_eq!(

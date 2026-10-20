@@ -345,23 +345,27 @@ Qlty CLI is available for MacOS, Linux, and Windows on x86 and ARM platforms.
 
 ### PHP runtimes
 
-Qlty downloads a standalone PHP runtime with bundled extensions for PHP linters. The default is PHP 8.3.30. To select an exact PHP version locally and in Cloud builds, add this to `.qlty/qlty.toml`:
+PHP linters use the PHP installation in your `PATH` by default, including its extensions, `PHPRC`, and `PHP_INI_SCAN_DIR`. In Cloud builds, this is the PHP installed in the runner image. Existing system-PHP Composer and plugin caches remain reusable.
+
+To opt into a managed PHP runtime locally and in Cloud builds, add this to `.qlty/qlty.toml`:
 
 ```toml
 [runtimes.enabled]
 php = "8.4.18"
 ```
 
-This uses [StaticPHP builds](https://github.com/crazywhalecc/static-php-cli) for Linux and macOS on x86_64 and ARM64, and Windows on x86_64. The macOS builds require macOS 12 or later. Available versions depend on the platform: see the [Linux/macOS archives](https://dl.static-php.dev/static-php-cli/common/) and [Windows archives](https://dl.static-php.dev/static-php-cli/windows/spc-max/). An unavailable version fails installation; Qlty does not fall back to system PHP.
+This uses [StaticPHP builds](https://github.com/crazywhalecc/static-php-cli) for Linux and macOS on x86_64 and ARM64, and Windows on x86_64. The macOS builds require macOS 12 or later. Available versions depend on the platform: see the [Linux/macOS archives](https://dl.static-php.dev/static-php-cli/common/) and [Windows archives](https://dl.static-php.dev/static-php-cli/windows/spc-max/).
 
-Managed PHP uses its own `php.ini` and extension configuration. If your tools need extensions outside the bundled set, or a PHP version unavailable as a standalone build, use the PHP installation in your `PATH`:
+Partial or malformed versions such as `"8.3"` or `"latest"` print a warning and use system PHP from `PATH`. The host PHP may be a different version. An exact version selects managed PHP; an unavailable build or a download failure remains an error. Older Qlty releases ignore the PHP version setting and continue using system PHP.
+
+Managed PHP takes precedence over host PHP while preserving the host `PATH` for Git and other tools. It uses its own `php.ini` and bundled extensions, which can differ between platforms. Projects that need additional extensions, including PHPStan bootstrap files or Larastan setups that load application code, should use system PHP.
+
+To select system PHP explicitly:
 
 ```toml
 [runtimes.enabled]
 php = "system"
 ```
-
-System mode preserves `PHPRC` and `PHP_INI_SCAN_DIR`. In Cloud builds, it uses the PHP installed in the runner image.
 
 ---
 
