@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.658.0 (2026-10-20)
+
+### Fixed
+
+- Scan Gradle's `gradle/verification-metadata.xml` with the `osv-scanner` plugin so Gradle projects that use dependency verification without lockfiles are checked for vulnerabilities (#2951)
+
 ## v0.657.0 (2026-10-16)
 
 ### Improved
