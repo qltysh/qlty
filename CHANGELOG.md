@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.659.0 (2026-10-20)
+
+### Fixed
+
+- Emit valid SARIF 2.1.0 from `qlty check --sarif` and `qlty smells --sarif` so GitHub's `upload-sarif` accepts the output without jq workarounds (#2954)
+
 ## v0.658.0 (2026-10-20)
 
 ### Fixed
