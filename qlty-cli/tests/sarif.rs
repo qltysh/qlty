@@ -108,7 +108,7 @@ fn write_project(root: &Path) {
             known_good_version = "1.0.0"
 
             [plugins.definitions.fixable-linter.drivers.lint]
-            prepare_script = "mkdir ${linter} && echo type %1 > ${linter}/cat.cmd || echo type %1 > ${linter}/cat.cmd"
+            prepare_script = "mkdir ${linter} && echo @type %1 > ${linter}/cat.cmd || echo @type %1 > ${linter}/cat.cmd"
             script = "cat ruff-output.json"
             success_codes = [0]
             output = "stdout"
