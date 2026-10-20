@@ -3,7 +3,7 @@ use jsonschema::error::ValidationErrorKind;
 use serde_json::Value;
 use std::{fs, path::Path, process::Command};
 
-const SARIF_SCHEMA: &str = include_str!("fixtures/sarif/sarif-schema-2.1.0.json");
+const SARIF_SCHEMA: &str = include_str!("schemas/sarif-schema-2.1.0.json");
 
 fn write_project(root: &Path) {
     fs::create_dir_all(root.join(".qlty")).unwrap();
