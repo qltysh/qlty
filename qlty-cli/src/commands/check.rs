@@ -435,7 +435,11 @@ impl Check {
             formatter.write_to(&mut std::io::stdout())?;
             Ok(false)
         } else if self.sarif {
-            let formatter = SarifFormatter::boxed(report.messages.clone(), report.issues.clone());
+            let formatter = SarifFormatter::boxed(
+                report.messages.clone(),
+                report.issues.clone(),
+                !report.has_errors(),
+            );
             formatter.write_to(&mut std::io::stdout())?;
             Ok(false)
         } else {

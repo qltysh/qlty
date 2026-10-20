@@ -22,17 +22,35 @@ expression: json_value
             {
               "id": "test-tool:test-rule-2"
             }
-          ],
-          "notifications": [
-            {
-              "id": "qlty:message:INFO"
-            },
-            {
-              "id": "qlty:message:WARNING"
-            }
           ]
         }
       },
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "toolExecutionNotifications": [
+            {
+              "level": "note",
+              "message": {
+                "text": "Info message\n\nDetailed info"
+              },
+              "descriptor": {
+                "id": "qlty:message:INFO"
+              }
+            },
+            {
+              "level": "warning",
+              "message": {
+                "text": "Warning message"
+              },
+              "descriptor": {
+                "id": "qlty:message:WARNING"
+              }
+            }
+          ]
+        }
+      ],
+      "columnKind": "utf16CodeUnits",
       "results": [
         {
           "ruleId": "test-tool:test-rule-1",
@@ -87,64 +105,9 @@ expression: json_value
               }
             }
           ],
-          "fixes": [
-            {
-              "artifactChanges": [
-                {
-                  "artifactLocation": {
-                    "uri": "src/test.rs"
-                  },
-                  "replacements": [
-                    {
-                      "deletedRegion": {
-                        "startLine": 10,
-                        "startColumn": 5,
-                        "endLine": 10,
-                        "endColumn": 20
-                      },
-                      "insertedContent": {
-                        "text": "safeCode()"
-                      }
-                    }
-                  ]
-                }
-              ],
-              "description": {
-                "text": "Fix by replacing with safer code"
-              }
-            },
-            {
-              "artifactChanges": [
-                {
-                  "artifactLocation": {
-                    "uri": "src/test.rs"
-                  },
-                  "replacements": [
-                    {
-                      "deletedRegion": {
-                        "startLine": 10,
-                        "startColumn": 5,
-                        "endLine": 10,
-                        "endColumn": 20
-                      },
-                      "insertedContent": {
-                        "text": "differentSolution()"
-                      }
-                    }
-                  ]
-                }
-              ],
-              "description": {
-                "text": "Alternative fix"
-              }
-            }
-          ],
           "taxa": [
             {
-              "id": "vulnerability",
-              "toolComponent": {
-                "name": "qlty-categories"
-              }
+              "id": "vulnerability"
             }
           ],
           "properties": {
@@ -179,50 +142,7 @@ expression: json_value
           ],
           "taxa": [
             {
-              "id": "lint",
-              "toolComponent": {
-                "name": "qlty-categories"
-              }
-            }
-          ]
-        }
-      ],
-      "taxonomies": [
-        {
-          "name": "qlty-categories",
-          "taxa": [
-            {
-              "id": "vulnerability",
-              "name": "vulnerability"
-            },
-            {
-              "id": "lint",
-              "name": "lint"
-            }
-          ]
-        }
-      ],
-      "invocations": [
-        {
-          "executionSuccessful": true,
-          "toolExecutionNotifications": [
-            {
-              "level": "note",
-              "message": {
-                "text": "Info message\n\nDetailed info"
-              },
-              "descriptor": {
-                "id": "qlty:message:INFO"
-              }
-            },
-            {
-              "level": "warning",
-              "message": {
-                "text": "Warning message"
-              },
-              "descriptor": {
-                "id": "qlty:message:WARNING"
-              }
+              "id": "lint"
             }
           ]
         }

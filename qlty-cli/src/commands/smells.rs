@@ -214,7 +214,8 @@ impl Smells {
         if self.json {
             self.write_stdout_json(&report.issues)
         } else if self.sarif {
-            let formatter = SarifFormatter::boxed(report.messages.clone(), report.issues.clone());
+            let formatter =
+                SarifFormatter::boxed(report.messages.clone(), report.issues.clone(), true);
             formatter.write_to(&mut std::io::stdout())?;
             Ok(())
         } else {
