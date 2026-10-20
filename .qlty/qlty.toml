@@ -18,6 +18,7 @@ exclude_patterns = [
     "qlty-slop-one/src/assets/**",
     "qlty-slop-one/grammar/**",
     "qlty-slop-one-trends/assets/**",
+    "qlty-cli/tests/schemas/**",
     "**/protos/**",
     "**/*.in/**",
     "**/*.test.ts/**",

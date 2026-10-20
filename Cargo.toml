@@ -54,6 +54,7 @@ indicatif = "0.18.3"
 indoc = "2.0.6"
 insta = { version = "1.43.2", features = ["yaml", "json", "redactions"] }
 itertools = "0.14.0"
+jsonschema = { version = "0.58.6", default-features = false }
 keyring = { version = "3.6.2", features = [
     "apple-native",
     "windows-native",
