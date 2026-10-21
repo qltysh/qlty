@@ -5,9 +5,7 @@
 ### Security
 
 - Stop trusting the compromised eMudhra intermediate certificate authorities. HTTPS downloads, Qlty Cloud requests and crash reports now reject their certificates on every platform (#2958)
-- On Linux, Git-based plugin sources (`repository =` in `qlty.toml`) are verified against the system CA bundle. Update your OS `ca-certificates` package to a version that removes the affected eMudhra roots.
-  - Alpine: run `apk upgrade ca-certificates-bundle`. Stock images ship that package, not `ca-certificates`. The fix is 20261020-r0 or later.
-  - Debian: the fixed package (20250419~deb12u2 on Debian 12, 20250419+deb13u1 on Debian 13) is only in the security repository. Check the installed version with `dpkg-query -W ca-certificates`.
+- On Linux, Git-based plugin sources (`repository =` in `qlty.toml`) are verified against the system CA bundle. Install your distribution's latest `ca-certificates` update, including updates from its security repository. On Alpine, upgrade `ca-certificates-bundle`, which is the package stock images ship.
 - On macOS and Windows, qlty uses the operating system's certificate checks. Install current OS updates.
 
 ### Fixed
