@@ -150,7 +150,7 @@ tree-sitter-rust = "0.21.2"
 tree-sitter-scala = "0.22.1"
 tree-sitter-swift = "0.5.0"
 tree-sitter-typescript = "0.21.2"
-tree-sitter-vb-dotnet = { git = "https://github.com/davehenton/tree-sitter-vb-dotnet", rev = "f8be17908ce2f445b9a034eb0d3d4191231ccca3" }
+tree-sitter-vb-dotnet = { git = "https://github.com/qltysh/tree-sitter-vb-dotnet", rev = "0e377578fc5f8a4b27e5c2d119deb72a0d1a7e42" }
 trycmd = "0.15.8"
 ureq = { version = "2.12.1", features = ["json", "proxy-from-env"] }
 url = "2.5.7"
@@ -160,6 +160,11 @@ webbrowser = "1.0.4"
 whoami = "1.5.2"
 xml-rs = "0.8.27"
 zip = "6.0.0"
+
+# tree-sitter-javascript 0.21.4 pins cc to ~1.0.90, which conflicts with aws-lc-sys.
+# The fork relaxes only that pin.
+[patch.crates-io]
+tree-sitter-javascript = { git = "https://github.com/qltysh/tree-sitter-javascript", rev = "6edc2a927bf87baad632ec5862f329eb37e9e4d0" }
 
 # Config for 'cargo dist'
 [workspace.metadata.dist]
