@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.660.0 (2026-10-21)
+
+### Fixed
+
+- Report issues from Biome instead of failing with `missing field 'location'` when a diagnostic has no location, such as a file over Biome's `files.maxSize` (#2956)
+
 ## v0.659.0 (2026-10-20)
 
 ### Fixed
