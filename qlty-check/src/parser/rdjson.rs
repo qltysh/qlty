@@ -17,7 +17,8 @@ pub struct RdjsonOutput {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RdjsonDiagnostic {
     pub message: String,
-    pub location: RdjsonLocation,
+    #[serde(default)]
+    pub location: Option<RdjsonLocation>,
     #[serde(default)]
     pub severity: Option<String>,
     #[serde(default)]
@@ -71,13 +72,14 @@ impl Parser for Rdjson {
         Ok(rdjson_output
             .diagnostics
             .into_iter()
-            .map(|diagnostic| {
+            .filter_map(|diagnostic| {
+                let location = diagnostic.location?;
                 let severity = diagnostic
                     .severity
                     .as_deref()
                     .or(default_severity.as_deref());
 
-                Issue {
+                Some(Issue {
                     tool: plugin_name.into(),
                     rule_key: diagnostic
                         .code
@@ -92,16 +94,13 @@ impl Parser for Rdjson {
                         .unwrap_or_default(),
                     category: Category::Lint.into(),
                     level: severity_to_level(severity).into(),
+                    suggestions: build_suggestions(&diagnostic.suggestions, &location.path),
                     location: Some(Location {
-                        path: diagnostic.location.path.clone(),
-                        range: diagnostic.location.range.as_ref().map(build_range),
+                        range: location.range.as_ref().map(build_range),
+                        path: location.path,
                     }),
-                    suggestions: build_suggestions(
-                        &diagnostic.suggestions,
-                        &diagnostic.location.path,
-                    ),
                     ..Default::default()
-                }
+                })
             })
             .collect())
     }
@@ -345,6 +344,49 @@ mod test {
           category: CATEGORY_LINT
           location:
             path: a.ts
+        "###);
+    }
+
+    #[test]
+    fn parse_skips_diagnostics_without_location() {
+        let input = r###"
+        {
+            "source": { "name": "Biome", "url": "https://biomejs.dev" },
+            "diagnostics": [
+                {
+                "code": { "value": "lint/suspicious/noDebugger" },
+                "location": { "path": "a.js", "range": { "start": { "line": 1, "column": 1 } } },
+                "message": "This is an unexpected use of the debugger statement.",
+                "severity": "ERROR"
+                },
+                {
+                "code": { "value": "lint" },
+                "message": "",
+                "severity": "WARNING"
+                },
+                {
+                "code": { "value": "internalError/io" },
+                "message": "No such file or directory (os error 2)",
+                "severity": "ERROR"
+                }
+            ]
+        }
+        "###;
+
+        let issues = Rdjson::default().parse("biome", input);
+        insta::assert_yaml_snapshot!(issues.unwrap(), @r###"
+        - tool: biome
+          ruleKey: lint/suspicious/noDebugger
+          message: This is an unexpected use of the debugger statement.
+          level: LEVEL_HIGH
+          category: CATEGORY_LINT
+          location:
+            path: a.js
+            range:
+              startLine: 1
+              startColumn: 1
+              endLine: 1
+              endColumn: 1
         "###);
     }
 }
