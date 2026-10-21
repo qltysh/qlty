@@ -2,6 +2,12 @@
 
 ## v0.660.0 (2026-10-21)
 
+### Security
+
+- Stop trusting the compromised eMudhra intermediate certificate authorities. HTTPS downloads, Qlty Cloud requests and crash reports now reject their certificates on every platform (#2958)
+- On Linux, Git-based plugin sources (`repository =` in `qlty.toml`) are verified against the system CA bundle. Update your OS `ca-certificates` package to a version that removes the affected eMudhra roots.
+- On macOS and Windows, qlty uses the operating system's certificate checks. Install current OS updates.
+
 ### Fixed
 
 - Report issues from Biome instead of failing with `missing field 'location'` when a diagnostic has no location, such as a file over Biome's `files.maxSize` (#2956)
