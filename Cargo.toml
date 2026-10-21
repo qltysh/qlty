@@ -61,7 +61,7 @@ keyring = { version = "3.6.2", features = [
     "linux-native",
 ] }
 lazy_static = "1.5.0"
-lithos-llm = { git = "https://github.com/lithoscomputer/lithos-llm.git", rev = "2881ccbf4cc7487b29df08cb4d9cc1c542713f75" }
+lithos-llm = { git = "https://github.com/lithoscomputer/lithos-llm.git", rev = "e8fd3ecf593fa943646ad5cd7bf584fa117dfca9" }
 log = "0.4.28"
 lzma-rs = "0.3.0"
 mac_address = "1.1.7"
