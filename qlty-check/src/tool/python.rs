@@ -22,6 +22,10 @@ const PYTHON_COMMAND: &str = "python";
 #[cfg(windows)]
 const BIN_DIRECTORY: &str = "Scripts";
 
+// pip 24.2+ trusts the host's certificate store by default. Use pip's bundled
+// certifi instead, so certificate distrust ships with the managed Python.
+const PIP_LEGACY_CERTS: &str = "--use-deprecated=legacy-certs";
+
 #[derive(Debug, Clone)]
 pub struct Python {
     pub version: String,
@@ -64,6 +68,7 @@ impl Python {
     fn release_tag(&self) -> &str {
         match self.version.as_str() {
             "3.8.18" | "3.9.18" | "3.10.13" | "3.11.7" | "3.12.1" => "20240107",
+            "3.11.17" => "20261021",
             _ => "20260211",
         }
     }
@@ -73,6 +78,12 @@ impl Python {
             "20240107" => "msvc-shared-install_only",
             _ => "msvc-install_only",
         }
+    }
+
+    // Older builds bundle a pip whose certifi predates the eMudhra distrust, and the
+    // 20240107 pip rejects the legacy-certs option outright.
+    fn pip_uses_bundled_certifi(&self) -> bool {
+        !matches!(self.release_tag(), "20240107" | "20260211")
     }
 
     fn download(&self) -> Download {
@@ -184,17 +195,7 @@ impl Tool for PipVenvPackage {
     fn package_install(&self, task: &ProgressTask, name: &str, version: &str) -> Result<()> {
         task.set_dim_message(&format!("pip install {}@{}", name, version));
 
-        self.run_command(self.cmd.build(
-            PYTHON_COMMAND,
-            vec![
-                "-m",
-                "pip",
-                "install",
-                "--prefix",
-                &self.directory(),
-                &format!("{}=={}", name, version),
-            ],
-        ))
+        self.pip_install(&[&format!("{}=={}", name, version)])
     }
 
     fn package_file_install(&self, task: &ProgressTask) -> Result<()> {
@@ -202,18 +203,10 @@ impl Tool for PipVenvPackage {
             "pip install -r {}",
             self.plugin.package_file.as_deref().unwrap_or_default()
         ));
-        self.run_command(self.cmd.build(
-            PYTHON_COMMAND,
-            vec![
-                "-m",
-                "pip",
-                "install",
-                "--prefix",
-                &self.directory(),
-                "-r",
-                self.plugin.package_file.as_deref().unwrap_or_default(),
-            ],
-        ))
+        self.pip_install(&[
+            "-r",
+            self.plugin.package_file.as_deref().unwrap_or_default(),
+        ])
     }
 
     fn extra_env_paths(&self) -> Result<Vec<String>> {
@@ -237,6 +230,20 @@ impl Tool for PipVenvPackage {
 }
 
 impl PipVenvPackage {
+    fn pip_install(&self, args: &[&str]) -> Result<()> {
+        let directory = self.directory();
+        let mut pip_args = vec!["-m", "pip", "install"];
+
+        if self.runtime.pip_uses_bundled_certifi() {
+            pip_args.push(PIP_LEGACY_CERTS);
+        }
+
+        pip_args.extend(["--prefix", &directory]);
+        pip_args.extend(args);
+
+        self.run_command(self.cmd.build(PYTHON_COMMAND, pip_args))
+    }
+
     fn initialize_venv(&self, task: &ProgressTask) -> Result<()> {
         task.set_dim_message(&format!("python3 -m venv {}", &self.directory()));
 
@@ -260,7 +267,7 @@ mod test {
     use crate::{
         tool::{
             command_builder::test::{reroute_tools_root, stub_cmd, ENV_LOCK},
-            python::{BIN_DIRECTORY, PYTHON_COMMAND},
+            python::{BIN_DIRECTORY, PIP_LEGACY_CERTS, PYTHON_COMMAND},
             test::expanded_base_shell_path,
         },
         ui::ProgressTask,
@@ -341,6 +348,33 @@ mod test {
     }
 
     #[test]
+    fn test_pip_venv_package_install_uses_bundled_certifi() {
+        with_pip_venv_package(|pkg, temp_path, list| {
+            pkg.runtime.version = "3.11.17".to_string();
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.install_and_validate(&new_task())?;
+            assert_eq!(
+                list.lock().unwrap().clone(),
+                vec![
+                    vec![&python_venv_command(pkg), "-m", "venv", &pkg.directory()],
+                    vec![
+                        PYTHON_COMMAND,
+                        "-m",
+                        "pip",
+                        "install",
+                        PIP_LEGACY_CERTS,
+                        "--prefix",
+                        &pkg.directory(),
+                        "test==1.0.0"
+                    ]
+                ]
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
     fn test_pip_venv_package_install_and_validate_with_package_file() {
         with_pip_venv_package(|pkg, temp_path, list| {
             let req_file = &temp_path.path().join("requirements.txt");
@@ -401,6 +435,15 @@ mod test {
             assert_eq!(python.release_tag(), "20260211");
             assert_eq!(python.windows_suffix(), "msvc-install_only");
         }
+    }
+
+    #[test]
+    fn test_release_tag_default_version() {
+        let python = Python {
+            version: "3.11.17".to_string(),
+        };
+        assert_eq!(python.release_tag(), "20261021");
+        assert_eq!(python.windows_suffix(), "msvc-install_only");
     }
 
     #[test]
