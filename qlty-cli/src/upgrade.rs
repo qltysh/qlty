@@ -156,7 +156,7 @@ impl QltyRelease {
     }
 
     fn run_verified_upgrade(&self) -> Result<()> {
-        let target = detect_target();
+        let target = verified_upgrade_target(std::env::consts::OS, std::env::consts::ARCH)?;
         let archive_name = format!("qlty-{target}.tar.xz");
         let url = format!("{RELEASES_URL}/v{}/{archive_name}", self.version);
 
@@ -217,15 +217,13 @@ struct DistManifest {
     announcement_tag: String,
 }
 
-fn detect_target() -> String {
-    let os = std::env::consts::OS;
-    let arch = std::env::consts::ARCH;
-
+fn verified_upgrade_target(os: &str, arch: &str) -> Result<String> {
     match os {
-        "macos" => detect_macos_target(arch),
-        "linux" => detect_linux_target(arch),
-        // Fall back to x86_64-unknown-linux-gnu for unknown platforms, matching install.sh
-        _ => "x86_64-unknown-linux-gnu".to_string(),
+        "macos" => Ok(detect_macos_target(arch)),
+        "linux" => Ok(detect_linux_target(arch)),
+        _ => bail!(
+            "--verify-attestations is not supported on {os}. To verify a release by hand, see https://docs.qlty.sh/cli/integrity-verification"
+        ),
     }
 }
 
@@ -427,6 +425,29 @@ mod tests {
     #[test]
     fn detect_macos_target_unknown_falls_back() {
         assert_eq!(detect_macos_target("unknown"), "x86_64-apple-darwin");
+    }
+
+    #[test]
+    fn verified_upgrade_target_macos() {
+        assert_eq!(
+            verified_upgrade_target("macos", "aarch64").unwrap(),
+            "aarch64-apple-darwin"
+        );
+    }
+
+    #[test]
+    fn verified_upgrade_target_linux() {
+        assert!(verified_upgrade_target("linux", "aarch64")
+            .unwrap()
+            .starts_with("aarch64-unknown-linux-"));
+    }
+
+    #[test]
+    fn verified_upgrade_target_refuses_windows() {
+        let error = verified_upgrade_target("windows", "x86_64")
+            .unwrap_err()
+            .to_string();
+        assert!(error.contains("https://docs.qlty.sh/cli/integrity-verification"));
     }
 
     #[test]
