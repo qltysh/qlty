@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.661.0 (2026-10-22)
+
+### Security
+
+- Bump the managed Node runtime used to run Node plugins such as ESLint, Prettier, and Stylelint to 22.23.4, which blocks the compromised eMudhra intermediate certificates and fixes the High-severity CVEs in Node's October 2026 security release, including a Brotli out-of-bounds write that permits remote code execution (#2960) — thanks @fhwang!
+
 ## v0.660.0 (2026-10-21)
 
 ### Security
