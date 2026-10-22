@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.661.0 (2026-10-22)
+
+### Security
+
+- Bump the managed Node runtime to 22.23.4, which blocks the compromised eMudhra certificates and fixes the October 2026 Node security releases, including a Brotli out-of-bounds write (CVE-2026-111497) that allows remote code execution (#2960) — thanks @fhwang!
+- Bump the managed Python runtime to 3.11.17 so Python plugin installs (such as `ruff`, `black`, and `semgrep`) use pip 26.2.2, which rejects the compromised eMudhra certificate authorities (#2964)
+- Reject credentials sent over plain HTTP to non-local hosts and stop following HTTP redirects in the `qlty-slop-one` LLM client (#2963)
+
 ## v0.660.0 (2026-10-21)
 
 ### Security
