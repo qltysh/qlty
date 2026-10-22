@@ -56,7 +56,7 @@ Follow these steps:
    same changes are not listed twice.
 10. If a PR author is not a member of the team, include a shout out thanking
     them, after the PR number: `(#2750) — thanks @cussiol!`. (Team members are
-    @noahd1, @lsegal, @brynary, @marschattha, @davehenton, @laura-mlg. They
+    @noahd1, @brynary, @marschattha, @davehenton, @laura-mlg, @fhwang. They
     don't need shout outs.)
 
 Examples of the target style:
