@@ -64,6 +64,7 @@ impl Python {
     fn release_tag(&self) -> &str {
         match self.version.as_str() {
             "3.8.18" | "3.9.18" | "3.10.13" | "3.11.7" | "3.12.1" => "20240107",
+            "3.11.17" => "20261021",
             _ => "20260211",
         }
     }
@@ -401,6 +402,15 @@ mod test {
             assert_eq!(python.release_tag(), "20260211");
             assert_eq!(python.windows_suffix(), "msvc-install_only");
         }
+    }
+
+    #[test]
+    fn test_release_tag_default_version() {
+        let python = Python {
+            version: "3.11.17".to_string(),
+        };
+        assert_eq!(python.release_tag(), "20261021");
+        assert_eq!(python.windows_suffix(), "msvc-install_only");
     }
 
     #[test]
