@@ -63,3 +63,48 @@ jobs:
           files: target/lcov.info
           tag: ${{ matrix.os }}
           skip-errors: false
+
+  # Release targets whose libm differs from the hosts above. Only build.yml tests the rest:
+  # aarch64-unknown-linux-musl shares musl's libm with x86_64-unknown-linux-musl, and
+  # aarch64-unknown-linux-gnu shares glibc with ubuntu-latest.
+  test-target:
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-musl
+            runner: ubuntu-latest
+            packages_install: sudo apt-get update && sudo apt-get install -y musl-tools
+          - target: x86_64-apple-darwin
+            runner: macos-15
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.target }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout qlty
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@2fcdc490d667999e01ddbbf0f2823181beef6b39
+        with:
+          target: ${{ matrix.target }}
+          cache: false
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: Install dependencies
+        if: ${{ matrix.packages_install }}
+        run: ${{ matrix.packages_install }}
+
+      - name: Run Test
+        run: cargo test --target ${{ matrix.target }}
