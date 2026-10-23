@@ -36,6 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.resolve.outputs.version }}
+      bare_version: ${{ steps.resolve.outputs.bare_version }}
     steps:
       - name: Resolve version
         id: resolve
@@ -53,6 +54,7 @@ jobs:
             exit 1
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "bare_version=${VERSION#v}" >> "$GITHUB_OUTPUT"
   test:
     name: ${{ matrix.runner }}
     needs: resolve
@@ -73,11 +75,30 @@ jobs:
           QLTY_VERSION: ${{ needs.resolve.outputs.version }}
         run: ${{ matrix.command }} && ~/.qlty/bin/qlty version --no-upgrade-check
         shell: sh
+  verify:
+    name: Verify attestation on ${{ matrix.runner }}
+    needs: resolve
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - ubuntu-latest
+          - ubuntu-24.04-arm
+          - macos-15
+          - macos-15-intel
+          - windows-latest
+    steps:
+      # The floating tag is deliberate: this must run the action version customers run.
+      - uses: qltysh/qlty-action/install@v2
+        with:
+          cli-version: ${{ needs.resolve.outputs.bare_version }}
+      - run: qlty version --no-upgrade-check
   promote:
     permissions:
       contents: read
       id-token: write
-    needs: [resolve, test]
+    needs: [resolve, test, verify]
     runs-on: ubuntu-latest
     steps:
       - name: Setup AWS CLI
