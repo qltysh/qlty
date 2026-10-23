@@ -36,7 +36,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.resolve.outputs.version }}
-      bare_version: ${{ steps.resolve.outputs.bare_version }}
     steps:
       - name: Resolve version
         id: resolve
@@ -54,7 +53,6 @@ jobs:
             exit 1
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "bare_version=${VERSION#v}" >> "$GITHUB_OUTPUT"
   test:
     name: ${{ matrix.runner }}
     needs: resolve
@@ -76,24 +74,23 @@ jobs:
         run: ${{ matrix.command }} && ~/.qlty/bin/qlty version --no-upgrade-check
         shell: sh
   verify:
-    name: Verify attestation on ${{ matrix.runner }}
+    name: Verify attestations
     needs: resolve
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        runner:
-          - ubuntu-latest
-          - ubuntu-24.04-arm
-          - macos-15
-          - macos-15-intel
-          - windows-latest
+    runs-on: ubuntu-latest
     steps:
-      # The floating tag is deliberate: this must run the action version customers run.
-      - uses: qltysh/qlty-action/install@v2
-        with:
-          cli-version: ${{ needs.resolve.outputs.bare_version }}
-      - run: qlty version --no-upgrade-check
+      - name: Verify every release archive on S3 with the check qlty-action runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESOLVED_VERSION: ${{ needs.resolve.outputs.version }}
+        run: |
+          TAG="v${RESOLVED_VERSION#v}"
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' \
+            | grep -E '\.(tar\.xz|zip)$' > archives.txt
+          test -s archives.txt
+          while read -r archive; do
+            curl -fsSL -o "$archive" "https://qlty-releases.s3.amazonaws.com/qlty/${TAG}/${archive}"
+            gh attestation verify "$archive" --owner qltysh --hostname github.com
+          done < archives.txt
   promote:
     permissions:
       contents: read
