@@ -10,14 +10,20 @@ use anyhow::{bail, Context, Result};
 use composer::Composer;
 use duct::cmd;
 use itertools::Itertools;
+use once_cell::sync::OnceCell;
 use qlty_analysis::utils::fs::path_to_native_string;
 use qlty_config::config::PluginDef;
+use regex::Regex;
 use sha2::Digest;
 use std::collections::HashMap;
 use std::env::split_paths;
 use std::fmt::Debug;
 use std::path::PathBuf;
 use tracing::debug;
+
+const UNKNOWN_SYSTEM_PHP_VERSION: &str = "unknown";
+
+static SYSTEM_PHP_MINOR_VERSION: OnceCell<String> = OnceCell::new();
 
 #[derive(Debug, Clone)]
 pub struct Php {
@@ -39,18 +45,15 @@ impl Tool for Php {
 
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
         sha.update(self.name().as_bytes());
+        // Composer resolves plugin dependencies for the PHP that installs them,
+        // so a new minor version of the system PHP reinstalls PHP plugins
+        sha.update(self.system_minor_version().as_bytes());
         Ok(())
     }
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
         task.set_message("Verifying Php installation");
         self.verify_installation(self.env()?)?;
-
-        task.set_message("Installing composer");
-        let composer = Composer {
-            cmd: default_command_builder(),
-        };
-        composer.setup(task)?;
 
         Ok(())
     }
@@ -92,6 +95,45 @@ impl Php {
 
         Ok(())
     }
+
+    fn system_minor_version(&self) -> &'static str {
+        SYSTEM_PHP_MINOR_VERSION.get_or_init(|| self.detect_system_minor_version())
+    }
+
+    fn detect_system_minor_version(&self) -> String {
+        let output = self.env().and_then(|env| {
+            Ok(cmd!(
+                "php",
+                "-r",
+                "echo PHP_MAJOR_VERSION, '.', PHP_MINOR_VERSION;"
+            )
+            .full_env(env)
+            .stdout_capture()
+            .stderr_capture()
+            .unchecked()
+            .run()?)
+        });
+
+        let version = match output {
+            Ok(output) if output.status.success() => {
+                Self::minor_version_from_output(&String::from_utf8_lossy(&output.stdout))
+            }
+            _ => None,
+        };
+
+        version.unwrap_or_else(|| {
+            debug!("Could not read the system PHP version");
+            UNKNOWN_SYSTEM_PHP_VERSION.to_string()
+        })
+    }
+
+    fn minor_version_from_output(stdout: &str) -> Option<String> {
+        let version = stdout.trim().lines().last()?.trim();
+        Regex::new(r"^\d+\.\d+$")
+            .unwrap()
+            .is_match(version)
+            .then(|| version.to_string())
+    }
 }
 
 impl RuntimeTool for Php {
@@ -128,6 +170,7 @@ impl Tool for PhpPackage {
 
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
         update_package_hash(self, sha)?;
+        self.composer().update_hash(sha)?;
 
         if self.plugin.package_file.is_some() {
             if let Some(lock_file) = Composer::lock_file_to_stage(&self.plugin)? {
@@ -155,11 +198,15 @@ impl Tool for PhpPackage {
         self.plugin.version_regex.clone()
     }
 
+    // The Php runtime may already be installed from an earlier CLI release, so
+    // set up Composer here, where a change to the pinned version takes effect
+    fn pre_install(&self, task: &ProgressTask) -> Result<()> {
+        self.composer().setup(task)
+    }
+
     fn package_install(&self, task: &ProgressTask, name: &str, version: &str) -> Result<()> {
         task.set_dim_message(&format!("Installing {name}"));
-        let composer = Composer {
-            cmd: default_command_builder(),
-        };
+        let composer = self.composer();
 
         let composer_phar = PathBuf::from(composer.directory()).join("composer.phar");
         let composer_path = composer_phar.to_str().with_context(|| {
@@ -180,9 +227,7 @@ impl Tool for PhpPackage {
     fn package_file_install(&self, task: &ProgressTask) -> Result<()> {
         if self.plugin.package_file.is_some() {
             debug!("installing package file");
-            let composer = Composer {
-                cmd: self.cmd.clone(),
-            };
+            let composer = self.composer();
             composer.setup(task)?;
             composer.install_package_file(self)?;
         }
@@ -223,10 +268,19 @@ impl Tool for PhpPackage {
     }
 }
 
+impl PhpPackage {
+    fn composer(&self) -> Composer {
+        Composer {
+            cmd: self.cmd.clone(),
+        }
+    }
+}
+
 impl RunnableArchive for PhpPackage {}
 
 #[cfg(test)]
 pub mod test {
+    use super::composer::COMPOSER_VERSION;
     use super::*;
     use crate::{
         tool::command_builder::test::{reroute_tools_root, stub_cmd, ENV_LOCK},
@@ -271,6 +325,29 @@ pub mod test {
         Progress::new(true, 1).task("PREFIX", "message")
     }
 
+    #[test]
+    fn php_minor_version_from_output() {
+        assert_eq!(
+            Php::minor_version_from_output("8.4\n"),
+            Some("8.4".to_string())
+        );
+    }
+
+    #[test]
+    fn php_minor_version_from_output_after_startup_warning() {
+        assert_eq!(
+            Php::minor_version_from_output(
+                "Warning: Module \"xdebug\" is already loaded in Unknown on line 0\n8.3"
+            ),
+            Some("8.3".to_string())
+        );
+    }
+
+    #[test]
+    fn php_minor_version_from_output_rejects_unexpected_output() {
+        assert_eq!(Php::minor_version_from_output("PHP 8.4.8 (cli)"), None);
+    }
+
     fn failing_install_cmd(list: Arc<Mutex<Vec<Vec<String>>>>) -> Box<dyn CommandBuilder> {
         #[derive(Debug)]
         struct FailingInstallCommandBuilder {
@@ -300,6 +377,30 @@ pub mod test {
             }
         }
         Box::new(FailingInstallCommandBuilder { list })
+    }
+
+    #[test]
+    fn php_package_pre_install_installs_pinned_composer() {
+        with_php_package(|pkg, _, list| {
+            pkg.pre_install(&new_task())?;
+            assert_eq!(
+                list.lock().unwrap().clone(),
+                [
+                    vec![
+                        "php",
+                        "-r",
+                        "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+                    ],
+                    vec![
+                        "php",
+                        "composer-setup.php",
+                        &format!("--version={COMPOSER_VERSION}")
+                    ]
+                ]
+            );
+
+            Ok(())
+        });
     }
 
     #[test]
@@ -334,7 +435,11 @@ pub mod test {
                         "-r",
                         "copy('https://getcomposer.org/installer', 'composer-setup.php');"
                     ],
-                    vec!["php", "composer-setup.php"],
+                    vec![
+                        "php",
+                        "composer-setup.php",
+                        &format!("--version={COMPOSER_VERSION}")
+                    ],
                     vec![
                         "php",
                         &path_to_native_string(format!(
@@ -381,7 +486,11 @@ pub mod test {
                         "-r",
                         "copy('https://getcomposer.org/installer', 'composer-setup.php');"
                     ],
-                    vec!["php", "composer-setup.php"],
+                    vec![
+                        "php",
+                        "composer-setup.php",
+                        &format!("--version={COMPOSER_VERSION}")
+                    ],
                     vec![
                         "php",
                         &path_to_native_string(format!(
@@ -429,7 +538,11 @@ pub mod test {
                         "-r",
                         "copy('https://getcomposer.org/installer', 'composer-setup.php');"
                     ],
-                    vec!["php", "composer-setup.php"],
+                    vec![
+                        "php",
+                        "composer-setup.php",
+                        &format!("--version={COMPOSER_VERSION}")
+                    ],
                     vec![
                         "php",
                         &path_to_native_string(format!(
@@ -488,7 +601,11 @@ pub mod test {
                         "-r",
                         "copy('https://getcomposer.org/installer', 'composer-setup.php');"
                     ],
-                    vec!["php", "composer-setup.php"],
+                    vec![
+                        "php",
+                        "composer-setup.php",
+                        &format!("--version={COMPOSER_VERSION}")
+                    ],
                     vec![
                         "php",
                         &path_to_native_string(format!(

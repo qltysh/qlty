@@ -16,6 +16,8 @@ use tracing::{debug, error, info, warn};
 
 use super::PhpPackage;
 
+pub const COMPOSER_VERSION: &str = "2.10.3";
+
 #[derive(Debug, Clone)]
 pub struct Composer {
     pub cmd: Box<dyn CommandBuilder>,
@@ -31,18 +33,19 @@ impl Tool for Composer {
     }
 
     fn version(&self) -> Option<String> {
-        None
+        Some(COMPOSER_VERSION.to_string())
     }
 
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
         sha.update(self.name().as_bytes());
+        sha.update(COMPOSER_VERSION.as_bytes());
 
         Ok(())
     }
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
-        task.set_message("Installing composer");
-        info!("Installing composer");
+        task.set_message(&format!("Installing composer v{COMPOSER_VERSION}"));
+        info!("Installing composer {}", COMPOSER_VERSION);
 
         self.run_command(self.cmd.build(
             "php",
@@ -51,7 +54,15 @@ impl Tool for Composer {
                 "copy('https://getcomposer.org/installer', 'composer-setup.php');",
             ],
         ))?;
-        self.run_command(self.cmd.build("php", vec!["composer-setup.php"]))?;
+        // The installer fails unless it can download this exact release and
+        // verify its signature
+        self.run_command(self.cmd.build(
+            "php",
+            vec![
+                "composer-setup.php",
+                &format!("--version={COMPOSER_VERSION}"),
+            ],
+        ))?;
 
         Ok(())
     }
@@ -299,6 +310,17 @@ pub mod test {
     use std::path::PathBuf;
     use std::sync::{Arc, Mutex};
     use tempfile::tempdir;
+
+    #[test]
+    fn test_directory_name_starts_with_pinned_version() {
+        let composer = Composer {
+            cmd: stub_cmd(Arc::new(Mutex::new(vec![]))),
+        };
+
+        assert!(composer
+            .directory_name()
+            .starts_with(&format!("{COMPOSER_VERSION}-")));
+    }
 
     #[test]
     fn test_filter_composer() {
