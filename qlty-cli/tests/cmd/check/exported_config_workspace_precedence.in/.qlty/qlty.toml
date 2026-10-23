@@ -1,0 +1,13 @@
+config_version = "0"
+
+[[source]]
+name = "config-source"
+directory = "config-source"
+
+[[plugin]]
+name = "precedence-linter"
+version = "1.0.0"
+
+[[plugin]]
+name = "precedence-formatter"
+version = "1.0.0"
