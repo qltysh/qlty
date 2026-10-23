@@ -1,0 +1,64 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=tflint fixture=root_config version=0.59.1 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://github.com/terraform-linters/tflint-ruleset-terraform/blob/v<version>/docs/rules/terraform_naming_convention.md",
+      "level": "LEVEL_LOW",
+      "location": {
+        "path": "nested/main.in.tf",
+        "range": {
+          "endColumn": 36,
+          "endLine": 1,
+          "startColumn": 1,
+          "startLine": 1,
+        },
+      },
+      "message": "resource name \`WebServer\` must match the following format: snake_case",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "terraform_naming_convention",
+      "snippet": "resource "aws_instance" "WebServer" {",
+      "snippetWithContext": "resource "aws_instance" "WebServer" {
+  ami = "ami-12345678"
+}",
+      "tool": "tflint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://github.com/terraform-linters/tflint-ruleset-terraform/blob/v<version>/docs/rules/terraform_required_providers.md",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "nested/main.in.tf",
+        "range": {
+          "endColumn": 36,
+          "endLine": 1,
+          "startColumn": 1,
+          "startLine": 1,
+        },
+      },
+      "message": "Missing version constraint for provider "aws" in \`required_providers\`",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "terraform_required_providers",
+      "snippet": "resource "aws_instance" "WebServer" {",
+      "snippetWithContext": "resource "aws_instance" "WebServer" {
+  ami = "ami-12345678"
+}",
+      "tool": "tflint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://github.com/terraform-linters/tflint-ruleset-terraform/blob/v<version>/docs/rules/terraform_required_version.md",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "nested/main.in.tf",
+      },
+      "message": "terraform "required_version" attribute is required",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "terraform_required_version",
+      "tool": "tflint",
+    },
+  ],
+}
+`;
