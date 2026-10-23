@@ -409,6 +409,9 @@ pub struct PluginDef {
     #[serde(default)]
     pub suggested_mode: IssueMode,
 
+    #[serde(default)]
+    pub custom_enabler: Option<CustomPluginEnabler>,
+
     #[serde(default = "default_tab_column_width")]
     pub tab_column_width: usize,
 }
@@ -419,6 +422,12 @@ fn default_idempotent() -> bool {
 
 fn default_tab_column_width() -> usize {
     1
+}
+
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, JsonSchema)]
+pub enum CustomPluginEnabler {
+    #[serde(rename = "rubocop")]
+    Rubocop,
 }
 
 #[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Default, JsonSchema)]

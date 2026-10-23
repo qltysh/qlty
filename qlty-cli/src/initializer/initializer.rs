@@ -1,3 +1,4 @@
+use super::custom_enabler::{custom_enabler_for, CustomEnabler};
 use super::renderer::PluginActivation;
 use super::scanner::DetectedPlugin;
 use super::sources::{source_specs_from_settings, sources_list_from_settings};
@@ -58,7 +59,7 @@ impl Initializer {
         let mut plugin_activations = vec![];
 
         for installed_plugin in &self.plugins {
-            plugin_activations.push(PluginActivation {
+            let mut plugin_activation = PluginActivation {
                 name: installed_plugin.name.clone(),
                 drivers: installed_plugin.enabled_drivers.clone(),
                 version: Some(installed_plugin.version.clone()),
@@ -66,7 +67,26 @@ impl Initializer {
                 package_filters: installed_plugin.package_filters.clone(),
                 prefix: installed_plugin.prefix.clone(),
                 mode: installed_plugin.mode,
-            });
+                ..Default::default()
+            };
+
+            // plugin definitions are present in souces_only_config and not
+            // in default config
+            if let Some(plugin_def) = self
+                .scanner
+                .sources_only_config
+                .plugins
+                .definitions
+                .get(installed_plugin.name.as_str())
+            {
+                // Check for custom enabler
+                if let Some(custom_enabler) = plugin_def.custom_enabler {
+                    let enabler = custom_enabler_for(custom_enabler, &self.settings, plugin_def);
+                    plugin_activation = enabler.enable(&plugin_activation)?;
+                }
+            }
+
+            plugin_activations.push(plugin_activation);
         }
 
         Renderer::new(&self.source_specs, &plugin_activations).render()
