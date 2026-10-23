@@ -22,6 +22,10 @@ pub struct Upgrade {
     dry_run: bool,
 
     /// Verify SLSA provenance attestation before installing.
+    ///
+    /// Downloads the release archive and checks its attestation with the GitHub CLI
+    /// (`gh` 2.67.0 or later, signed in) before installing it. The upgrade stops if
+    /// the attestation can't be verified. Not supported on Windows.
     #[arg(long, env = "QLTY_VERIFY_ATTESTATIONS")]
     verify_attestations: bool,
 
