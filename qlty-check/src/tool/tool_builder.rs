@@ -9,9 +9,9 @@ use crate::Tool;
 use super::{
     download::{Download, DownloadTool},
     github::{GitHubRelease, GitHubReleaseTool},
-    go, java, node,
-    null_tool::NullTool,
-    php, python, ruby, rust, RuntimeTool,
+    go, java, node, php, python, ruby, rust,
+    shell_tool::ShellTool,
+    RuntimeTool,
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -135,7 +135,7 @@ impl ToolBuilder<'_> {
         } else if let Some(download_name) = self.plugin.downloads.first() {
             self.build_download_tool(download_name, &plugin_version)
         } else {
-            Ok(Box::new(NullTool {
+            Ok(Box::new(ShellTool {
                 plugin_name: self.plugin_name.to_string(),
                 plugin: self.plugin.clone(),
                 ..Default::default()
