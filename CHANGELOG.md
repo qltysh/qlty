@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.662.0 (2026-10-22)
+
+### Fixed
+
+- Stop `qlty upgrade --verify-attestations` and report an error when attestations cannot be verified, such as when `gh` is missing, older than 2.67.0, or not signed in, instead of upgrading as if verification had passed (#2962)
+
 ## v0.661.0 (2026-10-22)
 
 ### Security
