@@ -17,6 +17,27 @@ ARCHIVE = "qlty-x86_64-pc-windows-msvc.zip"
 RELEASES_URL = "https://qlty-releases.s3.amazonaws.com/qlty"
 
 
+def test_iex_failure(shell, installer, env):
+    result = subprocess.run(
+        [
+            shell,
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            "try { Invoke-Expression ([Console]::In.ReadToEnd()) } "
+            "catch { 'installer failed' }; 'session alive'",
+        ],
+        input=installer.read_text(),
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "installer failed" in result.stdout, result.stdout
+    assert "session alive" in result.stdout, result.stdout
+
+
 def test_upgrade(root):
     fixtures = root / "fixtures"
     for version in (OLD_VERSION, NEW_VERSION):
@@ -65,6 +86,11 @@ def test_upgrade(root):
                 assert result.stdout.split()[1] == expected, result.stdout
 
             assert_version(OLD_VERSION)
+
+            shell_env = {k: v for k, v in env.items() if k.upper() != "PSMODULEPATH"}
+            shell_env["QLTY_VERSION"] = "0.0.0"
+            for shell in ("powershell", "pwsh"):
+                test_iex_failure(shell, fixtures / "index.html", shell_env)
 
             failed = run("upgrade", "--version", "0.0.0", "--force")
             assert failed.returncode != 0, "Failed installer reported success"

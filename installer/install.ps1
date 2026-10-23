@@ -79,6 +79,7 @@ function Install-Binary($install_args) {
   Invoke-Installer $fetched "$install_args"
 
   $ErrorActionPreference = $old_erroractionpreference
+  Send-Installed-Event
 }
 
 function Get-TargetTriple() {
@@ -335,11 +336,4 @@ $Null = $ArtifactDownloadUrl, $NoModifyPath, $Help
 $InformationPreference = "Continue"
 # Support older CLIs that inherit PowerShell 7's module path.
 $Env:PSModulePath = "$PSHOME\Modules;$Env:PSModulePath"
-try {
-  Install-Binary "$Args"
-} catch {
-  Write-Error $_ -ErrorAction Continue
-  exit 1
-}
-
-Send-Installed-Event
+Install-Binary "$Args"
