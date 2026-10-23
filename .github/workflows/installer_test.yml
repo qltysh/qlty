@@ -4,7 +4,7 @@ on:
   workflow_call:
   pull_request:
     paths:
-      - installer/install.*
+      - installer/**
       - .github/workflows/installer_test.yml
 
 permissions:
@@ -123,3 +123,23 @@ jobs:
         if: matrix.version
         run: V="$(~/.qlty/bin/qlty version --no-upgrade-check | cut -d' ' -f2)"; test "$V" = "${{ matrix.version }}"
         shell: sh
+
+  upgrade_windows:
+    name: Upgrade / ${{ matrix.shell }}
+    runs-on: windows-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        shell: [pwsh, powershell, cmd]
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          persist-credentials: false
+
+      - name: Validate successful and failed upgrades
+        run: python installer/test_upgrade.py

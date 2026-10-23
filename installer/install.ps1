@@ -333,5 +333,13 @@ function Send-Installed-Event {
 $Null = $ArtifactDownloadUrl, $NoModifyPath, $Help
 # Make Write-Information statements be visible
 $InformationPreference = "Continue"
-Install-Binary "$Args"
+# Support older CLIs that inherit PowerShell 7's module path.
+$Env:PSModulePath = "$PSHOME\Modules;$Env:PSModulePath"
+try {
+  Install-Binary "$Args"
+} catch {
+  Write-Error $_ -ErrorAction Continue
+  exit 1
+}
+
 Send-Installed-Event
