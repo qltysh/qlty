@@ -306,6 +306,8 @@ impl RunnableArchive for JavaPackage {}
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::tool::command_builder::test::{reroute_tools_root, ENV_LOCK};
+    use tempfile::TempDir;
 
     const LISTING: &str = "Keystore type: PKCS12
 Keystore provider: SUN
@@ -341,13 +343,14 @@ Certificate fingerprints:
         );
     }
 
-    #[test]
-    fn distrusted_aliases_empty_when_roots_absent() {
-        let listing = "Alias name: cn_usertrust_rsa_certification_authority [jdk]
+    const LISTING_WITHOUT_ROOTS: &str = "Alias name: cn_usertrust_rsa_certification_authority [jdk]
 Certificate fingerprints:
 \t SHA256: E7:93:C9:B0:2F:D8:AA:13:E2:1C:31:22:8A:CC:B0:81:19:64:3B:74:9C:89:89:64:B1:74:6D:46:C3:D4:CB:D2
 ";
-        assert!(distrusted_aliases(listing).is_empty());
+
+    #[test]
+    fn distrusted_aliases_empty_when_roots_absent() {
+        assert!(distrusted_aliases(LISTING_WITHOUT_ROOTS).is_empty());
     }
 
     #[test]
@@ -367,5 +370,130 @@ Certificate fingerprints:
             format!("{:x}", with_revision.finalize()),
             format!("{:x}", without_revision.finalize())
         );
+    }
+
+    fn installed_java(temp_dir: &TempDir, home: &[&str]) -> (Java, PathBuf) {
+        let java = Java {
+            version: "22.0.1+8".to_string(),
+        };
+        reroute_tools_root(temp_dir, &java);
+        let java_home = home
+            .iter()
+            .fold(PathBuf::from(java.directory()), |path, part| {
+                path.join(part)
+            });
+        std::fs::create_dir_all(java_home.join("lib").join("security")).unwrap();
+        std::fs::create_dir_all(java_home.join("bin")).unwrap();
+        std::fs::write(java_home.join("lib").join("security").join("cacerts"), "").unwrap();
+        (java, java_home)
+    }
+
+    // A stand-in for keytool: -list prints listing.txt, and -delete
+    // replaces listing.txt with after_delete.txt.
+    #[cfg(unix)]
+    fn install_fake_keytool(java_home: &Path, listing: &str, after_delete: &str) {
+        use std::os::unix::fs::PermissionsExt;
+
+        let bin = java_home.join("bin");
+        std::fs::write(bin.join("listing.txt"), listing).unwrap();
+        std::fs::write(bin.join("after_delete.txt"), after_delete).unwrap();
+        let keytool = bin.join("keytool");
+        std::fs::write(
+            &keytool,
+            "#!/bin/sh\n\
+             dir=$(dirname \"$0\")\n\
+             echo \"$@\" >> \"$dir/calls.txt\"\n\
+             case \"$1\" in\n\
+             -list) cat \"$dir/listing.txt\" ;;\n\
+             -delete) cp \"$dir/after_delete.txt\" \"$dir/listing.txt\" ;;\n\
+             *) exit 1 ;;\n\
+             esac\n",
+        )
+        .unwrap();
+        std::fs::set_permissions(&keytool, std::fs::Permissions::from_mode(0o755)).unwrap();
+    }
+
+    #[test]
+    fn java_home_finds_linux_layout() {
+        let _lock = ENV_LOCK.lock().unwrap_or_else(|err| err.into_inner());
+        let temp_dir = tempfile::tempdir().unwrap();
+        let (java, java_home) = installed_java(&temp_dir, &[]);
+
+        assert_eq!(java.java_home().unwrap(), java_home);
+    }
+
+    #[test]
+    fn java_home_finds_macos_layout() {
+        let _lock = ENV_LOCK.lock().unwrap_or_else(|err| err.into_inner());
+        let temp_dir = tempfile::tempdir().unwrap();
+        let (java, java_home) = installed_java(&temp_dir, &["Contents", "Home"]);
+
+        assert_eq!(java.java_home().unwrap(), java_home);
+    }
+
+    #[test]
+    fn java_home_errors_without_cacerts() {
+        let _lock = ENV_LOCK.lock().unwrap_or_else(|err| err.into_inner());
+        let temp_dir = tempfile::tempdir().unwrap();
+        let java = Java {
+            version: "22.0.1+8".to_string(),
+        };
+        reroute_tools_root(&temp_dir, &java);
+
+        assert!(java.java_home().is_err());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn remove_distrusted_roots_deletes_each_distrusted_alias() {
+        let _lock = ENV_LOCK.lock().unwrap_or_else(|err| err.into_inner());
+        let temp_dir = tempfile::tempdir().unwrap();
+        let (java, java_home) = installed_java(&temp_dir, &[]);
+        install_fake_keytool(&java_home, LISTING, LISTING_WITHOUT_ROOTS);
+
+        java.remove_distrusted_roots().unwrap();
+
+        let calls = std::fs::read_to_string(java_home.join("bin").join("calls.txt")).unwrap();
+        let deleted: Vec<&str> = calls
+            .lines()
+            .filter_map(|line| line.strip_prefix("-delete -alias "))
+            .map(|rest| rest.split(" -keystore").next().unwrap())
+            .collect();
+        assert_eq!(
+            deleted,
+            vec![
+                "cn_aaa_certificate_services,o_comodo_ca_limited [jdk]",
+                "cn_emsign_ecc_root_ca__g3,o_emudhra_technologies_limited [jdk]",
+            ]
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn remove_distrusted_roots_fails_when_a_root_remains() {
+        let _lock = ENV_LOCK.lock().unwrap_or_else(|err| err.into_inner());
+        let temp_dir = tempfile::tempdir().unwrap();
+        let (java, java_home) = installed_java(&temp_dir, &[]);
+        install_fake_keytool(&java_home, LISTING, LISTING);
+
+        let error = java.remove_distrusted_roots().unwrap_err();
+
+        assert!(error
+            .to_string()
+            .starts_with("Failed to remove distrusted roots from Java"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn remove_distrusted_roots_fails_when_keytool_fails() {
+        let _lock = ENV_LOCK.lock().unwrap_or_else(|err| err.into_inner());
+        let temp_dir = tempfile::tempdir().unwrap();
+        let (java, java_home) = installed_java(&temp_dir, &[]);
+        install_fake_keytool(&java_home, LISTING, LISTING_WITHOUT_ROOTS);
+        std::fs::remove_file(java_home.join("bin").join("listing.txt")).unwrap();
+
+        let error = java.remove_distrusted_roots().unwrap_err();
+
+        assert!(error.to_string().starts_with("keytool -list -v failed"));
     }
 }
