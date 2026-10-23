@@ -73,11 +73,29 @@ jobs:
           QLTY_VERSION: ${{ needs.resolve.outputs.version }}
         run: ${{ matrix.command }} && ~/.qlty/bin/qlty version --no-upgrade-check
         shell: sh
+  verify:
+    name: Verify attestations
+    needs: resolve
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify every release archive on S3 with the check qlty-action runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESOLVED_VERSION: ${{ needs.resolve.outputs.version }}
+        run: |
+          TAG="v${RESOLVED_VERSION#v}"
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' \
+            | grep -E '\.(tar\.xz|zip)$' > archives.txt
+          test -s archives.txt
+          while read -r archive; do
+            curl -fsSL -o "$archive" "https://qlty-releases.s3.amazonaws.com/qlty/${TAG}/${archive}"
+            gh attestation verify "$archive" --owner qltysh --hostname github.com
+          done < archives.txt
   promote:
     permissions:
       contents: read
       id-token: write
-    needs: [resolve, test]
+    needs: [resolve, test, verify]
     runs-on: ubuntu-latest
     steps:
       - name: Setup AWS CLI
