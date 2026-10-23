@@ -6,7 +6,7 @@
   "devDependencies": {
     "@types/debug": "4.1.12",
     "@types/jest": "29.5.14",
-    "@types/jest-specific-snapshot": "0.5.9",
+    "@types/jest-specific-snapshot": "0.5.10",
     "@types/node-fetch": "3.0.2",
     "@types/semver": "^7.7.0",
     "debug": "4.4.0",
