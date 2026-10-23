@@ -8,7 +8,7 @@ use crate::tool::RuntimeTool;
 use crate::ui::ProgressBar;
 use crate::ui::ProgressTask;
 use anyhow::{bail, Result};
-use duct::cmd;
+use duct::{cmd, Expression};
 use qlty_analysis::join_path_string;
 use qlty_config::config::OperatingSystem;
 use qlty_config::config::PluginDef;
@@ -16,6 +16,7 @@ use qlty_config::config::{Cpu, DownloadDef, System};
 use sha2::Digest;
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
+use std::process::Output;
 use tracing::debug;
 
 // Roots that the compromised eMudhra intermediates chain to, by SHA-256
@@ -156,22 +157,38 @@ impl Java {
             .join(format!("keytool{}", std::env::consts::EXE_SUFFIX));
         let cacerts = home.join("lib").join("security").join("cacerts");
 
-        for alias in distrusted_aliases(&self.keytool(&keytool, &cacerts, &["-list", "-v"])?) {
-            self.keytool(&keytool, &cacerts, &["-delete", "-alias", &alias])?;
+        for alias in distrusted_aliases(&self.list_certificates(&keytool, &cacerts)?) {
+            self.delete_certificate(&keytool, &cacerts, &alias)?;
         }
 
-        let remaining = distrusted_aliases(&self.keytool(&keytool, &cacerts, &["-list", "-v"])?);
-        if !remaining.is_empty() {
-            bail!(
-                "Failed to remove distrusted roots from Java: {:?}",
-                remaining
-            );
-        }
+        verify_distrusted_roots_absent(&self.list_certificates(&keytool, &cacerts)?)
+    }
 
+    // The listing stays out of the install log, where it would bury any
+    // error under thousands of lines of certificate details.
+    fn list_certificates(&self, keytool: &Path, cacerts: &Path) -> Result<String> {
+        let args = ["-list", "-v"];
+        let cmd = self.keytool_command(keytool, cacerts, &args)?;
+        debug!("{:?}", cmd);
+        keytool_stdout(&args, cmd.run()?)
+    }
+
+    fn delete_certificate(&self, keytool: &Path, cacerts: &Path, alias: &str) -> Result<()> {
+        let args = ["-delete", "-alias", alias];
+        let cmd = self.keytool_command(keytool, cacerts, &args)?;
+
+        let script = format!("{:?}", cmd);
+        debug!(script);
+
+        let mut installation = initialize_installation(self)?;
+        let result = cmd.run();
+        finalize_installation_from_cmd_result(self, &result, &mut installation, script).ok();
+
+        keytool_stdout(&args, result?)?;
         Ok(())
     }
 
-    fn keytool(&self, keytool: &Path, cacerts: &Path, args: &[&str]) -> Result<String> {
+    fn keytool_command(&self, keytool: &Path, cacerts: &Path, args: &[&str]) -> Result<Expression> {
         let mut all_args: Vec<String> = args.iter().map(|arg| arg.to_string()).collect();
         all_args.extend([
             "-keystore".to_string(),
@@ -183,30 +200,32 @@ impl Java {
             "-J-Duser.country=US".to_string(),
         ]);
 
-        let cmd = cmd(keytool, all_args)
+        Ok(cmd(keytool, all_args)
             .full_env(self.env()?)
             .unchecked()
             .stderr_capture()
-            .stdout_capture();
-
-        let script = format!("{:?}", cmd);
-        debug!(script);
-
-        let mut installation = initialize_installation(self)?;
-        let result = cmd.run();
-        finalize_installation_from_cmd_result(self, &result, &mut installation, script).ok();
-
-        let output = result?;
-        if !output.status.success() {
-            bail!(
-                "keytool {} failed: {}",
-                args.join(" "),
-                String::from_utf8_lossy(&output.stderr)
-            );
-        }
-
-        Ok(String::from_utf8_lossy(&output.stdout).to_string())
+            .stdout_capture())
     }
+}
+
+fn keytool_stdout(args: &[&str], output: Output) -> Result<String> {
+    if !output.status.success() {
+        bail!(
+            "keytool {} failed: {}",
+            args.join(" "),
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+
+    Ok(String::from_utf8_lossy(&output.stdout).to_string())
+}
+
+fn normalize_fingerprint(fingerprint: &str) -> String {
+    fingerprint.trim().replace(':', "").to_uppercase()
+}
+
+fn is_distrusted(fingerprint: &str) -> bool {
+    DISTRUSTED_ROOTS.iter().any(|(_, fp)| *fp == fingerprint)
 }
 
 // Returns the aliases in `keytool -list -v` output whose SHA-256
@@ -220,8 +239,7 @@ fn distrusted_aliases(listing: &str) -> Vec<String> {
         if let Some(name) = line.strip_prefix("Alias name:") {
             alias = Some(name.trim().to_string());
         } else if let Some(fingerprint) = line.strip_prefix("SHA256:") {
-            let fingerprint = fingerprint.trim().replace(':', "").to_uppercase();
-            if DISTRUSTED_ROOTS.iter().any(|(_, fp)| *fp == fingerprint) {
+            if is_distrusted(&normalize_fingerprint(fingerprint)) {
                 if let Some(name) = alias.take() {
                     aliases.push(name);
                 }
@@ -230,6 +248,35 @@ fn distrusted_aliases(listing: &str) -> Vec<String> {
     }
 
     aliases
+}
+
+// Reads only the SHA256 lines, so a change in keytool's alias label cannot
+// make a remaining root look removed.
+fn verify_distrusted_roots_absent(listing: &str) -> Result<()> {
+    let fingerprints: Vec<String> = listing
+        .lines()
+        .filter_map(|line| line.trim().strip_prefix("SHA256:"))
+        .map(normalize_fingerprint)
+        .collect();
+
+    if fingerprints.is_empty() {
+        bail!("Found no SHA256 fingerprints in the Java trust store listing");
+    }
+
+    let remaining: Vec<&str> = DISTRUSTED_ROOTS
+        .iter()
+        .filter(|(_, fp)| fingerprints.iter().any(|found| found == fp))
+        .map(|(name, _)| *name)
+        .collect();
+
+    if !remaining.is_empty() {
+        bail!(
+            "Failed to remove distrusted roots from Java: {:?}",
+            remaining
+        );
+    }
+
+    Ok(())
 }
 
 impl RuntimeTool for Java {
@@ -481,6 +528,62 @@ Certificate fingerprints:
         assert!(error
             .to_string()
             .starts_with("Failed to remove distrusted roots from Java"));
+    }
+
+    #[test]
+    fn verify_distrusted_roots_absent_passes_without_roots() {
+        assert!(verify_distrusted_roots_absent(LISTING_WITHOUT_ROOTS).is_ok());
+    }
+
+    #[test]
+    fn verify_distrusted_roots_absent_fails_when_a_root_remains() {
+        let error = verify_distrusted_roots_absent(LISTING).unwrap_err();
+
+        assert_eq!(
+            error.to_string(),
+            "Failed to remove distrusted roots from Java: [\"emSign ECC Root CA - G3\", \"AAA Certificate Services\"]"
+        );
+    }
+
+    #[test]
+    fn verify_distrusted_roots_absent_fails_without_fingerprints() {
+        let error =
+            verify_distrusted_roots_absent("Your keystore contains 0 entries\n").unwrap_err();
+
+        assert_eq!(
+            error.to_string(),
+            "Found no SHA256 fingerprints in the Java trust store listing"
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn remove_distrusted_roots_fails_when_alias_label_is_unrecognized() {
+        let _lock = ENV_LOCK.lock().unwrap_or_else(|err| err.into_inner());
+        let temp_dir = tempfile::tempdir().unwrap();
+        let (java, java_home) = installed_java(&temp_dir, &[]);
+        let localized = LISTING.replace("Alias name:", "別名:");
+        install_fake_keytool(&java_home, &localized, &localized);
+
+        let error = java.remove_distrusted_roots().unwrap_err();
+
+        assert!(error
+            .to_string()
+            .starts_with("Failed to remove distrusted roots from Java"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn remove_distrusted_roots_keeps_listing_out_of_install_log() {
+        let _lock = ENV_LOCK.lock().unwrap_or_else(|err| err.into_inner());
+        let temp_dir = tempfile::tempdir().unwrap();
+        let (java, java_home) = installed_java(&temp_dir, &[]);
+        install_fake_keytool(&java_home, LISTING, LISTING_WITHOUT_ROOTS);
+
+        java.remove_distrusted_roots().unwrap();
+
+        let log = std::fs::read_to_string(java.install_log_path()).unwrap();
+        assert!(!log.contains("SHA256:"));
     }
 
     #[cfg(unix)]
