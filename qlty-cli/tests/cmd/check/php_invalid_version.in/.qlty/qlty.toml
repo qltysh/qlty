@@ -1,0 +1,18 @@
+config_version = "0"
+
+[runtimes.enabled]
+php = "8.3"
+
+# No PHP files are needed: planning validates the version without installing tools.
+[plugins.definitions.php-runtime-test]
+runtime = "php"
+file_types = ["php"]
+
+[plugins.definitions.php-runtime-test.drivers.lint]
+script = "exit 0"
+success_codes = [0]
+output = "pass_fail"
+
+[[plugin]]
+name = "php-runtime-test"
+version = "1.0.0"

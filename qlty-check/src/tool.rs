@@ -1242,10 +1242,14 @@ mod test {
     #[test]
     fn test_tool_validate_incorrect_version() {
         let tool = TestTool {
-            version_command: Some("2.0.0".into()),
+            version_command: Some("echo 2.0.0".into()),
             ..TestTool::default()
         };
-        assert!(tool.validate().is_err());
+        assert!(tool
+            .validate()
+            .unwrap_err()
+            .to_string()
+            .contains("Invalid tool version: echo 2.0.0: 2.0.0 does not match version \"1.0.0\""));
     }
 
     #[test]

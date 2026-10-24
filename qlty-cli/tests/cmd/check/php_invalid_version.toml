@@ -1,0 +1,6 @@
+bin.name = "qlty"
+args = ["check", "--all", "--no-cache", "--no-upgrade-check", "--no-progress", "--skip-source-fetch"]
+env.remove = ["QLTY_LOG_STDERR", "QLTY_LOG_STDOUT"]
+
+[env.add]
+QLTY_TELEMETRY = "off"

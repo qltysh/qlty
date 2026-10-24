@@ -343,9 +343,29 @@ Quality metrics are available for C, C++, C#, Elixir, Go, Java, JavaScript, Kotl
 
 Qlty CLI is available for MacOS, Linux, and Windows on x86 and ARM platforms.
 
-### Additional requirements for PHP linters
+### PHP runtimes
 
-Certain PHP linters require a working installation of PHP available in your `$PATH`. To install PHP, use [Homebrew](https://brew.sh/) or an alternative method.
+PHP linters use the PHP installation in your `PATH` by default, including its extensions, `PHPRC`, and `PHP_INI_SCAN_DIR`. In Cloud builds, this is the PHP installed in the runner image. Existing system-PHP Composer and plugin caches remain reusable.
+
+To opt into a managed PHP runtime locally and in Cloud builds, add this to `.qlty/qlty.toml`:
+
+```toml
+[runtimes.enabled]
+php = "8.4.18"
+```
+
+This uses [StaticPHP builds](https://github.com/crazywhalecc/static-php-cli) for Linux and macOS on x86_64 and ARM64, and Windows on x86_64. The macOS builds require macOS 12 or later. Available versions depend on the platform: see the [Linux/macOS archives](https://dl.static-php.dev/static-php-cli/common/) and [Windows archives](https://dl.static-php.dev/static-php-cli/windows/spc-max/).
+
+Partial or malformed versions such as `"8.3"` or `"latest"` print a warning and use system PHP from `PATH`. The host PHP may be a different version. An exact version selects managed PHP; an unavailable build or a download failure remains an error. Older Qlty releases ignore the PHP version setting and continue using system PHP.
+
+Managed PHP takes precedence over host PHP while preserving the host `PATH` for Git and other tools. It uses its own `php.ini` and bundled extensions, which can differ between platforms. Projects that need additional extensions, including PHPStan bootstrap files or Larastan setups that load application code, should use system PHP.
+
+To select system PHP explicitly:
+
+```toml
+[runtimes.enabled]
+php = "system"
+```
 
 ---
 

@@ -21,7 +21,3 @@ cache_results = true
 batch = true
 suggested = "targets"
 output_missing = "parse"
-
-[[plugins.definitions.php-codesniffer.environment]]
-name = "PHP_INI_SCAN_DIR"
-value = "${env.PHP_INI_SCAN_DIR}"

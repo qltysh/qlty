@@ -65,4 +65,5 @@ zip.workspace = true
 assert-json-diff.workspace = true
 insta.workspace = true
 qlty-test-utilities.workspace = true
+rustls.workspace = true
 tracing-test.workspace = true

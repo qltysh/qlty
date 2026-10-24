@@ -62,9 +62,10 @@ jobs:
           cache: "npm"
           cache-dependency-path: plugins/package-lock.json
 
-      - name: Setup PHP with PECL extension
+      - name: Setup system PHP
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
-        if: contains(matrix.os, 'macos')
+        with:
+          php-version: "8.3"
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@44511735964dcb71245e7e55f72539531f7bc0eb

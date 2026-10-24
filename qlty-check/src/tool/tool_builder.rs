@@ -151,7 +151,7 @@ impl ToolBuilder<'_> {
             Runtime::Ruby => Some("3.3.7".to_owned()),
             Runtime::Rust => Some("1.77.2".to_owned()),
             Runtime::Java => Some("22.0.1+8".to_owned()),
-            Runtime::Php => Some("8.3.7".to_owned()),
+            Runtime::Php => Some("system".to_owned()),
         }
     }
 
@@ -173,9 +173,7 @@ impl ToolBuilder<'_> {
             Runtime::Java => Box::new(java::Java {
                 version: version.to_string(),
             }),
-            Runtime::Php => Box::new(php::Php {
-                version: version.to_string(),
-            }),
+            Runtime::Php => Box::new(php::Php::new(version)),
         }
     }
 
@@ -198,9 +196,45 @@ impl ToolBuilder<'_> {
             Runtime::Java => Box::new(java::Java {
                 version: version.to_string(),
             }),
-            Runtime::Php => Box::new(php::Php {
-                version: version.to_string(),
-            }),
+            Runtime::Php => Box::new(php::Php::new(version)),
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn php_runtime_defaults_to_system_and_honors_exact_versions() {
+        let plugin = PluginDef {
+            runtime: Some(Runtime::Php),
+            version: Some("1.0.0".to_string()),
+            ..Default::default()
+        };
+        let mut config = QltyConfig::default();
+        for (configured, expected) in [
+            (None, "system"),
+            (Some("system"), "system"),
+            (Some("8.3.30"), "8.3.30"),
+            (Some("8.4.18"), "8.4.18"),
+            (Some("8.3.7"), "8.3.7"),
+            (Some("8.3.999"), "8.3.999"),
+            (Some("8.3"), "system"),
+            (Some("8.4"), "system"),
+            (Some("latest"), "system"),
+        ] {
+            config.runtimes.enabled.clear();
+            if let Some(version) = configured {
+                config
+                    .runtimes
+                    .enabled
+                    .insert(Runtime::Php, version.to_string());
+            }
+            let tool = ToolBuilder::new(&config, "php-runtime-test", &plugin)
+                .build_tool()
+                .unwrap();
+            assert_eq!(tool.runtime().unwrap().version().as_deref(), Some(expected));
         }
     }
 }
