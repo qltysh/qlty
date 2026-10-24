@@ -8,9 +8,7 @@ on:
       - .github/workflows/installer_test.yml
 
 permissions:
-  actions: write
   contents: read
-  id-token: write
 
 jobs:
   test:
