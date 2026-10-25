@@ -1,0 +1,89 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=glsec fixture=basic version=1.23.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_VULNERABILITY",
+      "documentationUrl": "https://glsec.github.io/rules/GL001/",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": ".gitlab-ci.yml",
+        "range": {
+          "endColumn": 1,
+          "endLine": 6,
+          "startColumn": 1,
+          "startLine": 6,
+        },
+      },
+      "message": "image "alpine:latest" uses mutable tag "latest" — pin to a specific version or digest",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "GL001",
+      "snippet": "  image: alpine:latest",
+      "snippetWithContext": "workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+deploy:
+  image: alpine:latest
+  script:
+    - curl -sSL https://example.com/install.sh | sh",
+      "tool": "glsec",
+    },
+    {
+      "category": "CATEGORY_VULNERABILITY",
+      "documentationUrl": "https://glsec.github.io/rules/GL011/",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": ".gitlab-ci.yml",
+        "range": {
+          "endColumn": 1,
+          "endLine": 8,
+          "startColumn": 1,
+          "startLine": 8,
+        },
+      },
+      "message": "script line downloads and executes remote code without integrity verification: "curl -sSL https://example.com/install.sh | sh"",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "GL011",
+      "snippet": "    - curl -sSL https://example.com/install.sh | sh",
+      "snippetWithContext": "workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+deploy:
+  image: alpine:latest
+  script:
+    - curl -sSL https://example.com/install.sh | sh",
+      "tool": "glsec",
+    },
+    {
+      "category": "CATEGORY_VULNERABILITY",
+      "documentationUrl": "https://glsec.github.io/rules/GL024/",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": ".gitlab-ci.yml",
+        "range": {
+          "endColumn": 1,
+          "endLine": 8,
+          "startColumn": 1,
+          "startLine": 8,
+        },
+      },
+      "message": "script uses a pipe without set -o pipefail — failures in all but the last command are silently ignored",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "GL024",
+      "snippet": "    - curl -sSL https://example.com/install.sh | sh",
+      "snippetWithContext": "workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+deploy:
+  image: alpine:latest
+  script:
+    - curl -sSL https://example.com/install.sh | sh",
+      "tool": "glsec",
+    },
+  ],
+}
+`;
