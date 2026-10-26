@@ -7,6 +7,9 @@ use serde::{Deserialize, Serialize};
 pub struct Settings {
     pub add_prefix: Option<String>,
     pub dry_run: bool,
+    pub discover_java_src_dirs: bool,
+    pub root: PathBuf,
+    pub java_src_dirs: Vec<PathBuf>,
     pub incomplete: bool,
     pub name: Option<String>,
     pub output_dir: Option<PathBuf>,
@@ -23,6 +26,7 @@ pub struct Settings {
     pub strip_prefix: Option<String>,
     pub tag: Option<String>,
     pub total_parts_count: Option<u32>,
+    pub selection: Option<String>,
 
     pub paths: Vec<String>,
 }

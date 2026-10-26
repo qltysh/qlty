@@ -14,12 +14,13 @@ Or by editing `qlty.toml`:
 
 ```toml
 # Always use the latest version
-[plugins.enabled]
-bandit = "latest"
+[[plugin]]
+name = "bandit"
 
-# OR enable a specific version
-[plugins.enabled]
-bandit = "X.Y.Z"
+# OR pin to a specific version
+[[plugin]]
+name = "bandit"
+version = "X.Y.Z"
 ```
 
 ## Auto-enabling
@@ -32,13 +33,23 @@ Bandit will be automatically enabled when python files are present.
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Bandit.
 
+## Languages and file types
+
+Bandit analyzes: Python (`.py`).
+
+## Troubleshooting
+
+**"Unable to parse config file .bandit or missing [bandit] section" warning.**
+Bandit found a `.bandit` file but could not read it — the file may be empty, have syntax errors, or be missing the required `[bandit]` section header.
+Ensure `.bandit` starts with `[bandit]` and uses valid INI syntax, or remove the file to use Bandit's defaults.
+
 ## Links
 
 - [Bandit on GitHub](https://github.com/pycqa/bandit)
-- [Bandit plugin definition](https://github.com/qltysh/qlty/tree/main/plugins/linters/bandit)
+- [Bandit plugin definition](https://github.com/qltysh/qlty-plugins/tree/main/plugins/linters/bandit)
 - [Bandit releases](https://github.com/pycqa/bandit/releases)
-- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty/tree/main/plugins/linters)
+- [Qlty's open source plugin definitions](https://github.com/qltysh/qlty-plugins/tree/main/plugins/linters)
 
 ## License
 
-Black is licensed under the [Apache License 2.0](https://github.com/PyCQA/bandit/blob/main/LICENSE).
+Bandit is licensed under the [Apache License 2.0](https://github.com/PyCQA/bandit/blob/main/LICENSE).

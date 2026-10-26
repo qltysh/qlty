@@ -1,0 +1,4 @@
+bin.name = "qlty"
+args = ["slop-one", "--offline", "--cache-dir", "cache", "--jobs", "3", "lib/simple.py", "lib/tangled.py", "tests/test_simple.py", "vendor/vendored.py"]
+status.code = 1
+fs.base = "basic.in"

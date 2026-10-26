@@ -1,4 +1,5 @@
 use crate::format::SarifFormatter;
+use crate::git_hook;
 use crate::ui::ApplyMode;
 use crate::ui::ErrorsFormatter;
 use crate::ui::Steps;
@@ -9,21 +10,31 @@ use anyhow::Result;
 use clap::Args;
 use console::{style, Emoji};
 use qlty_check::planner::Plan;
-use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Report, Settings};
+use qlty_check::ui::ProgressBar as _;
+use qlty_check::{planner::Planner, CheckFilters, Executor, Processor, Progress, Report, Settings};
 use qlty_config::Workspace;
 use qlty_formats::{Formatter, JsonFormatter};
 use qlty_types::analysis::v1::ExecutionVerb;
 use qlty_types::analysis::v1::Level;
-use std::io::BufRead as _;
-use std::io::{self, Read};
 use std::path::PathBuf;
-use std::thread;
 use tracing::debug;
+use tracing::info;
 use tracing::warn;
 
 static LOOKING_GLASS: Emoji<'_, '_> = Emoji("🔍  ", "");
 static THINKING: Emoji<'_, '_> = Emoji("🤔  ", "");
 static FORMATTING: Emoji<'_, '_> = Emoji("📝  ", "");
+
+/// Represents stdin input for Git hook upstream computation.
+///
+/// This is separate from `--trigger=pre-push` which can be used manually without stdin.
+/// `--upstream-from-pre-push` specifically means "read upstream from Git hook stdin".
+enum GitHookStdin {
+    /// Not reading upstream from Git hook stdin
+    None,
+    /// Git hook stdin content (already validated as non-empty)
+    Content(String),
+}
 
 #[derive(Args, Clone, Debug)]
 pub struct Check {
@@ -39,11 +50,11 @@ pub struct Check {
     #[arg(long, conflicts_with = "fix")]
     pub no_fix: bool,
 
-    /// Generate AI fixes (requires OpenAI API key)
+    /// Generate AI fixes (requires Qlty Cloud authentication)
     #[arg(long)]
     pub ai: bool,
 
-    /// Allow unsafe fixes
+    /// Allow fixes for rules that may produce incorrect results and require careful human review
     #[arg(long)]
     pub r#unsafe: bool,
 
@@ -75,11 +86,55 @@ pub struct Check {
     #[arg(short, long)]
     pub jobs: Option<u32>,
 
-    /// Filter by plugin or check
-    #[arg(long)]
+    /// Only run these plugins, or only report these rules (comma-separated)
+    ///
+    /// Each entry is a plugin name (`eslint`) or a plugin and rule joined by a
+    /// colon (`eslint:no-unused-vars`). A plugin name runs only that plugin. A
+    /// rule runs its plugin but reports only issues for that rule.
+    ///
+    /// Examples:
+    ///   --filter eslint                       Run only eslint
+    ///   --filter eslint,rubocop               Run only eslint and rubocop
+    ///   --filter eslint:no-unused-vars        Report only eslint's no-unused-vars issues
+    ///   --filter eslint,rubocop:Style/StringLiterals
+    ///                                         Report all eslint issues and only
+    ///                                         rubocop's Style/StringLiterals issues
+    ///
+    /// Use with --skip to remove plugins or rules from what --filter selects.
+    #[arg(long, verbatim_doc_comment)]
     filter: Option<String>,
 
-    #[arg(value_enum, long, hide = true, default_value = "manual")]
+    /// Don't run these plugins, or don't report these rules (comma-separated)
+    ///
+    /// Each entry is a plugin name (`rubocop`) or a plugin and rule joined by a
+    /// colon (`rubocop:Style/StringLiterals`). A plugin name stops that plugin
+    /// from running. A rule still runs its plugin but drops issues for that rule.
+    ///
+    /// Examples:
+    ///   --skip rubocop                        Run every plugin except rubocop
+    ///   --skip rubocop,shellcheck             Run every plugin except rubocop and shellcheck
+    ///   --skip rubocop:Style/StringLiterals   Run every plugin; drop that one rubocop rule
+    ///
+    /// With --filter, --filter picks what runs first and --skip removes from it.
+    /// When both match, --skip wins:
+    ///   --filter eslint,rubocop --skip rubocop
+    ///                                         Run only eslint
+    ///   --filter eslint --skip eslint:no-console
+    ///                                         Run only eslint; drop its no-console issues
+    ///
+    /// Every plugin named must be enabled, and skipping every plugin is an error.
+    #[arg(long, verbatim_doc_comment)]
+    skip: Option<String>,
+
+    /// Run as this trigger, so only plugins whose `triggers` include it run
+    ///
+    /// Each plugin's `triggers` list in qlty.toml names the triggers it runs
+    /// on. A plugin with no `triggers` list runs on every trigger. Qlty's git
+    /// hooks pass `pre-commit` to `qlty fmt` and `pre-push` to `qlty check`.
+    ///
+    /// Examples:
+    ///   --trigger pre-push                    Run only plugins that run on pre-push
+    #[arg(value_enum, long, verbatim_doc_comment, default_value = "manual")]
     trigger: Trigger,
 
     /// Print verbose output
@@ -102,7 +157,7 @@ pub struct Check {
     #[arg(long)]
     pub print_errors: bool,
 
-    /// Minimium level of issues to fail on
+    /// Minimum level of issues to fail on
     #[arg(long, value_enum, default_value = "fmt")]
     fail_level: Level,
 
@@ -123,6 +178,14 @@ pub struct Check {
 
     /// Files to analyze
     pub paths: Vec<PathBuf>,
+
+    /// Install tools only, do not run checks
+    #[arg(long)]
+    install_only: bool,
+
+    /// Skip fetching sources before running checks
+    #[arg(long)]
+    skip_source_fetch: bool,
 }
 
 impl Check {
@@ -130,9 +193,27 @@ impl Check {
         self.validate_options()?;
 
         let workspace = Workspace::require_initialized()?;
-        workspace.fetch_sources()?;
+        workspace.prepare_sources(self.skip_source_fetch)?;
 
-        let settings = self.build_settings(&workspace)?;
+        let progress = Progress::new(!self.no_progress, 1);
+        let task = progress.task("Pruning", "old cache files...");
+        workspace.library()?.auto_prune();
+        task.clear();
+        progress.clear();
+
+        let git_hook_stdin = if self.upstream_from_pre_push {
+            match git_hook::read_pre_push_stdin()? {
+                Some(content) => GitHookStdin::Content(content),
+                None => {
+                    info!("No commits to push, skipping checks");
+                    return CommandSuccess::ok();
+                }
+            }
+        } else {
+            GitHookStdin::None
+        };
+
+        let settings = self.build_settings(&workspace, git_hook_stdin)?;
 
         let mut counter = 0;
         let mut dirty = true;
@@ -160,7 +241,7 @@ impl Check {
             }
 
             if self.trigger == Trigger::PreCommit || self.trigger == Trigger::PrePush {
-                self.spawn_exit_on_enter_thread();
+                git_hook::exit_on_enter();
             }
 
             let executor = Executor::new(&plan);
@@ -204,27 +285,10 @@ impl Check {
         CommandSuccess::ok()
     }
 
-    fn spawn_exit_on_enter_thread(&self) {
-        eprintln!("Tap {} to skip...", style("enter").bold(),);
-
-        thread::spawn(move || loop {
-            let mut input = String::new();
-
-            if let Ok(tty) = std::fs::File::open("/dev/tty") {
-                let mut tty_reader = io::BufReader::new(tty);
-                tty_reader.read_line(&mut input).ok();
-
-                if input == "\n" {
-                    std::process::exit(0);
-                }
-            }
-        });
-    }
-
     fn format_after_fix(&self, settings: &Settings, report: &Report) -> Result<Report> {
         debug!("Format after fix: {:?}", report.fixed);
         let mut settings = settings.clone();
-        settings.filters = vec![];
+        settings.check_filters.filters = vec![];
         settings.paths = report
             .fixed
             .iter()
@@ -278,7 +342,11 @@ impl Check {
         Ok(())
     }
 
-    fn build_settings(&self, workspace: &Workspace) -> Result<Settings> {
+    fn build_settings(
+        &self,
+        workspace: &Workspace,
+        git_hook_stdin: GitHookStdin,
+    ) -> Result<Settings> {
         let mut settings = Settings::default();
         settings.root = Workspace::assert_within_git_directory()?;
         settings.verbose = self.verbose as usize;
@@ -290,8 +358,9 @@ impl Check {
         settings.jobs = self.jobs;
         settings.progress = !self.no_progress;
         settings.formatters = !self.no_formatters;
-        settings.filters = CheckFilter::from_optional_list(self.filter.clone());
-        settings.upstream = self.compute_upstream(workspace)?;
+        settings.check_filters =
+            CheckFilters::from_optional_lists(self.filter.clone(), self.skip.clone());
+        settings.upstream = self.compute_upstream(workspace, git_hook_stdin)?;
         settings.level = self.level;
         settings.fail_level = if self.no_fail {
             None
@@ -313,47 +382,50 @@ impl Check {
                 }
             };
         }
+        settings.install_only = self.install_only;
 
         Ok(settings)
     }
 
-    fn compute_upstream(&self, workspace: &Workspace) -> Result<Option<String>> {
-        if self.upstream_from_pre_push {
-            let mut buffer = String::new();
-            io::stdin().read_to_string(&mut buffer)?;
+    fn compute_upstream(
+        &self,
+        workspace: &Workspace,
+        git_hook_stdin: GitHookStdin,
+    ) -> Result<Option<String>> {
+        match git_hook_stdin {
+            GitHookStdin::None => Ok(self.upstream.clone()),
+            GitHookStdin::Content(buffer) => {
+                // https://git-scm.com/docs/githooks#_pre_push
+                //
+                // <local-ref> SP <local-object-name> SP <remote-ref> SP <remote-object-name> LF
+                let parts: Vec<&str> = buffer.split_whitespace().collect();
+                let remote_commit_id = parts.get(3).unwrap_or(&"");
 
-            // https://git-scm.com/docs/githooks#_pre_push
-            //
-            // <local-ref> SP <local-object-name> SP <remote-ref> SP <remote-object-name> LF
-            let parts: Vec<&str> = buffer.split_whitespace().collect();
-            let remote_commit_id = parts.get(3).unwrap_or(&"");
+                if remote_commit_id.is_empty() {
+                    bail!("Missing remote commit ID from Git pre-push input")
+                }
 
-            if remote_commit_id.is_empty() {
-                bail!("Missing remote commit ID from Git pre-push input")
-            }
-
-            // When pushing a new branch, the remote object name is 40 zeros.
-            // In this case, revert to the upstream branch.
-            if remote_commit_id.chars().all(|c| c == '0') {
-                Ok(self.upstream.clone())
-            } else {
-                // Check if the remote commit ID exists in the repository
-                let remote_commit_present_locally =
-                    workspace.repo()?.revparse_single(remote_commit_id).is_ok();
-
-                // If the remote commit ID is not present locally, revert to the upstream branch.
-                if remote_commit_present_locally {
-                    Ok(Some(remote_commit_id.to_string()))
-                } else {
-                    warn!(
-                        "Remote commit ID {} is not present locally, reverting to upstream branch",
-                        remote_commit_id
-                    );
+                // When pushing a new branch, the remote object name is 40 zeros.
+                // In this case, revert to the upstream branch.
+                if remote_commit_id.chars().all(|c| c == '0') {
                     Ok(self.upstream.clone())
+                } else {
+                    // Check if the remote commit ID exists in the repository
+                    let remote_commit_present_locally =
+                        workspace.repo()?.revparse_single(remote_commit_id).is_ok();
+
+                    // If the remote commit ID is not present locally, revert to the upstream branch.
+                    if remote_commit_present_locally {
+                        Ok(Some(remote_commit_id.to_string()))
+                    } else {
+                        warn!(
+                            "Remote commit ID {} is not present locally, reverting to upstream branch",
+                            remote_commit_id
+                        );
+                        Ok(self.upstream.clone())
+                    }
                 }
             }
-        } else {
-            Ok(self.upstream.clone())
         }
     }
 
@@ -363,7 +435,11 @@ impl Check {
             formatter.write_to(&mut std::io::stdout())?;
             Ok(false)
         } else if self.sarif {
-            let formatter = SarifFormatter::boxed(report.messages.clone(), report.issues.clone());
+            let formatter = SarifFormatter::boxed(
+                report.messages.clone(),
+                report.issues.clone(),
+                !report.has_errors(),
+            );
             formatter.write_to(&mut std::io::stdout())?;
             Ok(false)
         } else {

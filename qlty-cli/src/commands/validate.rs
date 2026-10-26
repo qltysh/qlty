@@ -11,7 +11,7 @@ pub struct Validate {}
 impl Validate {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
         let workspace = Workspace::require_initialized()?;
-        workspace.fetch_sources()?;
+        workspace.prepare_sources(false)?;
 
         let settings = self.build_settings()?;
         let plan = Planner::new(ExecutionVerb::Validate, &settings)?.compute()?;

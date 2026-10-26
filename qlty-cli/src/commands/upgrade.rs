@@ -4,7 +4,7 @@ use anyhow::Result;
 use clap::{Args, Subcommand};
 use console::style;
 use qlty_config::sources::SourceUpgrade;
-use qlty_config::version::QLTY_VERSION;
+use qlty_config::version::{qlty_semver, QLTY_VERSION};
 use std::time::Instant;
 
 #[derive(Args, Debug)]
@@ -20,6 +20,14 @@ pub struct Upgrade {
     /// Whether to perform a dry run.
     #[arg(long)]
     dry_run: bool,
+
+    /// Verify SLSA provenance attestation before installing.
+    ///
+    /// Downloads the release archive and checks its attestation with the GitHub CLI
+    /// (`gh` 2.67.0 or later, signed in) before installing it. The upgrade stops if
+    /// the attestation can't be verified. Not supported on Windows.
+    #[arg(long, env = "QLTY_VERIFY_ATTESTATIONS")]
+    verify_attestations: bool,
 
     #[command(subcommand)]
     command: Option<Commands>,
@@ -46,7 +54,7 @@ impl Upgrade {
         let release = QltyRelease::load(&self.version)?;
 
         if !self.force {
-            self.print_version_status(&release);
+            self.print_version_status(&release, &self.version);
         }
 
         if self.dry_run {
@@ -60,7 +68,7 @@ impl Upgrade {
             return CommandSuccess::ok();
         }
 
-        release.run_upgrade_command()?;
+        release.run_upgrade_command(self.verify_attestations)?;
 
         SourceUpgrade::new().run().ok();
 
@@ -77,7 +85,7 @@ impl Upgrade {
         Ok(())
     }
 
-    fn print_version_status(&self, release: &QltyRelease) {
+    fn print_version_status(&self, release: &QltyRelease, version_flag: &Option<String>) {
         if release.version == QLTY_VERSION {
             println!(
                 "{} You're already on the latest version of qlty (which is v{})",
@@ -86,6 +94,46 @@ impl Upgrade {
             );
 
             std::process::exit(0);
+        }
+
+        let current_version = qlty_semver();
+        let target_version = match release.semver() {
+            Ok(v) => v,
+            Err(_) => {
+                eprintln!(
+                    "{} Unable to parse target version: v{}",
+                    style("Error:").red().bold(),
+                    release.version
+                );
+                std::process::exit(1);
+            }
+        };
+
+        if target_version < current_version {
+            let is_auto_downgrade = version_flag.is_none();
+
+            if is_auto_downgrade {
+                eprintln!(
+                    "{} Cannot auto-downgrade from v{} to v{}",
+                    style("Error:").red().bold(),
+                    QLTY_VERSION,
+                    release.version
+                );
+                eprintln!();
+                eprintln!(
+                    "The manifest at DEFAULT_MANIFEST_LOCATION_URL points to an older version."
+                );
+                eprintln!("This is a fatal error. Auto-downgrades are not allowed.");
+                std::process::exit(1);
+            } else {
+                println!(
+                    "{} Downgrading from v{} to v{}",
+                    style("Warning:").yellow().bold(),
+                    QLTY_VERSION,
+                    release.version
+                );
+                println!();
+            }
         }
 
         println!(

@@ -2,6 +2,7 @@ pub mod auth;
 mod build;
 pub mod cache;
 mod check;
+mod cli_reference;
 mod completions;
 pub mod config;
 pub mod coverage;
@@ -18,15 +19,18 @@ mod panic;
 mod parse;
 mod patch;
 pub mod plugins;
+mod slop_one;
 mod smells;
+pub mod sources;
 mod telemetry;
 mod upgrade;
 mod validate;
 mod version;
 
 pub use {
-    build::Build, check::Check, completions::Completions, dashboard::Dashboard, deinit::Deinit,
-    discord::Discord, docs::Docs, fmt::Fmt, init::Init, install::Install, metrics::Metrics,
-    panic::Panic, parse::Parse, patch::Patch, smells::Smells, telemetry::Telemetry,
-    upgrade::Upgrade, validate::Validate, version::Version,
+    build::Build, check::Check, cli_reference::CliReference, completions::Completions,
+    dashboard::Dashboard, deinit::Deinit, discord::Discord, docs::Docs, fmt::Fmt, init::Init,
+    install::Install, metrics::Metrics, panic::Panic, parse::Parse, patch::Patch,
+    slop_one::SlopOne, smells::Smells, telemetry::Telemetry, upgrade::Upgrade, validate::Validate,
+    version::Version,
 };

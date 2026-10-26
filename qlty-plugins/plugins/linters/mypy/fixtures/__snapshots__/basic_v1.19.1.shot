@@ -1,0 +1,186 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=mypy fixture=basic version=1.19.1 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://mypy.readthedocs.io/en/stable/error_code_list.html",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "basic.in.py",
+        "range": {
+          "startColumn": 10,
+          "startLine": 14,
+        },
+      },
+      "message": "Argument 1 to "greeting" has incompatible type "bytes"; expected "str"",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "arg-type",
+      "snippet": "greeting(b"Alice")",
+      "snippetWithContext": "
+def greeting(name: str) -> str:
+    return "Hello " + name
+
+
+def printer() -> None:
+    print("Hello")
+
+
+greeting(3)
+greeting(b"Alice")
+a = printer()
+c: str = 4
+
+from source import Bar
+
+def bad_foo(bar: Bar) -> str:
+  return bar.a + bar.b
+
+def bad_generator() -> int:
+    yield 1",
+      "tool": "mypy",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://mypy.readthedocs.io/en/stable/error_code_list.html",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "basic.in.py",
+        "range": {
+          "startColumn": 10,
+          "startLine": 13,
+        },
+      },
+      "message": "Argument 1 to "greeting" has incompatible type "int"; expected "str"",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "arg-type",
+      "snippet": "greeting(3)",
+      "snippetWithContext": "from . import mypy_import2
+
+def greeting(name: str) -> str:
+    return "Hello " + name
+
+
+def printer() -> None:
+    print("Hello")
+
+
+greeting(3)
+greeting(b"Alice")
+a = printer()
+c: str = 4
+
+from source import Bar
+
+def bad_foo(bar: Bar) -> str:
+  return bar.a + bar.b
+
+def bad_generator() -> int:",
+      "tool": "mypy",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://mypy.readthedocs.io/en/stable/error_code_list.html",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "basic.in.py",
+        "range": {
+          "startColumn": 10,
+          "startLine": 16,
+        },
+      },
+      "message": "Incompatible types in assignment (expression has type "int", variable has type "str")",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "assignment",
+      "snippet": "c: str = 4",
+      "snippetWithContext": "    return "Hello " + name
+
+
+def printer() -> None:
+    print("Hello")
+
+
+greeting(3)
+greeting(b"Alice")
+a = printer()
+c: str = 4
+
+from source import Bar
+
+def bad_foo(bar: Bar) -> str:
+  return bar.a + bar.b
+
+def bad_generator() -> int:
+    yield 1",
+      "tool": "mypy",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://mypy.readthedocs.io/en/stable/error_code_list.html",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "basic.in.py",
+        "range": {
+          "startColumn": 5,
+          "startLine": 15,
+        },
+      },
+      "message": ""printer" does not return a value (it only ever returns None)",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "func-returns-value",
+      "snippet": "a = printer()",
+      "snippetWithContext": "def greeting(name: str) -> str:
+    return "Hello " + name
+
+
+def printer() -> None:
+    print("Hello")
+
+
+greeting(3)
+greeting(b"Alice")
+a = printer()
+c: str = 4
+
+from source import Bar
+
+def bad_foo(bar: Bar) -> str:
+  return bar.a + bar.b
+
+def bad_generator() -> int:
+    yield 1",
+      "tool": "mypy",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://mypy.readthedocs.io/en/stable/error_code_list.html",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "basic.in.py",
+        "range": {
+          "startColumn": 1,
+          "startLine": 23,
+        },
+      },
+      "message": "The return type of a generator function should be "Generator" or one of its supertypes",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "misc",
+      "snippet": "def bad_generator() -> int:",
+      "snippetWithContext": "greeting(3)
+greeting(b"Alice")
+a = printer()
+c: str = 4
+
+from source import Bar
+
+def bad_foo(bar: Bar) -> str:
+  return bar.a + bar.b
+
+def bad_generator() -> int:
+    yield 1",
+      "tool": "mypy",
+    },
+  ],
+}
+`;

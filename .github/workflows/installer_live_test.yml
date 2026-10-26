@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   test:
-    name: ${{ matrix.runner }}
+    name: ${{ matrix.name || matrix.runner }}
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -24,7 +24,11 @@ jobs:
             command: curl https://qlty.sh | sh
 
           - runner: windows-latest
-            command: powershell -c "iwr https://qlty.sh | iex"
+            command: powershell -c "iwr -UseBasicParsing https://qlty.sh | iex"
+
+          - runner: windows-latest
+            name: windows-latest / pwsh
+            command: pwsh -c "iwr https://qlty.sh | iex"
     steps:
       - name: Install qlty and validate
         run: ${{ matrix.command }} && ~/.qlty/bin/qlty version --no-upgrade-check

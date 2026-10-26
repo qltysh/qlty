@@ -1,0 +1,141 @@
+{
+ "name": "javascript_mixed.js",
+ "suffix": ".js",
+ "language": "JavaScript",
+ "text": "function describe(a, b, c, d, e, f, g) {\n  if (a) {\n    return \"a\";\n  }\n  if (b) {\n    return \"b\";\n  }\n  if (c) {\n    return \"c\";\n  }\n  if (d) {\n    return \"d\";\n  }\n  if (e) {\n    return \"e\";\n  }\n  if (f) {\n    return \"f\";\n  }\n  return g;\n}\n\nfunction summarizeOrders(orders) {\n  let total = 0;\n  let count = 0;\n  let largest = 0;\n  const names = [];\n  for (const order of orders) {\n    total += order.amount;\n    count += 1;\n    if (order.amount > largest) {\n      largest = order.amount;\n    }\n    if (order.name) {\n      names.push(order.name);\n    }\n    if (order.note) {\n      names.push(order.note);\n    }\n  }\n  return { total, count, largest, names };\n}\n\nfunction summarizeInvoices(invoices) {\n  let sum = 0;\n  let items = 0;\n  let biggest = 0;\n  const labels = [];\n  for (const invoice of invoices) {\n    sum += invoice.value;\n    items += 1;\n    if (invoice.value > biggest) {\n      biggest = invoice.value;\n    }\n    if (invoice.label) {\n      labels.push(invoice.label);\n    }\n    if (invoice.memo) {\n      labels.push(invoice.memo);\n    }\n  }\n  return { sum, items, biggest, labels };\n}\n\nmodule.exports = { describe, summarizeOrders, summarizeInvoices };\n",
+ "values": [
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.6931471805599453,
+  1.5384615384615385,
+  2.0794415416798357,
+  0.015384615384615385,
+  0.6931471805599453,
+  1.5384615384615385,
+  2.0794415416798357,
+  0.3230769230769231,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.6931471805599453,
+  1.5384615384615385,
+  3.044522437723423,
+  0.6153846153846154
+ ],
+ "summary": {
+  "boolean-logic": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 4,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Boolean depth"
+  },
+  "nested-control-flow": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 5,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Nesting depth"
+  },
+  "function-parameters": {
+   "count": 1,
+   "max_magnitude": 7.0,
+   "covered_lines": 1,
+   "locations": [
+    {
+     "start_line": 1,
+     "end_line": 1
+    }
+   ],
+   "max_actual": 7.0,
+   "threshold": 6,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Parameters"
+  },
+  "return-statements": {
+   "count": 1,
+   "max_magnitude": 7.0,
+   "covered_lines": 21,
+   "locations": [
+    {
+     "start_line": 1,
+     "end_line": 21
+    }
+   ],
+   "max_actual": 7.0,
+   "threshold": 6,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Return statements"
+  },
+  "file-complexity": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 50,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Cyclomatic complexity"
+  },
+  "function-complexity": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 18,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Cyclomatic complexity"
+  },
+  "identical-code": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 15,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Duplicated lines"
+  },
+  "similar-code": {
+   "count": 1,
+   "max_magnitude": 20.0,
+   "covered_lines": 40,
+   "locations": [
+    {
+     "start_line": 23,
+     "end_line": 42
+    },
+    {
+     "start_line": 44,
+     "end_line": 63
+    }
+   ],
+   "max_actual": 20.0,
+   "threshold": 15,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Duplicated lines"
+  }
+ }
+}

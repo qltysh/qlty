@@ -1,0 +1,14 @@
+PASS lib/simple.py  8.75/10 (pass above 5.00; Python)
+  Score is 3.75 points above the cutoff.
+  Reference score: 7.07; factors show changes from that reference.
+  Main factors raising the score:
+    +0.29  Overall difficulty of maintenance (Jev assessment 0.08)
+    +0.23  Duplicated logic (Jev assessment 0.00)
+    +0.20  Function complexity (0 findings)
+      Measurements: count +0.05; density +0.04; magnitude +0.06; coverage +0.05
+  Qlty measurements describe related properties of the same findings; their lines can overlap across factors.
+
+Summary of supplied files: 1 evaluated, 1 passed, 0 failed, 0 skipped, 0 errors.
+  Median file score: 8.75/10; pass rate: 100.0%.
+  Lowest-scoring files:
+    8.75/10  PASS  lib/simple.py

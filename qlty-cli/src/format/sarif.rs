@@ -1,24 +1,62 @@
-use anyhow::Result;
-use qlty_config::version::{BUILD_DATE, LONG_VERSION, QLTY_VERSION};
-use qlty_formats::Formatter;
-use qlty_types::analysis::v1::{Category, Issue, Language, Level, Location, Message, MessageLevel};
-use serde_json::{json, Map, Value};
+use std::collections::HashSet;
 use std::convert::TryFrom;
 use std::io::Write;
+
+use anyhow::Result;
+use itertools::Itertools;
+use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
+use qlty_config::version::{BUILD_DATE, LONG_VERSION, QLTY_VERSION};
+use qlty_formats::Formatter;
+use qlty_types::analysis::v1::{
+    Category, Issue, Language, Level, Location, Message, MessageLevel, Range,
+};
+use serde_json::{json, Map, Value};
+
+const SARIF_SCHEMA: &str =
+    "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json";
+
+// Characters a URI reference cannot contain unencoded (RFC 3986). ':' is
+// included so that a relative path is never read as a URI scheme.
+const URI_ENCODE_SET: &AsciiSet = &CONTROLS
+    .add(b' ')
+    .add(b'"')
+    .add(b'#')
+    .add(b'%')
+    .add(b':')
+    .add(b'<')
+    .add(b'>')
+    .add(b'?')
+    .add(b'[')
+    .add(b'\\')
+    .add(b']')
+    .add(b'^')
+    .add(b'`')
+    .add(b'{')
+    .add(b'|')
+    .add(b'}');
 
 #[derive(Debug)]
 pub struct SarifFormatter {
     pub messages: Vec<Message>,
     pub issues: Vec<Issue>,
+    pub execution_successful: bool,
 }
 
 impl SarifFormatter {
-    pub fn new(messages: Vec<Message>, issues: Vec<Issue>) -> Self {
-        Self { messages, issues }
+    pub fn new(messages: Vec<Message>, issues: Vec<Issue>, execution_successful: bool) -> Self {
+        Self {
+            messages,
+            issues,
+            execution_successful,
+        }
     }
 
-    pub fn boxed(messages: Vec<Message>, issues: Vec<Issue>) -> Box<dyn Formatter> {
-        Box::new(Self::new(messages, issues))
+    pub fn boxed(
+        messages: Vec<Message>,
+        issues: Vec<Issue>,
+        execution_successful: bool,
+    ) -> Box<dyn Formatter> {
+        Box::new(Self::new(messages, issues, execution_successful))
     }
 
     fn convert_level(&self, level: Level) -> &'static str {
@@ -32,38 +70,62 @@ impl SarifFormatter {
         }
     }
 
+    fn artifact_location(&self, path: &str) -> Value {
+        json!({
+            "uri": utf8_percent_encode(path, URI_ENCODE_SET).to_string()
+        })
+    }
+
+    // Parsers leave a range field at 0 when the tool does not report it, but
+    // SARIF requires lines and columns of at least 1, so unknown fields are
+    // left out. Without a start line there is no valid region at all.
+    fn region(&self, range: &Range) -> Option<Value> {
+        if range.start_line == 0 {
+            return None;
+        }
+
+        let mut region = Map::new();
+        region.insert("startLine".to_string(), json!(range.start_line));
+
+        for (key, value) in [
+            ("startColumn", range.start_column),
+            ("endLine", range.end_line),
+            ("endColumn", range.end_column),
+        ] {
+            if value > 0 {
+                region.insert(key.to_string(), json!(value));
+            }
+        }
+
+        Some(Value::Object(region))
+    }
+
+    fn physical_location(&self, location: &Location) -> Value {
+        let mut physical_location = json!({
+            "artifactLocation": self.artifact_location(&location.path)
+        });
+
+        if let Some(region) = location.range.as_ref().and_then(|range| self.region(range)) {
+            physical_location["region"] = region;
+        }
+
+        physical_location
+    }
+
     fn get_sarif_locations(&self, location: &Option<Location>, language: i32) -> Vec<Value> {
         if let Some(location) = location {
-            let mut region = json!({});
+            let mut physical_location = self.physical_location(location);
 
-            if let Some(range) = &location.range {
-                let mut region_obj = json!({
-                    "startLine": range.start_line,
-                    "startColumn": range.start_column,
-                    "endLine": range.end_line,
-                    "endColumn": range.end_column
-                });
-
-                if language != 0 {
-                    if let Ok(lang) = Language::try_from(language) {
-                        if lang != Language::Unspecified {
-                            let lang_str = format!("{:?}", lang).to_lowercase();
-                            region_obj["sourceLanguage"] = json!(lang_str);
-                        }
+            if language != 0 && physical_location.get("region").is_some() {
+                if let Ok(lang) = Language::try_from(language) {
+                    if lang != Language::Unspecified {
+                        let lang_str = format!("{:?}", lang).to_lowercase();
+                        physical_location["region"]["sourceLanguage"] = json!(lang_str);
                     }
                 }
-
-                region = region_obj;
             }
 
-            return vec![json!({
-                "physicalLocation": {
-                    "artifactLocation": {
-                        "uri": location.path
-                    },
-                    "region": region
-                }
-            })];
+            return vec![json!({ "physicalLocation": physical_location })];
         }
 
         vec![]
@@ -72,88 +134,26 @@ impl SarifFormatter {
     fn get_related_locations(&self, other_locations: &[Location]) -> Vec<Value> {
         other_locations
             .iter()
-            .map(|location| {
-                let mut region = json!({});
-
-                if let Some(range) = &location.range {
-                    region = json!({
-                        "startLine": range.start_line,
-                        "startColumn": range.start_column,
-                        "endLine": range.end_line,
-                        "endColumn": range.end_column
-                    });
-                }
-
-                json!({
-                    "physicalLocation": {
-                        "artifactLocation": {
-                            "uri": location.path
-                        },
-                        "region": region
-                    }
-                })
-            })
+            .map(|location| json!({ "physicalLocation": self.physical_location(location) }))
+            .unique_by(|location| location.to_string())
             .collect()
     }
 
-    fn get_fixes(&self, suggestions: &[qlty_types::analysis::v1::Suggestion]) -> Vec<Value> {
-        if suggestions.is_empty() {
-            return vec![];
+    fn category_id(&self, category: i32) -> Option<String> {
+        match Category::try_from(category) {
+            Ok(Category::Unspecified) | Err(_) => None,
+            Ok(category) => Some(
+                category
+                    .as_str_name()
+                    .trim_start_matches("CATEGORY_")
+                    .to_lowercase(),
+            ),
         }
-
-        suggestions
-            .iter()
-            .map(|suggestion| {
-                let replacements = suggestion
-                    .replacements
-                    .iter()
-                    .map(|replacement| {
-                        let mut location_obj = json!({});
-
-                        if let Some(location) = &replacement.location {
-                            let mut region = json!({});
-
-                            if let Some(range) = &location.range {
-                                region = json!({
-                                    "startLine": range.start_line,
-                                    "startColumn": range.start_column,
-                                    "endLine": range.end_line,
-                                    "endColumn": range.end_column
-                                });
-                            }
-
-                            location_obj = json!({
-                                "physicalLocation": {
-                                    "artifactLocation": {
-                                        "uri": location.path
-                                    },
-                                    "region": region
-                                }
-                            });
-                        }
-
-                        json!({
-                            "deletedRegion": location_obj["physicalLocation"]["region"],
-                            "insertedContent": {
-                                "text": replacement.data
-                            }
-                        })
-                    })
-                    .collect::<Vec<_>>();
-
-                json!({
-                    "description": {
-                        "text": suggestion.description
-                    },
-                    "replacements": replacements
-                })
-            })
-            .collect()
     }
 
     fn serialize_issue(&self, issue: &Issue) -> Value {
         let mut result = json!({
-            "ruleId": format!("{}:{}", issue.tool, issue.rule_key),
+            "ruleId": issue.rule_id(),
             "level": self.convert_level(Level::try_from(issue.level).unwrap_or(Level::Medium)),
             "message": {
                 "text": issue.message
@@ -182,20 +182,8 @@ impl SarifFormatter {
             result["relatedLocations"] = json!(self.get_related_locations(&issue.other_locations));
         }
 
-        if !issue.suggestions.is_empty() {
-            result["fixes"] = json!(self.get_fixes(&issue.suggestions));
-        }
-
-        if issue.category != 0 {
-            if let Ok(category) = Category::try_from(issue.category) {
-                if category != Category::Unspecified {
-                    let category_str = format!("{:?}", category).to_lowercase();
-                    result["taxa"] = json!([{
-                        "id": category_str,
-                        "name": category_str
-                    }]);
-                }
-            }
+        if let Some(category) = self.category_id(issue.category) {
+            result["taxa"] = json!([{ "id": category }]);
         }
 
         let mut properties = Map::new();
@@ -220,6 +208,17 @@ impl SarifFormatter {
         result
     }
 
+    // GitHub code scanning rejects the whole file when any result has no
+    // location, so issues that are not tied to a file become notifications.
+    fn serialize_issue_notification(&self, issue: &Issue) -> Value {
+        json!({
+            "level": self.convert_level(Level::try_from(issue.level).unwrap_or(Level::Medium)),
+            "message": {
+                "text": format!("{} ({})", issue.message, issue.rule_id())
+            }
+        })
+    }
+
     fn convert_message_level(&self, level: MessageLevel) -> &'static str {
         match level {
             MessageLevel::Unspecified => "none",
@@ -235,44 +234,39 @@ impl SarifFormatter {
         let level = MessageLevel::try_from(message.level).unwrap_or(MessageLevel::Info);
         let level_str = self.convert_message_level(level);
 
-        let mut descriptor = json!({
-            "id": format!("qlty:message:{}", message.ty),
-            "name": message.module,
-            "shortDescription": {
-                "text": message.message
-            },
-        });
+        let text = if message.details.is_empty() {
+            message.message.clone()
+        } else {
+            format!("{}\n\n{}", message.message, message.details)
+        };
 
-        if !message.details.is_empty() {
-            descriptor["fullDescription"]["text"] = json!(message.details);
-        }
-
-        let mut notification = json!({
+        json!({
             "level": level_str,
             "message": {
-                "text": message.message
+                "text": text
             },
-            "descriptor": descriptor
-        });
-
-        if !message.details.is_empty() {
-            notification["message"]["text"] =
-                json!(format!("{}\n\n{}", message.message, message.details));
-        }
-
-        notification
+            "descriptor": {
+                "id": format!("qlty:message:{}", message.ty)
+            }
+        })
     }
 
     fn create_sarif_document(&self) -> Value {
+        let (located_issues, unlocated_issues): (Vec<&Issue>, Vec<&Issue>) =
+            self.issues.iter().partition(|issue| {
+                issue
+                    .location
+                    .as_ref()
+                    .is_some_and(|location| !location.path.is_empty())
+            });
+
         let mut rules = vec![];
-        let mut rule_ids = std::collections::HashSet::new();
+        let mut rule_ids = HashSet::new();
 
-        for issue in &self.issues {
-            if !rule_ids.contains(&issue.rule_key) {
-                rule_ids.insert(issue.rule_key.clone());
-
+        for issue in &located_issues {
+            if rule_ids.insert((issue.tool.as_str(), issue.rule_key.as_str())) {
                 let mut rule = json!({
-                    "id": format!("{}:{}", issue.tool, issue.rule_key),
+                    "id": issue.rule_id(),
                 });
 
                 if !issue.documentation_url.is_empty() {
@@ -283,8 +277,7 @@ impl SarifFormatter {
             }
         }
 
-        let results = self
-            .issues
+        let results = located_issues
             .iter()
             .map(|issue| self.serialize_issue(issue))
             .collect::<Vec<_>>();
@@ -293,33 +286,45 @@ impl SarifFormatter {
             .messages
             .iter()
             .map(|message| self.serialize_notification(message))
+            .chain(
+                unlocated_issues
+                    .iter()
+                    .map(|issue| self.serialize_issue_notification(issue)),
+            )
             .collect::<Vec<_>>();
 
-        let mut sarif = json!({
-            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+        let mut invocation = json!({
+            "executionSuccessful": self.execution_successful
+        });
+
+        if !notifications.is_empty() {
+            invocation["toolExecutionNotifications"] = json!(notifications);
+        }
+
+        // SARIF needs one column unit per run. Parsers report columns as
+        // bytes, characters or UTF-16 code units, which only differ on lines
+        // with non-ASCII text; utf16CodeUnits matches CodeQL.
+        json!({
+            "$schema": SARIF_SCHEMA,
             "version": "2.1.0",
             "runs": [
                 {
                     "tool": {
                         "driver": {
                             "name": "qlty",
-                            "informationUri": "https://github.com/qlty/qlty",
+                            "informationUri": "https://github.com/qltysh/qlty",
                             "semanticVersion": QLTY_VERSION,
                             "version": LONG_VERSION.as_str(),
                             "releaseDateUtc": BUILD_DATE,
                             "rules": rules
                         }
                     },
+                    "invocations": [invocation],
+                    "columnKind": "utf16CodeUnits",
                     "results": results
                 }
             ]
-        });
-
-        if !notifications.is_empty() {
-            sarif["runs"][0]["tool"]["driver"]["notifications"] = json!(notifications);
-        }
-
-        sarif
+        })
     }
 }
 
@@ -342,6 +347,36 @@ mod test {
         Category, ExecutionVerb, Mode, Range, Replacement, Suggestion, SuggestionSource,
     };
     use std::collections::HashSet;
+
+    #[test]
+    fn smell_measurements_survive_json_and_sarif_serialization() {
+        let mut issue = Issue {
+            tool: "qlty".to_string(),
+            rule_key: "boolean-logic".to_string(),
+            ..Default::default()
+        };
+        issue.set_property_number("threshold", 4.0);
+        issue.set_property_number("actual", 8.0);
+
+        let json = serde_json::to_value(&issue).unwrap();
+        let sarif = SarifFormatter::new(vec![], vec![], true).serialize_issue(&issue);
+
+        assert_eq!(json["properties"], json!({"threshold": 4.0, "actual": 8.0}));
+        assert_eq!(sarif["properties"], json["properties"]);
+    }
+
+    #[test]
+    fn zero_smell_measurements_survive_json_and_sarif_serialization() {
+        let mut issue = Issue::default();
+        issue.set_property_number("threshold", 0.0);
+        issue.set_property_number("actual", 0.0);
+
+        let json = serde_json::to_value(&issue).unwrap();
+        let sarif = SarifFormatter::new(vec![], vec![], true).serialize_issue(&issue);
+
+        assert_eq!(json["properties"], json!({"threshold": 0.0, "actual": 0.0}));
+        assert_eq!(sarif["properties"], json["properties"]);
+    }
 
     #[test]
     fn test_sarif_formatter() {
@@ -494,7 +529,11 @@ mod test {
             total_targets_count: 0,
         };
 
-        let formatter = SarifFormatter::boxed(report.messages.clone(), report.issues.clone());
+        let formatter = SarifFormatter::boxed(
+            report.messages.clone(),
+            report.issues.clone(),
+            !report.has_errors(),
+        );
         let output = formatter.read().unwrap();
         let output_str = String::from_utf8_lossy(&output);
 
@@ -506,5 +545,164 @@ mod test {
             ".runs[0].tool.driver.releaseDateUtc" => "[date]",
             ".runs[0].results[0].partialFingerprints" => insta::sorted_redaction()
         });
+    }
+
+    #[test]
+    fn region_leaves_out_unknown_range_fields() {
+        let issue = Issue {
+            location: Some(Location {
+                path: "sample.py".to_string(),
+                range: Some(Range {
+                    start_line: 4,
+                    ..Default::default()
+                }),
+            }),
+            ..Default::default()
+        };
+
+        let sarif = SarifFormatter::new(vec![], vec![], true).serialize_issue(&issue);
+
+        assert_eq!(
+            sarif["locations"][0]["physicalLocation"]["region"],
+            json!({"startLine": 4})
+        );
+    }
+
+    #[test]
+    fn location_without_start_line_has_no_region() {
+        let issue = Issue {
+            location: Some(Location {
+                path: "sample.py".to_string(),
+                range: Some(Range::default()),
+            }),
+            ..Default::default()
+        };
+
+        let sarif = SarifFormatter::new(vec![], vec![], true).serialize_issue(&issue);
+
+        assert_eq!(
+            sarif["locations"][0]["physicalLocation"],
+            json!({"artifactLocation": {"uri": "sample.py"}})
+        );
+    }
+
+    #[test]
+    fn artifact_uri_is_percent_encoded() {
+        let issue = Issue {
+            location: Some(Location {
+                path: "src/my file#1.rs".to_string(),
+                range: None,
+            }),
+            ..Default::default()
+        };
+
+        let sarif = SarifFormatter::new(vec![], vec![], true).serialize_issue(&issue);
+
+        assert_eq!(
+            sarif["locations"][0]["physicalLocation"]["artifactLocation"]["uri"],
+            json!("src/my%20file%231.rs")
+        );
+    }
+
+    #[test]
+    fn duplicate_related_locations_are_removed() {
+        let location = Location {
+            path: "src/related.rs".to_string(),
+            range: Some(Range {
+                start_line: 3,
+                ..Default::default()
+            }),
+        };
+        let issue = Issue {
+            other_locations: vec![location.clone(), location],
+            ..Default::default()
+        };
+
+        let sarif = SarifFormatter::new(vec![], vec![], true).serialize_issue(&issue);
+
+        assert_eq!(
+            sarif["relatedLocations"],
+            json!([{
+                "physicalLocation": {
+                    "artifactLocation": {"uri": "src/related.rs"},
+                    "region": {"startLine": 3}
+                }
+            }])
+        );
+    }
+
+    #[test]
+    fn fixes_are_not_written() {
+        let issue = Issue {
+            suggestions: vec![Suggestion {
+                replacements: vec![Replacement {
+                    data: "fixed".to_string(),
+                    location: Some(Location {
+                        path: "src/a.rs".to_string(),
+                        range: Some(Range {
+                            start_line: 1,
+                            ..Default::default()
+                        }),
+                    }),
+                }],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+
+        let sarif = SarifFormatter::new(vec![], vec![], true).serialize_issue(&issue);
+
+        assert_eq!(sarif.get("fixes"), None);
+    }
+
+    #[test]
+    fn multi_word_category_id_keeps_its_separator() {
+        let issue = Issue {
+            category: Category::DependencyAlert.into(),
+            ..Default::default()
+        };
+
+        let sarif = SarifFormatter::new(vec![], vec![], true).serialize_issue(&issue);
+
+        assert_eq!(sarif["taxa"], json!([{"id": "dependency_alert"}]));
+    }
+
+    fn unlocated_issue() -> Issue {
+        Issue {
+            tool: "pass-fail".to_string(),
+            rule_key: "fail".to_string(),
+            message: "pass-fail failed".to_string(),
+            level: Level::High.into(),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn issue_without_location_is_not_a_result() {
+        let sarif =
+            SarifFormatter::new(vec![], vec![unlocated_issue()], true).create_sarif_document();
+
+        assert_eq!(sarif["runs"][0]["results"], json!([]));
+    }
+
+    #[test]
+    fn issue_without_location_is_a_notification() {
+        let sarif =
+            SarifFormatter::new(vec![], vec![unlocated_issue()], true).create_sarif_document();
+
+        assert_eq!(
+            sarif["runs"][0]["invocations"][0]["toolExecutionNotifications"],
+            json!([{"level": "error", "message": {"text": "pass-fail failed (pass-fail:fail)"}}])
+        );
+    }
+
+    #[test]
+    fn failed_execution_is_reported() {
+        let sarif = SarifFormatter::new(vec![], vec![], false).create_sarif_document();
+
+        assert_eq!(
+            sarif["runs"][0]["invocations"][0]["executionSuccessful"],
+            json!(false)
+        );
     }
 }

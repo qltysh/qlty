@@ -216,6 +216,10 @@ impl TypeScriptCommon {
         vec![Self::AND, Self::OR]
     }
 
+    pub fn short_circuit_operators(&self) -> Vec<&str> {
+        vec![Self::AND, Self::OR, "??"]
+    }
+
     pub fn field_nodes(&self) -> Vec<&str> {
         vec![
             Self::MEMBER_EXPRESSION,

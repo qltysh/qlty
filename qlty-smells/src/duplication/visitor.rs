@@ -1,7 +1,6 @@
 use super::code::build_node;
 use super::Node;
 use qlty_analysis::code::{File, NodeFilter, Visitor};
-use qlty_analysis::Language;
 use std::sync::Arc;
 use tree_sitter::TreeCursor;
 
@@ -16,8 +15,8 @@ pub struct NodeVisitor<'a> {
 }
 
 impl<'a> Visitor for NodeVisitor<'a> {
-    fn language(&self) -> &Box<dyn Language + Sync> {
-        self.source_file.language()
+    fn source_file(&self) -> &File {
+        self.source_file
     }
 
     fn process_node(&mut self, cursor: &mut TreeCursor) {

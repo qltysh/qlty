@@ -881,6 +881,9 @@ impl serde::Serialize for Invocation {
         if !self.project_id.is_empty() {
             len += 1;
         }
+        if !self.analysis_id.is_empty() {
+            len += 1;
+        }
         if !self.reference.is_empty() {
             len += 1;
         }
@@ -891,6 +894,9 @@ impl serde::Serialize for Invocation {
             len += 1;
         }
         if !self.commit_sha.is_empty() {
+            len += 1;
+        }
+        if self.generated_at.is_some() {
             len += 1;
         }
         if !self.id.is_empty() {
@@ -972,6 +978,9 @@ impl serde::Serialize for Invocation {
         if !self.project_id.is_empty() {
             struct_ser.serialize_field("projectId", &self.project_id)?;
         }
+        if !self.analysis_id.is_empty() {
+            struct_ser.serialize_field("analysisId", &self.analysis_id)?;
+        }
         if !self.reference.is_empty() {
             struct_ser.serialize_field("reference", &self.reference)?;
         }
@@ -983,6 +992,9 @@ impl serde::Serialize for Invocation {
         }
         if !self.commit_sha.is_empty() {
             struct_ser.serialize_field("commitSha", &self.commit_sha)?;
+        }
+        if let Some(v) = self.generated_at.as_ref() {
+            struct_ser.serialize_field("generatedAt", v)?;
         }
         if !self.id.is_empty() {
             struct_ser.serialize_field("id", &self.id)?;
@@ -1076,6 +1088,8 @@ impl<'de> serde::Deserialize<'de> for Invocation {
             "workspaceId",
             "project_id",
             "projectId",
+            "analysis_id",
+            "analysisId",
             "reference",
             "build_id",
             "buildId",
@@ -1083,6 +1097,8 @@ impl<'de> serde::Deserialize<'de> for Invocation {
             "buildTimestamp",
             "commit_sha",
             "commitSha",
+            "generated_at",
+            "generatedAt",
             "id",
             "qlty_cli_version",
             "qltyCliVersion",
@@ -1129,10 +1145,12 @@ impl<'de> serde::Deserialize<'de> for Invocation {
         enum GeneratedField {
             WorkspaceId,
             ProjectId,
+            AnalysisId,
             Reference,
             BuildId,
             BuildTimestamp,
             CommitSha,
+            GeneratedAt,
             Id,
             QltyCliVersion,
             PluginName,
@@ -1180,10 +1198,12 @@ impl<'de> serde::Deserialize<'de> for Invocation {
                         match value {
                             "workspaceId" | "workspace_id" => Ok(GeneratedField::WorkspaceId),
                             "projectId" | "project_id" => Ok(GeneratedField::ProjectId),
+                            "analysisId" | "analysis_id" => Ok(GeneratedField::AnalysisId),
                             "reference" => Ok(GeneratedField::Reference),
                             "buildId" | "build_id" => Ok(GeneratedField::BuildId),
                             "buildTimestamp" | "build_timestamp" => Ok(GeneratedField::BuildTimestamp),
                             "commitSha" | "commit_sha" => Ok(GeneratedField::CommitSha),
+                            "generatedAt" | "generated_at" => Ok(GeneratedField::GeneratedAt),
                             "id" => Ok(GeneratedField::Id),
                             "qltyCliVersion" | "qlty_cli_version" => Ok(GeneratedField::QltyCliVersion),
                             "pluginName" | "plugin_name" => Ok(GeneratedField::PluginName),
@@ -1229,10 +1249,12 @@ impl<'de> serde::Deserialize<'de> for Invocation {
             {
                 let mut workspace_id__ = None;
                 let mut project_id__ = None;
+                let mut analysis_id__ = None;
                 let mut reference__ = None;
                 let mut build_id__ = None;
                 let mut build_timestamp__ = None;
                 let mut commit_sha__ = None;
+                let mut generated_at__ = None;
                 let mut id__ = None;
                 let mut qlty_cli_version__ = None;
                 let mut plugin_name__ = None;
@@ -1271,6 +1293,12 @@ impl<'de> serde::Deserialize<'de> for Invocation {
                             }
                             project_id__ = Some(map_.next_value()?);
                         }
+                        GeneratedField::AnalysisId => {
+                            if analysis_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("analysisId"));
+                            }
+                            analysis_id__ = Some(map_.next_value()?);
+                        }
                         GeneratedField::Reference => {
                             if reference__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("reference"));
@@ -1294,6 +1322,12 @@ impl<'de> serde::Deserialize<'de> for Invocation {
                                 return Err(serde::de::Error::duplicate_field("commitSha"));
                             }
                             commit_sha__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::GeneratedAt => {
+                            if generated_at__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("generatedAt"));
+                            }
+                            generated_at__ = map_.next_value()?;
                         }
                         GeneratedField::Id => {
                             if id__.is_some() {
@@ -1456,10 +1490,12 @@ impl<'de> serde::Deserialize<'de> for Invocation {
                 Ok(Invocation {
                     workspace_id: workspace_id__.unwrap_or_default(),
                     project_id: project_id__.unwrap_or_default(),
+                    analysis_id: analysis_id__.unwrap_or_default(),
                     reference: reference__.unwrap_or_default(),
                     build_id: build_id__.unwrap_or_default(),
                     build_timestamp: build_timestamp__,
                     commit_sha: commit_sha__.unwrap_or_default(),
+                    generated_at: generated_at__,
                     id: id__.unwrap_or_default(),
                     qlty_cli_version: qlty_cli_version__.unwrap_or_default(),
                     plugin_name: plugin_name__.unwrap_or_default(),
@@ -1504,6 +1540,9 @@ impl serde::Serialize for Issue {
         if !self.project_id.is_empty() {
             len += 1;
         }
+        if !self.analysis_id.is_empty() {
+            len += 1;
+        }
         if !self.id.is_empty() {
             len += 1;
         }
@@ -1523,6 +1562,12 @@ impl serde::Serialize for Issue {
             len += 1;
         }
         if self.analyzed_at.is_some() {
+            len += 1;
+        }
+        if self.generated_at.is_some() {
+            len += 1;
+        }
+        if self.time.is_some() {
             len += 1;
         }
         if !self.tool.is_empty() {
@@ -1613,6 +1658,9 @@ impl serde::Serialize for Issue {
         if !self.project_id.is_empty() {
             struct_ser.serialize_field("projectId", &self.project_id)?;
         }
+        if !self.analysis_id.is_empty() {
+            struct_ser.serialize_field("analysisId", &self.analysis_id)?;
+        }
         if !self.id.is_empty() {
             struct_ser.serialize_field("id", &self.id)?;
         }
@@ -1633,6 +1681,12 @@ impl serde::Serialize for Issue {
         }
         if let Some(v) = self.analyzed_at.as_ref() {
             struct_ser.serialize_field("analyzedAt", v)?;
+        }
+        if let Some(v) = self.generated_at.as_ref() {
+            struct_ser.serialize_field("generatedAt", v)?;
+        }
+        if let Some(v) = self.time.as_ref() {
+            struct_ser.serialize_field("time", v)?;
         }
         if !self.tool.is_empty() {
             struct_ser.serialize_field("tool", &self.tool)?;
@@ -1737,6 +1791,8 @@ impl<'de> serde::Deserialize<'de> for Issue {
             "workspaceId",
             "project_id",
             "projectId",
+            "analysis_id",
+            "analysisId",
             "id",
             "reference",
             "build_id",
@@ -1749,6 +1805,9 @@ impl<'de> serde::Deserialize<'de> for Issue {
             "trackedBranchId",
             "analyzed_at",
             "analyzedAt",
+            "generated_at",
+            "generatedAt",
+            "time",
             "tool",
             "driver",
             "rule_key",
@@ -1793,6 +1852,7 @@ impl<'de> serde::Deserialize<'de> for Issue {
         enum GeneratedField {
             WorkspaceId,
             ProjectId,
+            AnalysisId,
             Id,
             Reference,
             BuildId,
@@ -1800,6 +1860,8 @@ impl<'de> serde::Deserialize<'de> for Issue {
             PullRequestNumber,
             TrackedBranchId,
             AnalyzedAt,
+            GeneratedAt,
+            Time,
             Tool,
             Driver,
             RuleKey,
@@ -1850,6 +1912,7 @@ impl<'de> serde::Deserialize<'de> for Issue {
                         match value {
                             "workspaceId" | "workspace_id" => Ok(GeneratedField::WorkspaceId),
                             "projectId" | "project_id" => Ok(GeneratedField::ProjectId),
+                            "analysisId" | "analysis_id" => Ok(GeneratedField::AnalysisId),
                             "id" => Ok(GeneratedField::Id),
                             "reference" => Ok(GeneratedField::Reference),
                             "buildId" | "build_id" => Ok(GeneratedField::BuildId),
@@ -1857,6 +1920,8 @@ impl<'de> serde::Deserialize<'de> for Issue {
                             "pullRequestNumber" | "pull_request_number" => Ok(GeneratedField::PullRequestNumber),
                             "trackedBranchId" | "tracked_branch_id" => Ok(GeneratedField::TrackedBranchId),
                             "analyzedAt" | "analyzed_at" => Ok(GeneratedField::AnalyzedAt),
+                            "generatedAt" | "generated_at" => Ok(GeneratedField::GeneratedAt),
+                            "time" => Ok(GeneratedField::Time),
                             "tool" => Ok(GeneratedField::Tool),
                             "driver" => Ok(GeneratedField::Driver),
                             "ruleKey" | "rule_key" => Ok(GeneratedField::RuleKey),
@@ -1905,6 +1970,7 @@ impl<'de> serde::Deserialize<'de> for Issue {
             {
                 let mut workspace_id__ = None;
                 let mut project_id__ = None;
+                let mut analysis_id__ = None;
                 let mut id__ = None;
                 let mut reference__ = None;
                 let mut build_id__ = None;
@@ -1912,6 +1978,8 @@ impl<'de> serde::Deserialize<'de> for Issue {
                 let mut pull_request_number__ = None;
                 let mut tracked_branch_id__ = None;
                 let mut analyzed_at__ = None;
+                let mut generated_at__ = None;
+                let mut time__ = None;
                 let mut tool__ = None;
                 let mut driver__ = None;
                 let mut rule_key__ = None;
@@ -1952,6 +2020,12 @@ impl<'de> serde::Deserialize<'de> for Issue {
                                 return Err(serde::de::Error::duplicate_field("projectId"));
                             }
                             project_id__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::AnalysisId => {
+                            if analysis_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("analysisId"));
+                            }
+                            analysis_id__ = Some(map_.next_value()?);
                         }
                         GeneratedField::Id => {
                             if id__.is_some() {
@@ -1994,6 +2068,18 @@ impl<'de> serde::Deserialize<'de> for Issue {
                                 return Err(serde::de::Error::duplicate_field("analyzedAt"));
                             }
                             analyzed_at__ = map_.next_value()?;
+                        }
+                        GeneratedField::GeneratedAt => {
+                            if generated_at__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("generatedAt"));
+                            }
+                            generated_at__ = map_.next_value()?;
+                        }
+                        GeneratedField::Time => {
+                            if time__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("time"));
+                            }
+                            time__ = map_.next_value()?;
                         }
                         GeneratedField::Tool => {
                             if tool__.is_some() {
@@ -2172,6 +2258,7 @@ impl<'de> serde::Deserialize<'de> for Issue {
                 Ok(Issue {
                     workspace_id: workspace_id__.unwrap_or_default(),
                     project_id: project_id__.unwrap_or_default(),
+                    analysis_id: analysis_id__.unwrap_or_default(),
                     id: id__.unwrap_or_default(),
                     reference: reference__.unwrap_or_default(),
                     build_id: build_id__.unwrap_or_default(),
@@ -2179,6 +2266,8 @@ impl<'de> serde::Deserialize<'de> for Issue {
                     pull_request_number: pull_request_number__,
                     tracked_branch_id: tracked_branch_id__,
                     analyzed_at: analyzed_at__,
+                    generated_at: generated_at__,
+                    time: time__,
                     tool: tool__.unwrap_or_default(),
                     driver: driver__.unwrap_or_default(),
                     rule_key: rule_key__.unwrap_or_default(),
@@ -2575,6 +2664,9 @@ impl serde::Serialize for Message {
         if !self.project_id.is_empty() {
             len += 1;
         }
+        if !self.analysis_id.is_empty() {
+            len += 1;
+        }
         if !self.reference.is_empty() {
             len += 1;
         }
@@ -2608,12 +2700,18 @@ impl serde::Serialize for Message {
         if !self.tags.is_empty() {
             len += 1;
         }
+        if self.generated_at.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("qlty.analysis.v1.Message", len)?;
         if !self.workspace_id.is_empty() {
             struct_ser.serialize_field("workspaceId", &self.workspace_id)?;
         }
         if !self.project_id.is_empty() {
             struct_ser.serialize_field("projectId", &self.project_id)?;
+        }
+        if !self.analysis_id.is_empty() {
+            struct_ser.serialize_field("analysisId", &self.analysis_id)?;
         }
         if !self.reference.is_empty() {
             struct_ser.serialize_field("reference", &self.reference)?;
@@ -2650,6 +2748,9 @@ impl serde::Serialize for Message {
         if !self.tags.is_empty() {
             struct_ser.serialize_field("tags", &self.tags)?;
         }
+        if let Some(v) = self.generated_at.as_ref() {
+            struct_ser.serialize_field("generatedAt", v)?;
+        }
         struct_ser.end()
     }
 }
@@ -2664,6 +2765,8 @@ impl<'de> serde::Deserialize<'de> for Message {
             "workspaceId",
             "project_id",
             "projectId",
+            "analysis_id",
+            "analysisId",
             "reference",
             "build_id",
             "buildId",
@@ -2678,12 +2781,15 @@ impl<'de> serde::Deserialize<'de> for Message {
             "details",
             "level",
             "tags",
+            "generated_at",
+            "generatedAt",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             WorkspaceId,
             ProjectId,
+            AnalysisId,
             Reference,
             BuildId,
             BuildTimestamp,
@@ -2695,6 +2801,7 @@ impl<'de> serde::Deserialize<'de> for Message {
             Details,
             Level,
             Tags,
+            GeneratedAt,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -2718,6 +2825,7 @@ impl<'de> serde::Deserialize<'de> for Message {
                         match value {
                             "workspaceId" | "workspace_id" => Ok(GeneratedField::WorkspaceId),
                             "projectId" | "project_id" => Ok(GeneratedField::ProjectId),
+                            "analysisId" | "analysis_id" => Ok(GeneratedField::AnalysisId),
                             "reference" => Ok(GeneratedField::Reference),
                             "buildId" | "build_id" => Ok(GeneratedField::BuildId),
                             "buildTimestamp" | "build_timestamp" => Ok(GeneratedField::BuildTimestamp),
@@ -2729,6 +2837,7 @@ impl<'de> serde::Deserialize<'de> for Message {
                             "details" => Ok(GeneratedField::Details),
                             "level" => Ok(GeneratedField::Level),
                             "tags" => Ok(GeneratedField::Tags),
+                            "generatedAt" | "generated_at" => Ok(GeneratedField::GeneratedAt),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -2750,6 +2859,7 @@ impl<'de> serde::Deserialize<'de> for Message {
             {
                 let mut workspace_id__ = None;
                 let mut project_id__ = None;
+                let mut analysis_id__ = None;
                 let mut reference__ = None;
                 let mut build_id__ = None;
                 let mut build_timestamp__ = None;
@@ -2761,6 +2871,7 @@ impl<'de> serde::Deserialize<'de> for Message {
                 let mut details__ = None;
                 let mut level__ = None;
                 let mut tags__ = None;
+                let mut generated_at__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::WorkspaceId => {
@@ -2774,6 +2885,12 @@ impl<'de> serde::Deserialize<'de> for Message {
                                 return Err(serde::de::Error::duplicate_field("projectId"));
                             }
                             project_id__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::AnalysisId => {
+                            if analysis_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("analysisId"));
+                            }
+                            analysis_id__ = Some(map_.next_value()?);
                         }
                         GeneratedField::Reference => {
                             if reference__.is_some() {
@@ -2843,11 +2960,18 @@ impl<'de> serde::Deserialize<'de> for Message {
                                 map_.next_value::<std::collections::HashMap<_, _>>()?
                             );
                         }
+                        GeneratedField::GeneratedAt => {
+                            if generated_at__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("generatedAt"));
+                            }
+                            generated_at__ = map_.next_value()?;
+                        }
                     }
                 }
                 Ok(Message {
                     workspace_id: workspace_id__.unwrap_or_default(),
                     project_id: project_id__.unwrap_or_default(),
+                    analysis_id: analysis_id__.unwrap_or_default(),
                     reference: reference__.unwrap_or_default(),
                     build_id: build_id__.unwrap_or_default(),
                     build_timestamp: build_timestamp__,
@@ -2859,6 +2983,7 @@ impl<'de> serde::Deserialize<'de> for Message {
                     details: details__.unwrap_or_default(),
                     level: level__.unwrap_or_default(),
                     tags: tags__.unwrap_or_default(),
+                    generated_at: generated_at__,
                 })
             }
         }
@@ -2956,6 +3081,9 @@ impl serde::Serialize for Metadata {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
+        if !self.id.is_empty() {
+            len += 1;
+        }
         if !self.workspace_id.is_empty() {
             len += 1;
         }
@@ -3022,7 +3150,16 @@ impl serde::Serialize for Metadata {
         if self.authored_at.is_some() {
             len += 1;
         }
+        if self.generated_at.is_some() {
+            len += 1;
+        }
+        if self.time.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("qlty.analysis.v1.Metadata", len)?;
+        if !self.id.is_empty() {
+            struct_ser.serialize_field("id", &self.id)?;
+        }
         if !self.workspace_id.is_empty() {
             struct_ser.serialize_field("workspaceId", &self.workspace_id)?;
         }
@@ -3091,6 +3228,12 @@ impl serde::Serialize for Metadata {
         if let Some(v) = self.authored_at.as_ref() {
             struct_ser.serialize_field("authoredAt", v)?;
         }
+        if let Some(v) = self.generated_at.as_ref() {
+            struct_ser.serialize_field("generatedAt", v)?;
+        }
+        if let Some(v) = self.time.as_ref() {
+            struct_ser.serialize_field("time", v)?;
+        }
         struct_ser.end()
     }
 }
@@ -3101,6 +3244,7 @@ impl<'de> serde::Deserialize<'de> for Metadata {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
+            "id",
             "workspace_id",
             "workspaceId",
             "project_id",
@@ -3141,10 +3285,14 @@ impl<'de> serde::Deserialize<'de> for Metadata {
             "authorName",
             "authored_at",
             "authoredAt",
+            "generated_at",
+            "generatedAt",
+            "time",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
+            Id,
             WorkspaceId,
             ProjectId,
             BuildId,
@@ -3167,6 +3315,8 @@ impl<'de> serde::Deserialize<'de> for Metadata {
             AuthorEmail,
             AuthorName,
             AuthoredAt,
+            GeneratedAt,
+            Time,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -3188,6 +3338,7 @@ impl<'de> serde::Deserialize<'de> for Metadata {
                         E: serde::de::Error,
                     {
                         match value {
+                            "id" => Ok(GeneratedField::Id),
                             "workspaceId" | "workspace_id" => Ok(GeneratedField::WorkspaceId),
                             "projectId" | "project_id" => Ok(GeneratedField::ProjectId),
                             "buildId" | "build_id" => Ok(GeneratedField::BuildId),
@@ -3210,6 +3361,8 @@ impl<'de> serde::Deserialize<'de> for Metadata {
                             "authorEmail" | "author_email" => Ok(GeneratedField::AuthorEmail),
                             "authorName" | "author_name" => Ok(GeneratedField::AuthorName),
                             "authoredAt" | "authored_at" => Ok(GeneratedField::AuthoredAt),
+                            "generatedAt" | "generated_at" => Ok(GeneratedField::GeneratedAt),
+                            "time" => Ok(GeneratedField::Time),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -3229,6 +3382,7 @@ impl<'de> serde::Deserialize<'de> for Metadata {
                 where
                     V: serde::de::MapAccess<'de>,
             {
+                let mut id__ = None;
                 let mut workspace_id__ = None;
                 let mut project_id__ = None;
                 let mut build_id__ = None;
@@ -3251,8 +3405,16 @@ impl<'de> serde::Deserialize<'de> for Metadata {
                 let mut author_email__ = None;
                 let mut author_name__ = None;
                 let mut authored_at__ = None;
+                let mut generated_at__ = None;
+                let mut time__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
+                        GeneratedField::Id => {
+                            if id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("id"));
+                            }
+                            id__ = Some(map_.next_value()?);
+                        }
                         GeneratedField::WorkspaceId => {
                             if workspace_id__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("workspaceId"));
@@ -3387,9 +3549,22 @@ impl<'de> serde::Deserialize<'de> for Metadata {
                             }
                             authored_at__ = map_.next_value()?;
                         }
+                        GeneratedField::GeneratedAt => {
+                            if generated_at__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("generatedAt"));
+                            }
+                            generated_at__ = map_.next_value()?;
+                        }
+                        GeneratedField::Time => {
+                            if time__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("time"));
+                            }
+                            time__ = map_.next_value()?;
+                        }
                     }
                 }
                 Ok(Metadata {
+                    id: id__.unwrap_or_default(),
                     workspace_id: workspace_id__.unwrap_or_default(),
                     project_id: project_id__.unwrap_or_default(),
                     build_id: build_id__.unwrap_or_default(),
@@ -3412,6 +3587,8 @@ impl<'de> serde::Deserialize<'de> for Metadata {
                     author_email: author_email__.unwrap_or_default(),
                     author_name: author_name__.unwrap_or_default(),
                     authored_at: authored_at__,
+                    generated_at: generated_at__,
+                    time: time__,
                 })
             }
         }
@@ -3814,6 +3991,9 @@ impl serde::Serialize for Stats {
         if !self.project_id.is_empty() {
             len += 1;
         }
+        if !self.analysis_id.is_empty() {
+            len += 1;
+        }
         if !self.reference.is_empty() {
             len += 1;
         }
@@ -3880,12 +4060,21 @@ impl serde::Serialize for Stats {
         if self.lcom4.is_some() {
             len += 1;
         }
+        if self.generated_at.is_some() {
+            len += 1;
+        }
+        if self.time.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("qlty.analysis.v1.Stats", len)?;
         if !self.workspace_id.is_empty() {
             struct_ser.serialize_field("workspaceId", &self.workspace_id)?;
         }
         if !self.project_id.is_empty() {
             struct_ser.serialize_field("projectId", &self.project_id)?;
+        }
+        if !self.analysis_id.is_empty() {
+            struct_ser.serialize_field("analysisId", &self.analysis_id)?;
         }
         if !self.reference.is_empty() {
             struct_ser.serialize_field("reference", &self.reference)?;
@@ -3957,6 +4146,12 @@ impl serde::Serialize for Stats {
         if let Some(v) = self.lcom4.as_ref() {
             struct_ser.serialize_field("lcom4", v)?;
         }
+        if let Some(v) = self.generated_at.as_ref() {
+            struct_ser.serialize_field("generatedAt", v)?;
+        }
+        if let Some(v) = self.time.as_ref() {
+            struct_ser.serialize_field("time", v)?;
+        }
         struct_ser.end()
     }
 }
@@ -3971,6 +4166,8 @@ impl<'de> serde::Deserialize<'de> for Stats {
             "workspaceId",
             "project_id",
             "projectId",
+            "analysis_id",
+            "analysisId",
             "reference",
             "build_id",
             "buildId",
@@ -4002,12 +4199,16 @@ impl<'de> serde::Deserialize<'de> for Stats {
             "complexity",
             "cyclomatic",
             "lcom4",
+            "generated_at",
+            "generatedAt",
+            "time",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             WorkspaceId,
             ProjectId,
+            AnalysisId,
             Reference,
             BuildId,
             CommitSha,
@@ -4030,6 +4231,8 @@ impl<'de> serde::Deserialize<'de> for Stats {
             Complexity,
             Cyclomatic,
             Lcom4,
+            GeneratedAt,
+            Time,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -4053,6 +4256,7 @@ impl<'de> serde::Deserialize<'de> for Stats {
                         match value {
                             "workspaceId" | "workspace_id" => Ok(GeneratedField::WorkspaceId),
                             "projectId" | "project_id" => Ok(GeneratedField::ProjectId),
+                            "analysisId" | "analysis_id" => Ok(GeneratedField::AnalysisId),
                             "reference" => Ok(GeneratedField::Reference),
                             "buildId" | "build_id" => Ok(GeneratedField::BuildId),
                             "commitSha" | "commit_sha" => Ok(GeneratedField::CommitSha),
@@ -4075,6 +4279,8 @@ impl<'de> serde::Deserialize<'de> for Stats {
                             "complexity" => Ok(GeneratedField::Complexity),
                             "cyclomatic" => Ok(GeneratedField::Cyclomatic),
                             "lcom4" => Ok(GeneratedField::Lcom4),
+                            "generatedAt" | "generated_at" => Ok(GeneratedField::GeneratedAt),
+                            "time" => Ok(GeneratedField::Time),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -4096,6 +4302,7 @@ impl<'de> serde::Deserialize<'de> for Stats {
             {
                 let mut workspace_id__ = None;
                 let mut project_id__ = None;
+                let mut analysis_id__ = None;
                 let mut reference__ = None;
                 let mut build_id__ = None;
                 let mut commit_sha__ = None;
@@ -4118,6 +4325,8 @@ impl<'de> serde::Deserialize<'de> for Stats {
                 let mut complexity__ = None;
                 let mut cyclomatic__ = None;
                 let mut lcom4__ = None;
+                let mut generated_at__ = None;
+                let mut time__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::WorkspaceId => {
@@ -4131,6 +4340,12 @@ impl<'de> serde::Deserialize<'de> for Stats {
                                 return Err(serde::de::Error::duplicate_field("projectId"));
                             }
                             project_id__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::AnalysisId => {
+                            if analysis_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("analysisId"));
+                            }
+                            analysis_id__ = Some(map_.next_value()?);
                         }
                         GeneratedField::Reference => {
                             if reference__.is_some() {
@@ -4286,11 +4501,24 @@ impl<'de> serde::Deserialize<'de> for Stats {
                                 map_.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
+                        GeneratedField::GeneratedAt => {
+                            if generated_at__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("generatedAt"));
+                            }
+                            generated_at__ = map_.next_value()?;
+                        }
+                        GeneratedField::Time => {
+                            if time__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("time"));
+                            }
+                            time__ = map_.next_value()?;
+                        }
                     }
                 }
                 Ok(Stats {
                     workspace_id: workspace_id__.unwrap_or_default(),
                     project_id: project_id__.unwrap_or_default(),
+                    analysis_id: analysis_id__.unwrap_or_default(),
                     reference: reference__.unwrap_or_default(),
                     build_id: build_id__.unwrap_or_default(),
                     commit_sha: commit_sha__.unwrap_or_default(),
@@ -4313,6 +4541,8 @@ impl<'de> serde::Deserialize<'de> for Stats {
                     complexity: complexity__,
                     cyclomatic: cyclomatic__,
                     lcom4: lcom4__,
+                    generated_at: generated_at__,
+                    time: time__,
                 })
             }
         }

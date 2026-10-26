@@ -3,7 +3,10 @@ use core::fmt;
 use std::sync::Arc;
 use tree_sitter::{Node, Parser, Query};
 
+mod c;
+mod cpp;
 mod csharp;
+mod elixir;
 mod go;
 mod java;
 mod javascript;
@@ -12,14 +15,16 @@ mod php;
 mod python;
 mod ruby;
 mod rust;
+mod scala;
 mod swift;
 mod tsx;
 mod typescript;
 mod typescript_common;
+mod vbnet;
 
 pub use {
-    csharp::*, go::*, java::*, javascript::*, kotlin::*, php::*, python::*, ruby::*, rust::*,
-    swift::*, tsx::*, typescript::*,
+    c::*, cpp::*, csharp::*, elixir::*, go::*, java::*, javascript::*, kotlin::*, php::*,
+    python::*, ruby::*, rust::*, scala::*, swift::*, tsx::*, typescript::*, vbnet::*,
 };
 
 #[allow(clippy::borrowed_box)]
@@ -32,7 +37,10 @@ use lazy_static::lazy_static;
 lazy_static! {
     pub static ref ALL_LANGS: Vec<Box<dyn Language + Sync>> = {
         vec![
+            Box::<c::C>::default(),
+            Box::<cpp::Cpp>::default(),
             Box::<csharp::CSharp>::default(),
+            Box::<elixir::Elixir>::default(),
             Box::<php::Php>::default(),
             Box::<kotlin::Kotlin>::default(),
             Box::<go::Go>::default(),
@@ -41,9 +49,11 @@ lazy_static! {
             Box::<python::Python>::default(),
             Box::<ruby::Ruby>::default(),
             Box::<rust::Rust>::default(),
+            Box::<scala::Scala>::default(),
             Box::<swift::Swift>::default(),
             Box::<typescript::TypeScript>::default(),
             Box::<tsx::TSX>::default(),
+            Box::<vbnet::VBNet>::default(),
         ]
     };
 }
@@ -92,6 +102,29 @@ pub trait Language {
     }
 
     fn boolean_operator_nodes(&self) -> Vec<&str>;
+
+    /// The operator text for a node dispatched through `binary_nodes`.
+    fn binary_operator(&self, node: &Node, source_file: &File) -> Option<String> {
+        let operator = node.child_by_field_name("operator").or_else(|| {
+            // Kotlin has no operator field. Skip named operands and comments.
+            node.children(&mut node.walk())
+                .find(|child| !child.is_named())
+        })?;
+        Some(node_source(&operator, source_file))
+    }
+
+    /// Binary operators that conditionally evaluate their right operand.
+    /// These add a path to cyclomatic complexity. Override for languages with
+    /// eager boolean operators, alternative spellings, or null coalescing.
+    fn short_circuit_operators(&self) -> Vec<&str> {
+        self.boolean_operator_nodes()
+    }
+
+    /// The kind `Visitor` dispatches on. Elixir overrides this because its grammar gives
+    /// `def`, `if` and `case` the same node kind, separable only from source text.
+    fn dispatch_node_kind(&self, node: &Node, _source_file: &File) -> &'static str {
+        node.kind()
+    }
 
     fn constructor_names(&self) -> Vec<&str> {
         vec![]
@@ -163,9 +196,11 @@ pub trait Language {
 
     fn sanitize_parameter_name(&self, parameter_name: String) -> Option<String> {
         if let Some(self_keyword) = self.self_keyword() {
-            if parameter_name != self_keyword
-                && parameter_name != format!("&{}", self_keyword)
-                && parameter_name != format!("&mut {}", self_keyword)
+            let normalized_param = self.normalize_identifier(&parameter_name);
+            let normalized_self = self.normalize_identifier(self_keyword);
+            if normalized_param != normalized_self
+                && normalized_param != self.normalize_identifier(&format!("&{self_keyword}"))
+                && normalized_param != self.normalize_identifier(&format!("&mut {self_keyword}"))
             {
                 Some(parameter_name)
             } else {
@@ -198,6 +233,15 @@ pub trait Language {
     fn function_name_node<'a>(&'a self, node: &'a Node) -> Node<'a> {
         node.child_by_field_name("name").unwrap()
     }
+
+    fn function_name_from_node(&self, source_file: &File, node: &Node) -> String {
+        let name_node = self.function_name_node(node);
+        node_source(&name_node, source_file)
+    }
+
+    fn normalize_identifier(&self, name: &str) -> String {
+        name.to_string()
+    }
 }
 
 impl fmt::Display for dyn Language {
@@ -228,5 +272,25 @@ mod test {
     #[test]
     fn language_parser() {
         crate::lang::Rust::default().parser();
+    }
+
+    #[test]
+    fn dispatch_node_kind_defaults_to_tree_sitter_kind() {
+        let source_file = crate::code::File::from_string("rust", "fn main() { if x {} }");
+        let tree = source_file.parse();
+        let root = tree.root_node();
+        let language = crate::lang::from_str("rust").unwrap();
+        assert_eq!(
+            language.dispatch_node_kind(&root, &source_file),
+            root.kind()
+        );
+    }
+
+    #[test]
+    fn default_normalize_identifier_is_noop() {
+        let rust = crate::lang::Rust::default();
+        assert_eq!(rust.normalize_identifier("Foo"), "Foo");
+        assert_eq!(rust.normalize_identifier("bar"), "bar");
+        assert_eq!(rust.normalize_identifier("BazQux"), "BazQux");
     }
 }

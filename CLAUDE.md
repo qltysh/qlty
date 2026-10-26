@@ -21,6 +21,7 @@
 - Comprehensive error handling with proper context using `context()` or `with_context()`
 - Use descriptive variable names that clearly express intent
 - Do not add low value comments, let the code speak for itself unless there is something non-obvious
+- Do not remove or modify existing comments unless explicitly asked to
 
 ## Testing
 

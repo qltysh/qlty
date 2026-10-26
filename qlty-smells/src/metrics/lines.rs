@@ -1,7 +1,6 @@
 use qlty_analysis::code::File;
 use qlty_analysis::code::NodeFilter;
 use qlty_analysis::code::Visitor;
-use qlty_analysis::Language;
 use serde::Serialize;
 use std::collections::HashSet;
 use std::ops::{Add, AddAssign};
@@ -31,16 +30,21 @@ struct LinesProcessor<'a> {
     code_lines: HashSet<usize>,
     comment_lines: HashSet<usize>,
     filter: &'a NodeFilter,
+    first_line: usize,
+    last_line: usize,
 }
 
 impl<'a> LinesProcessor<'a> {
     pub fn new(source_file: &'a File, node: &Node, filter: &'a NodeFilter) -> Self {
         // If the node is the root node, we want to count all lines in the file
-        let total_line_count = if node.parent().is_none() {
-            source_file.contents.lines().count()
+        let (first_line, last_line, total_line_count) = if node.parent().is_none() {
+            let total = source_file.contents.lines().count();
+            (1, total.max(1), total)
         } else {
             let range = node.range();
-            range.end_point.row - range.start_point.row + 1
+            let first = range.start_point.row + 1;
+            let last = range.end_point.row + 1;
+            (first, last, last - first + 1)
         };
 
         Self {
@@ -54,7 +58,13 @@ impl<'a> LinesProcessor<'a> {
             comment_lines: HashSet::new(),
             source_file,
             filter,
+            first_line,
+            last_line,
         }
+    }
+
+    fn clamp(&self, line: usize) -> usize {
+        line.clamp(self.first_line, self.last_line)
     }
 
     fn calculate(&mut self) {
@@ -63,26 +73,29 @@ impl<'a> LinesProcessor<'a> {
 
         self.lines.code_lines = self.code_lines.len();
         self.lines.comment_lines = self.comment_lines.len();
-        self.lines.blank_lines =
-            self.lines.total - self.lines.code_lines - self.lines.comment_lines;
+        self.lines.blank_lines = self
+            .lines
+            .total
+            .saturating_sub(self.lines.code_lines)
+            .saturating_sub(self.lines.comment_lines);
 
-        assert_eq!(
+        debug_assert_eq!(
             self.lines.total,
             self.lines.code_lines + self.lines.comment_lines + self.lines.blank_lines
         );
     }
 
     fn record_node(&mut self, node: &Node) {
-        let start_line = node.range().start_point.row + 1;
-        let end_line = node.range().end_point.row + 1;
+        let start_line = self.clamp(node.range().start_point.row + 1);
+        let end_line = self.clamp(node.range().end_point.row + 1);
 
         self.code_lines.insert(start_line);
         self.code_lines.insert(end_line);
     }
 
     fn record_string(&mut self, node: &Node) {
-        let start_line = node.range().start_point.row + 1;
-        let end_line = node.range().end_point.row + 1;
+        let start_line = self.clamp(node.range().start_point.row + 1);
+        let end_line = self.clamp(node.range().end_point.row + 1);
 
         for line in start_line..=end_line {
             self.code_lines.insert(line);
@@ -90,8 +103,8 @@ impl<'a> LinesProcessor<'a> {
     }
 
     fn record_comment(&mut self, node: &Node) {
-        let start_line = node.range().start_point.row + 1;
-        let end_line = node.range().end_point.row + 1;
+        let start_line = self.clamp(node.range().start_point.row + 1);
+        let end_line = self.clamp(node.range().end_point.row + 1);
 
         for line in start_line..=end_line {
             self.comment_lines.insert(line);
@@ -100,8 +113,8 @@ impl<'a> LinesProcessor<'a> {
 }
 
 impl Visitor for LinesProcessor<'_> {
-    fn language(&self) -> &Box<dyn Language + Sync> {
-        self.source_file.language()
+    fn source_file(&self) -> &File {
+        self.source_file
     }
 
     fn skip_node(&self, node: &Node) -> bool {
@@ -221,6 +234,29 @@ impl AddAssign for Lines {
 mod test {
     use super::*;
 
+    mod csharp {
+        use super::*;
+
+        #[test]
+        fn end_row_past_eof_is_clamped() {
+            let source_file = File::from_string(
+                "csharp",
+                "namespace Demo\n{\n    public class Foo\n    {\n    }\n}\n",
+            );
+            let lines = Lines::for_node(
+                &source_file,
+                &source_file.parse().root_node(),
+                &NodeFilter::empty(),
+            );
+
+            assert_eq!(lines.total, 6);
+            assert_eq!(
+                lines.code_lines + lines.comment_lines + lines.blank_lines,
+                lines.total
+            );
+        }
+    }
+
     mod python {
         use super::*;
 
@@ -303,6 +339,50 @@ mod test {
             comment_lines: 2
             blank_lines: 1
             ");
+        }
+    }
+
+    mod elixir {
+        use super::*;
+
+        fn lines(source: &str) -> Lines {
+            let source_file = File::from_string("elixir", source);
+            Lines::for_node(
+                &source_file,
+                &source_file.parse().root_node(),
+                &NodeFilter::empty(),
+            )
+        }
+
+        #[test]
+        fn empty_file_has_no_code_lines() {
+            assert_eq!(0, lines("").code_lines);
+        }
+
+        #[test]
+        fn comments_only_file_counts_comment_lines() {
+            let result = lines("# one\n# two\n\n# three\n");
+            assert_eq!(3, result.comment_lines);
+            assert_eq!(0, result.code_lines);
+        }
+
+        #[test]
+        fn heredocs_sigils_and_charlists_are_string_content() {
+            let result = lines("defmodule M do\n  @moduledoc \"\"\"\n  doc\n  \"\"\"\n  def a, do: ~s(hi)\n  def b, do: ~w[a b]\n  def c, do: ~c\"chars\"\nend\n");
+            assert_eq!(0, result.comment_lines);
+            assert_eq!(8, result.code_lines);
+        }
+
+        #[test]
+        fn multibyte_source_does_not_panic() {
+            let result =
+                lines("defmodule M do\n  @moduledoc \"emoji 🎉 docs\"\n  def ola, do: :olá\nend\n");
+            assert_eq!(4, result.total);
+        }
+
+        #[test]
+        fn malformed_source_does_not_panic() {
+            let _ = lines("defmodule do :::: end");
         }
     }
 }

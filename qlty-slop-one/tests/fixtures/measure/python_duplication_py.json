@@ -1,0 +1,135 @@
+{
+ "name": "python_duplication.py",
+ "suffix": ".py",
+ "language": "Python",
+ "text": "import json\n\n\ndef load_users(path):\n    with open(path) as handle:\n        records = json.load(handle)\n    users = []\n    for record in records:\n        name = record.get(\"name\", \"\")\n        email = record.get(\"email\", \"\")\n        age = record.get(\"age\", 0)\n        if not name:\n            continue\n        if not email:\n            continue\n        if age < 0:\n            continue\n        users.append({\"name\": name, \"email\": email, \"age\": age})\n    return users\n\n\ndef load_admins(path):\n    with open(path) as handle:\n        records = json.load(handle)\n    admins = []\n    for record in records:\n        name = record.get(\"name\", \"\")\n        email = record.get(\"email\", \"\")\n        age = record.get(\"age\", 0)\n        if not name:\n            continue\n        if not email:\n            continue\n        if age < 0:\n            continue\n        admins.append({\"name\": name, \"email\": email, \"age\": age})\n    return admins\n\n\ndef load_guests(path):\n    with open(path) as handle:\n        records = json.load(handle)\n    guests = []\n    for record in records:\n        title = record.get(\"title\", \"\")\n        contact = record.get(\"contact\", \"\")\n        years = record.get(\"years\", 0)\n        if not title:\n            continue\n        if not contact:\n            continue\n        if years < 0:\n            continue\n        guests.append({\"title\": title, \"contact\": contact, \"years\": years})\n    return guests\n",
+ "values": [
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.6931471805599453,
+  1.8181818181818181,
+  2.833213344056216,
+  0.8727272727272727
+ ],
+ "summary": {
+  "boolean-logic": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 4,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Boolean depth"
+  },
+  "nested-control-flow": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 5,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Nesting depth"
+  },
+  "function-parameters": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 6,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Parameters"
+  },
+  "return-statements": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 6,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Return statements"
+  },
+  "file-complexity": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 50,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Cyclomatic complexity"
+  },
+  "function-complexity": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 18,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Cyclomatic complexity"
+  },
+  "identical-code": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 15,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Duplicated lines"
+  },
+  "similar-code": {
+   "count": 1,
+   "max_magnitude": 16.0,
+   "covered_lines": 48,
+   "locations": [
+    {
+     "start_line": 4,
+     "end_line": 19
+    },
+    {
+     "start_line": 22,
+     "end_line": 37
+    },
+    {
+     "start_line": 40,
+     "end_line": 55
+    }
+   ],
+   "max_actual": 16.0,
+   "threshold": 15,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Duplicated lines"
+  }
+ }
+}

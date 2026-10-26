@@ -24,6 +24,10 @@
         "endByte": 109
       }
     },
+    "properties": {
+      [..]
+      [..]
+    },
     "mode": "MODE_BLOCK"
   }
 ]

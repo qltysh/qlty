@@ -1,17 +1,30 @@
 {
   "metadata": {
+    "id": "[..]",
     "buildId": "[..]",
     "result": "ANALYSIS_RESULT_SUCCESS",
     "filesAnalyzed": 53,
     "startTime": "[..]",
-    "finishTime": "[..]"
+    "finishTime": "[..]",
+    "commitMessage": "initial/n",
+    "committedAt": "2024-01-01T00:00:00+00:00",
+    "committerEmail": "test@codeclimate.com",
+    "committerName": "TEST",
+    "authorEmail": "test@codeclimate.com",
+    "authorName": "TEST",
+    "authoredAt": "2024-01-01T00:00:00+00:00",
+    "generatedAt": "[..]",
+    "time": "[..]"
   },
   "messages": [],
   "invocations": [],
   "issues": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "identical-code",
@@ -47,12 +60,17 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "identical-code",
@@ -88,12 +106,17 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "identical-code",
@@ -129,12 +152,17 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "identical-code",
@@ -170,12 +198,17 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "similar-code",
@@ -211,12 +244,17 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "similar-code",
@@ -252,12 +290,17 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "file-complexity",
@@ -281,14 +324,21 @@
           "endByte": 723
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "file.path": "FileComplexity.swift"
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "file-complexity",
@@ -312,14 +362,21 @@
           "endByte": 821
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "file.path": "NestedControl.swift"
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "file-complexity",
@@ -343,14 +400,21 @@
           "endByte": 719
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "file.path": "file_complexity.swift"
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "file-complexity",
@@ -374,14 +438,21 @@
           "endByte": 821
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "file.path": "nested_control.swift"
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-complexity",
@@ -405,14 +476,21 @@
           "endByte": 723
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "main"
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-complexity",
@@ -436,14 +514,21 @@
           "endByte": 821
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "f2"
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-complexity",
@@ -467,14 +552,21 @@
           "endByte": 624
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "multipleConditions"
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-complexity",
@@ -498,14 +590,21 @@
           "endByte": 719
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "main"
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-complexity",
@@ -529,14 +628,21 @@
           "endByte": 821
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "f2"
       },
-      "mode": "MODE_COMMENT"
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -559,11 +665,18 @@
           "endByte": 673
         }
       },
-      "mode": "MODE_COMMENT"
+      "properties": {
+        [..]
+        [..]
+      },
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -586,11 +699,18 @@
           "endByte": 291
         }
       },
-      "mode": "MODE_COMMENT"
+      "properties": {
+        [..]
+        [..]
+      },
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -613,11 +733,18 @@
           "endByte": 819
         }
       },
-      "mode": "MODE_COMMENT"
+      "properties": {
+        [..]
+        [..]
+      },
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -640,11 +767,18 @@
           "endByte": 669
         }
       },
-      "mode": "MODE_COMMENT"
+      "properties": {
+        [..]
+        [..]
+      },
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -667,11 +801,18 @@
           "endByte": 287
         }
       },
-      "mode": "MODE_COMMENT"
+      "properties": {
+        [..]
+        [..]
+      },
+      "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -694,11 +835,16 @@
           "endByte": 819
         }
       },
-      "mode": "MODE_COMMENT"
+      "properties": {
+        [..]
+        [..]
+      },
+      "mode": "MODE_BLOCK"
     }
   ],
   "stats": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "BooleanLogic.swift",
@@ -716,9 +862,12 @@
       "blankLines": 3,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "FileComplexity.swift",
@@ -736,9 +885,12 @@
       "blankLines": 0,
       "complexity": 55,
       "cyclomatic": 11,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "FunctionComplexity.swift",
@@ -756,9 +908,12 @@
       "blankLines": 1,
       "complexity": 15,
       "cyclomatic": 6,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Identical.swift",
@@ -776,9 +931,12 @@
       "blankLines": 6,
       "complexity": 8,
       "cyclomatic": 7,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Lines.swift",
@@ -796,9 +954,12 @@
       "blankLines": 10,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "NestedControl.swift",
@@ -816,9 +977,12 @@
       "blankLines": 2,
       "complexity": 65,
       "cyclomatic": 15,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Returns.swift",
@@ -836,9 +1000,12 @@
       "blankLines": 4,
       "complexity": 10,
       "cyclomatic": 7,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "SwiftClosures.swift",
@@ -856,9 +1023,12 @@
       "blankLines": 9,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "SwiftEnums.swift",
@@ -876,9 +1046,12 @@
       "blankLines": 6,
       "complexity": 2,
       "cyclomatic": 7,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "SwiftExtensions.swift",
@@ -896,9 +1069,12 @@
       "blankLines": 6,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "SwiftProtocols.swift",
@@ -916,9 +1092,12 @@
       "blankLines": 8,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "SwiftStructs.swift",
@@ -936,9 +1115,12 @@
       "blankLines": 16,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "boolean_logic.swift",
@@ -956,9 +1138,12 @@
       "blankLines": 2,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "class_example.swift",
@@ -976,9 +1161,12 @@
       "blankLines": 4,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CountConditionalAssignment.swift",
@@ -996,9 +1184,12 @@
       "blankLines": 2,
       "complexity": 2,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CountFunctionWithTernary.swift",
@@ -1016,9 +1207,12 @@
       "blankLines": 1,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CountNonSequentialLogicalOperators.swift",
@@ -1036,9 +1230,12 @@
       "blankLines": 1,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CountRecursion.swift",
@@ -1056,9 +1253,12 @@
       "blankLines": 1,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "MultipleConditionals.swift",
@@ -1076,9 +1276,12 @@
       "blankLines": 1,
       "complexity": 19,
       "cyclomatic": 8,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloBasic.swift",
@@ -1096,9 +1299,12 @@
       "blankLines": 1,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloIf.swift",
@@ -1116,9 +1322,12 @@
       "blankLines": 1,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloIfElse.swift",
@@ -1136,9 +1345,12 @@
       "blankLines": 1,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloIfElseIf.swift",
@@ -1156,9 +1368,12 @@
       "blankLines": 1,
       "complexity": 3,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloIfElseIfElse.swift",
@@ -1176,9 +1391,12 @@
       "blankLines": 1,
       "complexity": 3,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "EmptyFunction.swift",
@@ -1196,9 +1414,12 @@
       "blankLines": 1,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "EmptyIf.swift",
@@ -1216,9 +1437,12 @@
       "blankLines": 1,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "IfWithBool.swift",
@@ -1236,9 +1460,12 @@
       "blankLines": 1,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "IterativeForOf.swift",
@@ -1256,9 +1483,12 @@
       "blankLines": 2,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "IterativeMap.swift",
@@ -1276,9 +1506,12 @@
       "blankLines": 3,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "IterativeMethodsWithFilterAndInclude.swift",
@@ -1296,9 +1529,12 @@
       "blankLines": 3,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "WhileLoop.swift",
@@ -1316,9 +1552,12 @@
       "blankLines": 2,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "ClassDeclaration.swift",
@@ -1336,9 +1575,12 @@
       "blankLines": 4,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "GetterSetterDeclaration.swift",
@@ -1356,9 +1598,12 @@
       "blankLines": 4,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Multiple.swift",
@@ -1376,9 +1621,12 @@
       "blankLines": 1,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Other.swift",
@@ -1396,9 +1644,12 @@
       "blankLines": 5,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "PrivateFieldDeclaration.swift",
@@ -1416,9 +1667,12 @@
       "blankLines": 3,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "PublicFieldDeclaration.swift",
@@ -1436,9 +1690,12 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Read.swift",
@@ -1456,9 +1713,12 @@
       "blankLines": 3,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "StaticFieldDeclaration.swift",
@@ -1476,9 +1736,12 @@
       "blankLines": 3,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Unique.swift",
@@ -1496,9 +1759,12 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Write.swift",
@@ -1516,9 +1782,12 @@
       "blankLines": 3,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "file_complexity.swift",
@@ -1536,9 +1805,12 @@
       "blankLines": 0,
       "complexity": 55,
       "cyclomatic": 11,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "function_complexity.swift",
@@ -1556,9 +1828,12 @@
       "blankLines": 1,
       "complexity": 15,
       "cyclomatic": 6,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "MethodsWithParams.swift",
@@ -1576,9 +1851,12 @@
       "blankLines": 5,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "MethodsWithoutParams.swift",
@@ -1596,9 +1874,12 @@
       "blankLines": 5,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "SingletonMethodsWithParams.swift",
@@ -1616,9 +1897,12 @@
       "blankLines": 5,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "SingletonMethodsWithoutParams.swift",
@@ -1636,9 +1920,12 @@
       "blankLines": 5,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 2
+      "lcom4": 2,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_0.swift",
@@ -1656,9 +1943,12 @@
       "blankLines": 7,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_1-1.swift",
@@ -1676,9 +1966,12 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_1.swift",
@@ -1696,9 +1989,12 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_2.swift",
@@ -1716,9 +2012,12 @@
       "blankLines": 9,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 2
+      "lcom4": 2,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "nested_control.swift",
@@ -1736,9 +2035,12 @@
       "blankLines": 2,
       "complexity": 65,
       "cyclomatic": 15,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "parameters.swift",
@@ -1756,9 +2058,12 @@
       "blankLines": 4,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cognitive",
@@ -1775,9 +2080,12 @@
       "blankLines": 6,
       "complexity": 23,
       "cyclomatic": 16,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclomatic",
@@ -1794,9 +2102,12 @@
       "blankLines": 18,
       "complexity": 12,
       "cyclomatic": 22,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "fields",
@@ -1813,9 +2124,12 @@
       "blankLines": 30,
       "complexity": 0,
       "cyclomatic": 10,
-      "lcom4": 2
+      "lcom4": 2,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "functions",
@@ -1832,9 +2146,12 @@
       "blankLines": 20,
       "complexity": 2,
       "cyclomatic": 6,
-      "lcom4": 4
+      "lcom4": 4,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom",
@@ -1851,7 +2168,9 @@
       "blankLines": 20,
       "complexity": 0,
       "cyclomatic": 4,
-      "lcom4": 3
+      "lcom4": 3,
+      "generatedAt": "[..]",
+      "time": "[..]"
     }
   ]
 }

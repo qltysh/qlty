@@ -1,5 +1,4 @@
 use crate::code::{File, Visitor};
-use crate::lang::Language;
 use tree_sitter::{Node, TreeCursor};
 
 pub struct NodeCounter<'a> {
@@ -9,8 +8,8 @@ pub struct NodeCounter<'a> {
 }
 
 impl Visitor for NodeCounter<'_> {
-    fn language(&self) -> &Box<dyn Language + Sync> {
-        self.source_file.language()
+    fn source_file(&self) -> &File {
+        self.source_file
     }
 
     fn process_node(&mut self, cursor: &mut TreeCursor) {

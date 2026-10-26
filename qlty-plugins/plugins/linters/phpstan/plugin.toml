@@ -21,3 +21,11 @@ batch = true
 suggested = "config"
 output_missing = "error"
 copy_configs_into_tool_install = true
+
+[[plugins.definitions.phpstan.environment]]
+name = "TMPDIR"
+value = "${cachedir}"
+
+[[plugins.definitions.phpstan.environment]]
+name = "TMP"
+value = "${cachedir}"

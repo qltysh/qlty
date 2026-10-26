@@ -8,11 +8,13 @@ use clap::Args;
 use console::style;
 use indicatif::HumanBytes;
 use num_format::{Locale, ToFormattedString as _};
+use qlty_config::QltyConfig;
 use qlty_coverage::formats::Formats;
 use qlty_coverage::print::{print_report_as_json, print_report_as_text};
 use qlty_coverage::publish::{Plan, Planner, Processor, Reader, Report, Settings, Upload};
 use qlty_coverage::token::load_auth_token;
 use qlty_coverage::validate::{ValidationStatus, Validator};
+use qlty_coverage::{ExclusionStrategy, JavaSrcDirFinder};
 use std::io::Write as _;
 use std::path::PathBuf;
 use std::time::Instant;
@@ -33,6 +35,11 @@ pub struct Publish {
     /// The format of the coverage report to transform.
     /// If not specified, the format will be inferred from the file extension or contents.
     pub format: Option<Formats>,
+
+    #[arg(long, hide = true)]
+    /// Automatically discover Java/Kotlin source directories (e.g., src/main/java/, src/main/kotlin/)
+    /// and use them to resolve file paths in coverage reports.
+    pub discover_java_src_dirs: bool,
 
     #[arg(long, hide = true)]
     pub output_dir: Option<PathBuf>,
@@ -142,6 +149,17 @@ pub struct Publish {
     /// The server will merge the uploads into a single report when qlty coverage complete is called.
     pub incomplete: bool,
 
+    #[arg(long)]
+    /// Mark this upload as coming from a selected subset of the test suite —
+    /// e.g. only the tests affected by a pull request's changes. Selected
+    /// coverage contributes to diff coverage only and is excluded from total
+    /// coverage.
+    pub selection: bool,
+
+    /// Skip fetching sources before publishing. Requires sources to be cached locally.
+    #[arg(long)]
+    pub skip_source_fetch: bool,
+
     // Paths to coverage reports
     pub paths: Vec<String>,
 }
@@ -158,7 +176,9 @@ impl Publish {
         print_initial_messages(self.quiet);
         self.print_deprecation_warnings();
 
-        let settings = self.build_settings();
+        let config = load_config(self.skip_source_fetch);
+        let settings = self.build_settings(&config)?;
+        self.print_settings_warnings(&settings);
 
         self.print_section_header(" SETTINGS ");
         print_settings(&settings);
@@ -170,7 +190,7 @@ impl Publish {
             load_auth_token(&self.token, self.project.as_deref())?
         };
 
-        let plan = Planner::new(&load_config(), &settings).compute()?;
+        let plan = Planner::new(&config, &settings).compute()?;
 
         self.validate_plan(&plan)?;
 
@@ -181,7 +201,7 @@ impl Publish {
         let results = Reader::new(&plan).read()?;
         let mut report = Processor::new(&plan, results).compute()?;
 
-        self.print_coverage_data(&report);
+        self.print_coverage_data(&report, &config)?;
 
         if self.print {
             self.show_report(&report)?;
@@ -238,16 +258,32 @@ impl Publish {
         eprintln!();
     }
 
-    fn build_settings(&self) -> Settings {
+    fn build_settings(&self, config: &QltyConfig) -> Result<Settings> {
         let format = Self::coalesce_args(&self.format, &self.report_format);
         let add_prefix = Self::coalesce_args(&self.add_prefix, &self.transform_add_prefix);
         let strip_prefix = Self::coalesce_args(&self.strip_prefix, &self.transform_strip_prefix);
 
         let incomplete: bool = self.incomplete || self.total_parts_count.unwrap_or(1) > 1;
 
-        Settings {
+        let root = std::env::current_dir()?;
+        let java_src_dirs = if self.discover_java_src_dirs {
+            let exclusion_strategy = if config.exclude_patterns.is_empty() {
+                ExclusionStrategy::DefaultHeuristics
+            } else {
+                ExclusionStrategy::UserDefined(config.exclude_patterns.clone())
+            };
+            let finder = JavaSrcDirFinder::new(root.clone(), exclusion_strategy);
+            finder.find()?
+        } else {
+            Vec::new()
+        };
+
+        Ok(Settings {
             add_prefix,
             dry_run: self.dry_run,
+            discover_java_src_dirs: self.discover_java_src_dirs,
+            root,
+            java_src_dirs,
             incomplete,
             name: self.name.clone(),
             output_dir: self.output_dir.clone(),
@@ -265,7 +301,8 @@ impl Publish {
             strip_prefix,
             tag: self.tag.clone(),
             total_parts_count: self.total_parts_count,
-        }
+            selection: self.selection.then(|| "selected".to_string()),
+        })
     }
 
     fn print_deprecation_warnings(&self) {
@@ -286,6 +323,21 @@ impl Publish {
         }
         if self.validate {
             eprintln!("WARNING: --validate is deprecated, validation is now enabled by default. Use --no-validate to disable validation\n");
+        }
+    }
+
+    fn print_settings_warnings(&self, settings: &Settings) {
+        if self.quiet {
+            return;
+        }
+
+        if settings.discover_java_src_dirs
+            && !settings.java_src_dirs.is_empty()
+            && std::env::var("JACOCO_SOURCE_PATH").is_ok()
+        {
+            eprintln!("WARNING: Both --discover-java-src-dirs and JACOCO_SOURCE_PATH are set.");
+            eprintln!("JACOCO_SOURCE_PATH applies during JaCoCo parsing.");
+            eprintln!("--discover-java-src-dirs applies to all formats during processing.\n");
         }
     }
 
@@ -386,14 +438,41 @@ impl Publish {
         eprintln!();
     }
 
-    fn print_coverage_data(&self, report: &Report) {
+    fn print_coverage_data(&self, report: &Report, config: &QltyConfig) -> Result<()> {
         if self.quiet {
-            return;
+            return Ok(());
         }
 
         self.print_section_header(" COVERAGE DATA ");
-
+        if report.auto_path_fixing_enabled {
+            eprintln!("    Auto-path fixing: Enabled");
+        }
         let total_files_count = report.found_files.len() + report.missing_files.len();
+
+        if report.excluded_files_count > 0 {
+            eprintln!(
+                "    WARNING: {} code file {} excluded by configuration rules",
+                report.excluded_files_count.to_formatted_string(&Locale::en),
+                if report.excluded_files_count == 1 {
+                    "path was"
+                } else {
+                    "paths were"
+                }
+            );
+            eprintln!();
+
+            if let Some(ignores) = &config.coverage.ignores {
+                eprintln!("    Configured ignore patterns:");
+                for pattern in ignores {
+                    eprintln!("      {}", pattern);
+                }
+                eprintln!();
+            }
+        }
+
+        if total_files_count == 0 {
+            bail!("    ERROR: No code file paths remain in the coverage data.");
+        }
 
         eprintln!(
             "    {} unique code file {}",
@@ -404,18 +483,6 @@ impl Publish {
                 "paths"
             }
         );
-
-        if report.excluded_files_count > 0 {
-            eprintln!(
-                "    WARNING: {} {} excluded",
-                report.excluded_files_count.to_formatted_string(&Locale::en),
-                if report.excluded_files_count == 1 {
-                    "path"
-                } else {
-                    "paths"
-                }
-            );
-        }
 
         let mut missing_files = report.missing_files.iter().collect::<Vec<_>>();
         missing_files.sort();
@@ -485,10 +552,14 @@ impl Publish {
             );
 
             eprintln!();
-        } else {
+        } else if total_files_count > 0 {
             eprintln!(
                 "    {}",
-                style("All code files in the coverage data were found on disk.").dim()
+                style(format!(
+                    "All code files in the coverage data were found on disk (count: {}).",
+                    total_files_count.to_formatted_string(&Locale::en)
+                ))
+                .dim()
             );
         }
 
@@ -522,6 +593,7 @@ impl Publish {
             .bold()
         );
         eprintln!();
+        Ok(())
     }
 
     fn print_export_status(&self, export_path: &Option<PathBuf>) {

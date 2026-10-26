@@ -1,5 +1,5 @@
 use crate::commands::*;
-use crate::commands::{auth, cache, config, plugins};
+use crate::commands::{auth, cache, config, plugins, sources};
 use crate::{CommandError, CommandSuccess};
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -37,10 +37,14 @@ pub enum Commands {
     /// Run linters
     Check(Check),
 
+    /// Print the command tree as JSON for the CLI reference docs
+    #[command(hide = true)]
+    CliReference(CliReference),
+
     /// Generate or install Qlty CLI shell completions
     Completions(Completions),
 
-    /// Print current version
+    /// Show, validate, and migrate configuration
     Config(config::Arguments),
 
     /// View, transform, and publish code coverage
@@ -92,6 +96,9 @@ pub enum Commands {
     /// Find code smells like duplication and complexity
     Smells(Smells),
 
+    /// Manage plugin sources
+    Sources(sources::Arguments),
+
     /// Send telemetry
     #[command(hide = true)]
     Telemetry(Telemetry),
@@ -102,6 +109,9 @@ pub enum Commands {
     #[command(hide = true)]
     /// Validate the project
     Validate(Validate),
+
+    /// Build the SlopOne code quality trends report, or score source files
+    SlopOne(SlopOne),
 
     /// Print the current Qlty CLI version
     Version(Version),
@@ -119,6 +129,7 @@ impl Arguments {
             Commands::Build(command) => command.execute(self),
             Commands::Cache(command) => command.execute(self),
             Commands::Check(command) => command.execute(self),
+            Commands::CliReference(command) => command.execute(self),
             Commands::Completions(command) => command.execute(self),
             Commands::Config(command) => command.execute(self),
             Commands::Coverage(command) => command.execute(self),
@@ -135,7 +146,9 @@ impl Arguments {
             Commands::Parse(command) => command.execute(self),
             Commands::Patch(command) => command.execute(self),
             Commands::Plugins(command) => command.execute(self),
+            Commands::SlopOne(command) => command.execute(self),
             Commands::Smells(command) => command.execute(self),
+            Commands::Sources(command) => command.execute(self),
             Commands::Telemetry(command) => command.execute(self),
             Commands::Upgrade(command) => command.execute(self),
             Commands::Validate(command) => command.execute(self),

@@ -1,13 +1,11 @@
 use super::RubygemsPackage;
-use crate::tool::finalize_installation_from_cmd_result;
-use crate::tool::installations::initialize_installation;
 use crate::ui::ProgressBar;
 use crate::{tool::Tool, ui::ProgressTask};
 use anyhow::{bail, Result};
 use itertools::Itertools;
 use qlty_analysis::{join_path_string, utils::fs::path_to_native_string};
 use std::{collections::HashMap, path::PathBuf};
-use tracing::{debug, info};
+use tracing::debug;
 
 pub type RubyGemfile = RubygemsPackage;
 
@@ -21,33 +19,24 @@ impl RubyGemfile {
                 .env_remove("RUBYOPT"), // having RUBYOPT here will throw off bundle install
         )?;
 
-        let list_command = self
-            .cmd
-            .build("ruby", vec!["-S", "bundle", "list"])
-            .full_env(self.env()?)
-            .dir(self.directory())
-            .stderr_capture()
-            .stdout_capture()
-            .unchecked();
+        self.run_command(self.cmd.build("ruby", vec!["-S", "bundle", "list"]))
+    }
 
-        let script = format!("{:?}", list_command);
-        debug!(script);
+    pub fn package_file_declares_custom_source(&self) -> bool {
+        let Some(package_file) = self.plugin.package_file.as_ref() else {
+            return false;
+        };
+        let Ok(contents) = std::fs::read_to_string(package_file) else {
+            return false;
+        };
 
-        let mut installation = initialize_installation(self)?;
-        let result = list_command.run();
-        let _ = finalize_installation_from_cmd_result(self, &result, &mut installation, script);
-
-        let output = result?;
-        let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
-        info!("ruby -S bundle list list stdout: {}", stdout);
-        info!("ruby -S bundle list list stderr: {}", stderr);
-
-        if !output.status.success() {
-            bail!("Failed to run: ruby -S bundle list");
-        }
-
-        Ok(())
+        contents.lines().any(|line| {
+            let line = line.trim();
+            line.starts_with("source")
+                && line["source".len()..].starts_with([' ', '('])
+                && !line.contains("rubygems.org")
+                && !line.contains(":rubygems")
+        })
     }
 
     pub fn copy_package_file(&self, task: &ProgressTask) -> Result<()> {
@@ -493,6 +482,76 @@ mod test {
                 "Expected lock file NOT to be copied"
             );
 
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_package_file_declares_custom_source() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                "source 'https://gems.example.com'\ngem 'tool', '1.0.0'",
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+
+            assert!(pkg.package_file_declares_custom_source());
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_package_file_declares_custom_source_rubygems_symbol() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(&req_file, "source :rubygems\ngem 'tool', '1.0.0'").unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+
+            assert!(!pkg.package_file_declares_custom_source());
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_package_file_declares_custom_source_parenthesized() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                "source('https://gems.example.com')\ngem 'tool', '1.0.0'",
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+
+            assert!(pkg.package_file_declares_custom_source());
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_package_file_declares_custom_source_rubygems() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                "source 'https://rubygems.org'\ngem 'tool', '1.0.0'",
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+
+            assert!(!pkg.package_file_declares_custom_source());
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_package_file_declares_custom_source_without_package_file() {
+        with_rubygems_package(|pkg, _, _| {
+            pkg.plugin.package_file = None;
+
+            assert!(!pkg.package_file_declares_custom_source());
             Ok(())
         });
     }

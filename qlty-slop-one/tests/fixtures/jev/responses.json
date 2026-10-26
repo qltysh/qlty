@@ -1,0 +1,296 @@
+[
+ {
+  "response": {
+   "model": "jev-1.13.0",
+   "answers": {
+    "direct_unmaintainable": {
+     "type": "noul",
+     "noul": 0.66
+    },
+    "boilerplate": {
+     "type": "noul",
+     "noul": 0.45
+    },
+    "deep_reasoning": {
+     "type": "noul",
+     "noul": 0.76
+    },
+    "control_flow": {
+     "type": "score",
+     "score": 1.1,
+     "confidence": 0.82,
+     "legend": {
+      "0": "The execution path is straightforward and local.",
+      "1": "Following a path requires tracking several branches or state changes.",
+      "2": "Following a path requires repeatedly connecting distant branches and changing state."
+     },
+     "probabilities": {
+      "0": 0.01,
+      "1": 0.88,
+      "2": 0.11
+     }
+    },
+    "duplicated_logic": {
+     "type": "score",
+     "score": 1.82,
+     "confidence": 0.8,
+     "legend": {
+      "0": "No meaningful duplication; repeated structure is limited to trivial declarations or accessors.",
+      "1": "A few small blocks repeat with minor variations.",
+      "2": "Several substantial blocks repeat so that a behavior change would require editing multiple copies.",
+      "3": "Most of the logic is copied with variations, and the copies have already diverged or contain inconsistencies."
+     },
+     "probabilities": {
+      "0": 0.01,
+      "1": 0.17,
+      "2": 0.81,
+      "3": 0.01
+     }
+    },
+    "mirrored_state": {
+     "type": "score",
+     "score": 0.88,
+     "confidence": 0.12,
+     "legend": {
+      "0": "State is held in one authoritative place, or the code is effectively stateless.",
+      "1": "One piece of state is cached or mirrored, and it is invalidated or updated at a single clear point.",
+      "2": "Several values are mirrored or cached, and keeping them consistent depends on every writer remembering to update each copy or flag.",
+      "3": "Mirrored or cached state is updated inconsistently in the visible code, so some paths can leave the copies out of sync."
+     },
+     "probabilities": {
+      "0": 0.41000000000000003,
+      "1": 0.36,
+      "2": 0.19,
+      "3": 0.04
+     }
+    },
+    "hand_enumerated_data": {
+     "type": "score",
+     "score": 0.86,
+     "confidence": 0.44,
+     "legend": {
+      "0": "Related elements are held in arrays, collections, or objects and are processed generically; there is no hand enumeration.",
+      "1": "A small set of related elements is spelled out by hand in one or two places, and adding an element would touch only those places.",
+      "2": "A larger set of related elements is spelled out by hand in several methods, so adding or changing an element requires editing each method that enumerates them.",
+      "3": "Almost every method enumerates a large set of related elements by hand, with long hand-written expressions or key lists where one omitted or misordered element would be hard to notice."
+     },
+     "probabilities": {
+      "0": 0.35,
+      "1": 0.46,
+      "2": 0.18,
+      "3": 0.01
+     }
+    }
+   },
+   "usage": {
+    "input_tokens": 6364,
+    "output_tokens": 124
+   }
+  },
+  "values": {
+   "direct_unmaintainable": 0.66,
+   "boilerplate": 0.45,
+   "deep_reasoning": 0.76,
+   "control_flow": 0.55,
+   "duplicated_logic": 0.6066666666666667,
+   "mirrored_state": 0.2866666666666667,
+   "hand_enumerated_data": 0.2833333333333333
+  }
+ },
+ {
+  "response": {
+   "model": "jev-1.13.0",
+   "answers": {
+    "direct_unmaintainable": {
+     "type": "noul",
+     "noul": 0.21
+    },
+    "boilerplate": {
+     "type": "noul",
+     "noul": 0.84
+    },
+    "deep_reasoning": {
+     "type": "noul",
+     "noul": 0.24
+    },
+    "control_flow": {
+     "type": "score",
+     "score": 0.18,
+     "confidence": 0.73,
+     "legend": {
+      "0": "The execution path is straightforward and local.",
+      "1": "Following a path requires tracking several branches or state changes.",
+      "2": "Following a path requires repeatedly connecting distant branches and changing state."
+     },
+     "probabilities": {
+      "0": 0.82,
+      "1": 0.18,
+      "2": 0.0
+     }
+    },
+    "duplicated_logic": {
+     "type": "score",
+     "score": 0.97,
+     "confidence": 0.79,
+     "legend": {
+      "0": "No meaningful duplication; repeated structure is limited to trivial declarations or accessors.",
+      "1": "A few small blocks repeat with minor variations.",
+      "2": "Several substantial blocks repeat so that a behavior change would require editing multiple copies.",
+      "3": "Most of the logic is copied with variations, and the copies have already diverged or contain inconsistencies."
+     },
+     "probabilities": {
+      "0": 0.12,
+      "1": 0.79,
+      "2": 0.09,
+      "3": 0.0
+     }
+    },
+    "mirrored_state": {
+     "type": "score",
+     "score": 0.9,
+     "confidence": 0.77,
+     "legend": {
+      "0": "State is held in one authoritative place, or the code is effectively stateless.",
+      "1": "One piece of state is cached or mirrored, and it is invalidated or updated at a single clear point.",
+      "2": "Several values are mirrored or cached, and keeping them consistent depends on every writer remembering to update each copy or flag.",
+      "3": "Mirrored or cached state is updated inconsistently in the visible code, so some paths can leave the copies out of sync."
+     },
+     "probabilities": {
+      "0": 0.16,
+      "1": 0.8,
+      "2": 0.01,
+      "3": 0.03
+     }
+    },
+    "hand_enumerated_data": {
+     "type": "score",
+     "score": 0.13,
+     "confidence": 0.87,
+     "legend": {
+      "0": "Related elements are held in arrays, collections, or objects and are processed generically; there is no hand enumeration.",
+      "1": "A small set of related elements is spelled out by hand in one or two places, and adding an element would touch only those places.",
+      "2": "A larger set of related elements is spelled out by hand in several methods, so adding or changing an element requires editing each method that enumerates them.",
+      "3": "Almost every method enumerates a large set of related elements by hand, with long hand-written expressions or key lists where one omitted or misordered element would be hard to notice."
+     },
+     "probabilities": {
+      "0": 0.91,
+      "1": 0.05,
+      "2": 0.04,
+      "3": 0.0
+     }
+    }
+   },
+   "usage": {
+    "input_tokens": 2099,
+    "output_tokens": 124
+   }
+  },
+  "values": {
+   "direct_unmaintainable": 0.21,
+   "boilerplate": 0.84,
+   "deep_reasoning": 0.24,
+   "control_flow": 0.09,
+   "duplicated_logic": 0.3233333333333333,
+   "mirrored_state": 0.30333333333333334,
+   "hand_enumerated_data": 0.043333333333333335
+  }
+ },
+ {
+  "response": {
+   "model": "jev-1.13.0",
+   "answers": {
+    "direct_unmaintainable": {
+     "type": "noul",
+     "noul": 0.42
+    },
+    "boilerplate": {
+     "type": "noul",
+     "noul": 0.97
+    },
+    "deep_reasoning": {
+     "type": "noul",
+     "noul": 0.19
+    },
+    "control_flow": {
+     "type": "score",
+     "score": 0.01,
+     "confidence": 0.99,
+     "legend": {
+      "0": "The execution path is straightforward and local.",
+      "1": "Following a path requires tracking several branches or state changes.",
+      "2": "Following a path requires repeatedly connecting distant branches and changing state."
+     },
+     "probabilities": {
+      "0": 1.0,
+      "1": 0.0,
+      "2": 0.0
+     }
+    },
+    "duplicated_logic": {
+     "type": "score",
+     "score": 0.99,
+     "confidence": 0.01,
+     "legend": {
+      "0": "No meaningful duplication; repeated structure is limited to trivial declarations or accessors.",
+      "1": "A few small blocks repeat with minor variations.",
+      "2": "Several substantial blocks repeat so that a behavior change would require editing multiple copies.",
+      "3": "Most of the logic is copied with variations, and the copies have already diverged or contain inconsistencies."
+     },
+     "probabilities": {
+      "0": 0.48,
+      "1": 0.18,
+      "2": 0.21,
+      "3": 0.13
+     }
+    },
+    "mirrored_state": {
+     "type": "score",
+     "score": 0.01,
+     "confidence": 0.99,
+     "legend": {
+      "0": "State is held in one authoritative place, or the code is effectively stateless.",
+      "1": "One piece of state is cached or mirrored, and it is invalidated or updated at a single clear point.",
+      "2": "Several values are mirrored or cached, and keeping them consistent depends on every writer remembering to update each copy or flag.",
+      "3": "Mirrored or cached state is updated inconsistently in the visible code, so some paths can leave the copies out of sync."
+     },
+     "probabilities": {
+      "0": 1.0,
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0
+     }
+    },
+    "hand_enumerated_data": {
+     "type": "score",
+     "score": 2.23,
+     "confidence": 0.23,
+     "legend": {
+      "0": "Related elements are held in arrays, collections, or objects and are processed generically; there is no hand enumeration.",
+      "1": "A small set of related elements is spelled out by hand in one or two places, and adding an element would touch only those places.",
+      "2": "A larger set of related elements is spelled out by hand in several methods, so adding or changing an element requires editing each method that enumerates them.",
+      "3": "Almost every method enumerates a large set of related elements by hand, with long hand-written expressions or key lists where one omitted or misordered element would be hard to notice."
+     },
+     "probabilities": {
+      "0": 0.06,
+      "1": 0.15,
+      "2": 0.3,
+      "3": 0.49
+     }
+    }
+   },
+   "usage": {
+    "input_tokens": 2990,
+    "output_tokens": 124
+   }
+  },
+  "values": {
+   "direct_unmaintainable": 0.42,
+   "boilerplate": 0.97,
+   "deep_reasoning": 0.19,
+   "control_flow": 0.0,
+   "duplicated_logic": 0.33,
+   "mirrored_state": 0.0,
+   "hand_enumerated_data": 0.7399999999999999
+  }
+ }
+]

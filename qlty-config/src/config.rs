@@ -18,7 +18,6 @@ pub use self::ignore::{Ignore, ALL_WILDCARD};
 pub use self::overrides::Override;
 use self::smells::Smells;
 pub use builder::Builder;
-use console::style;
 pub use coverage::Coverage;
 pub use download::{Cpu, DownloadDef, DownloadFileType, OperatingSystem, System};
 pub use exclude::Exclude;
@@ -40,11 +39,17 @@ use crate::sources::SourcesList;
 use crate::version::QLTY_VERSION;
 use crate::Library;
 use anyhow::{bail, Result};
+use console::style;
 use schemars::JsonSchema;
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use thiserror::Error;
 use tracing::{debug, warn};
+
+#[derive(Debug, Error)]
+#[error("Please update your qlty.toml to use the new source format.")]
+pub struct DeprecatedDefaultSourceError;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default, JsonSchema)]
 pub struct QltyConfig {
@@ -182,7 +187,7 @@ default = true
 "#,
                         style("⚠").yellow()
                     );
-                    bail!("Please update your qlty.toml to use the new source format.");
+                    return Err(DeprecatedDefaultSourceError.into());
                 }
             }
             None => {
@@ -201,7 +206,6 @@ mod test {
     #[test]
     fn default() {
         let workspace = Workspace::new().unwrap();
-        workspace.fetch_sources().unwrap();
-        workspace.config().unwrap();
+        workspace.load_config(false).unwrap();
     }
 }

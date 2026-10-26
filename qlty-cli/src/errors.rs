@@ -12,6 +12,11 @@ pub enum CommandError {
     #[error("{message}")]
     InvalidOptions { message: String },
 
+    /// A failure the user can act on: a one-line title and the advice
+    /// printed under it.
+    #[error("{title}")]
+    Explained { title: String, detail: Vec<String> },
+
     #[error("Unknown error")]
     Unknown {
         #[from]
@@ -33,6 +38,7 @@ impl CommandError {
     pub fn exit_code(&self) -> i32 {
         match self {
             CommandError::InvalidOptions { .. } => 1,
+            CommandError::Explained { .. } => 1,
             CommandError::Config => 2,
             CommandError::Lint => 3,
             CommandError::Unknown { .. } => 99,
@@ -62,6 +68,22 @@ impl From<serde_json::Error> for CommandError {
 
 impl From<git2::Error> for CommandError {
     fn from(error: git2::Error) -> Self {
+        CommandError::Unknown {
+            source: error.into(),
+        }
+    }
+}
+
+impl From<qlty_slop_one::Error> for CommandError {
+    fn from(error: qlty_slop_one::Error) -> Self {
+        CommandError::Unknown {
+            source: error.into(),
+        }
+    }
+}
+
+impl From<qlty_slop_one_trends::Error> for CommandError {
+    fn from(error: qlty_slop_one_trends::Error) -> Self {
         CommandError::Unknown {
             source: error.into(),
         }

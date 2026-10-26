@@ -1,5 +1,6 @@
 {
   "metadata": {
+    "id": "[..]",
     "buildId": "[..]",
     "result": "ANALYSIS_RESULT_SUCCESS",
     "filesAnalyzed": 33,
@@ -11,14 +12,19 @@
     "committerName": "TEST",
     "authorEmail": "test@codeclimate.com",
     "authorName": "TEST",
-    "authoredAt": "2024-01-01T00:00:00+00:00"
+    "authoredAt": "2024-01-01T00:00:00+00:00",
+    "generatedAt": "[..]",
+    "time": "[..]"
   },
   "messages": [],
   "invocations": [],
   "issues": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "similar-code",
@@ -54,12 +60,17 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "similar-code",
@@ -95,12 +106,17 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "boolean-logic",
@@ -123,11 +139,18 @@
           "endByte": 85
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "file-complexity",
@@ -151,14 +174,21 @@
           "endByte": 713
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "file.path": "file_complexity.go"
       },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-complexity",
@@ -182,14 +212,21 @@
           "endByte": 712
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "main"
       },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-parameters",
@@ -212,11 +249,18 @@
           "endByte": 101
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -239,11 +283,18 @@
           "endByte": 662
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -266,11 +317,18 @@
           "endByte": 243
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "return-statements",
@@ -294,11 +352,16 @@
           "endByte": 887
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     }
   ],
   "stats": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "boolean_logic.go",
@@ -315,10 +378,13 @@
       "commentLines": 0,
       "blankLines": 1,
       "complexity": 2,
-      "cyclomatic": 13,
-      "lcom4": 0
+      "cyclomatic": 6,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_else.go",
@@ -336,9 +402,12 @@
       "blankLines": 1,
       "complexity": 2,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_for.go",
@@ -356,9 +425,12 @@
       "blankLines": 2,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_function_recursion.go",
@@ -375,10 +447,13 @@
       "commentLines": 1,
       "blankLines": 3,
       "complexity": 5,
-      "cyclomatic": 8,
-      "lcom4": 0
+      "cyclomatic": 3,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_goto.go",
@@ -396,9 +471,12 @@
       "blankLines": 2,
       "complexity": 1,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_if.go",
@@ -416,9 +494,12 @@
       "blankLines": 2,
       "complexity": 2,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_labeled_break.go",
@@ -436,9 +517,12 @@
       "blankLines": 2,
       "complexity": 4,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_nested_closures.go",
@@ -456,9 +540,12 @@
       "blankLines": 3,
       "complexity": 2,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_nested_if.go",
@@ -476,9 +563,12 @@
       "blankLines": 3,
       "complexity": 7,
       "cyclomatic": 5,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_select.go",
@@ -496,9 +586,12 @@
       "blankLines": 2,
       "complexity": 4,
       "cyclomatic": 5,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_switch.go",
@@ -516,9 +609,12 @@
       "blankLines": 2,
       "complexity": 1,
       "cyclomatic": 4,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_type_switch.go",
@@ -536,9 +632,12 @@
       "blankLines": 3,
       "complexity": 1,
       "cyclomatic": 6,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "dont_count_unlabeled_break.go",
@@ -556,9 +655,12 @@
       "blankLines": 2,
       "complexity": 1,
       "cyclomatic": 4,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclo_basic.go",
@@ -576,9 +678,12 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclo_for_loop.go",
@@ -596,9 +701,12 @@
       "blankLines": 1,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclo_for_loop_nested.go",
@@ -616,9 +724,12 @@
       "blankLines": 1,
       "complexity": 3,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclo_for_range.go",
@@ -636,9 +747,12 @@
       "blankLines": 1,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclo_if.go",
@@ -656,9 +770,12 @@
       "blankLines": 2,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclo_if_else.go",
@@ -676,9 +793,12 @@
       "blankLines": 3,
       "complexity": 2,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclo_if_elsif.go",
@@ -696,9 +816,12 @@
       "blankLines": 2,
       "complexity": 2,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclo_if_elsif_else.go",
@@ -716,9 +839,12 @@
       "blankLines": 3,
       "complexity": 3,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "class_declaration.go",
@@ -735,10 +861,13 @@
       "commentLines": 0,
       "blankLines": 3,
       "complexity": 0,
-      "cyclomatic": 2,
-      "lcom4": 0
+      "cyclomatic": 1,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "struct_declaration.go",
@@ -756,9 +885,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "file_complexity.go",
@@ -775,10 +907,13 @@
       "commentLines": 0,
       "blankLines": 0,
       "complexity": 55,
-      "cyclomatic": 27,
-      "lcom4": 0
+      "cyclomatic": 11,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "function_complexity.go",
@@ -795,10 +930,13 @@
       "commentLines": 0,
       "blankLines": 1,
       "complexity": 15,
-      "cyclomatic": 12,
-      "lcom4": 0
+      "cyclomatic": 6,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "methods_with_parameters.go",
@@ -816,9 +954,12 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "methods_without_parameters.go",
@@ -835,10 +976,13 @@
       "commentLines": 0,
       "blankLines": 4,
       "complexity": 0,
-      "cyclomatic": 2,
-      "lcom4": 0
+      "cyclomatic": 1,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "identical.go",
@@ -855,10 +999,13 @@
       "commentLines": 0,
       "blankLines": 9,
       "complexity": 6,
-      "cyclomatic": 19,
-      "lcom4": 0
+      "cyclomatic": 5,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_0.go",
@@ -876,9 +1023,12 @@
       "blankLines": 5,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lines.go",
@@ -895,10 +1045,13 @@
       "commentLines": 9,
       "blankLines": 4,
       "complexity": 1,
-      "cyclomatic": 3,
-      "lcom4": 0
+      "cyclomatic": 2,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "nested_control.go",
@@ -915,10 +1068,13 @@
       "commentLines": 0,
       "blankLines": 4,
       "complexity": 26,
-      "cyclomatic": 27,
-      "lcom4": 0
+      "cyclomatic": 23,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "parameters.go",
@@ -936,9 +1092,12 @@
       "blankLines": 3,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "returns.go",
@@ -956,9 +1115,12 @@
       "blankLines": 4,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cognitive",
@@ -974,10 +1136,13 @@
       "commentLines": 7,
       "blankLines": 27,
       "complexity": 31,
-      "cyclomatic": 45,
-      "lcom4": 0
+      "cyclomatic": 40,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclomatic",
@@ -994,9 +1159,12 @@
       "blankLines": 15,
       "complexity": 13,
       "cyclomatic": 18,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "fields",
@@ -1012,10 +1180,13 @@
       "commentLines": 0,
       "blankLines": 3,
       "complexity": 0,
-      "cyclomatic": 3,
-      "lcom4": 0
+      "cyclomatic": 2,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "functions",
@@ -1031,10 +1202,13 @@
       "commentLines": 0,
       "blankLines": 6,
       "complexity": 0,
-      "cyclomatic": 3,
-      "lcom4": 0
+      "cyclomatic": 2,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom",
@@ -1051,7 +1225,9 @@
       "blankLines": 5,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     }
   ]
 }

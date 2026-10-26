@@ -1,0 +1,55 @@
+{
+ "schema_version": 3,
+ "model_sha256": "model-sha",
+ "score_scale": "threshold-centered-1-10-v1",
+ "data_sha256": "FILLED-BY-TEST",
+ "files_sha256": "FILLED-BY-TEST",
+ "method": "test",
+ "questions": {
+  "boolean-logic": "Is the Boolean logic hard to follow?"
+ },
+ "interval": "month",
+ "periods": [
+  {
+   "commit": "m1m1m1m1m1m1m1m1m1m1m1m1m1m1m1m1m1m1m1m1",
+   "rows": []
+  },
+  {
+   "commit": "c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2",
+   "rows": [
+    {
+     "factors": [
+      {
+       "id": "boolean-logic",
+       "name": "Boolean logic",
+       "change": -1.5,
+       "evidence": [
+        {
+         "label": "Findings",
+         "before": 0,
+         "after": 1
+        }
+       ]
+      }
+     ],
+     "other": -0.5,
+     "score_change": -2.0
+    },
+    {
+     "mode": "score",
+     "score": 7.0,
+     "reference_score": 5.5,
+     "factors": [],
+     "other": 1.5
+    },
+    {
+     "mode": "score",
+     "score": 4.0,
+     "reference_score": 5.5,
+     "factors": [],
+     "other": -1.5
+    }
+   ]
+  }
+ ]
+}

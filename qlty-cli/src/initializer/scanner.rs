@@ -7,10 +7,11 @@ mod package_json;
 use super::{Renderer, Settings, SourceSpec};
 use anyhow::Result;
 use driver_candidate::DriverCandidate;
-use driver_initializer::{ConfigDriver, DriverInitializer, TargetDriver};
+use driver_initializer::{ConfigDriver, DriverInitializer, EnableDriver, TargetDriver};
 use indicatif::ProgressBar;
 use itertools::Itertools;
 use package_file::PackageFileScanner;
+use qlty_analysis::utils::fs::path_to_string;
 use qlty_config::{
     config::{Builder, Exclude, IssueMode, PackageFileCandidate, PluginDef, SuggestionMode},
     sources::{SourceFetch, SourceFile},
@@ -30,7 +31,7 @@ pub struct Scanner {
     pub default_config: QltyConfig,
     pub source_specs: Vec<SourceSpec>,
     pub source_list: Box<dyn SourceFetch>,
-    pub plugins: Vec<InstalledPlugin>,
+    pub plugins: Vec<DetectedPlugin>,
     pub sources_only_config: QltyConfig,
 
     default_excludes: Vec<Exclude>,
@@ -48,8 +49,8 @@ struct PluginToActivate {
     mode: IssueMode,
 }
 
-#[derive(Debug, Clone)]
-pub struct InstalledPlugin {
+#[derive(Debug, Clone, Default)]
+pub struct DetectedPlugin {
     pub name: String,
     pub version: String,
     pub files_count: FilesCount,
@@ -119,12 +120,16 @@ impl Scanner {
             }
 
             for plugin_initializer in &self.plugin_initializers {
+                let absolute_path = path_to_string(self.settings.workspace.root.join(path_osstr));
+
                 let is_package_file =
-                    PackageFileScanner::is_package_file(plugin_initializer, path_osstr);
+                    PackageFileScanner::is_package_file(plugin_initializer, &absolute_path);
 
                 if is_package_file {
-                    let package_filters =
-                        PackageFileScanner::check_plugin_packages(plugin_initializer, path_osstr)?;
+                    let package_filters = PackageFileScanner::check_plugin_packages(
+                        plugin_initializer,
+                        &absolute_path,
+                    )?;
 
                     Self::insert_package_filters_and_package_file(
                         &mut self.plugins_to_activate,
@@ -135,7 +140,16 @@ impl Scanner {
                 }
 
                 for driver_initializer in &plugin_initializer.driver_initializers {
-                    if driver_initializer.is_enabler(path_osstr) {
+                    // If the plugin is part of the enable_plugins, just enable it and skip driver checks
+                    if let Some(enable_plugins) = &self.settings.plugins_to_enable {
+                        if enable_plugins.contains_key(&plugin_initializer.plugin_name) {
+                            self.plugins_to_activate
+                                .entry(plugin_initializer.plugin_name.to_owned())
+                                .or_default()
+                                .drivers
+                                .insert(driver_initializer.key(), driver_initializer.clone_box());
+                        }
+                    } else if driver_initializer.is_enabler(path_osstr) {
                         self.plugins_to_activate
                             .entry(plugin_initializer.plugin_name.to_owned())
                             .or_default()
@@ -230,7 +244,7 @@ impl Scanner {
 
             let mut driver_versions = drivers_to_activate
                 .values()
-                .map(|driver| (driver.version()))
+                .map(|driver| driver.version())
                 .unique()
                 .collect::<Vec<String>>();
 
@@ -260,21 +274,30 @@ impl Scanner {
             };
 
             for prefix in prefixes {
-                let version = if let Some(package_file) = &plugin_to_activate.package_file {
-                    let package_file_path = match prefix {
-                        Some(prefix) => PathBuf::from(prefix).join(package_file),
-                        None => PathBuf::from(package_file),
-                    };
-                    PackageFileScanner::extract_lockfile_package_version(
-                        &package_file_path,
-                        plugin_name,
-                    )
-                    .unwrap_or_else(|_| driver_versions.last().unwrap().clone())
-                } else {
-                    driver_versions.last().unwrap().clone()
-                };
+                let version = self
+                    .settings
+                    .plugins_to_enable
+                    .as_ref()
+                    .and_then(|enable_plugins| enable_plugins.get(plugin_name).cloned())
+                    .or_else(|| {
+                        plugin_to_activate
+                            .package_file
+                            .as_ref()
+                            .map(|package_file| {
+                                let package_file_path = prefix
+                                    .as_ref()
+                                    .map(|p| PathBuf::from(p).join(package_file))
+                                    .unwrap_or_else(|| PathBuf::from(package_file));
+                                PackageFileScanner::extract_lockfile_package_version(
+                                    &package_file_path,
+                                    plugin_name,
+                                )
+                                .unwrap_or_else(|_| driver_versions.last().unwrap().clone())
+                            })
+                    })
+                    .unwrap_or_else(|| driver_versions.last().unwrap().clone());
 
-                self.plugins.push(InstalledPlugin {
+                self.plugins.push(DetectedPlugin {
                     name: plugin_name.to_owned(),
                     version,
                     files_count: plugin_to_activate.file_count,
@@ -297,6 +320,13 @@ impl Scanner {
             .plugins
             .definitions
             .iter()
+            .filter(|(plugin_name, _)| {
+                if let Some(plugins_to_enable) = &self.settings.plugins_to_enable {
+                    plugins_to_enable.contains_key(*plugin_name)
+                } else {
+                    true
+                }
+            })
             .map(|(plugin_name, plugin_definition)| {
                 self.build_plugin_initializer(plugin_name, plugin_definition)
             })
@@ -333,6 +363,19 @@ impl Scanner {
         };
 
         for candidate in DriverCandidate::build_driver_candidates(plugin_def) {
+            // When plugins_to_enable is set, we enable all drivers for that plugin regardless of suggestion
+            if let Some(plugins_to_enable) = &self.settings.plugins_to_enable {
+                if plugins_to_enable.contains_key(plugin_name) {
+                    let driver_initializer = EnableDriver::new(candidate, plugin_def, self)?;
+
+                    plugin_initializer
+                        .driver_initializers
+                        .push(Box::new(driver_initializer));
+                }
+
+                continue;
+            }
+
             let driver_initializer: Box<dyn DriverInitializer> = match &candidate.driver.suggested {
                 SuggestionMode::Targets => {
                     Box::new(TargetDriver::new(candidate, plugin_def, self)?)
@@ -520,6 +563,7 @@ config_files = ["config.toml", "second_config.toml"]
             skip_plugins: false,
             skip_default_source: true,
             source: Some(source_spec.clone()),
+            ..Default::default()
         };
 
         (
@@ -623,6 +667,30 @@ config_files = ["config.toml", "second_config.toml"]
             .iter()
             .find(|p| p.name == "exists")
             .is_none());
+    }
+
+    #[test]
+    fn test_scan_when_not_suggested_but_in_plugins_to_enable() {
+        let (mut scanner, _td) = create_scanner();
+
+        scanner.settings.plugins_to_enable =
+            Some(HashMap::from([("exists".to_string(), "1.0.0".to_string())]));
+        scanner.prepare().unwrap();
+        update_source_suggested(&mut scanner, SuggestionMode::Never);
+
+        assert!(scanner.scan(&ProgressBar::hidden()).is_ok());
+        assert_eq!(scanner.plugins.len(), 1);
+        assert!(scanner
+            .plugins
+            .iter()
+            .find(|p| p.name == "exists")
+            .is_some());
+
+        let installed_plugin = scanner.plugins.iter().find(|p| p.name == "exists").unwrap();
+        assert_eq!(installed_plugin.version, "1.0.0");
+        assert_eq!(installed_plugin.files_count, 7);
+        assert_eq!(installed_plugin.config_files.len(), 0);
+        assert_eq!(installed_plugin.package_file, None);
     }
 
     #[test]

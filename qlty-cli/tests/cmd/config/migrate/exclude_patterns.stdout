@@ -19,6 +19,9 @@ threshold = 4
 [smells.function_complexity]
 threshold = 5
 
-[smells.duplication]
-threshold = 22
+[smells.identical_code]
+threshold = 15
+
+[smells.similar_code]
+threshold = 15
 

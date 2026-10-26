@@ -1,0 +1,142 @@
+{
+ "name": "rust_nested_control.rs",
+ "suffix": ".rs",
+ "language": "Rust",
+ "text": "pub fn deep(items: &[Vec<Option<i32>>], limit: i32) -> i32 {\n    let mut total = 0;\n    for row in items {\n        for item in row {\n            if let Some(value) = item {\n                if *value > limit {\n                    while total < *value {\n                        if total % 2 == 0 {\n                            total += 3;\n                        } else {\n                            total += 1;\n                        }\n                    }\n                }\n            }\n        }\n    }\n    total\n}\n\npub fn many_params(a: i32, b: i32, c: i32, d: i32, e: i32, f: i32, g: i32) -> i32 {\n    a + b + c + d + e + f + g\n}\n\npub fn many_returns(value: i32) -> &'static str {\n    if value == 0 {\n        return \"zero\";\n    }\n    if value == 1 {\n        return \"one\";\n    }\n    if value == 2 {\n        return \"two\";\n    }\n    if value == 3 {\n        return \"three\";\n    }\n    if value == 4 {\n        return \"four\";\n    }\n    if value == 5 {\n        return \"five\";\n    }\n    \"many\"\n}\n",
+ "values": [
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.6931471805599453,
+  2.2222222222222223,
+  1.9459101490553132,
+  0.15555555555555556,
+  0.6931471805599453,
+  2.2222222222222223,
+  2.0794415416798357,
+  0.022222222222222223,
+  0.6931471805599453,
+  2.2222222222222223,
+  1.9459101490553132,
+  0.4666666666666667,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.6931471805599453,
+  2.2222222222222223,
+  3.1354942159291497,
+  0.4222222222222222,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0
+ ],
+ "summary": {
+  "boolean-logic": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 5,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Boolean depth"
+  },
+  "nested-control-flow": {
+   "count": 1,
+   "max_magnitude": 6.0,
+   "covered_lines": 7,
+   "locations": [
+    {
+     "start_line": 7,
+     "end_line": 13
+    }
+   ],
+   "max_actual": 6.0,
+   "threshold": 5,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Nesting depth"
+  },
+  "function-parameters": {
+   "count": 1,
+   "max_magnitude": 7.0,
+   "covered_lines": 1,
+   "locations": [
+    {
+     "start_line": 21,
+     "end_line": 21
+    }
+   ],
+   "max_actual": 7.0,
+   "threshold": 6,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Parameters"
+  },
+  "return-statements": {
+   "count": 1,
+   "max_magnitude": 6.0,
+   "covered_lines": 21,
+   "locations": [
+    {
+     "start_line": 25,
+     "end_line": 45
+    }
+   ],
+   "max_actual": 6.0,
+   "threshold": 6,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Return statements"
+  },
+  "file-complexity": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 50,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Cyclomatic complexity"
+  },
+  "function-complexity": {
+   "count": 1,
+   "max_magnitude": 22.0,
+   "covered_lines": 19,
+   "locations": [
+    {
+     "start_line": 1,
+     "end_line": 19
+    }
+   ],
+   "max_actual": 22.0,
+   "threshold": 18,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Cyclomatic complexity"
+  },
+  "identical-code": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 15,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Duplicated lines"
+  },
+  "similar-code": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 15,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Duplicated lines"
+  }
+ }
+}

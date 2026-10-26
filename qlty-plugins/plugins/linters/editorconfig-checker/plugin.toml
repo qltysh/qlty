@@ -1,0 +1,27 @@
+config_version = "0"
+
+[plugins.releases.editorconfig-checker]
+github = "editorconfig-checker/editorconfig-checker"
+strip_components = 0
+
+[plugins.definitions.editorconfig-checker]
+releases = ["editorconfig-checker"]
+file_types = ["ALL"]
+config_files = [".editorconfig"]
+latest_version = "3.6.1"
+known_good_version = "3.6.1"
+version_command = "\"${linter}\"/bin/ec-* --version"
+description = "Validates files against .editorconfig rules"
+affects_cache = [".editorconfig"]
+suggested_mode = "comment"
+supported_platforms = ["linux", "macos"]
+
+[plugins.definitions.editorconfig-checker.drivers.lint]
+script = "\"${linter}\"/bin/ec-* -format codeclimate --no-color ${target}"
+success_codes = [0, 1]
+output = "stdout"
+output_format = "editorconfig_checker"
+cache_results = true
+batch = true
+suggested = "config"
+output_missing = "no_issues"

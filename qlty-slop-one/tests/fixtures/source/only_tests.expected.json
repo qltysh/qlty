@@ -1,0 +1,31 @@
+{
+  "text": "//! docs\n#![allow(dead_code)]\n// plain comment\n",
+  "line_map": [
+    1,
+    2,
+    3
+  ],
+  "excluded_modules": [
+    {
+      "name": "test",
+      "start_line": 4,
+      "end_line": 5,
+      "reason": "inline module named test or tests"
+    }
+  ],
+  "has_code": false,
+  "info": {
+    "policy": "rust-inline-tests-001",
+    "original_lines": 5,
+    "analyzed_lines": 3,
+    "excluded_lines": 2,
+    "excluded_modules": [
+      {
+        "name": "test",
+        "start_line": 4,
+        "end_line": 5,
+        "reason": "inline module named test or tests"
+      }
+    ]
+  }
+}

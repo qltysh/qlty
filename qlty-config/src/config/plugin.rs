@@ -518,6 +518,8 @@ pub enum OutputFormat {
     Clippy,
     #[serde(rename = "coffeelint")]
     Coffeelint,
+    #[serde(rename = "editorconfig_checker")]
+    EditorconfigChecker,
     #[serde(rename = "eslint")]
     Eslint,
     #[serde(rename = "golangci_lint")]
@@ -540,6 +542,8 @@ pub enum OutputFormat {
     Phpstan,
     #[serde(rename = "radarlint")]
     Radarlint,
+    #[serde(rename = "rdjson")]
+    Rdjson,
     #[serde(rename = "reek")]
     Reek,
     #[serde(rename = "regex")]
@@ -577,6 +581,7 @@ impl std::fmt::Display for OutputFormat {
             OutputFormat::Biome => write!(f, "biome"),
             OutputFormat::Clippy => write!(f, "clippy"),
             OutputFormat::Coffeelint => write!(f, "coffeelint"),
+            OutputFormat::EditorconfigChecker => write!(f, "editorconfig_checker"),
             OutputFormat::Eslint => write!(f, "eslint"),
             OutputFormat::GolangciLint => write!(f, "golangci_lint"),
             OutputFormat::Hadolint => write!(f, "hadolint"),
@@ -588,6 +593,7 @@ impl std::fmt::Display for OutputFormat {
             OutputFormat::Phpstan => write!(f, "phpstan"),
             OutputFormat::Pylint => write!(f, "pylint"),
             OutputFormat::Radarlint => write!(f, "radarlint"),
+            OutputFormat::Rdjson => write!(f, "rdjson"),
             OutputFormat::Reek => write!(f, "reek"),
             OutputFormat::Regex => write!(f, "regex"),
             OutputFormat::Ripgrep => write!(f, "ripgrep"),
@@ -726,7 +732,7 @@ impl EnabledPlugin {
 
 impl PluginFetch {
     pub fn download_file_to(&self, directories: &[PathBuf]) -> Result<()> {
-        let response = http::get(&self.url)
+        let response = http::get(&self.url)?
             .call()
             .with_context(|| format!("Failed to get url: {}", &self.url))?;
 

@@ -1,0 +1,1022 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>__REPORT_TITLE__</title>
+<style>__STYLES__</style>
+</head>
+<body>
+<main>
+<div class="chart-wrap">
+<header class="report-header">
+  <h1>__REPORT_TITLE__</h1>
+  <div class="report-controls">
+    <span class="select-control interval-control" __INTERVAL_PICKER_HIDDEN__><select id="report-interval" name="interval" aria-label="Report interval" aria-controls="chart-container">__INTERVAL_OPTIONS__</select>__ICON_chevron-down__</span>
+    __CHART_OPTIONS__
+  </div>
+</header>
+<div class="chart-scroll"><div id="chart-container">
+__CHART_SVG__
+</div></div>
+<div class="chart-legend" role="list" aria-label="Chart legend">
+  <div role="listitem"><span class="legend-mark legend-positive" aria-hidden="true"></span>Improved quality</div>
+  <div role="listitem"><span class="legend-mark legend-negative" aria-hidden="true"></span>Reduced quality</div>
+  <div role="listitem"><span class="legend-mark legend-net" aria-hidden="true"></span>Net change</div>
+</div>
+</div>
+</main>
+__ANNOTATION_POPOVERS__
+<aside id="week-tooltip" class="tooltip" role="tooltip" hidden>
+  <h2 id="tooltip-title"></h2>
+  <dl id="tooltip-values">
+    <div><dt>Improved quality</dt><dd id="tooltip-positive" class="positive"></dd></div>
+    <div><dt>Reduced quality</dt><dd id="tooltip-negative" class="negative"></dd></div>
+    <div class="net"><dt>Net change</dt><dd id="tooltip-net"></dd></div>
+  </dl>
+  <p id="tooltip-note"></p>
+</aside>
+<dialog id="week-details" aria-labelledby="details-week-label details-title">
+  <header class="details-header">
+    <div class="details-heading">
+      <div class="details-week">
+        <button type="button" class="icon-button" id="details-previous" aria-label="Previous week">__ICON_chevron-left__<span class="button-target" aria-hidden="true"></span></button>
+        <div class="details-week-text"><p id="details-week-label" class="details-eyebrow">Week ending</p><h2 id="details-title"></h2></div>
+        <button type="button" class="icon-button" id="details-next" aria-label="Next week">__ICON_chevron-right__<span class="button-target" aria-hidden="true"></span></button>
+      </div>
+      <div id="details-visuals"></div>
+      <div class="details-nav">
+        <button type="button" class="icon-button" id="details-close" aria-label="Close file details">__ICON_x-mark__<span class="button-target" aria-hidden="true"></span></button>
+      </div>
+    </div>
+    <textarea id="week-prompt-text" rows="8" readonly hidden aria-label="Refactor prompt — select and copy"></textarea>
+  </header>
+  <div class="details-filters" id="details-filters">
+    <label for="details-search"><span class="field-label">Find a file</span><span class="search-control">__ICON_magnifying-glass__<input id="details-search" name="search" type="search" placeholder="Search paths" autocomplete="off"></span></label>
+    <label for="details-effect"><span class="field-label">Show</span><span class="select-control"><select id="details-effect" name="effect"><option value="all">All changes</option><option value="positive">Improvements</option><option value="negative">Declines</option></select>__ICON_chevron-down__</span></label>
+    <label for="details-kind"><span class="field-label">Change type</span><span class="select-control"><select id="details-kind" name="kind"><option value="all">All types</option><option>Changed</option><option>Added</option><option>Removed</option><option>Renamed</option><option>Split</option><option>Merged</option><option>Reorganized</option></select>__ICON_chevron-down__</span></label>
+    <label class="mobile-sort" for="details-sort"><span class="field-label">Sort by</span><span class="select-control"><select id="details-sort" name="sort">
+      <option value="impact:desc">Largest absolute impact</option>
+      <option value="file:asc">File: A → Z</option><option value="file:desc">File: Z → A</option>
+      <option value="kind:asc">Change: A → Z</option><option value="kind:desc">Change: Z → A</option>
+      <option value="before_score:desc">Score before: high → low</option><option value="before_score:asc">Score before: low → high</option>
+      <option value="after_score:desc">Score after: high → low</option><option value="after_score:asc">Score after: low → high</option>
+      <option value="mass_change:desc">Mass: high → low</option><option value="mass_change:asc">Mass: low → high</option>
+      <option value="contribution:desc">Impact: high → low</option><option value="contribution:asc">Impact: low → high</option>
+    </select>__ICON_chevron-down__</span></label>
+  </div>
+  <div class="details-scroll">
+    <div class="select-all-row" id="details-select-all-row" hidden><label class="select-label"><input type="checkbox" class="check" data-select-all aria-label="Select all shown files"><span id="details-select-all-label"></span></label><span class="status-line" id="details-selection-status"></span></div>
+    <table class="details-table" id="details-table" aria-label="File contributions to weekly quality change">
+      <thead><tr>
+        <th scope="col" class="select"><input type="checkbox" class="check" data-select-all aria-label="Select all shown files"></th>
+        <th scope="col"><button class="sort-button" type="button" data-sort="file">File<span class="sort-indicator" aria-hidden="true">__ICON_arrows-up-down__</span></button></th>
+        <th scope="col" class="change-type"><button class="sort-button" type="button" data-sort="kind">Change<span class="sort-indicator" aria-hidden="true">__ICON_arrows-up-down__</span></button></th>
+        <th scope="col" class="number score-before"><button class="sort-button" type="button" data-sort="before_score">Before<span class="sort-indicator" aria-hidden="true">__ICON_arrows-up-down__</span></button></th>
+        <th scope="col" class="score-arrow"><span class="field-label">to</span></th>
+        <th scope="col" class="number score-after"><button class="sort-button" type="button" data-sort="after_score">After<span class="sort-indicator" aria-hidden="true">__ICON_arrows-up-down__</span></button></th>
+        <th scope="col" class="number mass"><button class="sort-button" type="button" data-sort="mass_change">Mass<span class="sort-indicator" aria-hidden="true">__ICON_arrows-up-down__</span></button></th>
+        <th scope="col" class="number impact"><button class="sort-button" type="button" data-sort="contribution">Impact<span class="sort-indicator" aria-hidden="true">__ICON_arrows-up-down__</span></button></th>
+      </tr></thead>
+      <tbody id="details-rows"></tbody>
+    </table>
+    <p id="details-empty" hidden></p>
+  </div>
+  <div class="floating-bar" id="week-refactor-bar" hidden>
+    <span class="count" id="week-refactor-count"></span>
+    <span class="divider" aria-hidden="true"></span>
+    <div class="refactor-menu">
+      <button type="button" class="refactor-primary" id="week-refactor">__ICON_copy____ICON_check__<span class="refactor-label"><span class="idle-label">Copy refactor prompt</span><span class="done-label" aria-hidden="true">Copied</span></span></button>
+      <span id="week-copy-status" role="status"></span>
+    </div>
+  </div>
+  <footer class="details-footer">
+    <p class="visible-total" role="status"><span id="details-count"></span><span id="details-shown-net"></span></p>
+    <a id="details-compare" class="text-link" target="_blank" rel="noopener noreferrer">Compare revisions __ICON_arrow-up-right__</a>
+  </footer>
+  <section id="file-details" hidden>
+    <header class="file-detail-header">
+      <div class="file-detail-context">
+        <button type="button" class="back-button" id="file-back">__ICON_chevron-left__ Back</button>
+        <p id="file-week"></p>
+      </div>
+      <div class="file-header-actions">
+        <button type="button" class="icon-button" id="file-close" aria-label="Close file details">__ICON_x-mark__<span class="button-target" aria-hidden="true"></span></button>
+      </div>
+    </header>
+    <div class="file-detail-scroll">
+      <div class="file-detail-heading">
+        <div class="file-heading-main">
+          <p id="file-directory" class="file-path"></p>
+          <div class="file-title-group"><h2 id="file-title"></h2><span id="file-change-kind" class="file-kind"></span></div>
+          <p id="file-origin" hidden></p>
+        </div>
+        <div class="file-title-side">
+          <p id="file-score-change"></p>
+          <button type="button" class="score-mark score-action" id="file-refactor" aria-haspopup="menu" aria-expanded="false" popovertarget="refactor-options" hidden>__ICON_wrench__<span class="score-text" id="file-refactor-score"></span>__ICON_chevron-down__</button>
+          <div id="refactor-options" class="menu" popover role="menu" aria-label="Refactor options">
+              <button type="button" role="menuitem" data-refactor="copy">__ICON_copy__Copy refactor prompt</button>
+          </div>
+          <span id="file-copy-status" role="status"></span>
+        </div>
+        <textarea id="file-prompt-text" rows="8" readonly hidden aria-label="Refactor prompt — select and copy"></textarea>
+      </div>
+      <div class="explanation-heading"><h3 id="file-question">Why the score changed</h3><span id="factor-unit">Impact</span></div>
+      <p id="file-explanation-note" hidden></p>
+      <ul id="file-factors" role="list"></ul>
+      <div id="file-other" hidden></div>
+      <div id="file-members"></div>
+    </div>
+    <aside id="assessment-tooltip" popover="manual" role="tooltip"></aside>
+  </section>
+</dialog>
+__ICON_TEMPLATES__
+<script type="text/plain" id="asset-licenses">__LICENSES__</script>
+<script type="application/json" id="reports-data">__REPORTS__</script>
+<script>__CHART_OPTIONS_SCRIPT__</script>
+<script>__ANNOTATION_SCRIPT__</script>
+<script>
+const reports = JSON.parse(document.querySelector('#reports-data').textContent);
+let interval = '__INITIAL_INTERVAL__';
+let weeks = reports[interval].values;
+const container = document.querySelector('#chart-container');
+const tooltip = document.querySelector('#week-tooltip');
+const title = document.querySelector('#tooltip-title');
+const values = document.querySelector('#tooltip-values');
+const positive = document.querySelector('#tooltip-positive');
+const negative = document.querySelector('#tooltip-negative');
+const net = document.querySelector('#tooltip-net');
+const note = document.querySelector('#tooltip-note');
+let details = reports[interval].details;
+const dialog = document.querySelector('#week-details');
+const detailsSearch = document.querySelector('#details-search');
+const detailsEffect = document.querySelector('#details-effect');
+const detailsKind = document.querySelector('#details-kind');
+const detailsRows = document.querySelector('#details-rows');
+const detailsPrevious = document.querySelector('#details-previous');
+const detailsNext = document.querySelector('#details-next');
+const detailsSort = document.querySelector('#details-sort');
+const sortButtons = [...document.querySelectorAll('.sort-button')];
+let shownRows = [];
+const selectedRows = new Set();
+let lastToggledRow = null;
+let sortKey = 'impact';
+let sortDirection = 'desc';
+let selectedWeek = 0;
+let active;
+let fileView = null;
+const assessmentTooltip = document.querySelector('#assessment-tooltip');
+let assessmentAnchor = null;
+let assessmentPinned = false;
+let assessmentHideTimer;
+const annotations = setupReportAnnotations({
+  container, getReport: () => reports[interval], hideTooltip: hide,
+  onDetails(annotation) {
+    openDetails(annotation.period_index);
+    detailsKind.value = annotation.kind || 'all';
+    detailsEffect.value = annotation.effect || 'all';
+    renderDetails();
+  }
+});
+
+function setValue(element, value) {
+  element.textContent = signed(value);
+  element.className = value > 0 ? 'positive' : value < 0 ? 'negative' : '';
+}
+
+function signed(value) {
+  if (value === null) return 'Unavailable';
+  return (value > 0 ? '+' : value < 0 ? '−' : '') + Math.abs(value).toFixed(3);
+}
+
+function hide() {
+  tooltip.hidden = true;
+  if (active) {
+    active.classList.remove('active');
+    active.removeAttribute('aria-describedby');
+  }
+  active = undefined;
+}
+
+function show(target, clientX, clientY) {
+  if (dialog.open || annotations.isOpen()) return;
+  if (active !== target) {
+    hide();
+    active = target;
+    target.classList.add('active');
+    target.setAttribute('aria-describedby', 'week-tooltip');
+    const week = weeks[Number(target.dataset.week)];
+    const selected = week.with_file_changes;
+    title.textContent = week.label;
+    values.hidden = selected.net === null;
+    positive.textContent = signed(selected.positive);
+    negative.textContent = signed(selected.negative);
+    setValue(net, selected.net);
+    note.textContent = selected.net === null
+      ? `No earlier ${interval} to compare.`
+      : `${week.additions.files} files added; ${week.removals.files} removed.`;
+  }
+  tooltip.hidden = false;
+  const bounds = tooltip.getBoundingClientRect();
+  let left = clientX + 18;
+  if (left + bounds.width > innerWidth - 12) left = clientX - bounds.width - 18;
+  tooltip.style.left = `${Math.max(12, Math.min(left, innerWidth - bounds.width - 12))}px`;
+  tooltip.style.top = `${Math.max(12, Math.min(clientY + 18, innerHeight - bounds.height - 12))}px`;
+}
+
+function bindChart() {
+  const chart = container.querySelector('.chart');
+  const targets = [...chart.querySelectorAll('.week-hit')];
+  targets.forEach((target, index) => {
+    target.addEventListener('pointermove', event => show(target, event.clientX, event.clientY));
+    target.addEventListener('click', () => openDetails(index));
+    target.addEventListener('focus', () => {
+      const bounds = target.getBoundingClientRect();
+      show(target, bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+    });
+    target.addEventListener('blur', hide);
+    target.addEventListener('keydown', event => {
+      if (event.key === 'Escape') hide();
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        event.preventDefault();
+        const direction = event.key === 'ArrowLeft' ? -1 : 1;
+        targets[Math.max(0, Math.min(targets.length - 1, index + direction))].focus();
+      }
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openDetails(index);
+      }
+    });
+  });
+  chart.addEventListener('pointermove', event => {
+    if (!event.target.closest('.week-hit')) hide();
+  });
+  chart.addEventListener('pointerleave', event => {
+    if (event.pointerType !== 'touch') hide();
+  });
+}
+
+function node(tag, text, className) {
+  const element = document.createElement(tag);
+  if (text !== undefined) element.textContent = text;
+  if (className) element.className = className;
+  return element;
+}
+
+function icon(name) {
+  return document.querySelector(`#icon-${name}`).content.firstElementChild.cloneNode(true);
+}
+
+function sourceLink(file, commit, label) {
+  const link = node('a', label);
+  link.href = `${details.repository}/blob/${encodeURIComponent(commit)}/${file.path.split('/').map(encodeURIComponent).join('/')}`;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  return link;
+}
+
+function diffLink(row, week) {
+  const link = node('a', 'Diff', 'text-link');
+  link.append(icon('arrow-up-right'));
+  link.href = `${details.repository}/compare/${week.before_commit}...${week.commit}#diff-${row.diff_anchor}`;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.setAttribute('aria-label', `View diff for ${filePath(row)}`);
+  return link;
+}
+
+function score(value) {
+  if (value === null) return '—';
+  const rounded = Number(value.toFixed(1));
+  return (value <= details.threshold_score && rounded >= details.threshold_score
+    ? details.threshold_score - .1 : rounded).toFixed(1);
+}
+function mass(value) {
+  if (value === null) return '—';
+  if (value > 1000) return `${Math.round(value / 1000).toLocaleString('en-US')}k`;
+  return value.toLocaleString('en-US', { maximumFractionDigits: 0 });
+}
+
+function massChange(row) { return (row.after_mass ?? 0) - (row.before_mass ?? 0); }
+function signedMass(value) {
+  if (Math.abs(value) < .5) return '0';
+  return (value > 0 ? '+' : '−') + mass(Math.abs(value));
+}
+
+function exactMass(value) {
+  return Math.round(Math.abs(value)).toLocaleString('en-US');
+}
+
+// A bar from a shared zero line: right for positive values, left for negative.
+function deltaBar(value, scale, tone, epsilon) {
+  const direction = value >= epsilon ? 'up' : value <= -epsilon ? 'down' : 'flat';
+  const bar = node('span', undefined, `delta-bar ${tone} ${direction}`);
+  bar.setAttribute('aria-hidden', 'true');
+  bar.style.setProperty('--size', `${(Math.abs(value) / scale * 100).toFixed(1)}%`);
+  return bar;
+}
+
+function scoreMark(value) {
+  const mark = node('span', undefined, 'score-mark');
+  if (value === null) {
+    // An empty chip keeps added and removed files aligned with scored ones.
+    mark.classList.add('none');
+    mark.title = 'No score: the file does not exist in this revision';
+    mark.append(node('span', 'No score', 'cell-value'));
+    return mark;
+  }
+  const passed = value > details.threshold_score;
+  mark.classList.add(passed ? 'pass' : 'fail');
+  mark.title = `Score ${score(value)}, ${passed ? 'above' : 'at or below'} the pass threshold of ${details.threshold_score.toFixed(1)}`;
+  mark.append(node('span', score(value), 'score-text'));
+  return mark;
+}
+
+function massCell(row, scale) {
+  const change = massChange(row);
+  const cell = node('td', undefined, 'number mass');
+  cell.dataset.label = 'Mass';
+  const sides = [['before', row.before_mass], ['after', row.after_mass]]
+    .filter(([, value]) => value !== null)
+    .map(([label, value]) => `${label} ${exactMass(value)}`);
+  cell.title = `Mass ${Math.abs(change) < .5 ? 'unchanged' : (change > 0 ? '+' : '−') + exactMass(change)}${sides.length ? ` (${sides.join(', ')})` : ''}`;
+  cell.append(node('span', signedMass(change), 'cell-value'), deltaBar(change, scale.mass, 'mass-bar', .5));
+  return cell;
+}
+
+function factorImpact(value, scale) {
+  const impact = node('span', undefined, 'factor-impact');
+  impact.title = `Impact ${points(value)} points`;
+  impact.append(deltaBar(value, scale, 'impact-bar', .005), node('span', points(value), 'cell-value'));
+  return impact;
+}
+
+function impactCell(row, scale) {
+  const cell = node('td', undefined, 'number impact');
+  cell.dataset.label = 'Impact';
+  cell.title = `Impact ${signed(row.contribution)} (${row.contribution.toPrecision(8)})`;
+  cell.append(node('span', signed(row.contribution), 'cell-value'), deltaBar(row.contribution, scale.impact, 'impact-bar', .0005));
+  return cell;
+}
+
+function filePath(row) { return (row.after.length ? row.after : row.before)[0].path; }
+
+function compareRows(a, b) {
+  const pathOrder = filePath(a).localeCompare(filePath(b), 'en');
+  if (sortKey === 'file') return sortDirection === 'asc' ? pathOrder : -pathOrder;
+  const value = row => sortKey === 'impact' ? Math.abs(row.contribution) : sortKey === 'mass_change' ? massChange(row) : row[sortKey];
+  const first = value(a);
+  const second = value(b);
+  // Missing values stay last in either direction; compare unrounded numbers.
+  if (first === null || second === null) {
+    return first === second ? pathOrder : first === null ? 1 : -1;
+  }
+  const order = typeof first === 'string' ? first.localeCompare(second, 'en') : first - second;
+  return (sortDirection === 'asc' ? order : -order) || pathOrder;
+}
+
+function updateSortControls() {
+  detailsSort.value = `${sortKey}:${sortDirection}`;
+  document.querySelectorAll('.details-table th').forEach(header => header.removeAttribute('aria-sort'));
+  const names = {file: 'file', kind: 'change type', before_score: 'score before', after_score: 'score after', mass_change: 'mass change', contribution: 'impact'};
+  for (const button of sortButtons) {
+    const key = button.dataset.sort;
+    // Absolute impact is the default sort, so the Impact header shows its arrow.
+    const selected = key === sortKey || (key === 'contribution' && sortKey === 'impact');
+    const next = selected ? (sortDirection === 'asc' ? 'desc' : 'asc') : ['file', 'kind'].includes(key) ? 'asc' : 'desc';
+    button.setAttribute('aria-current', String(selected));
+    button.querySelector('.sort-indicator').replaceChildren(icon(selected ? (sortDirection === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrows-up-down'));
+    const label = `Sort by ${names[key]}, ${next === 'asc' ? 'ascending' : 'descending'}`;
+    button.setAttribute('aria-label', label);
+    button.title = label;
+    if (selected) button.closest('th').setAttribute('aria-sort', sortDirection === 'asc' ? 'ascending' : 'descending');
+    if (key === 'contribution' && sortKey === 'impact') {
+      button.closest('th').setAttribute('aria-sort', 'other');
+      button.title = `Sorted by largest absolute impact. ${label}.`;
+    }
+  }
+}
+
+function fileCell(row) {
+  const cell = node('td', undefined, 'file');
+  const path = filePath(row);
+  const slash = path.lastIndexOf('/') + 1;
+  const pathLabel = node('button', undefined, 'file-path file-open');
+  pathLabel.type = 'button';
+  pathLabel.title = path;
+  pathLabel.setAttribute('aria-label', `Explain score for ${path}`);
+  pathLabel.addEventListener('click', () => openFile(row, pathLabel));
+  const pathText = node('bdi');
+  pathText.dir = 'ltr';
+  pathText.append(node('span', path.slice(0, slash), 'file-directory'), node('span', path.slice(slash), 'file-name'));
+  pathLabel.append(pathText);
+  cell.append(pathLabel);
+  return cell;
+}
+
+function fileGroup(row, week) {
+  const group = node('details', undefined, 'file-group');
+  const summary = node('summary');
+  const label = node('span', undefined, 'file-group-label');
+  label.append(icon('chevron-right'), `View files: ${row.before.length} before → ${row.after.length} after`);
+  summary.append(node('span', row.kind, 'file-kind'), label);
+  group.append(summary);
+  const members = node('div', undefined, 'file-group-members');
+  for (const [label, files, commit] of [['Before', row.before, week.before_commit], ['After', row.after, week.commit]]) {
+    const side = node('div');
+    side.append(node('h3', label));
+    const list = node('ul');
+    list.setAttribute('role', 'list');
+    for (const file of files) {
+      const item = node('li');
+      const link = sourceLink(file, commit, file.path);
+      link.className = 'file-path';
+      item.append(link, node('div', `Score ${score(file.score)} · Mass ${mass(file.mass)}`, 'file-metrics'));
+      list.append(item);
+    }
+    side.append(list);
+    members.append(side);
+  }
+  group.append(members);
+  return group;
+}
+
+function toneClass(value) {
+  return value > 0 ? 'positive' : value < 0 ? 'negative' : '';
+}
+
+// A share bar: the green improved share against the red declined share, with
+// a break-even tick at the midpoint and a net marker at the split. Hover or
+// focus opens a popover with the figures.
+const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
+
+// Shift-click extends the last toggle across the shown rows in between.
+function selectCell(row) {
+  const cell = node('td', undefined, 'select');
+  const box = node('input', undefined, 'check');
+  box.type = 'checkbox';
+  box.checked = selectedRows.has(row);
+  box.setAttribute('aria-label', `Select ${filePath(row)}`);
+  box.addEventListener('click', event => {
+    event.stopPropagation();
+    const from = lastToggledRow ? shownRows.indexOf(lastToggledRow) : -1;
+    const to = shownRows.indexOf(row);
+    const range = event.shiftKey && from !== -1 ? shownRows.slice(Math.min(from, to), Math.max(from, to) + 1) : [row];
+    for (const member of range) box.checked ? selectedRows.add(member) : selectedRows.delete(member);
+    lastToggledRow = row;
+    renderSelection();
+  });
+  cell.append(box);
+  return cell;
+}
+
+// The selection outlives filter changes; the master checkbox and the counts
+// describe the shown rows, and hidden selections are called out.
+function renderSelection(available = weeks[selectedWeek].with_file_changes.net !== null) {
+  const shownSelected = shownRows.filter(row => selectedRows.has(row)).length;
+  const hidden = selectedRows.size - shownSelected;
+  const count = selectedRows.size, shown = shownRows.length;
+  const all = shown > 0 && shownSelected === shown;
+  for (const box of dialog.querySelectorAll('[data-select-all]')) {
+    box.checked = all;
+    box.indeterminate = shownSelected > 0 && !all;
+    box.disabled = shown === 0;
+  }
+  shownRows.forEach((row, index) => {
+    const tr = detailsRows.children[index];
+    const on = selectedRows.has(row);
+    tr.classList.toggle('selected', on);
+    tr.querySelector('.check').checked = on;
+  });
+  document.querySelector('#details-select-all-row').hidden = !available || shown === 0;
+  document.querySelector('#details-select-all-label').textContent = all ? `All ${shown} shown selected` : `Select all ${shown} shown`;
+  document.querySelector('#details-selection-status').textContent = count ? `${count} selected${hidden ? ` (${hidden} hidden)` : ''}` : '';
+  document.querySelector('#week-refactor-bar').hidden = !available || (!count && !shown);
+  const label = document.querySelector('#week-refactor-count');
+  label.textContent = count ? `${plural(count, 'file')} selected${hidden ? ` · ${hidden} hidden` : ''}` : `${plural(shown, 'file')} shown`;
+  label.classList.toggle('quiet', count === 0);
+  document.querySelector('#week-refactor').setAttribute('aria-label', count ? `Copy refactor prompt for ${plural(count, 'selected file')}` : `Copy refactor prompt for all ${plural(shown, 'shown file')}`);
+}
+
+function renderTotals(selected) {
+  const visuals = document.querySelector('#details-visuals');
+  const total = Math.abs(selected.positive) + Math.abs(selected.negative);
+  const share = node('div', undefined, `totals-share ${selected.net > 0 ? 'net-up' : selected.net < 0 ? 'net-down' : ''}`);
+  share.tabIndex = 0;
+  share.setAttribute('aria-label', `Quality changes: improved ${signed(selected.positive)}, declined ${signed(selected.negative)}, net ${signed(selected.net)}`);
+  const track = node('div', undefined, 'totals-share-track');
+  track.style.setProperty('--share', `${(total ? Math.abs(selected.positive) / total * 100 : 50).toFixed(1)}%`);
+  track.append(node('span', undefined, 'totals-net-mark'));
+  const popover = node('div', undefined, 'totals-popover');
+  popover.setAttribute('aria-hidden', 'true');
+  const list = node('dl');
+  for (const [label, value, className] of [['Improved', selected.positive, ''], ['Declined', selected.negative, ''], ['Net change', selected.net, 'net']]) {
+    const row = node('div', undefined, className || undefined);
+    row.append(node('dt', label), node('dd', signed(value), toneClass(value) || undefined));
+    list.append(row);
+  }
+  popover.append(list);
+  share.append(node('p', 'Quality changes', 'totals-label'), track, popover);
+  visuals.replaceChildren(share);
+}
+
+function renderDetails() {
+  const week = weeks[selectedWeek];
+  const detail = details.periods[selectedWeek];
+  const selected = week.with_file_changes;
+  const available = selected.net !== null;
+  document.querySelector('#details-title').textContent = week.label.replace('Week ending ', '');
+  detailsPrevious.disabled = selectedWeek === 0;
+  detailsNext.disabled = selectedWeek === weeks.length - 1;
+  const compare = document.querySelector('#details-compare');
+  compare.hidden = !detail.before_commit;
+  if (detail.before_commit) compare.href = `${details.repository}/compare/${detail.before_commit}...${detail.commit}`;
+  else compare.removeAttribute('href');
+  document.querySelector('#details-visuals').hidden = !available;
+  if (available) renderTotals(selected);
+  const scoped = detail.rows.filter(row => Math.abs(row.contribution).toFixed(3) !== '0.000');
+  const query = detailsSearch.value.trim().toLowerCase();
+  const rows = scoped.filter(row =>
+    (detailsEffect.value === 'all' || (detailsEffect.value === 'positive' ? row.contribution > 0 : row.contribution < 0)) &&
+    (detailsKind.value === 'all' || row.kind === detailsKind.value) &&
+    [...row.before, ...row.after].some(file => file.path.toLowerCase().includes(query))
+  ).sort(compareRows);
+  shownRows = rows;
+  updateSortControls();
+  // Scale bars to the whole week, not the filtered view, so they stay comparable while searching.
+  const scale = {
+    mass: Math.max(1, ...detail.rows.map(row => Math.abs(massChange(row)))),
+    impact: Math.max(.001, ...detail.rows.map(row => Math.abs(row.contribution))),
+  };
+  const fragment = document.createDocumentFragment();
+  for (const row of rows) {
+    const tr = node('tr');
+    tr.className = 'contribution-row';
+    tr.addEventListener('click', event => {
+      if (event.target.closest('button, a, details, input, label') || window.getSelection().toString()) return;
+      openFile(row, tr.querySelector('.file-open'));
+    });
+    const kind = node('td', undefined, 'change-type');
+    kind.append(node('span', row.kind, 'file-kind'));
+    tr.append(selectCell(row), fileCell(row), kind);
+    const before = node('td', undefined, 'number score-before');
+    before.dataset.label = 'Score';
+    before.append(scoreMark(row.before_score));
+    const arrow = node('td', '→', 'score-arrow');
+    arrow.setAttribute('aria-hidden', 'true');
+    const after = node('td', undefined, 'number score-after');
+    after.append(scoreMark(row.after_score));
+    tr.append(before, arrow, after, massCell(row, scale), impactCell(row, scale));
+    fragment.append(tr);
+  }
+  detailsRows.replaceChildren(fragment);
+  document.querySelector('#details-table').hidden = !available || !rows.length;
+  document.querySelector('#details-filters').hidden = !available;
+  const empty = document.querySelector('#details-empty');
+  empty.hidden = available && rows.length > 0;
+  empty.textContent = !available ? `No earlier ${interval} to compare.` : scoped.length ? 'No files match these filters.' : 'No contributions to display.';
+  const count = document.querySelector('#details-count');
+  count.textContent = available ? `${rows.length === scoped.length ? rows.length : `${rows.length} of ${scoped.length}`} ${rows.length === 1 ? 'row' : 'rows'}` : '';
+  document.querySelector('#details-shown-net').textContent = available ? `Shown net ${signed(rows.reduce((sum, row) => sum + row.contribution, 0))}` : '';
+  renderSelection(available);
+}
+
+function points(value) {
+  return (value > 0 ? '+' : value < 0 ? '−' : '') + Math.abs(value).toFixed(2);
+}
+
+function measurement(value, decimals = 1) {
+  if (value === null) return '—';
+  return value.toLocaleString('en-US', { maximumFractionDigits: decimals });
+}
+
+function hideAssessment() {
+  clearTimeout(assessmentHideTimer);
+  if (assessmentTooltip.matches(':popover-open')) assessmentTooltip.hidePopover();
+  if (assessmentAnchor) {
+    assessmentAnchor.removeAttribute('aria-describedby');
+    assessmentAnchor.setAttribute('aria-expanded', 'false');
+  }
+  assessmentAnchor = null;
+  assessmentPinned = false;
+}
+
+function showAssessment(button, question) {
+  clearTimeout(assessmentHideTimer);
+  if (assessmentAnchor !== button) hideAssessment();
+  assessmentAnchor = button;
+  assessmentTooltip.textContent = question;
+  button.setAttribute('aria-describedby', 'assessment-tooltip');
+  button.setAttribute('aria-expanded', 'true');
+  if (!assessmentTooltip.matches(':popover-open')) assessmentTooltip.showPopover();
+  const anchor = button.getBoundingClientRect(), tip = assessmentTooltip.getBoundingClientRect();
+  const left = Math.max(12, Math.min(anchor.left, innerWidth - tip.width - 12));
+  const below = anchor.bottom + 8;
+  const top = below + tip.height <= innerHeight - 12 ? below : Math.max(12, anchor.top - tip.height - 8);
+  assessmentTooltip.style.left = `${left}px`;
+  assessmentTooltip.style.top = `${top}px`;
+}
+
+function scheduleAssessmentHide() {
+  clearTimeout(assessmentHideTimer);
+  assessmentHideTimer = setTimeout(() => {
+    if (!assessmentPinned && document.activeElement !== assessmentAnchor && !assessmentTooltip.matches(':hover')) hideAssessment();
+  }, 150);
+}
+
+function assessmentInfo(factor, question) {
+  const button = node('button', undefined, 'assessment-info');
+  button.type = 'button';
+  button.dataset.question = factor.id;
+  button.setAttribute('aria-label', `Evaluation question for ${factor.name}`);
+  button.setAttribute('aria-expanded', 'false');
+  button.append(icon('info'));
+  button.addEventListener('pointerenter', event => {
+    if (event.pointerType !== 'touch') showAssessment(button, question);
+  });
+  button.addEventListener('pointerleave', scheduleAssessmentHide);
+  button.addEventListener('focus', () => showAssessment(button, question));
+  button.addEventListener('blur', () => { assessmentPinned = false; scheduleAssessmentHide(); });
+  button.addEventListener('click', () => {
+    if (assessmentPinned && assessmentAnchor === button) hideAssessment();
+    else { showAssessment(button, question); assessmentPinned = true; }
+  });
+  return button;
+}
+
+__REFACTOR_PROMPT_SCRIPT__
+
+function closeMenus() {
+  for (const menu of document.querySelectorAll('.menu:popover-open')) menu.hidePopover();
+}
+
+function copyWithSelection(text) {
+  const active = document.activeElement;
+  const buffer = node('textarea', undefined, 'clipboard-buffer');
+  buffer.value = text;
+  buffer.readOnly = true;
+  document.querySelector('#file-details').append(buffer);
+  try {
+    buffer.focus({preventScroll: true});
+    buffer.select();
+    return document.execCommand('copy');
+  } catch {
+    return false;
+  } finally {
+    buffer.remove();
+    if (active?.isConnected) active.focus({preventScroll: true});
+  }
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return copyWithSelection(text);
+  }
+}
+
+// `source` builds the prompt on demand and names the status line and fallback
+// textarea for that drilldown level.
+function refactorCopyControl(button, status, fallback, source) {
+  let busy = false, resetTimer;
+  const reset = () => {
+    clearTimeout(resetTimer);
+    busy = false;
+    button.removeAttribute('aria-busy');
+    delete button.dataset.copied;
+    status.textContent = '';
+    fallback.hidden = true;
+    fallback.value = '';
+  };
+  const run = async () => {
+    if (busy) return;
+    const text = source();
+    if (text === null) return;
+    reset();
+    busy = true;
+    button.setAttribute('aria-busy', 'true');
+    const copied = await copyText(text);
+    busy = false;
+    button.removeAttribute('aria-busy');
+    if (copied) {
+      status.textContent = 'Prompt copied.';
+      button.dataset.copied = '';
+      resetTimer = setTimeout(() => { status.textContent = ''; delete button.dataset.copied; }, 2500);
+    } else {
+      status.textContent = 'Copy blocked. Select and copy the prompt below.';
+      fallback.value = text;
+      fallback.hidden = false;
+      fallback.focus();
+      fallback.select();
+    }
+  };
+  return {run, reset};
+}
+
+// The file drilldown keeps a dropdown on its score chip.
+function refactorMenuControl(button, menu, status, fallback, source) {
+  const control = refactorCopyControl(button, status, fallback, source);
+  menu.addEventListener('toggle', event => {
+    const open = event.newState === 'open';
+    button.setAttribute('aria-expanded', String(open));
+    if (!open) return;
+    const anchor = button.getBoundingClientRect(), box = menu.getBoundingClientRect();
+    let left = anchor.left;
+    if (left + box.width > innerWidth - 12) left = Math.max(12, anchor.right - box.width);
+    const below = anchor.bottom + 6;
+    menu.style.left = `${left}px`;
+    menu.style.top = `${below + box.height <= innerHeight - 12 ? below : Math.max(12, anchor.top - box.height - 6)}px`;
+    menu.querySelector('[role="menuitem"]').focus();
+  });
+  menu.addEventListener('click', event => {
+    const item = event.target.closest('[data-refactor]');
+    if (!item) return;
+    menu.hidePopover();
+    control.run();
+  });
+  menu.addEventListener('keydown', event => {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    event.preventDefault();
+    const items = [...menu.querySelectorAll('[role="menuitem"]')];
+    const index = items.indexOf(document.activeElement);
+    items[(index + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length].focus();
+  });
+  return control;
+}
+
+const fileRefactor = refactorMenuControl(
+  document.querySelector('#file-refactor'), document.querySelector('#refactor-options'),
+  document.querySelector('#file-copy-status'), document.querySelector('#file-prompt-text'),
+  () => fileView ? refactorPrompt(fileView.row, details.periods[fileView.weekIndex], details, weeks[fileView.weekIndex].label) : null);
+const weekRefactor = refactorCopyControl(
+  document.querySelector('#week-refactor'), document.querySelector('#week-copy-status'), document.querySelector('#week-prompt-text'),
+  () => {
+    const period = details.periods[selectedWeek];
+    const rows = selectedRows.size ? period.rows.filter(row => selectedRows.has(row)) : shownRows;
+    if (!rows.length) return null;
+    const scope = {kind: selectedRows.size ? 'selected' : 'shown', shown: shownRows.length};
+    return weekRefactorPrompt(rows, period, details, weeks[selectedWeek].label, weeks[selectedWeek].with_file_changes, scope);
+  });
+document.querySelector('#week-refactor').addEventListener('click', weekRefactor.run);
+for (const event of ['scroll', 'resize']) window.addEventListener(event, closeMenus, {capture: true, passive: true});
+
+function openFile(row, opener) {
+  hideAssessment();
+  fileView = {row, weekIndex: selectedWeek, opener, scroll: document.querySelector('.details-scroll').scrollTop, dialogScroll: dialog.scrollTop};
+  closeMenus();
+  fileRefactor.reset();
+  dialog.classList.add('show-file');
+  document.querySelector('#file-details').hidden = false;
+  dialog.setAttribute('aria-labelledby', 'file-title file-week');
+  document.querySelector('#file-week').textContent = weeks[selectedWeek].label;
+  const grouped = row.before.length > 1 || row.after.length > 1;
+  const path = filePath(row), slash = path.lastIndexOf('/') + 1;
+  document.querySelector('#file-directory').textContent = path.slice(0, slash);
+  const diff = diffLink(row, details.periods[selectedWeek]);
+  diff.className = 'file-diff';
+  diff.textContent = path.slice(slash);
+  document.querySelector('#file-title').replaceChildren(diff);
+  document.querySelector('#file-change-kind').textContent = row.kind;
+  const origin = document.querySelector('#file-origin');
+  origin.hidden = row.kind !== 'Renamed';
+  origin.replaceChildren();
+  if (row.kind === 'Renamed') origin.append('Renamed from ', node('span', row.before[0].path, 'file-path'));
+  const change = row.after_score !== null && row.before_score !== null ? row.after_score - row.before_score : null;
+  const scoreLine = document.querySelector('#file-score-change');
+  // The last score chip doubles as the refactor trigger.
+  const transition = node('span', undefined, 'score-transition');
+  const actionScore = row.after_score ?? row.before_score;
+  const scoreButton = document.querySelector('#file-refactor');
+  scoreButton.hidden = actionScore === null;
+  if (actionScore !== null) {
+    const passed = actionScore > details.threshold_score;
+    scoreButton.className = `score-mark score-action ${passed ? 'pass' : 'fail'}`;
+    document.querySelector('#file-refactor-score').textContent = score(actionScore);
+    scoreButton.setAttribute('aria-label', `Score ${score(actionScore)}, ${passed ? 'above' : 'below'} the pass threshold. Refactor options`);
+    scoreButton.title = 'Refactor options';
+  }
+  const last = actionScore === null ? scoreMark(null) : scoreButton;
+  if (change !== null) transition.append(scoreMark(row.before_score), node('span', '→', 'score-arrow'), last);
+  else transition.append(last);
+  scoreLine.replaceChildren(transition);
+  const note = document.querySelector('#file-explanation-note');
+  note.hidden = true;
+  document.querySelector('#file-question').textContent = 'Why the score changed';
+  document.querySelector('#factor-unit').hidden = !row.explanation;
+  const list = document.querySelector('#file-factors');
+  list.replaceChildren();
+  const other = document.querySelector('#file-other');
+  other.replaceChildren();
+  other.hidden = true;
+  if (row.explanation) {
+    const explainsScore = row.explanation.mode === 'score';
+    const factorScale = Math.max(.01, ...[...row.explanation.factors.map(factor => factor.change), row.explanation.other].map(Math.abs));
+    if (explainsScore) {
+      document.querySelector('#file-question').textContent = `Why this file scored ${score(row.explanation.score)}`;
+    }
+    for (const factor of row.explanation.factors) {
+      const item = node('li', undefined, 'score-factor');
+      const description = node('div');
+      const heading = node('h4');
+      heading.append(node('span', factor.name));
+      const question = details.questions[factor.id];
+      if (question) heading.append(assessmentInfo(factor, question));
+      description.append(heading);
+      const evidence = factor.evidence.map(value => {
+        // A 0–100 scale reads as a percentage; other scales keep an explicit denominator.
+        const percent = value.scale === 100;
+        const format = number => measurement(number, value.decimals ?? 1) + (percent ? '%' : '');
+        const scale = value.scale && !percent ? ` / ${value.scale}` : '';
+        if ('value' in value) return `${value.label}: ${format(value.value)}${scale}`;
+        const before = format(value.before), after = format(value.after);
+        return before === after ? null : `${value.label}: ${before} → ${after}${scale}`;
+      }).filter(Boolean).join(' · ');
+      if (evidence) description.append(node('p', evidence));
+      else if (!factor.evidence.length) description.append(node('p', 'Measurements changed across group members.'));
+      item.append(description, factorImpact(factor.change, factorScale));
+      list.append(item);
+    }
+    if (Math.abs(row.explanation.other) >= .005) {
+      other.hidden = false;
+      other.append(node('span', 'Other factors'), factorImpact(row.explanation.other, factorScale));
+    }
+    if (!row.explanation.factors.length && !explainsScore) {
+      note.textContent = 'Several small changes account for the score difference.';
+      note.hidden = false;
+    }
+  } else if (change === null) {
+    const added = row.kind === 'Added', value = row.after_score ?? row.before_score;
+    document.querySelector('#file-question').textContent = `Why this ${added ? 'addition' : 'removal'} ${row.contribution > 0 ? 'improved' : 'reduced'} quality`;
+    note.textContent = `This file was ${added ? 'added' : 'removed'}, so there is no before-and-after score change. Its score of ${score(value)} is ${value > details.threshold_score ? 'above' : 'at or below'} the pass threshold (${details.threshold_score.toFixed(1)}). ${added ? 'Adding' : 'Removing'} it ${row.contribution > 0 ? 'improves' : 'reduces'} the ${interval === 'month' ? 'monthly' : 'weekly'} result.`;
+    note.hidden = false;
+  } else {
+    note.textContent = 'The saved measurements are not available to explain this score change.';
+    note.hidden = false;
+  }
+  const members = document.querySelector('#file-members');
+  members.replaceChildren();
+  if (grouped) {
+    if (row.kind !== 'Split') {
+      note.textContent = `This is a ${row.kind.toLowerCase()}: ${row.before.length} ${row.before.length === 1 ? 'file' : 'files'} before → ${row.after.length} after. Scores and factors are weighted by file mass.`;
+      note.hidden = false;
+    }
+    members.append(fileGroup(row, details.periods[selectedWeek]));
+  }
+  document.querySelector('.file-detail-scroll').scrollTop = 0;
+  dialog.scrollTop = 0;
+  document.querySelector('#file-back').focus({preventScroll: true});
+}
+
+function backToWeek(restoreFocus = true) {
+  hideAssessment();
+  closeMenus();
+  fileRefactor.reset();
+  const saved = fileView;
+  fileView = null;
+  dialog.classList.remove('show-file');
+  document.querySelector('#file-details').hidden = true;
+  dialog.setAttribute('aria-labelledby', 'details-week-label details-title');
+  if (saved) {
+    document.querySelector('.details-scroll').scrollTop = saved.scroll;
+    dialog.scrollTop = saved.dialogScroll;
+    if (restoreFocus) saved.opener.focus({preventScroll: true});
+  }
+}
+
+function openDetails(index) {
+  annotations.hide();
+  hide();
+  backToWeek(false);
+  selectedWeek = index;
+  closeMenus();
+  weekRefactor.reset();
+  selectedRows.clear();
+  lastToggledRow = null;
+  detailsSearch.value = '';
+  detailsEffect.value = 'all';
+  detailsKind.value = 'all';
+  renderDetails();
+  dialog.showModal();
+  dialog.scrollTop = 0;
+  document.querySelector('#details-close').focus();
+  document.querySelector('.details-scroll').scrollTop = 0;
+}
+
+detailsSearch.addEventListener('input', renderDetails);
+detailsEffect.addEventListener('change', renderDetails);
+detailsKind.addEventListener('change', renderDetails);
+sortButtons.forEach(button => button.addEventListener('click', () => {
+  const key = button.dataset.sort;
+  sortDirection = key === sortKey ? (sortDirection === 'asc' ? 'desc' : 'asc') : ['file', 'kind'].includes(key) ? 'asc' : 'desc';
+  sortKey = key;
+  renderDetails();
+  document.querySelector('.details-scroll').scrollTop = 0;
+}));
+detailsSort.addEventListener('change', () => {
+  [sortKey, sortDirection] = detailsSort.value.split(':');
+  renderDetails();
+  document.querySelector('.details-scroll').scrollTop = 0;
+});
+for (const box of dialog.querySelectorAll('[data-select-all]')) box.addEventListener('change', () => {
+  for (const row of shownRows) box.checked ? selectedRows.add(row) : selectedRows.delete(row);
+  lastToggledRow = null;
+  renderSelection();
+});
+detailsPrevious.addEventListener('click', () => openDetails(selectedWeek - 1));
+detailsNext.addEventListener('click', () => openDetails(selectedWeek + 1));
+document.querySelector('#details-close').addEventListener('click', () => dialog.close());
+document.querySelector('#file-close').addEventListener('click', () => dialog.close());
+document.querySelector('#file-back').addEventListener('click', () => backToWeek());
+dialog.addEventListener('keydown', event => {
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    if (document.querySelector('.menu:popover-open')) closeMenus();
+    else if (assessmentAnchor) hideAssessment();
+    else if (fileView) backToWeek();
+    else dialog.close();
+  }
+});
+dialog.addEventListener('close', () => {
+  if (dialog.open) return;
+  backToWeek(false);
+  container.querySelector(`[data-week="${selectedWeek}"]`).focus({ preventScroll: true });
+  hide();
+});
+dialog.addEventListener('click', event => {
+  if (event.target !== dialog) return;
+  const bounds = dialog.getBoundingClientRect();
+  if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close();
+});
+function selectInterval(frequency) {
+  if (!reports[frequency]) return;
+  annotations.hide();
+  hide();
+  hideAssessment();
+  closeMenus();
+  backToWeek(false);
+  weekRefactor.reset();
+  interval = frequency;
+  weeks = reports[interval].values;
+  details = reports[interval].details;
+  selectedWeek = 0;
+  shownRows = [];
+  selectedRows.clear();
+  lastToggledRow = null;
+  detailsRows.replaceChildren();
+  document.querySelector('#report-interval').value = interval;
+  document.querySelector('#details-week-label').textContent = interval === 'month' ? 'Month' : 'Week ending';
+  detailsPrevious.setAttribute('aria-label', `Previous ${interval}`);
+  detailsNext.setAttribute('aria-label', `Next ${interval}`);
+  document.querySelector('#details-table').setAttribute('aria-label', `File contributions to ${interval === 'month' ? 'monthly' : 'weekly'} quality change`);
+  container.innerHTML = reports[interval].svg;
+  document.querySelector('.chart-scroll').scrollLeft = 0;
+  bindChart();
+  annotations.render();
+}
+document.querySelector('#report-interval').addEventListener('change', event => selectInterval(event.target.value));
+// Saves the shown interval's chart, with its title and legend, as a file.
+function exportChartSvg() {
+  const project = details.repository.replace(/\/+$/, '').split('/').pop() || 'report';
+  const name = `${project}-${interval === 'month' ? 'monthly' : 'weekly'}-trends.svg`;
+  const url = URL.createObjectURL(new Blob([reports[interval].standalone_svg], {type: 'image/svg+xml'}));
+  const link = node('a');
+  link.href = url;
+  link.download = name;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+setupChartOptions({
+  annotationsAvailable: Object.values(reports).some(report => report.annotations?.length),
+  onOpen: () => { hide(); annotations.hide(); },
+  onChange: annotations.setVisible,
+  onExport: exportChartSvg
+});
+selectInterval(interval);
+document.addEventListener('pointerdown', event => {
+  if (!event.target.closest('.week-hit')) hide();
+  if (!event.target.closest('.assessment-info, #assessment-tooltip')) hideAssessment();
+});
+assessmentTooltip.addEventListener('pointerenter', () => clearTimeout(assessmentHideTimer));
+assessmentTooltip.addEventListener('pointerleave', scheduleAssessmentHide);
+window.addEventListener('resize', hideAssessment);
+window.addEventListener('scroll', event => {
+  if (event.target !== assessmentTooltip) hideAssessment();
+}, true);
+window.addEventListener('resize', hide);
+document.querySelector('.chart-scroll').addEventListener('scroll', hide, { passive: true });
+window.addEventListener('scroll', hide, { passive: true });
+// Combined-report links open this repository's files for the selected calendar period.
+const linkedPeriod = new URLSearchParams(location.hash.slice(1));
+const linkedInterval = linkedPeriod.get('interval');
+if (['week', 'month'].includes(linkedInterval) && reports[linkedInterval]) {
+  selectInterval(linkedInterval);
+  const index = details.periods.findIndex(period => (period.week_start || period.period_start) === linkedPeriod.get('period'));
+  if (index >= 0) openDetails(index);
+}
+</script>
+</body>
+</html>

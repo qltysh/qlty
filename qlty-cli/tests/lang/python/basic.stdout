@@ -1,5 +1,6 @@
 {
   "metadata": {
+    "id": "[..]",
     "buildId": "[..]",
     "result": "ANALYSIS_RESULT_SUCCESS",
     "filesAnalyzed": 59,
@@ -11,14 +12,19 @@
     "committerName": "TEST",
     "authorEmail": "test@codeclimate.com",
     "authorName": "TEST",
-    "authoredAt": "2024-01-01T00:00:00+00:00"
+    "authoredAt": "2024-01-01T00:00:00+00:00",
+    "generatedAt": "[..]",
+    "time": "[..]"
   },
   "messages": [],
   "invocations": [],
   "issues": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "boolean-logic",
@@ -41,11 +47,18 @@
           "endByte": 264
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "boolean-logic",
@@ -68,11 +81,18 @@
           "endByte": 289
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "boolean-logic",
@@ -95,11 +115,18 @@
           "endByte": 44
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "file-complexity",
@@ -123,14 +150,21 @@
           "endByte": 462
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "file.path": "file_complexity.py"
       },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-complexity",
@@ -154,14 +188,21 @@
           "endByte": 461
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "main"
       },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-parameters",
@@ -184,11 +225,18 @@
           "endByte": 74
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -211,11 +259,18 @@
           "endByte": 461
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -238,11 +293,18 @@
           "endByte": 221
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "return-statements",
@@ -265,11 +327,18 @@
           "endByte": 471
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "return-statements",
@@ -293,11 +362,18 @@
           "endByte": 1310
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "return-statements",
@@ -321,11 +397,16 @@
           "endByte": 927
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     }
   ],
   "stats": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "boolean_logic.py",
@@ -343,9 +424,12 @@
       "blankLines": 2,
       "complexity": 2,
       "cyclomatic": 5,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_boolean.py",
@@ -363,9 +447,12 @@
       "blankLines": 0,
       "complexity": 3,
       "cyclomatic": 4,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_catch_rescue_statements.py",
@@ -383,9 +470,12 @@
       "blankLines": 0,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_complex_function.py",
@@ -403,9 +493,12 @@
       "blankLines": 0,
       "complexity": 6,
       "cyclomatic": 7,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_complex_logical_operator_sequence.py",
@@ -423,9 +516,12 @@
       "blankLines": 0,
       "complexity": 7,
       "cyclomatic": 24,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_conditional_assignment.py",
@@ -443,9 +539,12 @@
       "blankLines": 0,
       "complexity": 2,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_decorator.py",
@@ -463,9 +562,12 @@
       "blankLines": 1,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_decorator_generator.py",
@@ -483,9 +585,12 @@
       "blankLines": 2,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_function_with_ternary.py",
@@ -503,9 +608,12 @@
       "blankLines": 0,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_if.py",
@@ -523,9 +631,12 @@
       "blankLines": 0,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_if_elif_else.py",
@@ -543,9 +654,12 @@
       "blankLines": 0,
       "complexity": 3,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_if_else.py",
@@ -563,9 +677,12 @@
       "blankLines": 0,
       "complexity": 2,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_if_elsif.py",
@@ -583,9 +700,12 @@
       "blankLines": 0,
       "complexity": 2,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_jumps.py",
@@ -603,9 +723,12 @@
       "blankLines": 0,
       "complexity": 3,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_lambdas.py",
@@ -623,9 +746,12 @@
       "blankLines": 1,
       "complexity": 2,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_more_complex_function_with_nested_logic.py",
@@ -643,9 +769,12 @@
       "blankLines": 0,
       "complexity": 16,
       "cyclomatic": 12,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_multiple_if_statements.py",
@@ -663,9 +792,12 @@
       "blankLines": 1,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_nested_if_else.py",
@@ -683,9 +815,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_nesting_elif.py",
@@ -703,9 +838,12 @@
       "blankLines": 0,
       "complexity": 4,
       "cyclomatic": 4,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_nesting_else.py",
@@ -723,9 +861,12 @@
       "blankLines": 0,
       "complexity": 4,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_nesting_except.py",
@@ -743,9 +884,12 @@
       "blankLines": 0,
       "complexity": 3,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_nesting_if.py",
@@ -763,9 +907,12 @@
       "blankLines": 0,
       "complexity": 3,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_nesting_loops.py",
@@ -783,9 +930,12 @@
       "blankLines": 1,
       "complexity": 6,
       "cyclomatic": 5,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_no_logic.py",
@@ -803,9 +953,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_non_sequential_logical_operators.py",
@@ -823,9 +976,12 @@
       "blankLines": 0,
       "complexity": 3,
       "cyclomatic": 5,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_not_decorator.py",
@@ -843,9 +999,12 @@
       "blankLines": 2,
       "complexity": 2,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_recursion.py",
@@ -863,9 +1022,12 @@
       "blankLines": 0,
       "complexity": 1,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_ternary.py",
@@ -883,9 +1045,12 @@
       "blankLines": 0,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_binary.py",
@@ -903,9 +1068,12 @@
       "blankLines": 0,
       "complexity": 2,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_if.py",
@@ -923,9 +1091,12 @@
       "blankLines": 0,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_loop.py",
@@ -943,9 +1114,12 @@
       "blankLines": 0,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "count_no_logic.py",
@@ -963,9 +1137,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclo_if_elif.py",
@@ -983,9 +1160,12 @@
       "blankLines": 0,
       "complexity": 2,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclo_if_elif_else.py",
@@ -1003,9 +1183,12 @@
       "blankLines": 0,
       "complexity": 3,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclo_if_else.py",
@@ -1023,9 +1206,12 @@
       "blankLines": 0,
       "complexity": 2,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "iterative_for_in.py",
@@ -1043,9 +1229,12 @@
       "blankLines": 0,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "iterative_map.py",
@@ -1063,9 +1252,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "iterative_methods_with_filter.py",
@@ -1083,9 +1275,12 @@
       "blankLines": 2,
       "complexity": 2,
       "cyclomatic": 4,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "class_declaration.py",
@@ -1103,9 +1298,12 @@
       "blankLines": 4,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "ignore_collaborators.py",
@@ -1123,9 +1321,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "multiple.py",
@@ -1143,9 +1344,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "read.py",
@@ -1163,9 +1367,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "unique.py",
@@ -1183,9 +1390,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "write.py",
@@ -1203,9 +1413,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "file_complexity.py",
@@ -1223,9 +1436,12 @@
       "blankLines": 0,
       "complexity": 55,
       "cyclomatic": 11,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "function_complexity.py",
@@ -1243,9 +1459,12 @@
       "blankLines": 2,
       "complexity": 15,
       "cyclomatic": 6,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "methods_with_parameters.py",
@@ -1263,9 +1482,12 @@
       "blankLines": 1,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "methods_without_parameters.py",
@@ -1283,9 +1505,12 @@
       "blankLines": 3,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "singleton_methods_with_parameters.py",
@@ -1303,9 +1528,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "singleton_methods_without_parameters.py",
@@ -1323,9 +1551,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "identical.py",
@@ -1343,9 +1574,12 @@
       "blankLines": 5,
       "complexity": 4,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_0.py",
@@ -1363,9 +1597,12 @@
       "blankLines": 6,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_1-1.py",
@@ -1383,9 +1620,12 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_1.py",
@@ -1403,9 +1643,12 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_2.py",
@@ -1423,9 +1666,12 @@
       "blankLines": 5,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 2
+      "lcom4": 2,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lines.py",
@@ -1443,9 +1689,12 @@
       "blankLines": 7,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "nested_control.py",
@@ -1463,9 +1712,12 @@
       "blankLines": 6,
       "complexity": 36,
       "cyclomatic": 23,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "parameters.py",
@@ -1483,9 +1735,12 @@
       "blankLines": 6,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "returns.py",
@@ -1503,9 +1758,12 @@
       "blankLines": 8,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cognitive",
@@ -1522,9 +1780,12 @@
       "blankLines": 8,
       "complexity": 78,
       "cyclomatic": 103,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclomatic",
@@ -1541,9 +1802,12 @@
       "blankLines": 2,
       "complexity": 14,
       "cyclomatic": 24,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "fields",
@@ -1560,9 +1824,12 @@
       "blankLines": 4,
       "complexity": 0,
       "cyclomatic": 6,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "functions",
@@ -1579,9 +1846,12 @@
       "blankLines": 4,
       "complexity": 0,
       "cyclomatic": 4,
-      "lcom4": 2
+      "lcom4": 2,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom",
@@ -1598,7 +1868,9 @@
       "blankLines": 15,
       "complexity": 0,
       "cyclomatic": 4,
-      "lcom4": 4
+      "lcom4": 4,
+      "generatedAt": "[..]",
+      "time": "[..]"
     }
   ]
 }

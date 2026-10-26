@@ -1,6 +1,7 @@
 use crate::planner::config_files::PluginConfigFile;
 use crate::planner::target::Target;
 use crate::tool::Tool;
+use crate::CheckFilters;
 use anyhow::{Context, Result};
 use git2::{Repository, Status};
 use itertools::Itertools;
@@ -10,18 +11,28 @@ use qlty_config::config::PluginDef;
 use qlty_config::version::QLTY_VERSION;
 use qlty_config::Workspace;
 use qlty_types::analysis::v1::Issue;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 use std::{collections::HashMap, fmt::Debug, path::PathBuf};
 use tracing::trace;
 
 #[derive(Debug, Clone)]
 pub struct IssueCache {
     pub cache: Box<dyn Cache>,
+    repository: Arc<OnceLock<Arc<RepositoryState>>>,
 }
 
 impl IssueCache {
     pub fn new(cache: Box<dyn Cache>) -> Self {
-        Self { cache }
+        Self {
+            cache,
+            repository: Arc::new(OnceLock::new()),
+        }
+    }
+
+    pub fn repository(&self) -> Arc<RepositoryState> {
+        self.repository
+            .get_or_init(|| Arc::new(RepositoryState::compute()))
+            .clone()
     }
 
     pub fn read(&self, cache_key: &IssuesCacheKey) -> Result<Option<IssuesCacheHit>> {
@@ -91,10 +102,51 @@ pub struct IssuesCacheHit {
     pub issues: Vec<Issue>,
 }
 
+/// Repository facts which are shared by every cache key within a run. Computing
+/// `dirty_paths` walks the whole working tree, so it is computed lazily on first
+/// use and shared from there on.
+#[derive(Debug, Clone, Default)]
+pub struct RepositoryState {
+    tree_sha: Option<String>,
+    dirty_paths: Vec<PathBuf>,
+}
+
+impl RepositoryState {
+    fn compute() -> Self {
+        match Workspace::new().and_then(|workspace| workspace.repo()) {
+            Ok(repository) => Self {
+                tree_sha: Self::repository_sha(&repository).ok(),
+                dirty_paths: Self::collect_dirty_paths(&repository),
+            },
+            Err(_) => Self::default(),
+        }
+    }
+
+    fn repository_sha(repo: &Repository) -> Result<String> {
+        Ok(repo
+            .head()?
+            .resolve()?
+            .target()
+            .context("missing target")?
+            .to_string())
+    }
+
+    fn collect_dirty_paths(repo: &Repository) -> Vec<PathBuf> {
+        if let Ok(statuses) = repo.statuses(None) {
+            statuses
+                .iter()
+                .filter(|entry| entry.status() != Status::CURRENT && entry.path().is_some())
+                .flat_map(|entry| entry.path().map(PathBuf::from))
+                .collect::<Vec<PathBuf>>()
+        } else {
+            vec![]
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct IssuesCacheKey {
-    repository_tree_sha: Option<String>,
-    dirty_paths: Vec<PathBuf>,
+    repository: Arc<RepositoryState>,
     pub digest: HashDigest,
 }
 
@@ -104,6 +156,7 @@ struct InvocationCacheKey {
     tool: Box<dyn Tool>,
     plugin: Arc<PluginDef>,
     driver_name: String,
+    check_filters: CheckFilters,
     affects_cache: HashMap<PathBuf, String>,
     configs: Arc<Vec<PluginConfigFile>>,
 }
@@ -247,6 +300,14 @@ impl InvocationCacheKey {
         digest.add("tool", &self.tool.directory());
         digest.add("driver_name", &self.driver_name);
 
+        for filter in &self.check_filters.filters {
+            digest.add(&format!("check.filter.{filter}"), "true");
+        }
+
+        for skip in &self.check_filters.skips {
+            digest.add(&format!("check.skip.{skip}"), "true");
+        }
+
         for config in self.configs.clone().iter().sorted() {
             digest.add(&config.path.to_string_lossy(), &config.contents);
         }
@@ -264,8 +325,10 @@ impl IssuesCacheKey {
         tool: Box<dyn Tool>,
         plugin: Arc<PluginDef>,
         driver_name: String,
+        check_filters: CheckFilters,
         configs: Arc<Vec<PluginConfigFile>>,
         affects_cache: Vec<String>,
+        repository: Arc<RepositoryState>,
     ) -> Self {
         let mut cache_busters = HashMap::new();
 
@@ -275,21 +338,14 @@ impl IssuesCacheKey {
             cache_busters.insert(path, contents);
         }
 
-        let mut repository_tree_sha: Option<String> = None;
-        let mut dirty_paths = Vec::new();
-        if let Ok(repository) = Workspace::new().and_then(|w| w.repo()) {
-            repository_tree_sha = Self::repository_sha(&repository).ok();
-            dirty_paths = Self::collect_dirty_paths(&repository);
-        }
-
         Self {
-            repository_tree_sha,
-            dirty_paths,
+            repository,
             digest: InvocationCacheKey {
                 qlty_version: QLTY_VERSION.to_string(),
                 tool: tool.clone(),
                 plugin: plugin.clone(),
                 driver_name,
+                check_filters,
                 affects_cache: cache_busters,
                 configs,
             }
@@ -319,8 +375,9 @@ impl IssuesCacheKey {
     }
 
     fn add_target_sha(&mut self, target: &Target) -> bool {
-        if let Some(sha) = &self.repository_tree_sha {
+        if let Some(sha) = &self.repository.tree_sha {
             if !self
+                .repository
                 .dirty_paths
                 .iter()
                 .any(|path| target.path.starts_with(path))
@@ -332,31 +389,98 @@ impl IssuesCacheKey {
 
         false
     }
-
-    fn repository_sha(repo: &Repository) -> Result<String> {
-        Ok(repo
-            .head()?
-            .resolve()?
-            .target()
-            .context("missing target")?
-            .to_string())
-    }
-
-    fn collect_dirty_paths(repo: &Repository) -> Vec<PathBuf> {
-        if let Ok(statuses) = repo.statuses(None) {
-            statuses
-                .iter()
-                .filter(|entry| entry.status() != Status::CURRENT && entry.path().is_some())
-                .flat_map(|entry| entry.path().map(PathBuf::from))
-                .collect::<Vec<PathBuf>>()
-        } else {
-            vec![]
-        }
-    }
 }
 
 impl CacheKey for IssuesCacheKey {
     fn hexdigest(&self) -> String {
         self.digest.hexdigest()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use qlty_analysis::cache::NullCache;
+    use qlty_analysis::WorkspaceEntryKind;
+    use std::time::SystemTime;
+
+    fn cache_key(repository: RepositoryState) -> IssuesCacheKey {
+        IssuesCacheKey {
+            repository: Arc::new(repository),
+            digest: HashDigest::new(),
+        }
+    }
+
+    fn target(path: &str) -> Target {
+        Target {
+            path: PathBuf::from(path),
+            kind: WorkspaceEntryKind::File,
+            content_modified: SystemTime::now(),
+            contents_size: 0,
+            language_name: None,
+        }
+    }
+
+    #[test]
+    fn test_repository_state_is_not_computed_until_requested() {
+        let cache = IssueCache::new(Box::new(NullCache {}));
+
+        assert!(cache.repository.get().is_none());
+    }
+
+    #[test]
+    fn test_repository_state_is_computed_on_first_request() {
+        let cache = IssueCache::new(Box::new(NullCache {}));
+        cache.repository();
+
+        assert!(cache.repository.get().is_some());
+    }
+
+    #[test]
+    fn test_cloned_cache_shares_repository_state() {
+        let cache = IssueCache::new(Box::new(NullCache {}));
+        let clone = cache.clone();
+
+        assert!(Arc::ptr_eq(&cache.repository(), &clone.repository()));
+    }
+
+    #[test]
+    fn test_clean_target_digests_repository_sha() {
+        let mut key = cache_key(RepositoryState {
+            tree_sha: Some("abc123".to_string()),
+            dirty_paths: vec![PathBuf::from("lib/other.rb")],
+        });
+
+        assert!(key.add_target_sha(&target("lib/hello.rb")));
+    }
+
+    #[test]
+    fn test_dirty_target_does_not_digest_repository_sha() {
+        let mut key = cache_key(RepositoryState {
+            tree_sha: Some("abc123".to_string()),
+            dirty_paths: vec![PathBuf::from("lib/hello.rb")],
+        });
+
+        assert!(!key.add_target_sha(&target("lib/hello.rb")));
+    }
+
+    #[test]
+    fn test_target_under_dirty_directory_does_not_digest_repository_sha() {
+        let mut key = cache_key(RepositoryState {
+            tree_sha: Some("abc123".to_string()),
+            dirty_paths: vec![PathBuf::from("lib")],
+        });
+
+        assert!(!key.add_target_sha(&target("lib/hello.rb")));
+    }
+
+    #[test]
+    fn test_missing_repository_sha_does_not_digest() {
+        let mut key = cache_key(RepositoryState {
+            tree_sha: None,
+            dirty_paths: vec![],
+        });
+
+        assert!(!key.add_target_sha(&target("lib/hello.rb")));
     }
 }

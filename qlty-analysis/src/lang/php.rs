@@ -144,6 +144,10 @@ impl Language for Php {
         vec![Self::AND, Self::OR]
     }
 
+    fn short_circuit_operators(&self) -> Vec<&str> {
+        vec![Self::AND, Self::OR, "and", "or", "??"]
+    }
+
     fn call_nodes(&self) -> Vec<&str> {
         vec![Self::CALL_EXPRESSION]
     }

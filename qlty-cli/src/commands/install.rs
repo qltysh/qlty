@@ -19,9 +19,13 @@ pub struct Install {
     #[arg(short, long)]
     pub jobs: Option<u32>,
 
-    /// Filter by plugin or check
+    /// Only install this plugin (for example, `eslint`)
     #[arg(long)]
     filter: Option<String>,
+
+    /// Allow individual plugins to be skipped if they fail to install
+    #[arg(hide = true, long)]
+    skip_errored_plugins: bool,
     // /// Print verbose output
     // #[arg(short, long, action = clap::ArgAction::Count)]
     // pub verbose: u8,
@@ -30,17 +34,17 @@ pub struct Install {
 impl Install {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
         let workspace = Workspace::require_initialized()?;
-        workspace.fetch_sources()?;
-        let config = workspace.config()?;
+        let config = workspace.load_config(false)?;
 
         let mut settings = Settings {
             root: workspace.root.clone(),
+            skip_errored_plugins: self.skip_errored_plugins,
             ..Default::default()
         };
 
         if let Some(filter) = &self.filter {
             warn!("Filtering plugins: {}", filter);
-            settings.filters = vec![CheckFilter {
+            settings.check_filters.filters = vec![CheckFilter {
                 plugin: filter.clone(),
                 rule_key: None,
             }];
@@ -72,7 +76,13 @@ impl Install {
 
         let results = Executor::install_tools(tools, jobs, progress);
         for (name, result) in results {
-            result.with_context(|| format!("Failed to install {}", name))?;
+            if let Err(e) = result.with_context(|| format!("Failed to install {name}")) {
+                if self.skip_errored_plugins {
+                    warn!("Failed to install {}: {:#}", name, e);
+                } else {
+                    return Err(e);
+                }
+            }
         }
 
         Ok(())

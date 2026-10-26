@@ -1,0 +1,4 @@
+bin.name = "qlty"
+args = ["slop-one", "--offline", "--cache-dir", "cache", "lib/other.py"]
+status.code = 99
+fs.base = "basic.in"

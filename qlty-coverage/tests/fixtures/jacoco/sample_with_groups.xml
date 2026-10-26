@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!DOCTYPE report PUBLIC "-//JACOCO//DTD Report 1.0//EN"
+"report.dtd">
+<report name="multi-module-project">
+  <sessioninfo id="test-session" start="1468574972173" dump="1468574982521" />
+  <group name="module-core">
+    <package name="com/example/core">
+      <class name="com/example/core/CoreService">
+        <method name="&lt;init&gt;" desc="()V" line="5">
+          <counter type="INSTRUCTION" missed="0" covered="3" />
+          <counter type="LINE" missed="0" covered="1" />
+          <counter type="COMPLEXITY" missed="0" covered="1" />
+          <counter type="METHOD" missed="0" covered="1" />
+        </method>
+        <counter type="INSTRUCTION" missed="0" covered="3" />
+        <counter type="LINE" missed="0" covered="1" />
+        <counter type="COMPLEXITY" missed="0" covered="1" />
+        <counter type="METHOD" missed="0" covered="1" />
+        <counter type="CLASS" missed="0" covered="1" />
+      </class>
+      <sourcefile name="CoreService.java">
+        <line nr="5" mi="0" ci="3" mb="0" cb="0" />
+        <line nr="10" mi="0" ci="5" mb="0" cb="0" />
+        <counter type="INSTRUCTION" missed="0" covered="8" />
+        <counter type="LINE" missed="0" covered="2" />
+        <counter type="COMPLEXITY" missed="0" covered="1" />
+        <counter type="METHOD" missed="0" covered="1" />
+        <counter type="CLASS" missed="0" covered="1" />
+      </sourcefile>
+      <counter type="INSTRUCTION" missed="0" covered="8" />
+      <counter type="LINE" missed="0" covered="2" />
+      <counter type="COMPLEXITY" missed="0" covered="1" />
+      <counter type="METHOD" missed="0" covered="1" />
+      <counter type="CLASS" missed="0" covered="1" />
+    </package>
+    <counter type="INSTRUCTION" missed="0" covered="8" />
+    <counter type="LINE" missed="0" covered="2" />
+    <counter type="COMPLEXITY" missed="0" covered="1" />
+    <counter type="METHOD" missed="0" covered="1" />
+    <counter type="CLASS" missed="0" covered="1" />
+  </group>
+  <group name="module-api">
+    <package name="com/example/api">
+      <class name="com/example/api/ApiController">
+        <method name="&lt;init&gt;" desc="()V" line="8">
+          <counter type="INSTRUCTION" missed="0" covered="3" />
+          <counter type="LINE" missed="0" covered="1" />
+          <counter type="COMPLEXITY" missed="0" covered="1" />
+          <counter type="METHOD" missed="0" covered="1" />
+        </method>
+        <method name="handleRequest" desc="()Ljava/lang/String;" line="12">
+          <counter type="INSTRUCTION" missed="2" covered="0" />
+          <counter type="LINE" missed="1" covered="0" />
+          <counter type="COMPLEXITY" missed="1" covered="0" />
+          <counter type="METHOD" missed="1" covered="0" />
+        </method>
+        <counter type="INSTRUCTION" missed="2" covered="3" />
+        <counter type="LINE" missed="1" covered="1" />
+        <counter type="COMPLEXITY" missed="1" covered="1" />
+        <counter type="METHOD" missed="1" covered="1" />
+        <counter type="CLASS" missed="0" covered="1" />
+      </class>
+      <sourcefile name="ApiController.java">
+        <line nr="8" mi="0" ci="3" mb="0" cb="0" />
+        <line nr="12" mi="2" ci="0" mb="0" cb="0" />
+        <counter type="INSTRUCTION" missed="2" covered="3" />
+        <counter type="LINE" missed="1" covered="1" />
+        <counter type="COMPLEXITY" missed="1" covered="1" />
+        <counter type="METHOD" missed="1" covered="1" />
+        <counter type="CLASS" missed="0" covered="1" />
+      </sourcefile>
+      <counter type="INSTRUCTION" missed="2" covered="3" />
+      <counter type="LINE" missed="1" covered="1" />
+      <counter type="COMPLEXITY" missed="1" covered="1" />
+      <counter type="METHOD" missed="1" covered="1" />
+      <counter type="CLASS" missed="0" covered="1" />
+    </package>
+    <counter type="INSTRUCTION" missed="2" covered="3" />
+    <counter type="LINE" missed="1" covered="1" />
+    <counter type="COMPLEXITY" missed="1" covered="1" />
+    <counter type="METHOD" missed="1" covered="1" />
+    <counter type="CLASS" missed="0" covered="1" />
+  </group>
+  <counter type="INSTRUCTION" missed="2" covered="11" />
+  <counter type="LINE" missed="1" covered="3" />
+  <counter type="COMPLEXITY" missed="1" covered="2" />
+  <counter type="METHOD" missed="1" covered="2" />
+  <counter type="CLASS" missed="0" covered="2" />
+</report>

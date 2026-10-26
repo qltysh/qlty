@@ -1,7 +1,5 @@
-use crate::{
-    ci::CI,
-    env::{EnvSource, SystemEnv},
-};
+use crate::ci::CI;
+use qlty_config::env::{EnvSource, SystemEnv};
 
 #[derive(Debug)]
 pub struct Buildkite {
@@ -18,7 +16,7 @@ impl Default for Buildkite {
 
 impl CI for Buildkite {
     fn detect(&self) -> bool {
-        self.env.var("BUILDKITE_BUILD_NUMBER").is_some()
+        self.env.var("BUILDKITE").is_some()
     }
 
     fn ci_name(&self) -> String {
@@ -46,7 +44,10 @@ impl CI for Buildkite {
     }
 
     fn pull_number(&self) -> String {
-        String::from("")
+        self.env
+            .var("BUILDKITE_PULL_REQUEST")
+            .filter(|v| v != "false")
+            .unwrap_or_default()
     }
 
     fn repository_name(&self) -> String {
@@ -62,11 +63,11 @@ impl CI for Buildkite {
     }
 
     fn ci_url(&self) -> String {
-        String::from("")
+        String::from("https://buildkite.com")
     }
 
     fn workflow(&self) -> String {
-        String::from("")
+        self.env.var("BUILDKITE_PIPELINE_ID").unwrap_or_default()
     }
 
     fn git_tag(&self) -> Option<String> {
@@ -104,12 +105,18 @@ mod test {
         assert_eq!(ci.detect(), false);
 
         let mut env: HashMap<String, String> = HashMap::default();
-        env.insert("BUILDKITE_BUILD_NUMBER".to_string(), "33".to_string());
+        env.insert("BUILDKITE".to_string(), "true".to_string());
         let ci = Buildkite {
             env: Box::new(HashMapEnv::new(env)),
         };
         assert_eq!(ci.detect(), true);
         assert_eq!(&ci.ci_name(), "Buildkite");
+
+        let not_buildkite = Buildkite {
+            env: Box::new(HashMapEnv::new(HashMap::default())),
+        };
+
+        assert_eq!(not_buildkite.detect(), false);
     }
 
     #[test]
@@ -168,5 +175,49 @@ mod test {
             env: Box::new(HashMapEnv::new(env)),
         };
         assert_eq!(&ci.commit_sha(), "abc123");
+    }
+
+    #[test]
+    fn ci_url() {
+        let ci = Buildkite {
+            env: Box::new(HashMapEnv::default()),
+        };
+        assert_eq!(&ci.ci_url(), "https://buildkite.com");
+    }
+
+    #[test]
+    fn workflow() {
+        let mut env: HashMap<String, String> = HashMap::default();
+        env.insert(
+            "BUILDKITE_PIPELINE_ID".to_string(),
+            "pipeline-42".to_string(),
+        );
+
+        let ci = Buildkite {
+            env: Box::new(HashMapEnv::new(env)),
+        };
+        assert_eq!(&ci.workflow(), "pipeline-42");
+    }
+
+    #[test]
+    fn pull_number() {
+        let mut env: HashMap<String, String> = HashMap::default();
+        env.insert("BUILDKITE_PULL_REQUEST".to_string(), "99".to_string());
+
+        let ci = Buildkite {
+            env: Box::new(HashMapEnv::new(env)),
+        };
+        assert_eq!(&ci.pull_number(), "99");
+    }
+
+    #[test]
+    fn empty_pull_number() {
+        let mut env: HashMap<String, String> = HashMap::default();
+        env.insert("BUILDKITE_PULL_REQUEST".to_string(), "false".to_string());
+
+        let ci = Buildkite {
+            env: Box::new(HashMapEnv::new(env)),
+        };
+        assert_eq!(&ci.pull_number(), "");
     }
 }

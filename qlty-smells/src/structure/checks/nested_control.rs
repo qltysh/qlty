@@ -1,5 +1,4 @@
 use qlty_analysis::code::{File, NodeExt, Visitor};
-use qlty_analysis::Language;
 use qlty_types::analysis::v1::{Issue, Level};
 use qlty_types::calculate_effort_minutes;
 use std::sync::Arc;
@@ -22,6 +21,7 @@ pub struct Processor {
     threshold: usize,
     issues: Vec<Issue>,
     level: usize,
+    max_level: usize,
     source_file: Arc<File>,
 }
 
@@ -31,6 +31,7 @@ impl Processor {
             threshold,
             issues: Vec::new(),
             level: 0,
+            max_level: 0,
             source_file,
         }
     }
@@ -38,7 +39,9 @@ impl Processor {
     fn on_control_node(&mut self, cursor: &mut TreeCursor) {
         self.level += 1;
 
+        let issue_index = self.issues.len();
         if self.level == self.threshold {
+            self.max_level = self.level;
             let message = format!("Deeply nested control flow (level = {})", self.level);
 
             self.issues.push(Issue {
@@ -52,17 +55,26 @@ impl Processor {
                     BASE_EFFORT_MINUTES,
                     EFFORT_MINUTES_PER_VALUE_DELTA,
                 ),
-                ..issue_for(&self.source_file, &cursor.node())
+                ..issue_for(
+                    &self.source_file,
+                    &cursor.node(),
+                    self.threshold,
+                    self.level,
+                )
             });
         }
+        self.max_level = self.max_level.max(self.level);
         self.process_children(cursor);
+        if self.level == self.threshold {
+            self.issues[issue_index].set_property_number("actual", self.max_level as f64);
+        }
         self.level -= 1;
     }
 }
 
 impl Visitor for Processor {
-    fn language(&self) -> &Box<dyn Language + Sync> {
-        self.source_file.language()
+    fn source_file(&self) -> &File {
+        &self.source_file
     }
 
     fn visit_if(&mut self, cursor: &mut TreeCursor) {
@@ -102,6 +114,45 @@ impl Visitor for Processor {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn actual_reports_depth_beyond_threshold() {
+        let source_file = Arc::new(File::from_string(
+            "rust",
+            "fn f() { if a { if b { if c { if d { if e { if f { if g {} } } } } } } }",
+        ));
+        let issues = check(5, source_file.clone(), &source_file.parse());
+
+        assert_eq!(issues.len(), 1);
+        assert_eq!(issues[0].get_property_number("threshold"), 5.0);
+        assert_eq!(issues[0].get_property_number("actual"), 7.0);
+        assert_eq!(issues[0].value, 5);
+    }
+
+    #[test]
+    fn actual_resets_between_sibling_regions() {
+        let source_file = Arc::new(File::from_string(
+            "rust",
+            "fn f() { if a { if b { if c {} } if d {} } }",
+        ));
+        let issues = check(2, source_file.clone(), &source_file.parse());
+
+        assert_eq!(issues.len(), 2);
+        assert_eq!(issues[0].get_property_number("actual"), 3.0);
+        assert_eq!(issues[1].get_property_number("actual"), 2.0);
+    }
+
+    #[test]
+    fn actual_takes_maximum_across_child_branches() {
+        let source_file = Arc::new(File::from_string(
+            "rust",
+            "fn f() { if a { if b { if c { if d {} } if e {} } } }",
+        ));
+        let issues = check(2, source_file.clone(), &source_file.parse());
+
+        assert_eq!(issues.len(), 1);
+        assert_eq!(issues[0].get_property_number("actual"), 4.0);
+    }
 
     mod go {
         use super::*;
@@ -155,7 +206,7 @@ mod test {
                     }
                 "#,
             ));
-            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), @r#"
+            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
             - tool: qlty
               driver: structure
               ruleKey: nested-control-flow
@@ -176,6 +227,9 @@ mod test {
                   endColumn: 22
                   startByte: 21
                   endByte: 298
+              properties:
+                actual: 4
+                threshold: 1
             "#);
         }
 
@@ -247,7 +301,7 @@ mod test {
                                     pass
                 "#,
             ));
-            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), @r#"
+            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
             - tool: qlty
               driver: structure
               ruleKey: nested-control-flow
@@ -268,6 +322,9 @@ mod test {
                   endColumn: 41
                   startByte: 21
                   endByte: 178
+              properties:
+                actual: 4
+                threshold: 1
             "#);
         }
 
@@ -362,7 +419,7 @@ mod test {
                 "#
                 .trim(),
             ));
-            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), @r#"
+            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
             - tool: qlty
               driver: structure
               ruleKey: nested-control-flow
@@ -383,6 +440,9 @@ mod test {
                   endColumn: 18
                   startByte: 0
                   endByte: 275
+              properties:
+                actual: 4
+                threshold: 1
             "#);
         }
 
@@ -469,7 +529,7 @@ mod test {
                 "#
                 .trim(),
             ));
-            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), @r#"
+            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
             - tool: qlty
               driver: structure
               ruleKey: nested-control-flow
@@ -490,6 +550,9 @@ mod test {
                   endColumn: 20
                   startByte: 0
                   endByte: 258
+              properties:
+                actual: 4
+                threshold: 1
             "#);
         }
 
@@ -575,7 +638,7 @@ mod test {
                 "#
                 .trim(),
             ));
-            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), @r#"
+            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
             - tool: qlty
               driver: structure
               ruleKey: nested-control-flow
@@ -596,6 +659,9 @@ mod test {
                   endColumn: 18
                   startByte: 0
                   endByte: 278
+              properties:
+                actual: 4
+                threshold: 1
             "#);
         }
 
@@ -621,6 +687,28 @@ mod test {
                 .trim(),
             ));
             assert_eq!(0, check(2, source_file.clone(), &source_file.parse()).len());
+        }
+    }
+
+    mod elixir {
+        use super::*;
+
+        #[test]
+        fn nested_control_found_if_threshold_breached() {
+            let source_file = Arc::new(File::from_string(
+                "elixir",
+                "defmodule M do\n def f(a, b, c) do\n  if a do\n   case b do\n    1 ->\n     if c do\n      case a do\n       2 ->\n        if b do\n         :deep\n        end\n       _ -> :other\n      end\n     end\n    _ -> :other\n   end\n  end\n end\nend",
+            ));
+            assert_eq!(1, check(5, source_file.clone(), &source_file.parse()).len());
+        }
+
+        #[test]
+        fn case_arms_do_not_add_depth() {
+            let source_file = Arc::new(File::from_string(
+                "elixir",
+                "defmodule M do\n def f(x) do\n  case x do\n   1 -> :a\n   _ -> :b\n  end\n end\nend",
+            ));
+            assert_eq!(0, check(5, source_file.clone(), &source_file.parse()).len());
         }
     }
 }

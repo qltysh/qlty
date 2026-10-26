@@ -1,5 +1,6 @@
 {
   "metadata": {
+    "id": "[..]",
     "buildId": "[..]",
     "result": "ANALYSIS_RESULT_SUCCESS",
     "filesAnalyzed": 2,
@@ -11,14 +12,19 @@
     "committerName": "TEST",
     "authorEmail": "test@codeclimate.com",
     "authorName": "TEST",
-    "authoredAt": "2024-01-01T00:00:00+00:00"
+    "authoredAt": "2024-01-01T00:00:00+00:00",
+    "generatedAt": "[..]",
+    "time": "[..]"
   },
   "messages": [],
   "invocations": [],
   "issues": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "identical-code",
@@ -54,12 +60,17 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "identical-code",
@@ -95,12 +106,15 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     }
   ],
   "stats": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "identical_a.rb",
@@ -117,10 +131,13 @@
       "commentLines": 0,
       "blankLines": 3,
       "complexity": 4,
-      "cyclomatic": 15,
-      "lcom4": 0
+      "cyclomatic": 3,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "identical_b.rb",
@@ -137,8 +154,10 @@
       "commentLines": 0,
       "blankLines": 3,
       "complexity": 4,
-      "cyclomatic": 15,
-      "lcom4": 0
+      "cyclomatic": 3,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     }
   ]
 }

@@ -1,0 +1,4 @@
+bin.name = "qlty"
+args = ["slop-one", "--top", "0", "lib/simple.py"]
+status.code = 1
+fs.base = "basic.in"

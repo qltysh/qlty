@@ -13,7 +13,7 @@ use qlty_types::analysis::v1::Issue;
 pub struct Patch {
     /// Path to patch
     path: String,
-    /// Allow unsafe fixes
+    /// Allow fixes for rules that may produce incorrect results and require careful human review
     #[arg(long)]
     r#unsafe: bool,
 }

@@ -3,17 +3,11 @@ config_version = "0"
 [plugins.definitions.exists]
 file_types = ["shell"]
 config_files = ["config_file.json"]
+affects_cache = ["affects_cache.json"]
 
 [plugins.definitions.exists.drivers.lint]
 prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd"
 script = "ls -l ${config_file}"
-success_codes = [0]
-output = "pass_fail"
-
-[plugins.definitions.exists.drivers.second]
-prepare_script = "mkdir ${linter} && echo dir %2 > ${linter}/ls.cmd || echo dir %2 > ${linter}/ls.cmd"
-script = "ls -l ${config_file}"
-copy_configs_into_tool_install = true
 success_codes = [0]
 output = "pass_fail"
 

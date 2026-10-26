@@ -63,7 +63,16 @@ impl TomlMerge {
             (Value::Datetime(_), Value::Datetime(inner)) => Ok(Value::Datetime(inner)),
             (Value::Array(mut existing), Value::Array(inner)) => {
                 if existing.iter().all(|v| v.is_table()) && inner.iter().all(|v| v.is_table()) {
-                    existing.extend(inner);
+                    for value in inner {
+                        match Self::version_matcher_position(&existing, &value) {
+                            Some(index) => {
+                                let index_path = format!("{path}[{index}]");
+                                existing[index] =
+                                    Self::merge_inner(existing[index].clone(), value, &index_path)?;
+                            }
+                            None => existing.push(value),
+                        }
+                    }
                     Ok(Value::Array(existing))
                 } else {
                     let extender = Value::String("...".to_string());
@@ -81,6 +90,23 @@ impl TomlMerge {
             }
             (v, o) => Err(Error::new(path.to_owned(), v.type_str(), o.type_str())),
         }
+    }
+
+    // Tables in arrays are opaque to the key-based table merge, so entries
+    // sharing a version_matcher (versioned driver definitions) are merged by
+    // matcher instead of appended, allowing later configs to override them.
+    fn version_matcher_position(existing: &[Value], value: &Value) -> Option<usize> {
+        let matcher = Self::version_matcher(value)?;
+
+        existing
+            .iter()
+            .position(|existing_value| Self::version_matcher(existing_value) == Some(matcher))
+    }
+
+    fn version_matcher(value: &Value) -> Option<&str> {
+        value
+            .get("version_matcher")
+            .and_then(|value| value.as_str())
     }
 
     /// Merges two toml values into a single one.
@@ -212,5 +238,105 @@ mod test {
         "#;
 
         should_match!(first, second, result);
+    }
+
+    #[test]
+    fn merging_array_of_tables_with_same_version_matcher() {
+        let first = r#"
+        [[version]]
+        version_matcher = ">=2.0.0"
+        script = "mylint ${target}"
+        max_batch = 40
+
+        [[version]]
+        version_matcher = "<2.0.0"
+        script = "mylint-legacy ${target}"
+        "#;
+        let second = r#"
+        [[version]]
+        version_matcher = ">=2.0.0"
+        prepare_script = "npm install"
+        max_batch = 64
+        "#;
+        let result = r#"
+        [[version]]
+        version_matcher = ">=2.0.0"
+        script = "mylint ${target}"
+        prepare_script = "npm install"
+        max_batch = 64
+
+        [[version]]
+        version_matcher = "<2.0.0"
+        script = "mylint-legacy ${target}"
+        "#;
+
+        should_match!(first, second, result);
+    }
+
+    #[test]
+    fn merging_array_of_tables_with_different_version_matcher() {
+        let first = r#"
+        [[version]]
+        version_matcher = ">=2.0.0"
+        script = "mylint ${target}"
+        "#;
+        let second = r#"
+        [[version]]
+        version_matcher = ">=3.0.0"
+        script = "mylint-next ${target}"
+        "#;
+        let result = r#"
+        [[version]]
+        version_matcher = ">=2.0.0"
+        script = "mylint ${target}"
+
+        [[version]]
+        version_matcher = ">=3.0.0"
+        script = "mylint-next ${target}"
+        "#;
+
+        should_match!(first, second, result);
+    }
+
+    #[test]
+    fn merging_array_of_tables_without_version_matcher_in_existing() {
+        let first = r#"
+        [[version]]
+        script = "mylint ${target}"
+        "#;
+        let second = r#"
+        [[version]]
+        version_matcher = ">=2.0.0"
+        script = "mylint-next ${target}"
+        "#;
+        let result = r#"
+        [[version]]
+        script = "mylint ${target}"
+
+        [[version]]
+        version_matcher = ">=2.0.0"
+        script = "mylint-next ${target}"
+        "#;
+
+        should_match!(first, second, result);
+    }
+
+    #[test]
+    fn merging_array_of_tables_with_incompatible_version_matcher_values() {
+        assert_eq!(
+            should_fail!(
+                r#"
+                [[version]]
+                version_matcher = ">=2.0.0"
+                script = "mylint ${target}"
+                "#,
+                r#"
+                [[version]]
+                version_matcher = ">=2.0.0"
+                script = 42
+                "#,
+            ),
+            Error::new("$.version[0].script".to_owned(), "string", "integer")
+        );
     }
 }

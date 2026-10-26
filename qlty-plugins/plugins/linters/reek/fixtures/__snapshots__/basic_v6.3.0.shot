@@ -14,7 +14,7 @@ exports[`linter=reek fixture=basic version=6.3.0 1`] = `
         },
       },
       "message": "Foo#check_response manually dispatches method call",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "ManualDispatch",
       "snippet": "    if respond_to?(:foo)",
       "snippetWithContext": "# My documented class
@@ -40,7 +40,7 @@ end",
         },
       },
       "message": "Foo#check_response manually dispatches method call",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "ManualDispatch",
       "snippet": "    elsif respond_to?(:bar)",
       "snippetWithContext": "# My documented class

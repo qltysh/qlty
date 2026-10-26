@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use qlty_types::tests::v1::FileCoverage;
 use std::path::Path;
 
@@ -10,6 +10,7 @@ mod jacoco;
 mod lcov;
 mod qlty;
 mod simplecov;
+mod xccov;
 
 pub use clover::Clover;
 pub use cobertura::Cobertura;
@@ -19,11 +20,14 @@ pub use jacoco::Jacoco;
 pub use lcov::Lcov;
 pub use qlty::Qlty;
 pub use simplecov::Simplecov;
+pub use xccov::XccovJson;
 
 pub trait Parser {
     fn parse_file(&self, path: &Path) -> Result<Vec<FileCoverage>> {
-        let text = std::fs::read_to_string(path)?;
+        let text = std::fs::read_to_string(path)
+            .with_context(|| format!("Failed to read coverage file: {}", path.display()))?;
         self.parse_text(&text)
+            .with_context(|| format!("Failed to parse coverage file: {}", path.display()))
     }
 
     fn parse_text(&self, text: &str) -> Result<Vec<FileCoverage>>;

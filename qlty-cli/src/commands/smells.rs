@@ -63,9 +63,7 @@ impl Smells {
         self.run_assertions()?;
 
         let workspace = Workspace::new()?;
-        workspace.fetch_sources()?;
-
-        let config = workspace.config()?;
+        let config = workspace.load_config(false)?;
 
         let mut steps_count = 2;
 
@@ -216,7 +214,8 @@ impl Smells {
         if self.json {
             self.write_stdout_json(&report.issues)
         } else if self.sarif {
-            let formatter = SarifFormatter::boxed(report.messages.clone(), report.issues.clone());
+            let formatter =
+                SarifFormatter::boxed(report.messages.clone(), report.issues.clone(), true);
             formatter.write_to(&mut std::io::stdout())?;
             Ok(())
         } else {

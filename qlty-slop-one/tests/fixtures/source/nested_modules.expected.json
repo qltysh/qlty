@@ -1,0 +1,46 @@
+{
+  "text": "//! crate docs\npub mod production {\n    pub fn before() -> &'static str { r###\"mod tests { }\"### }\n    pub fn after() {}\n}\npub fn last() {}\n",
+  "line_map": [
+    1,
+    2,
+    3,
+    13,
+    14,
+    16
+  ],
+  "excluded_modules": [
+    {
+      "name": "tests",
+      "start_line": 4,
+      "end_line": 12,
+      "reason": "inline module named test or tests"
+    },
+    {
+      "name": "test",
+      "start_line": 15,
+      "end_line": 15,
+      "reason": "inline module named test or tests"
+    }
+  ],
+  "has_code": true,
+  "info": {
+    "policy": "rust-inline-tests-001",
+    "original_lines": 16,
+    "analyzed_lines": 6,
+    "excluded_lines": 10,
+    "excluded_modules": [
+      {
+        "name": "tests",
+        "start_line": 4,
+        "end_line": 12,
+        "reason": "inline module named test or tests"
+      },
+      {
+        "name": "test",
+        "start_line": 15,
+        "end_line": 15,
+        "reason": "inline module named test or tests"
+      }
+    ]
+  }
+}

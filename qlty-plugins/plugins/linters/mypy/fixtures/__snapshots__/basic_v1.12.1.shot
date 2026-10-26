@@ -35,7 +35,10 @@ c: str = 4
 from source import Bar
 
 def bad_foo(bar: Bar) -> str:
-  return bar.a + bar.b",
+  return bar.a + bar.b
+
+def bad_generator() -> int:
+    yield 1",
       "tool": "mypy",
     },
     {
@@ -71,7 +74,9 @@ c: str = 4
 from source import Bar
 
 def bad_foo(bar: Bar) -> str:
-  return bar.a + bar.b",
+  return bar.a + bar.b
+
+def bad_generator() -> int:",
       "tool": "mypy",
     },
     {
@@ -104,7 +109,10 @@ c: str = 4
 from source import Bar
 
 def bad_foo(bar: Bar) -> str:
-  return bar.a + bar.b",
+  return bar.a + bar.b
+
+def bad_generator() -> int:
+    yield 1",
       "tool": "mypy",
     },
     {
@@ -138,7 +146,10 @@ c: str = 4
 from source import Bar
 
 def bad_foo(bar: Bar) -> str:
-  return bar.a + bar.b",
+  return bar.a + bar.b
+
+def bad_generator() -> int:
+    yield 1",
       "tool": "mypy",
     },
     {
@@ -200,29 +211,30 @@ def printer() -> None:
     {
       "category": "CATEGORY_LINT",
       "documentationUrl": "https://mypy.readthedocs.io/en/stable/error_code_list.html",
-      "level": "LEVEL_LOW",
+      "level": "LEVEL_HIGH",
       "location": {
         "path": "basic.in.py",
         "range": {
           "startColumn": 1,
-          "startLine": 1,
+          "startLine": 23,
         },
       },
-      "message": "Hint: "python3 -m pip install types-protobuf" (or run "mypy --install-types" to install all missing stub packages) See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports",
+      "message": "The return type of a generator function should be "Generator" or one of its supertypes",
       "mode": "MODE_BLOCK",
-      "ruleKey": "note",
-      "snippet": "import google.protobuf.descriptor_pb2 as d",
-      "snippetWithContext": "import google.protobuf.descriptor_pb2 as d
+      "ruleKey": "misc",
+      "snippet": "def bad_generator() -> int:",
+      "snippetWithContext": "greeting(3)
+greeting(b"Alice")
+a = printer()
+c: str = 4
 
-from . import mypy_import2
+from source import Bar
 
-def greeting(name: str) -> str:
-    return "Hello " + name
+def bad_foo(bar: Bar) -> str:
+  return bar.a + bar.b
 
-
-def printer() -> None:
-    print("Hello")
-",
+def bad_generator() -> int:
+    yield 1",
       "tool": "mypy",
     },
   ],

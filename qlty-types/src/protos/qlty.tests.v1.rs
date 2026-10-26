@@ -82,6 +82,14 @@ pub struct CoverageMetadata {
     pub reference_type: i32,
     #[prost(string, optional, tag="40")]
     pub git_tag: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(string, optional, tag="41")]
+    pub build_url: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(string, tag="42")]
+    pub reference: ::prost::alloc::string::String,
+    #[prost(bool, tag="43")]
+    pub complete: bool,
+    #[prost(string, optional, tag="44")]
+    pub selection: ::core::option::Option<::prost::alloc::string::String>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ReportFile {

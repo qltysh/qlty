@@ -105,6 +105,7 @@ mod tests {
             missing_files: HashSet::new(),
             totals: Default::default(),
             excluded_files_count: 0,
+            auto_path_fixing_enabled: false,
         }
     }
 

@@ -1,0 +1,15 @@
+{
+  "name": "basic_with_config.in",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-batch": "^3.569.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.588.0"
+  }
+}

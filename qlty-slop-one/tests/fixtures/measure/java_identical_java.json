@@ -1,0 +1,131 @@
+{
+ "name": "java_identical.java",
+ "suffix": ".java",
+ "language": "Java",
+ "text": "public class Identical {\n    private int total;\n\n    public void countUp(int[] values) {\n        for (int value : values) {\n            {\n                total += value;\n                total += value * 2;\n                total += value * 3;\n                total += value * 4;\n                total += value * 5;\n                total += value * 6;\n                total += value * 7;\n                total += value * 8;\n                total += value * 9;\n                total += value * 10;\n                total += value * 11;\n                total += value * 12;\n                total += value * 13;\n                total += value * 14;\n                total += value * 15;\n                total += value * 16;\n            }\n        }\n    }\n\n    public void countWhile(int[] values) {\n        int index = 0;\n        while (index < values.length) {\n            int value = values[index];\n            index++;\n            {\n                total += value;\n                total += value * 2;\n                total += value * 3;\n                total += value * 4;\n                total += value * 5;\n                total += value * 6;\n                total += value * 7;\n                total += value * 8;\n                total += value * 9;\n                total += value * 10;\n                total += value * 11;\n                total += value * 12;\n                total += value * 13;\n                total += value * 14;\n                total += value * 15;\n                total += value * 16;\n            }\n        }\n    }\n}\n",
+ "values": [
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.6931471805599453,
+  1.9230769230769231,
+  2.9444389791664403,
+  0.6923076923076923,
+  0.0,
+  0.0,
+  0.0,
+  0.0
+ ],
+ "summary": {
+  "boolean-logic": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 4,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Boolean depth"
+  },
+  "nested-control-flow": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 5,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Nesting depth"
+  },
+  "function-parameters": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 6,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Parameters"
+  },
+  "return-statements": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 6,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Return statements"
+  },
+  "file-complexity": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 50,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Cyclomatic complexity"
+  },
+  "function-complexity": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 18,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Cyclomatic complexity"
+  },
+  "identical-code": {
+   "count": 1,
+   "max_magnitude": 18.0,
+   "covered_lines": 36,
+   "locations": [
+    {
+     "start_line": 6,
+     "end_line": 23
+    },
+    {
+     "start_line": 32,
+     "end_line": 49
+    }
+   ],
+   "max_actual": 18.0,
+   "threshold": 15,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Duplicated lines"
+  },
+  "similar-code": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 15,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Duplicated lines"
+  }
+ }
+}

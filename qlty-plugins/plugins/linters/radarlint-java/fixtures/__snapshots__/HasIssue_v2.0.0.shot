@@ -16,7 +16,7 @@ exports[`linter=radarlint-java fixture=HasIssue version=2.0.0 1`] = `
         },
       },
       "message": "Replace this use of System.out by a logger.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "java:S106",
       "snippet": "                System.out.println("Hello");",
       "snippetWithContext": "package pkg1;
@@ -51,7 +51,7 @@ class HasIssue {
         },
       },
       "message": "Rename this package name to match the regular expression '^[a-z_]+(\\.[a-z_][a-z0-9_]*)*$'.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "java:S120",
       "snippet": "package pkg1;",
       "snippetWithContext": "package pkg1;
@@ -80,7 +80,7 @@ class HasIssue {
         },
       },
       "message": "Refactor the code in order to not assign to this loop counter from within the loop body.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "java:S127",
       "snippet": "            for (int k = 0; k < 20; i++) {",
       "snippetWithContext": "package pkg1;
@@ -114,7 +114,7 @@ class HasIssue {
         },
       },
       "message": "This file "HasIssue.in.java" should be located in "pkg1" directory, not in "".",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "java:S1598",
       "snippet": "package pkg1;",
       "snippetWithContext": "package pkg1;
@@ -143,7 +143,7 @@ class HasIssue {
         },
       },
       "message": "Remove this useless assignment to local variable "b".",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "java:S1854",
       "snippet": "        b = c;",
       "snippetWithContext": "            for (int k = 0; k < 20; i++) {

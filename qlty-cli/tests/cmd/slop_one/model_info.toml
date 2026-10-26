@@ -1,0 +1,4 @@
+bin.name = "qlty"
+args = ["slop-one", "--model-info"]
+status.code = 0
+fs.base = "basic.in"

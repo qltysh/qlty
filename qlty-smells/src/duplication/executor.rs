@@ -240,6 +240,8 @@ impl Executor {
                 issue.set_property_string("node_kind", first_node.node.kind.clone());
                 issue.set_property_string("structural_hash", format!("{:x}", structural_hash));
                 issue.set_property_number("mass", first_node.node.mass as f64);
+                issue.set_property_number("threshold", lines_threshold as f64);
+                issue.set_property_number("actual", lines_count as f64);
                 issue.set_property_bool("identical", identical);
 
                 issues.push(issue);
@@ -296,6 +298,46 @@ mod test {
             return 'bom';
         }
     ";
+
+    #[test]
+    fn identical_code_reports_line_measurements() {
+        let issues = duplication_issues(&SIMPLE_CODE.repeat(2));
+
+        assert_eq!(issues.len(), 2);
+        assert_eq!(issues[0].rule_key, "identical-code");
+        assert_eq!(issues[0].get_property_number("threshold"), 2.0);
+        assert_eq!(issues[0].get_property_number("actual"), 5.0);
+        assert!(issues[0].get_property_number("mass") > 5.0);
+    }
+
+    #[test]
+    fn similar_code_reports_its_own_line_threshold() {
+        let issues = duplication_issues(DUPLICATE_CODE);
+
+        assert_eq!(issues.len(), 2);
+        assert_eq!(issues[0].rule_key, "similar-code");
+        assert_eq!(issues[0].get_property_number("threshold"), 3.0);
+        assert_eq!(issues[0].get_property_number("actual"), 5.0);
+    }
+
+    fn duplication_issues(source: &str) -> Vec<Issue> {
+        let plan = Plan {
+            languages: HashMap::from([(
+                "javascript".to_string(),
+                crate::duplication::LanguagePlan {
+                    nodes_threshold: 1,
+                    identical_lines_threshold: Some(2),
+                    similar_lines_threshold: Some(3),
+                    ..Default::default()
+                },
+            )]),
+            source_files: vec![Arc::new(File::from_string("javascript", source))],
+            transformers: vec![],
+        };
+        let mut executor = Executor::new(&plan);
+        executor.execute();
+        executor.report().issues
+    }
 
     #[test]
     fn process_node_basic() -> Result<()> {

@@ -1,0 +1,106 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=golangci-lint fixture=basic_new version=2.12.2 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.go",
+        "range": {
+          "startColumn": 12,
+          "startLine": 12,
+        },
+      },
+      "message": "Error return value of \`time.Parse\` is not checked",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "errcheck",
+      "snippet": "	time.Parse("asdf", "")",
+      "snippetWithContext": "
+import (
+	"time"
+	"fmt"
+)
+
+// ✋✋✋✋
+// this is the main function 🏃
+func main() {
+	fmt.Println("hello")
+	time.Parse("asdf", "")
+}",
+      "tool": "golangci-lint",
+    },
+    {
+      "category": "CATEGORY_STYLE",
+      "level": "LEVEL_FMT",
+      "location": {
+        "path": "basic.go",
+      },
+      "message": "Incorrect formatting, autoformat by running \`qlty fmt\`.",
+      "mode": "MODE_COMMENT",
+      "onAddedLine": true,
+      "ruleKey": "fmt",
+      "tool": "golangci-lint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.go",
+        "range": {
+          "startColumn": 1,
+          "startLine": 9,
+        },
+      },
+      "message": "Comment should end in a period",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "godot",
+      "snippet": "// this is the main function 🏃",
+      "snippetWithContext": "package main
+
+import (
+	"time"
+	"fmt"
+)
+
+// ✋✋✋✋
+// this is the main function 🏃
+func main() {
+	fmt.Println("hello")
+	time.Parse("asdf", "")
+}",
+      "tool": "golangci-lint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.go",
+        "range": {
+          "startColumn": 1,
+          "startLine": 4,
+        },
+      },
+      "message": "File is not properly formatted",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "goimports",
+      "snippet": "	"time"",
+      "snippetWithContext": "package main
+
+import (
+	"time"
+	"fmt"
+)
+
+// ✋✋✋✋
+// this is the main function 🏃
+func main() {
+	fmt.Println("hello")
+	time.Parse("asdf", "")
+}",
+      "tool": "golangci-lint",
+    },
+  ],
+}
+`;

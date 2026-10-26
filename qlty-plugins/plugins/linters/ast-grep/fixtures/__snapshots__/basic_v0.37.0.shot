@@ -9,14 +9,16 @@ exports[`linter=ast-grep fixture=basic version=0.37.0 1`] = `
       "location": {
         "path": "sample.ts",
         "range": {
-          "endColumn": 26,
-          "endLine": 2,
-          "startLine": 2,
+          "endColumn": 27,
+          "endLine": 3,
+          "startColumn": 1,
+          "startLine": 3,
         },
       },
       "message": "AST pattern match found: no-await-in-promise-all",
       "mode": "MODE_BLOCK",
       "ruleKey": "no-await-in-promise-all",
+      "snippet": "Promise.all([await foo()]);",
       "snippetWithContext": "async function foo() {}
 
 Promise.all([await foo()]);

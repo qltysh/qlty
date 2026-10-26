@@ -341,7 +341,7 @@ mod test {
     fn test_transform_applies_truncation() -> Result<()> {
         let (staging_area, source_dir) = setup()?;
 
-        let large_lines: Vec<String> = (1..=1500).map(|i| format!("Line {}", i)).collect();
+        let large_lines: Vec<String> = (1..=100).map(|i| format!("Line {}", i)).collect();
         create_temp_file(
             &staging_area,
             &source_dir,
@@ -358,7 +358,7 @@ mod test {
                 path: "large_file.txt".to_string(),
                 range: Some(Range {
                     start_line: 1,
-                    end_line: 1500,
+                    end_line: 100,
                     ..Default::default()
                 }),
             }),
@@ -369,10 +369,10 @@ mod test {
         let transformed_issue = se.transform(issue).unwrap();
 
         let snippet_lines: Vec<&str> = transformed_issue.snippet.lines().collect();
-        assert!(snippet_lines.len() <= 1000);
+        assert!(snippet_lines.len() <= 50);
 
         let context_lines: Vec<&str> = transformed_issue.snippet_with_context.lines().collect();
-        assert!(context_lines.len() <= 1000);
+        assert!(context_lines.len() <= 50);
 
         Ok(())
     }

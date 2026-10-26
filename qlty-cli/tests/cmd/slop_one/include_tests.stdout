@@ -1,0 +1,14 @@
+PASS tests/test_simple.py  8.75/10 (pass above 5.00; Python)
+  Score is 3.75 points above the cutoff.
+  Reference score: 7.07; factors show changes from that reference.
+  Main factors lowering the score:
+    -0.03  Routine boilerplate (Jev assessment 0.65)
+  Main factors raising the score:
+    +0.30  Overall difficulty of maintenance (Jev assessment 0.07)
+    +0.23  Duplicated logic (Jev assessment 0.00)
+    +0.21  Interacting conditions and state (Jev assessment 0.04)
+
+Summary of supplied files: 1 evaluated, 1 passed, 0 failed, 0 skipped, 0 errors.
+  Median file score: 8.75/10; pass rate: 100.0%.
+  Lowest-scoring files:
+    8.75/10  PASS  tests/test_simple.py

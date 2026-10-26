@@ -32,6 +32,12 @@ exclude_patterns = [
 [file_types.ALL]
 globs = ["*.*"]
 
+[file_types.c]
+globs = ["*.c"]
+
+[file_types.cpp]
+globs = ["*.cpp", "*.hpp", "*.cc", "*.cxx", "*.c++", "*.h", "*.h++", "*.hh", "*.hxx"]
+
 [file_types.csharp]
 globs = ["*.cs"]
 
@@ -137,6 +143,9 @@ globs = [
   "**/Vagrantfile",
 ]
 interpreters = ["jruby", "rbx", "rake", "macruby", "ruby"]
+
+[file_types.gemfile_lock]
+globs = ["**/Gemfile.lock"]
 
 [file_types.rust]
 globs = ["*.rs"]
@@ -307,7 +316,7 @@ globs = ["*.coffee"]
 globs = ["*.swift"]
 
 [file_types.openapi]
-globs = ["openapi.yaml", "openapi.*.yaml"]
+globs = ["**/openapi.yaml", "**/openapi.*.yaml"]
 
 [file_types.scala]
 globs = ["*.scala"]
@@ -458,9 +467,29 @@ smells.duplication.filter_patterns = ["(import_statement _)"]
 [language.tsx]
 globs = ["*.tsx", "*.mtsx", "*.ctsx"]
 
+[language.c]
+globs = ["*.c"]
+
+[language.cpp]
+globs = ["*.cpp", "*.hpp", "*.cc", "*.cxx", "*.c++", "*.h", "*.h++", "*.hh", "*.hxx"]
+
 [language.csharp]
 globs = ["*.cs"]
 smells.duplication.filter_patterns = ["(using_directive _)"]
+
+[language.elixir]
+globs = ["*.ex", "*.exs"]
+smells.duplication.filter_patterns = [
+  "(call target: (identifier) @_directive (#match? @_directive \"^(alias|import|require)$\"))",
+]
+
+[language.scala]
+globs = ["*.scala", "*.sc"]
+smells.duplication.filter_patterns = ["(import_declaration _)"]
+
+[language.vbnet]
+globs = ["*.vb"]
+smells.duplication.filter_patterns = ["(imports_statement _)"]
 
 [smells.boolean_logic]
 threshold = 4

@@ -1,5 +1,5 @@
 use crate::metrics::metrics::complexity;
-use qlty_analysis::code::{capture_by_name, capture_source, File, NodeFilter};
+use qlty_analysis::code::{capture_by_name, capture_by_name_option, node_source, File, NodeFilter};
 use qlty_types::analysis::v1::{Issue, Level};
 use qlty_types::calculate_effort_minutes;
 use std::collections::HashMap;
@@ -33,7 +33,10 @@ pub fn check(threshold: usize, source_file: Arc<File>, tree: &Tree) -> Vec<Issue
             capture_by_name(function_query, "definition.function", &function_match);
 
         let count = complexity(&source_file, &function_capture.node, &NodeFilter::empty());
-        let function_name = capture_source(function_query, "name", &function_match, &source_file);
+        let function_name = match capture_by_name_option(function_query, "name", &function_match) {
+            Some(capture) => node_source(&capture.node, &source_file),
+            None => language.function_name_from_node(&source_file, &function_capture.node),
+        };
         let mut partial_fingerprints = HashMap::new();
 
         partial_fingerprints.insert("function.name".to_string(), function_name.clone());
@@ -58,7 +61,7 @@ pub fn check(threshold: usize, source_file: Arc<File>, tree: &Tree) -> Vec<Issue
                     EFFORT_MINUTES_PER_VALUE_DELTA,
                 ),
                 partial_fingerprints,
-                ..issue_for(&source_file, &function_capture.node)
+                ..issue_for(&source_file, &function_capture.node, threshold, count)
             });
         }
     }
@@ -100,7 +103,7 @@ mod test {
                 "#
                 .trim(),
             ));
-            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), @r#"
+            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
             - tool: qlty
               driver: structure
               ruleKey: function-complexity
@@ -122,6 +125,9 @@ mod test {
                   endColumn: 49
                   startByte: 0
                   endByte: 261
+              properties:
+                actual: 15
+                threshold: 1
               partialFingerprints:
                 function.name: foo
             "#);

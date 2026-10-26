@@ -1,5 +1,6 @@
 {
   "metadata": {
+    "id": "[..]",
     "buildId": "[..]",
     "result": "ANALYSIS_RESULT_SUCCESS",
     "filesAnalyzed": 43,
@@ -11,14 +12,19 @@
     "committerName": "TEST",
     "authorEmail": "test@codeclimate.com",
     "authorName": "TEST",
-    "authoredAt": "2024-01-01T00:00:00+00:00"
+    "authoredAt": "2024-01-01T00:00:00+00:00",
+    "generatedAt": "[..]",
+    "time": "[..]"
   },
   "messages": [],
   "invocations": [],
   "issues": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "similar-code",
@@ -54,12 +60,17 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "similar-code",
@@ -95,12 +106,17 @@
         [..]
         [..]
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "boolean-logic",
@@ -123,11 +139,18 @@
           "endByte": 329
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "boolean-logic",
@@ -150,11 +173,18 @@
           "endByte": 149
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "file-complexity",
@@ -178,14 +208,21 @@
           "endByte": 1201
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "file.path": "FileComplexity.cs"
       },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-complexity",
@@ -209,14 +246,21 @@
           "endByte": 1198
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "Main"
       },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-parameters",
@@ -239,11 +283,18 @@
           "endByte": 230
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -266,11 +317,18 @@
           "endByte": 1128
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -293,11 +351,18 @@
           "endByte": 472
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "return-statements",
@@ -321,11 +386,18 @@
           "endByte": 1398
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "return-statements",
@@ -348,11 +420,16 @@
           "endByte": 512
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     }
   ],
   "stats": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "BooleanLogic.cs",
@@ -369,10 +446,13 @@
       "commentLines": 0,
       "blankLines": 6,
       "complexity": 2,
-      "cyclomatic": 8,
-      "lcom4": 0
+      "cyclomatic": 6,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "FileComplexity.cs",
@@ -385,14 +465,17 @@
       "functions": 1,
       "fields": 0,
       "lines": 41,
-      "codeLines": 29,
+      "codeLines": 28,
       "commentLines": 0,
-      "blankLines": 12,
+      "blankLines": 13,
       "complexity": 55,
-      "cyclomatic": 28,
-      "lcom4": 0
+      "cyclomatic": 11,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "FunctionComplexity.cs",
@@ -405,14 +488,17 @@
       "functions": 2,
       "fields": 0,
       "lines": 30,
-      "codeLines": 21,
+      "codeLines": 20,
       "commentLines": 0,
-      "blankLines": 9,
+      "blankLines": 10,
       "complexity": 15,
-      "cyclomatic": 13,
-      "lcom4": 0
+      "cyclomatic": 6,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Identical.cs",
@@ -425,14 +511,17 @@
       "functions": 2,
       "fields": 0,
       "lines": 56,
-      "codeLines": 37,
+      "codeLines": 36,
       "commentLines": 0,
-      "blankLines": 19,
+      "blankLines": 20,
       "complexity": 6,
-      "cyclomatic": 23,
-      "lcom4": 0
+      "cyclomatic": 5,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Lines.cs",
@@ -445,14 +534,17 @@
       "functions": 5,
       "fields": 0,
       "lines": 57,
-      "codeLines": 32,
+      "codeLines": 31,
       "commentLines": 7,
-      "blankLines": 18,
+      "blankLines": 19,
       "complexity": 1,
       "cyclomatic": 3,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "NestedControl.cs",
@@ -465,14 +557,17 @@
       "functions": 3,
       "fields": 0,
       "lines": 62,
-      "codeLines": 48,
+      "codeLines": 47,
       "commentLines": 0,
-      "blankLines": 14,
+      "blankLines": 15,
       "complexity": 15,
-      "cyclomatic": 24,
-      "lcom4": 0
+      "cyclomatic": 20,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Parameters.cs",
@@ -485,14 +580,17 @@
       "functions": 5,
       "fields": 0,
       "lines": 26,
-      "codeLines": 17,
+      "codeLines": 16,
       "commentLines": 0,
-      "blankLines": 9,
+      "blankLines": 10,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Returns.cs",
@@ -505,14 +603,17 @@
       "functions": 5,
       "fields": 0,
       "lines": 61,
-      "codeLines": 34,
+      "codeLines": 33,
       "commentLines": 0,
-      "blankLines": 27,
+      "blankLines": 28,
       "complexity": 9,
       "cyclomatic": 7,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CountConditionalAssignment.cs",
@@ -525,14 +626,17 @@
       "functions": 1,
       "fields": 0,
       "lines": 16,
-      "codeLines": 14,
+      "codeLines": 13,
       "commentLines": 0,
-      "blankLines": 2,
+      "blankLines": 3,
       "complexity": 3,
-      "cyclomatic": 7,
-      "lcom4": 0
+      "cyclomatic": 4,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CountFunctionWithTernary.cs",
@@ -549,10 +653,13 @@
       "commentLines": 0,
       "blankLines": 0,
       "complexity": 1,
-      "cyclomatic": 4,
-      "lcom4": 0
+      "cyclomatic": 2,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CountNonSequentialLogicalOperators.cs",
@@ -570,9 +677,12 @@
       "blankLines": 0,
       "complexity": 3,
       "cyclomatic": 5,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CountRecursion.cs",
@@ -590,9 +700,12 @@
       "blankLines": 0,
       "complexity": 1,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "MultipleConditionals.cs",
@@ -609,10 +722,13 @@
       "commentLines": 0,
       "blankLines": 1,
       "complexity": 7,
-      "cyclomatic": 21,
-      "lcom4": 0
+      "cyclomatic": 11,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloBasic.cs",
@@ -630,9 +746,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloIf.cs",
@@ -649,10 +768,13 @@
       "commentLines": 0,
       "blankLines": 0,
       "complexity": 1,
-      "cyclomatic": 3,
-      "lcom4": 0
+      "cyclomatic": 2,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloIfElse.cs",
@@ -669,10 +791,13 @@
       "commentLines": 0,
       "blankLines": 1,
       "complexity": 2,
-      "cyclomatic": 3,
-      "lcom4": 0
+      "cyclomatic": 2,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloIfElseIf.cs",
@@ -689,10 +814,13 @@
       "commentLines": 0,
       "blankLines": 0,
       "complexity": 2,
-      "cyclomatic": 5,
-      "lcom4": 0
+      "cyclomatic": 3,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "CycloIfElseIfElse.cs",
@@ -709,10 +837,13 @@
       "commentLines": 0,
       "blankLines": 1,
       "complexity": 3,
-      "cyclomatic": 5,
-      "lcom4": 0
+      "cyclomatic": 3,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "EmptyFunction.cs",
@@ -730,9 +861,12 @@
       "blankLines": 1,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "EmptyIf.cs",
@@ -750,9 +884,12 @@
       "blankLines": 0,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "IfWithBool.cs",
@@ -770,9 +907,12 @@
       "blankLines": 0,
       "complexity": 2,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "IterativeForOf.cs",
@@ -790,9 +930,12 @@
       "blankLines": 1,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "IterativeMap.cs",
@@ -810,9 +953,12 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "IterativeMethodsWithFilterAndInclude.cs",
@@ -829,10 +975,13 @@
       "commentLines": 0,
       "blankLines": 3,
       "complexity": 1,
-      "cyclomatic": 3,
-      "lcom4": 0
+      "cyclomatic": 2,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "WhileLoop.cs",
@@ -850,9 +999,12 @@
       "blankLines": 2,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "ClassDeclaration.cs",
@@ -869,10 +1021,13 @@
       "commentLines": 1,
       "blankLines": 6,
       "complexity": 0,
-      "cyclomatic": 2,
-      "lcom4": 1
+      "cyclomatic": 1,
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "GetterSetterDeclaration.cs",
@@ -890,9 +1045,12 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Multiple.cs",
@@ -910,9 +1068,12 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Other.cs",
@@ -930,9 +1091,12 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "PrivateFieldDeclaration.cs",
@@ -950,9 +1114,12 @@
       "blankLines": 4,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "PublicFieldDeclaration.cs",
@@ -965,14 +1132,17 @@
       "functions": 1,
       "fields": 1,
       "lines": 12,
-      "codeLines": 10,
+      "codeLines": 9,
       "commentLines": 1,
-      "blankLines": 1,
+      "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Read.cs",
@@ -990,9 +1160,12 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "StaticFieldDeclaration.cs",
@@ -1010,9 +1183,12 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Unique.cs",
@@ -1030,9 +1206,12 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "Write.cs",
@@ -1045,14 +1224,17 @@
       "functions": 1,
       "fields": 2,
       "lines": 11,
-      "codeLines": 10,
+      "codeLines": 9,
       "commentLines": 0,
-      "blankLines": 1,
+      "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "MethodsWithParams.cs",
@@ -1069,10 +1251,13 @@
       "commentLines": 0,
       "blankLines": 4,
       "complexity": 0,
-      "cyclomatic": 2,
-      "lcom4": 0
+      "cyclomatic": 1,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "MethodsWithoutParams.cs",
@@ -1089,10 +1274,13 @@
       "commentLines": 0,
       "blankLines": 8,
       "complexity": 0,
-      "cyclomatic": 2,
-      "lcom4": 0
+      "cyclomatic": 1,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "SingletonMethodsWithParams.cs",
@@ -1110,9 +1298,12 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "SingletonMethodsWithoutParams.cs",
@@ -1130,9 +1321,12 @@
       "blankLines": 1,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_0.cs",
@@ -1150,9 +1344,12 @@
       "blankLines": 15,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_1-1.cs",
@@ -1165,14 +1362,17 @@
       "functions": 3,
       "fields": 0,
       "lines": 18,
-      "codeLines": 13,
+      "codeLines": 12,
       "commentLines": 0,
-      "blankLines": 5,
+      "blankLines": 6,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_1.cs",
@@ -1190,9 +1390,12 @@
       "blankLines": 7,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom_2.cs",
@@ -1210,9 +1413,12 @@
       "blankLines": 16,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 2
+      "lcom4": 2,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cognitive",
@@ -1224,14 +1430,17 @@
       "functions": 5,
       "fields": 0,
       "lines": 60,
-      "codeLines": 57,
+      "codeLines": 56,
       "commentLines": 0,
-      "blankLines": 3,
+      "blankLines": 4,
       "complexity": 15,
-      "cyclomatic": 38,
-      "lcom4": 0
+      "cyclomatic": 23,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "cyclomatic",
@@ -1247,10 +1456,13 @@
       "commentLines": 1,
       "blankLines": 11,
       "complexity": 14,
-      "cyclomatic": 31,
-      "lcom4": 1
+      "cyclomatic": 24,
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "fields",
@@ -1262,14 +1474,17 @@
       "functions": 13,
       "fields": 15,
       "lines": 154,
-      "codeLines": 126,
+      "codeLines": 124,
       "commentLines": 4,
-      "blankLines": 24,
+      "blankLines": 26,
       "complexity": 0,
-      "cyclomatic": 11,
-      "lcom4": 1
+      "cyclomatic": 10,
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "functions",
@@ -1285,10 +1500,13 @@
       "commentLines": 0,
       "blankLines": 15,
       "complexity": 0,
-      "cyclomatic": 6,
-      "lcom4": 0
+      "cyclomatic": 4,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
       "name": "lcom",
@@ -1300,12 +1518,14 @@
       "functions": 19,
       "fields": 6,
       "lines": 133,
-      "codeLines": 90,
+      "codeLines": 89,
       "commentLines": 0,
-      "blankLines": 43,
+      "blankLines": 44,
       "complexity": 0,
       "cyclomatic": 4,
-      "lcom4": 4
+      "lcom4": 4,
+      "generatedAt": "[..]",
+      "time": "[..]"
     }
   ]
 }

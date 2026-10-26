@@ -551,7 +551,7 @@ mod test {
                       startColumn: 32
                       endLine: 4
                       endColumn: 33
-        "#)
+        "#);
     }
 
     #[test]

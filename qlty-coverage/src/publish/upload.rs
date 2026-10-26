@@ -79,7 +79,7 @@ impl Upload {
         content_type: &str,
         data: Vec<u8>,
     ) -> Result<(), anyhow::Error> {
-        let response_result = http::put(url)
+        let response_result = http::put(url)?
             .set("Content-Type", content_type)
             .send_bytes(&data);
 
@@ -147,6 +147,7 @@ mod tests {
     fn setup_crypto_provider() {
         INIT.call_once(|| {
             let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+            std::env::set_var("QLTY_INSECURE_ALLOW_HTTP", "true");
         });
     }
 
@@ -260,7 +261,7 @@ mod tests {
     fn test_upload_data_transport_error() {
         setup_crypto_provider();
         let upload = Upload::default();
-        let invalid_url = "http://non-existent-host-12345.invalid:99999/upload";
+        let invalid_url = "http://127.0.0.1:54321/upload";
 
         let result = upload.upload_data(invalid_url, "application/zip", vec![1, 2, 3, 4]);
 

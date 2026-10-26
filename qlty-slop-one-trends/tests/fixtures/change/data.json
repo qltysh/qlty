@@ -1,0 +1,250 @@
+{
+ "project": "fixture",
+ "repository": "https://example.com/fixture",
+ "model": {
+  "id": "fixture",
+  "sha256": "fixture-model",
+  "threshold_score": 5.0,
+  "score_scale": "threshold-centered-1-10-v1"
+ },
+ "schema_version": 1,
+ "weeks": [
+  {
+   "week_start": "2026-01-05",
+   "week_end_exclusive": "2026-01-12T00:00:00-04:00",
+   "as_of": "2026-01-12T00:00:00-04:00",
+   "partial": false,
+   "commit": "1111111111111111111111111111111111111111",
+   "committed_at": "2026-01-12T00:00:00-04:00",
+   "first_parent_index": 10,
+   "summary": {
+    "candidate_files": 7,
+    "files": 6,
+    "fails": 4,
+    "errors": 1,
+    "inline_only_skips": 0,
+    "loc": 290,
+    "mass": 290.0,
+    "maintainable_fraction": 0.20689655172413793,
+    "median": 4.5,
+    "loc_weighted_mean": 4.172413793103448
+   },
+   "test_paths_excluded": 0,
+   "source_exclusions": {
+    "files": 0,
+    "by_category": {}
+   },
+   "analysis_errors": [
+    {
+     "path": "unscored.rs",
+     "error": "Qlty did not parse this source file."
+    }
+   ],
+   "change": null
+  },
+  {
+   "week_start": "2026-01-12",
+   "week_end_exclusive": "2026-01-19T00:00:00-04:00",
+   "as_of": "2026-01-19T00:00:00-04:00",
+   "partial": false,
+   "commit": "2222222222222222222222222222222222222222",
+   "committed_at": "2026-01-19T00:00:00-04:00",
+   "first_parent_index": 20,
+   "summary": {
+    "candidate_files": 8,
+    "files": 7,
+    "fails": 2,
+    "errors": 1,
+    "inline_only_skips": 0,
+    "loc": 330,
+    "mass": 330.0,
+    "maintainable_fraction": 0.803030303030303,
+    "median": 6.0,
+    "loc_weighted_mean": 6.0606060606060606
+   },
+   "test_paths_excluded": 0,
+   "source_exclusions": {
+    "files": 0,
+    "by_category": {}
+   },
+   "analysis_errors": [
+    {
+     "path": "added_unscored.rs",
+     "error": "Source is empty or contains binary data"
+    }
+   ],
+   "change": {
+    "positive": 1.7899686520376177,
+    "negative": 0.0,
+    "net": 1.7899686520376177,
+    "compared_groups": 4,
+    "changed_groups": 4,
+    "compared_previous_mass": 280.0,
+    "previous_project_mass": 290.0,
+    "comparison_coverage_of_retained_scored_mass": 1.0,
+    "contributions": [
+     {
+      "before_paths": [
+       "big.rs"
+      ],
+      "after_paths": [
+       "part1.rs",
+       "part2.rs"
+      ],
+      "before_score": 3.0,
+      "after_score": 6.090909090909091,
+      "before_mass": 100.0,
+      "after_mass": 110.0,
+      "previous_mass_share": 0.3448275862068966,
+      "score_change": 3.090909090909091,
+      "contribution": 1.0658307210031348,
+      "matching": [
+       {
+        "old": "big.rs",
+        "new": "part1.rs",
+        "kind": "inferred_split",
+        "unique_lines": 30,
+        "shared_lines": 40,
+        "target_lines": 50,
+        "overlap": 0.8
+       },
+       {
+        "old": "big.rs",
+        "new": "part2.rs",
+        "kind": "inferred_split",
+        "unique_lines": 40,
+        "shared_lines": 50,
+        "target_lines": 60,
+        "overlap": 0.8333333333333334
+       }
+      ],
+      "changed": true
+     },
+     {
+      "before_paths": [
+       "a.rs"
+      ],
+      "after_paths": [
+       "a.rs"
+      ],
+      "before_score": 4.0,
+      "after_score": 6.0,
+      "before_mass": 90.0,
+      "after_mass": 95.0,
+      "previous_mass_share": 0.3103448275862069,
+      "score_change": 2.0,
+      "contribution": 0.6206896551724138,
+      "matching": [],
+      "changed": true
+     },
+     {
+      "before_paths": [
+       "old_name.rs"
+      ],
+      "after_paths": [
+       "new_name.rs"
+      ],
+      "before_score": 6.0,
+      "after_score": 6.5,
+      "before_mass": 40.0,
+      "after_mass": 40.0,
+      "previous_mass_share": 0.13793103448275862,
+      "score_change": 0.5,
+      "contribution": 0.06896551724137931,
+      "matching": [
+       {
+        "old": "old_name.rs",
+        "new": "new_name.rs",
+        "kind": "git_rename",
+        "similarity": "R092"
+       }
+      ],
+      "changed": true
+     },
+     {
+      "before_paths": [
+       "m1.rs",
+       "m2.rs"
+      ],
+      "after_paths": [
+       "merged.rs"
+      ],
+      "before_score": 5.8,
+      "after_score": 6.0,
+      "before_mass": 50.0,
+      "after_mass": 45.0,
+      "previous_mass_share": 0.1724137931034483,
+      "score_change": 0.20000000000000018,
+      "contribution": 0.03448275862068969,
+      "matching": [
+       {
+        "old": "m1.rs",
+        "new": "merged.rs",
+        "kind": "inferred_merge",
+        "unique_lines": 15,
+        "shared_lines": 18,
+        "target_lines": 20,
+        "overlap": 0.9
+       },
+       {
+        "old": "m2.rs",
+        "new": "merged.rs",
+        "kind": "inferred_merge",
+        "unique_lines": 20,
+        "shared_lines": 25,
+        "target_lines": 30,
+        "overlap": 0.8333333333333334
+       }
+      ],
+      "changed": true
+     }
+    ],
+    "uncompared_groups": [],
+    "unresolved_movements": [],
+    "additions": {
+     "summary": {
+      "candidate_files": 3,
+      "files": 2,
+      "fails": 1,
+      "errors": 1,
+      "inline_only_skips": 0,
+      "loc": 40,
+      "mass": 40.0,
+      "maintainable_fraction": 0.625,
+      "median": 5.0,
+      "loc_weighted_mean": 5.75
+     },
+     "files": [
+      "added.rs",
+      "added_bad.rs",
+      "added_unscored.rs"
+     ]
+    },
+    "removals": {
+     "summary": {
+      "candidate_files": 2,
+      "files": 1,
+      "fails": 1,
+      "errors": 1,
+      "inline_only_skips": 0,
+      "loc": 10,
+      "mass": 10.0,
+      "maintainable_fraction": 0.0,
+      "median": 2.0,
+      "loc_weighted_mean": 2.0
+     },
+     "files": [
+      "removed.rs",
+      "unscored.rs"
+     ]
+    },
+    "structural_groups": 2,
+    "rename_only_sensitivity": {
+     "positive": 1.7899686520376177,
+     "negative": 0.0,
+     "net": 1.7899686520376177
+    }
+   }
+  }
+ ]
+}

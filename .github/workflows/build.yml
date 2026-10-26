@@ -7,18 +7,22 @@ on:
       - .github/workflows/build.yml
       - qlty-*
       - Cargo.*
+      - rust-toolchain.toml
   pull_request:
     paths:
       - .github/workflows/build.yml
       - qlty-*
       - Cargo.*
+      - rust-toolchain.toml
   workflow_dispatch:
 permissions:
   contents: read
-  attestations: write
-  id-token: write
 jobs:
   compile:
+    permissions:
+      contents: read
+      attestations: write
+      id-token: write
     if: github.event.commits && github.event.commits[0] && github.event.commits[0].author.name == 'qlty-releases[bot]' && startsWith(github.event.commits[0].message, 'Release ')
     strategy:
       fail-fast: false
@@ -52,7 +56,7 @@ jobs:
 
           # Windows
           - target: x86_64-pc-windows-msvc
-            runner: windows-latest
+            runner: windows-2022
             archive_format: zip
     name: ${{ matrix.target }}
     runs-on: ${{ matrix.runner }}
@@ -68,12 +72,14 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Install Rust toolchain
-        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af
+        uses: actions-rust-lang/setup-rust-toolchain@2fcdc490d667999e01ddbbf0f2823181beef6b39
         with:
-          toolchain: stable
           target: ${{ matrix.target }}
+          cache: false
+          rustflags: ""
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0
@@ -88,7 +94,7 @@ jobs:
 
       - name: Build
         env:
-          SEGMENT_WRITE_KEY: ${{ secrets.SEGMENT_WRITE_KEY }}
+          CIO_WRITE_KEY: ${{ secrets.CIO_WRITE_KEY }}
         run: |
           cargo build --target ${{ matrix.target }} --all-features --release
           cargo test --target ${{ matrix.target }} --all-features --release
@@ -116,12 +122,12 @@ jobs:
         run: sha256sum ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }} > ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }}.sha256
 
       - name: Generate binary attestation
-        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a
         with:
           subject-path: ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }}
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: artifacts-${{ env.BINARY_NAME }}-${{ matrix.target }}
           if-no-files-found: error
@@ -137,8 +143,9 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Fetch local artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           pattern: artifacts-*
           path: target/distrib/
@@ -153,21 +160,29 @@ jobs:
           echo "sha_x86_64_linux=$(cat target/distrib/qlty-x86_64-unknown-linux-gnu.tar.xz.sha256 | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
       - name: Create Homebrew formula
         run: |
-          sed "s/{{VERSION}}/${{ steps.data.outputs.version }}/g" installer/qlty.rb.template > qlty.rb
-          sed -i "s/{{SHA_AARCH64_MAC}}/${{ steps.data.outputs.sha_aarch64_mac }}/g" qlty.rb
-          sed -i "s/{{SHA_X86_64_MAC}}/${{ steps.data.outputs.sha_x86_64_mac }}/g" qlty.rb
-          sed -i "s/{{SHA_AARCH64_LINUX}}/${{ steps.data.outputs.sha_aarch64_linux }}/g" qlty.rb
-          sed -i "s/{{SHA_X86_64_LINUX}}/${{ steps.data.outputs.sha_x86_64_linux }}/g" qlty.rb
+          sed "s/{{VERSION}}/${STEPS_DATA_OUTPUTS_VERSION}/g" installer/qlty.rb.template > qlty.rb
+          sed -i "s/{{SHA_AARCH64_MAC}}/${STEPS_DATA_OUTPUTS_SHA_AARCH64_MAC}/g" qlty.rb
+          sed -i "s/{{SHA_X86_64_MAC}}/${STEPS_DATA_OUTPUTS_SHA_X86_64_MAC}/g" qlty.rb
+          sed -i "s/{{SHA_AARCH64_LINUX}}/${STEPS_DATA_OUTPUTS_SHA_AARCH64_LINUX}/g" qlty.rb
+          sed -i "s/{{SHA_X86_64_LINUX}}/${STEPS_DATA_OUTPUTS_SHA_X86_64_LINUX}/g" qlty.rb
+        env:
+          STEPS_DATA_OUTPUTS_VERSION: ${{ steps.data.outputs.version }}
+          STEPS_DATA_OUTPUTS_SHA_AARCH64_MAC: ${{ steps.data.outputs.sha_aarch64_mac }}
+          STEPS_DATA_OUTPUTS_SHA_X86_64_MAC: ${{ steps.data.outputs.sha_x86_64_mac }}
+          STEPS_DATA_OUTPUTS_SHA_AARCH64_LINUX: ${{ steps.data.outputs.sha_aarch64_linux }}
+          STEPS_DATA_OUTPUTS_SHA_X86_64_LINUX: ${{ steps.data.outputs.sha_x86_64_linux }}
       - name: Upload Homebrew formula
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: artifacts-homebrew
           if-no-files-found: error
           path: qlty.rb
       - name: Create dist-manifest.json
-        run: echo "{\"announcement_tag\":\"v${{ steps.data.outputs.version }}\"}" > dist-manifest.json
+        run: echo "{\"announcement_tag\":\"v${STEPS_DATA_OUTPUTS_VERSION}\"}" > dist-manifest.json
+        env:
+          STEPS_DATA_OUTPUTS_VERSION: ${{ steps.data.outputs.version }}
       - name: Upload manifest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: artifacts-manifest
           if-no-files-found: error
@@ -176,7 +191,12 @@ jobs:
   release:
     needs: [compile, extra]
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.commits[0].author.name == 'qlty-releases[bot]' && startsWith(github.event.commits[0].message, 'Release ') }}
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/release.yml
     with:
       workflow_run_id: ${{ github.event.workflow_run.id }}
-    secrets: inherit
+    secrets:
+      QLTY_APP_PRIVATE_KEY: ${{ secrets.QLTY_APP_PRIVATE_KEY }}
+      QLTY_RELEASE_AWS_ROLE_ARN: ${{ secrets.QLTY_RELEASE_AWS_ROLE_ARN }}

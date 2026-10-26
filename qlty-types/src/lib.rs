@@ -249,6 +249,7 @@ pub fn level_from_str(level: &str) -> analysis::v1::Level {
         "medium" => analysis::v1::Level::Medium,
         "low" => analysis::v1::Level::Low,
         "fmt" => analysis::v1::Level::Fmt,
+        "note" => analysis::v1::Level::Note,
         _ => analysis::v1::Level::Unspecified,
     }
 }
@@ -301,7 +302,10 @@ impl clap::ValueEnum for analysis::v1::Level {
 
 pub fn language_enum_from_name(name: &str) -> analysis::v1::Language {
     match name {
+        "c" => analysis::v1::Language::C,
+        "cpp" => analysis::v1::Language::CPlusPlus,
         "csharp" => analysis::v1::Language::CSharp,
+        "elixir" => analysis::v1::Language::Elixir,
         "go" => analysis::v1::Language::Go,
         "java" => analysis::v1::Language::Java,
         "javascript" => analysis::v1::Language::Javascript,
@@ -311,9 +315,11 @@ pub fn language_enum_from_name(name: &str) -> analysis::v1::Language {
         "python" => analysis::v1::Language::Python,
         "ruby" => analysis::v1::Language::Ruby,
         "rust" => analysis::v1::Language::Rust,
+        "scala" => analysis::v1::Language::Scala,
         "swift" => analysis::v1::Language::Swift,
         "tsx" => analysis::v1::Language::Tsx,
         "typescript" => analysis::v1::Language::Typescript,
+        "vbnet" => analysis::v1::Language::Vbdotnet,
         _ => panic!("Unrecognized language name: {}", name),
     }
 }
@@ -331,10 +337,13 @@ impl Add for analysis::v1::Stats {
 
     fn add(self, other: Self) -> Self {
         Self {
+            analysis_id: self.analysis_id,
             name: self.name,
             fully_qualified_name: self.fully_qualified_name,
             workspace_id: self.workspace_id,
             project_id: self.project_id,
+            time: self.time,
+            generated_at: self.generated_at,
             kind: self.kind,
             path: self.path,
             language: self.language,
@@ -381,5 +390,30 @@ impl Add for tests::v1::CoverageSummary {
 impl AddAssign for tests::v1::CoverageSummary {
     fn add_assign(&mut self, other: Self) {
         *self = *self + other;
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn level_from_str_parses_every_named_level() {
+        let levels: Vec<_> = ["High", "medium", "low", "fmt", "note", "info"]
+            .iter()
+            .map(|level| level_from_str(level))
+            .collect();
+
+        assert_eq!(
+            levels,
+            vec![
+                analysis::v1::Level::High,
+                analysis::v1::Level::Medium,
+                analysis::v1::Level::Low,
+                analysis::v1::Level::Fmt,
+                analysis::v1::Level::Note,
+                analysis::v1::Level::Unspecified,
+            ]
+        );
     }
 }

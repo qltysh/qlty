@@ -17,6 +17,8 @@ use tracing::{debug, info, trace};
 
 const GITHUB_API_VERSION: &str = "2022-11-28";
 const USER_AGENT_PREFIX: &str = "qlty-check";
+const GITHUB_PROXY_BASE: &str = "https://github-proxy.qlty.sh";
+const GITHUB_API_BASE: &str = "https://api.github.com";
 
 #[derive(Debug, Clone, Default)]
 pub struct GitHubRelease {
@@ -272,6 +274,7 @@ impl GitHubRelease {
         [
             "application/x-ms-dos-executable",
             "application/x-msdownload",
+            "application/x-msdos-program",
         ]
         .iter()
         .map(|s| s.to_string())
@@ -374,10 +377,10 @@ impl GitHubReleaseTool {
             "Fetching release assets from {} from 'v{}' tag",
             self.release.def.github, self.release.version
         );
-        if let Ok(assets) = self.get_release_assets(&format!(
-            "https://api.github.com/repos/{}/releases/tags/v{}",
-            self.release.def.github, self.release.version
-        )) {
+        if let Ok(assets) = self.fetch_release_assets_with_fallback(
+            &self.release.def.github,
+            &format!("v{}", self.release.version),
+        ) {
             asset_values = assets;
         }
 
@@ -386,10 +389,10 @@ impl GitHubReleaseTool {
                 "Fetching release assets from {} from '{}' tag",
                 self.release.def.github, self.release.version
             );
-            asset_values = self.get_release_assets(&format!(
-                "https://api.github.com/repos/{}/releases/tags/{}",
-                self.release.def.github, self.release.version
-            ))?;
+            asset_values = self.fetch_release_assets_with_fallback(
+                &self.release.def.github,
+                &self.release.version,
+            )?;
         }
 
         Ok(asset_values
@@ -398,8 +401,46 @@ impl GitHubReleaseTool {
             .collect())
     }
 
+    fn fetch_release_assets_with_fallback(
+        &self,
+        repo: &str,
+        tag: &str,
+    ) -> Result<Vec<serde_json::Value>> {
+        let proxy_url = format!("{}/repos/{}/releases/tags/{}", GITHUB_PROXY_BASE, repo, tag);
+
+        match self.get_release_assets(&proxy_url) {
+            Ok(assets) => Ok(assets),
+            Err(e) => {
+                if Self::should_fallback_to_api(&e) {
+                    debug!(
+                        "Proxy request failed, falling back to api.github.com: {}",
+                        e
+                    );
+                    let api_url =
+                        format!("{}/repos/{}/releases/tags/{}", GITHUB_API_BASE, repo, tag);
+                    self.get_release_assets(&api_url)
+                } else {
+                    Err(e)
+                }
+            }
+        }
+    }
+
+    fn should_fallback_to_api(error: &anyhow::Error) -> bool {
+        if let Some(ureq_error) = error.downcast_ref::<ureq::Error>() {
+            match ureq_error {
+                ureq::Error::Transport(_) => true,
+                ureq::Error::Status(code, _) => {
+                    (500..600).contains(code) || *code == 401 || *code == 403 || *code == 407
+                }
+            }
+        } else {
+            false
+        }
+    }
+
     fn get_release_assets(&self, url: &str) -> Result<Vec<serde_json::Value>> {
-        let mut request = http::get(url)
+        let mut request = http::get(url)?
             .set(
                 "User-Agent",
                 &format!("{}/{}", USER_AGENT_PREFIX, QLTY_VERSION),
@@ -464,6 +505,7 @@ mod test {
             ("tool-v0.7.0_windows_386.zip", "application/zip", false),
             ("any_filename.ext", "application/x-msdownload", true),
             ("any_filename.ext", "application/x-ms-dos-executable", true),
+            ("any_filename.ext", "application/x-msdos-program", true),
             ("tool-v0.7.0.zip", "application/zip", true),
             ("tool-v0.7.0.tar.gz", "application/gzip", false),
             ("tool-v0.7.0.linux.zip", "application/zip", false),

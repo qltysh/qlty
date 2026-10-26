@@ -1,0 +1,47 @@
+qlty [..] [..]-[..] ([..])
+[..]
+https://qlty.sh/d/coverage
+
+ SETTINGS 
+
+    cwd: [CWD]
+    dry-run: true
+    override-build-id: 123
+    override-branch: main
+    override-commit-sha: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
+
+    discover-java-src-dirs: true
+
+    Discovered Java source directories:
+      src/main/java
+
+ METADATA 
+
+    CI: unknown
+    Reference Type: Branch
+    Commit: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
+    Branch: main
+    Build ID: 123
+    Commit Time: 2024-01-01 00:00:00 UTC
+
+ COVERAGE FILES: 1 
+
+    Coverage File  Format  Size
+    jacoco.xml     jacoco  520 B
+
+ COVERAGE DATA 
+
+    Auto-path fixing: Enabled
+    1 unique code file path
+    All code files in the coverage data were found on disk (count: 1).
+
+    Covered Lines:      1
+    Uncovered Lines:    0
+    Omitted Lines:      2
+
+    Line Coverage:       100.00%
+
+ EXPORTING... 
+
+    Exported: tmp/qlty-coverage/coverage.zip
+

@@ -4,13 +4,11 @@ on:
   workflow_call:
   pull_request:
     paths:
-      - installer/install.*
+      - installer/**
       - .github/workflows/installer_test.yml
 
 permissions:
-  actions: write
   contents: read
-  id-token: write
 
 jobs:
   test:
@@ -51,7 +49,8 @@ jobs:
           - os: Linux
             name: Linux / debian (sh / wget)
             runner: ubuntu-latest
-            container: debian:trixie-slim
+            # debian:trixie-slim
+            container: debian@sha256:77ba0164de17b88dd0bf6cdc8f65569e6e5fa6cd256562998b62553134a00ef0
             package_install: apt-get update && apt-get install -y xz-utils wget
             file: $INSTALL_SH
             command: sh
@@ -59,7 +58,8 @@ jobs:
           - os: Linux
             name: Linux / alpine (sh)
             runner: ubuntu-latest
-            container: alpine:3
+            # alpine:3
+            container: alpine@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659
             package_install: apk add -U xz
             file: $INSTALL_SH
             command: sh
@@ -89,12 +89,20 @@ jobs:
             command: powershell -Command -
             version: 0.447.0
 
+          - os: Windows
+            name: Windows / pwsh
+            runner: windows-latest
+            file: $Env:INSTALL_PS1
+            command: pwsh -Command -
+
     container:
       image: ${{ matrix.container }}
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          persist-credentials: false
 
       - name: Install dependencies
         if: matrix.package_install
@@ -113,3 +121,23 @@ jobs:
         if: matrix.version
         run: V="$(~/.qlty/bin/qlty version --no-upgrade-check | cut -d' ' -f2)"; test "$V" = "${{ matrix.version }}"
         shell: sh
+
+  upgrade_windows:
+    name: Upgrade / ${{ matrix.shell }}
+    runs-on: windows-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        shell: [pwsh, powershell, cmd]
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          persist-credentials: false
+
+      - name: Validate successful and failed upgrades
+        run: python installer/test_upgrade.py

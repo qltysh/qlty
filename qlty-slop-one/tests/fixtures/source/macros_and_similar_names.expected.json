@@ -1,0 +1,23 @@
+{
+  "text": "// mod tests { this is a comment }\nmacro_rules! fixture { () => { mod tests { fn generated() {} } }; }\nfixture! { mod test { fn supplied() {} } }\nmod tests;\nmod test;\nmod test_support { pub fn helper() {} }\nmod testsuite { pub fn run() {} }\n#[cfg(test)]\nmod tests_helpers { pub fn helper() {} }\n",
+  "line_map": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "excluded_modules": [],
+  "has_code": true,
+  "info": {
+    "policy": "rust-inline-tests-001",
+    "original_lines": 9,
+    "analyzed_lines": 9,
+    "excluded_lines": 0,
+    "excluded_modules": []
+  }
+}

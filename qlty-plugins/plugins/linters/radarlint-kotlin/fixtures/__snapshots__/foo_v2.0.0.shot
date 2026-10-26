@@ -16,7 +16,7 @@ exports[`linter=radarlint-kotlin fixture=foo version=2.0.0 1`] = `
         },
       },
       "message": "Remove this unused import.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_MONITOR",
       "ruleKey": "kotlin:S1128",
       "snippet": "import java.sql.Connection",
       "snippetWithContext": "import java.sql.Connection
@@ -45,7 +45,7 @@ fun main() {
         },
       },
       "message": "Remove this unused import.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_MONITOR",
       "ruleKey": "kotlin:S1128",
       "snippet": "import java.sql.DriverManager",
       "snippetWithContext": "import java.sql.Connection
@@ -74,7 +74,7 @@ fun main() {
         },
       },
       "message": "Remove this unused import.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_MONITOR",
       "ruleKey": "kotlin:S1128",
       "snippet": "import java.sql.Statement",
       "snippetWithContext": "import java.sql.Connection
@@ -103,7 +103,7 @@ fun main() {
         },
       },
       "message": "Complete the task associated to this TODO comment.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_MONITOR",
       "ruleKey": "kotlin:S1135",
       "snippet": "    // TODO: This is a test",
       "snippetWithContext": "import java.sql.Connection

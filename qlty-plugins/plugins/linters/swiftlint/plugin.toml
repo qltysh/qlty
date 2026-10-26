@@ -1,8 +1,6 @@
 config_version = "0"
 
 [plugins.downloads.swiftlint]
-github = "terraform-linters/swiftlint"
-download_type = "zip"
 strip_components = 0
 
 [[plugins.downloads.swiftlint.system]]
@@ -18,19 +16,19 @@ url = "https://github.com/realm/SwiftLint/releases/download/${version}/portable_
 [[plugins.downloads.swiftlint.system]]
 cpu = "x86_64"
 os = "linux"
-url = "https://github.com/realm/SwiftLint/releases/download/${version}/swiftlint_linux.zip"
+url = "https://github.com/realm/SwiftLint/releases/download/${version}/swiftlint_linux_amd64.zip"
 
 [[plugins.downloads.swiftlint.system]]
 cpu = "aarch64"
 os = "linux"
-url = "https://github.com/realm/SwiftLint/releases/download/${version}/swiftlint_linux.zip"
+url = "https://github.com/realm/SwiftLint/releases/download/${version}/swiftlint_linux_arm64.zip"
 
 [plugins.definitions.swiftlint]
 downloads = ["swiftlint"]
 config_files = [".swiftlint.yml", ".swiftlint.yaml", ".swiftlint"]
 file_types = ["swift"]
-latest_version = "0.55.1"
-known_good_version = "0.55.1"
+latest_version = "0.65.1"
+known_good_version = "0.65.1"
 version_command = "swiftlint --version"
 description = "Enforces Swift style and conventions"
 supported_platforms = ["macos"]

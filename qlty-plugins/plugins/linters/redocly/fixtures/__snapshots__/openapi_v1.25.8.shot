@@ -16,7 +16,7 @@ exports[`linter=redocly fixture=openapi version=1.25.8 1`] = `
         },
       },
       "message": "Servers must be present.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "no-empty-servers",
       "snippet": "openapi: 3.0.0",
       "snippetWithContext": "openapi: 3.0.0
@@ -45,7 +45,7 @@ components:
         },
       },
       "message": "Property \`content\` is not expected here.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "spec",
       "snippet": "      content:",
       "snippetWithContext": "openapi: 3.0.0
@@ -76,7 +76,7 @@ components:
         },
       },
       "message": "The field \`info\` must be present on this level.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "spec",
       "snippet": "openapi: 3.0.0
 components:
@@ -119,7 +119,7 @@ components:
         },
       },
       "message": "The field \`paths\` must be present on this level.",
-      "mode": "MODE_BLOCK",
+      "mode": "MODE_COMMENT",
       "ruleKey": "spec",
       "snippet": "openapi: 3.0.0
 components:

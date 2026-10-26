@@ -1,11 +1,14 @@
 pub mod allocator;
 mod arguments;
+mod attestation;
 pub mod auth;
 mod commands;
+pub mod docs_export;
 mod errors;
 pub mod exe_name;
 pub mod export;
 pub mod format;
+mod git_hook;
 mod initializer;
 mod logging;
 pub mod shell;
@@ -160,6 +163,19 @@ fn handle_result(
                     eprintln!("{} {}", style("error:").red().bold(), message);
                     eprintln!();
                     eprintln!("For more information, try {}.", style("'--help'").bold());
+                }
+                CommandError::Explained {
+                    ref title,
+                    ref detail,
+                } => {
+                    error!("{}", title);
+                    eprintln!();
+                    eprintln!("{} {}", style("✖").red().bold(), style(title).bold());
+                    eprintln!();
+                    for line in detail {
+                        eprintln!("  {line}");
+                    }
+                    eprintln!();
                 }
                 CommandError::Config => {
                     error!("Config error");

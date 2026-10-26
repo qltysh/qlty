@@ -51,6 +51,16 @@ fn go_tests() {
 }
 
 #[test]
+fn c_tests() {
+    setup_and_run_test_cases("tests/lang/c/**/*.toml");
+}
+
+#[test]
+fn cpp_tests() {
+    setup_and_run_test_cases("tests/lang/cpp/**/*.toml");
+}
+
+#[test]
 fn csharp_tests() {
     setup_and_run_test_cases("tests/lang/csharp/**/*.toml");
 }
@@ -58,4 +68,19 @@ fn csharp_tests() {
 #[test]
 fn swift_tests() {
     setup_and_run_test_cases("tests/lang/swift/**/*.toml");
+}
+
+#[test]
+fn scala_tests() {
+    setup_and_run_test_cases("tests/lang/scala/**/*.toml");
+}
+
+#[test]
+fn vbnet_tests() {
+    setup_and_run_test_cases("tests/lang/vbnet/**/*.toml");
+}
+
+#[test]
+fn elixir_tests() {
+    setup_and_run_test_cases("tests/lang/elixir/**/*.toml");
 }

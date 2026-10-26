@@ -1,0 +1,146 @@
+{
+ "name": "java_mixed.java",
+ "suffix": ".java",
+ "language": "Java",
+ "text": "public class Mixed {\n    public int classify(int a, int b, int c, int d, int e, int f, int g) {\n        int result = 0;\n        if (a > 0 && b > 0 && c > 0 && d > 0 && e > 0) {\n            result += 1;\n        }\n        if (a > 1) { result += 2; } else if (b > 1) { result += 3; } else if (c > 1) { result += 4; }\n        if (d > 1) { result += 5; } else if (e > 1) { result += 6; } else if (f > 1) { result += 7; }\n        if (g > 1) { result += 8; } else if (a > 2) { result += 9; } else if (b > 2) { result += 10; }\n        if (c > 2) { result += 11; } else if (d > 2) { result += 12; } else if (e > 2) { result += 13; }\n        if (f > 2) { result += 14; } else if (g > 2) { result += 15; } else if (a > 3) { result += 16; }\n        if (b > 3) { result += 17; } else if (c > 3) { result += 18; } else if (d > 3) { result += 19; }\n        for (int i = 0; i < a; i++) {\n            if (i % 2 == 0) {\n                result += i;\n            }\n        }\n        return result;\n    }\n\n    public int other(int a, int b) {\n        int result = 0;\n        if (a > 1) { result += 2; } else if (b > 1) { result += 3; }\n        if (a > 2) { result += 4; } else if (b > 2) { result += 5; }\n        if (a > 3) { result += 6; } else if (b > 3) { result += 7; }\n        if (a > 4) { result += 8; } else if (b > 4) { result += 9; }\n        if (a > 5) { result += 10; } else if (b > 5) { result += 11; }\n        if (a > 6) { result += 12; } else if (b > 6) { result += 13; }\n        if (a > 7) { result += 14; } else if (b > 7) { result += 15; }\n        if (a > 8) { result += 16; } else if (b > 8) { result += 17; }\n        if (a > 9) { result += 18; } else if (b > 9) { result += 19; }\n        if (a > 10) { result += 20; } else if (b > 10) { result += 21; }\n        if (a > 11) { result += 22; } else if (b > 11) { result += 23; }\n        if (a > 12) { result += 24; } else if (b > 12) { result += 25; }\n        if (a > 13) { result += 26; } else if (b > 13) { result += 27; }\n        if (a > 14) { result += 28; } else if (b > 14) { result += 29; }\n        if (a > 15) { result += 30; } else if (b > 15) { result += 31; }\n        return result;\n    }\n}\n",
+ "values": [
+  0.6931471805599453,
+  2.5,
+  1.6094379124341003,
+  0.025,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.6931471805599453,
+  2.5,
+  2.0794415416798357,
+  0.025,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.6931471805599453,
+  2.5,
+  3.9889840465642745,
+  1.0,
+  1.0986122886681098,
+  5.0,
+  3.4339872044851463,
+  0.925,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0
+ ],
+ "summary": {
+  "boolean-logic": {
+   "count": 1,
+   "max_magnitude": 4.0,
+   "covered_lines": 1,
+   "locations": [
+    {
+     "start_line": 4,
+     "end_line": 4
+    }
+   ],
+   "max_actual": 4.0,
+   "threshold": 4,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Boolean depth"
+  },
+  "nested-control-flow": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 5,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Nesting depth"
+  },
+  "function-parameters": {
+   "count": 1,
+   "max_magnitude": 7.0,
+   "covered_lines": 1,
+   "locations": [
+    {
+     "start_line": 2,
+     "end_line": 2
+    }
+   ],
+   "max_actual": 7.0,
+   "threshold": 6,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Parameters"
+  },
+  "return-statements": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 6,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Return statements"
+  },
+  "file-complexity": {
+   "count": 1,
+   "max_magnitude": 53.0,
+   "covered_lines": 40,
+   "locations": [
+    {
+     "start_line": 1,
+     "end_line": 40
+    }
+   ],
+   "max_actual": 53.0,
+   "threshold": 50,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Cyclomatic complexity"
+  },
+  "function-complexity": {
+   "count": 2,
+   "max_magnitude": 30.0,
+   "covered_lines": 37,
+   "locations": [
+    {
+     "start_line": 2,
+     "end_line": 19
+    },
+    {
+     "start_line": 21,
+     "end_line": 39
+    }
+   ],
+   "max_actual": 30.0,
+   "threshold": 18,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Cyclomatic complexity"
+  },
+  "identical-code": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 15,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Duplicated lines"
+  },
+  "similar-code": {
+   "count": 0,
+   "max_magnitude": 0.0,
+   "covered_lines": 0,
+   "locations": [],
+   "max_actual": 0.0,
+   "threshold": 15,
+   "magnitude_basis": "actual",
+   "magnitude_unit": "Duplicated lines"
+  }
+ }
+}

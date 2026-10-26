@@ -1,4 +1,4 @@
-use qlty_analysis::code::{capture_by_name_option, capture_source, File};
+use qlty_analysis::code::{capture_by_name, capture_by_name_option, node_source, File};
 use qlty_types::analysis::v1::{Issue, Level};
 use qlty_types::calculate_effort_minutes;
 use std::sync::Arc;
@@ -24,6 +24,7 @@ pub fn check(threshold: usize, source_file: Arc<File>, tree: &Tree) -> Vec<Issue
         query_cursor.matches(query, tree.root_node(), source_file.contents.as_bytes());
 
     for function_match in all_matches {
+        let function_capture = capture_by_name(query, "definition.function", &function_match);
         let parameters_capture = capture_by_name_option(query, "parameters", &function_match);
         if parameters_capture.is_none() {
             continue;
@@ -36,7 +37,10 @@ pub fn check(threshold: usize, source_file: Arc<File>, tree: &Tree) -> Vec<Issue
             let message = format!(
                 "Function with many parameters (count = {}): {}",
                 parameter_names.len(),
-                capture_source(query, "name", &function_match, &source_file)
+                match capture_by_name_option(query, "name", &function_match) {
+                    Some(capture) => node_source(&capture.node, &source_file),
+                    None => language.function_name_from_node(&source_file, &function_capture.node),
+                }
             );
 
             issues.push(Issue {
@@ -50,7 +54,12 @@ pub fn check(threshold: usize, source_file: Arc<File>, tree: &Tree) -> Vec<Issue
                     BASE_EFFORT_MINUTES,
                     EFFORT_MINUTES_PER_VALUE_DELTA,
                 ),
-                ..issue_for(&source_file, &parameters_node)
+                ..issue_for(
+                    &source_file,
+                    &parameters_node,
+                    threshold,
+                    parameter_names.len(),
+                )
             });
         }
     }
@@ -63,6 +72,15 @@ mod test {
     use super::*;
 
     #[test]
+    fn zero_measurements_are_preserved() {
+        let source_file = Arc::new(File::from_string("python", "def f():\n    pass"));
+        let issues = check(0, source_file.clone(), &source_file.parse());
+
+        assert_eq!(issues[0].get_property_number("threshold"), 0.0);
+        assert_eq!(issues[0].get_property_number("actual"), 0.0);
+    }
+
+    #[test]
     fn parameters_go() {
         let source_file = Arc::new(File::from_string(
             "go",
@@ -72,7 +90,7 @@ mod test {
             "#,
         ));
 
-        insta::assert_yaml_snapshot!(check(5, source_file.clone(), &source_file.parse()), @r###"
+        insta::assert_yaml_snapshot!(check(5, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
         - tool: qlty
           driver: structure
           ruleKey: function-parameters
@@ -94,7 +112,10 @@ mod test {
               endColumn: 66
               startByte: 24
               endByte: 66
-        "###);
+          properties:
+            actual: 6
+            threshold: 5
+        "#);
     }
 
     #[test]
@@ -117,7 +138,7 @@ mod test {
                     pass"#
                 .trim(),
         ));
-        insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), @r#"
+        insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
         - tool: qlty
           driver: structure
           ruleKey: function-parameters
@@ -139,6 +160,9 @@ mod test {
               endColumn: 26
               startByte: 7
               endByte: 25
+          properties:
+            actual: 6
+            threshold: 1
         "#);
     }
 
@@ -171,7 +195,7 @@ mod test {
             "typescript",
             r#"function foo(a: any, b: any, c: any, d: any, e: any, f: any) {}"#.trim(),
         ));
-        insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), @r#"
+        insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
         - tool: qlty
           driver: structure
           ruleKey: function-parameters
@@ -193,6 +217,9 @@ mod test {
               endColumn: 61
               startByte: 12
               endByte: 60
+          properties:
+            actual: 6
+            threshold: 1
         "#);
     }
 
@@ -266,7 +293,7 @@ mod test {
                 end"#
                     .trim(),
             ));
-            insta::assert_yaml_snapshot!(check(5, source_file.clone(), &source_file.parse()), @r#"
+            insta::assert_yaml_snapshot!(check(5, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
             - tool: qlty
               driver: structure
               ruleKey: function-parameters
@@ -288,7 +315,36 @@ mod test {
                   endColumn: 26
                   startByte: 7
                   endByte: 25
+              properties:
+                actual: 6
+                threshold: 5
             "#);
+        }
+    }
+
+    mod elixir {
+        use super::*;
+
+        #[test]
+        fn parameters_found() {
+            let source_file = Arc::new(File::from_string(
+                "elixir",
+                "defmodule M do\n def f(a, b, c, d, e, f), do: a\nend",
+            ));
+            let issues = check(6, source_file.clone(), &source_file.parse());
+            assert_eq!(1, issues.len());
+            assert_eq!(6, issues[0].value);
+        }
+
+        #[test]
+        fn default_argument_counts_once() {
+            let source_file = Arc::new(File::from_string(
+                "elixir",
+                "defmodule M do\n def f(a, b \\\\ 1), do: a\nend",
+            ));
+            let issues = check(2, source_file.clone(), &source_file.parse());
+            assert_eq!(1, issues.len());
+            assert_eq!(2, issues[0].value);
         }
     }
 }

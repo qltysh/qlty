@@ -1,0 +1,162 @@
+{
+  "description": "Test vectors for coverage array summation. Each entry defines input arrays and the expected merged output. Implementations must: (1) truncate all arrays to the minimum length, (2) for each position, return min if min < 0, else return sum.",
+  "note": "This spec is shared between the client (qlty CLI) and the server to ensure both implementations produce identical results when summing coverage arrays. Changes here must be validated against both repositories.",
+  "expectations": [
+    {
+      "id": "single_array",
+      "description": "A single array is returned unchanged",
+      "inputs": [[1, 0, -1, 3, 0]],
+      "expected": [1, 0, -1, 3, 0]
+    },
+    {
+      "id": "single_empty_array",
+      "description": "A single empty array produces an empty result",
+      "inputs": [[]],
+      "expected": []
+    },
+    {
+      "id": "covered_plus_covered",
+      "description": "Hit counts are summed when both arrays report coverage",
+      "inputs": [[1], [2]],
+      "expected": [3]
+    },
+    {
+      "id": "missed_plus_missed",
+      "description": "A line missed in all arrays remains missed",
+      "inputs": [[0], [0]],
+      "expected": [0]
+    },
+    {
+      "id": "covered_plus_missed",
+      "description": "A line covered in any array is covered in the result",
+      "inputs": [[3], [0]],
+      "expected": [3]
+    },
+    {
+      "id": "omit_plus_omit",
+      "description": "A line omitted in all arrays remains omitted",
+      "inputs": [[-1], [-1]],
+      "expected": [-1]
+    },
+    {
+      "id": "covered_plus_omit",
+      "description": "Omit wins over covered",
+      "inputs": [[5], [-1]],
+      "expected": [-1]
+    },
+    {
+      "id": "missed_plus_omit",
+      "description": "Omit wins over missed",
+      "inputs": [[0], [-1]],
+      "expected": [-1]
+    },
+    {
+      "id": "input_order_does_not_matter",
+      "description": "The operation is commutative — reversing inputs produces the same result",
+      "inputs": [[-1], [5]],
+      "expected": [-1]
+    },
+    {
+      "id": "multi_element_same_length",
+      "description": "Each position is merged independently across a multi-element array",
+      "inputs": [[0, 1, -1], [0, 1, -1]],
+      "expected": [0, 2, -1]
+    },
+    {
+      "id": "omit_is_per_position",
+      "description": "Omit at position 0 in one array and position 1 in another poisons both positions independently",
+      "inputs": [[-1, 1, 0], [1, -1, 0]],
+      "expected": [-1, -1, 0]
+    },
+    {
+      "id": "realistic_file",
+      "description": "A realistic file with a mix of covered, missed, and omit lines across two uploads",
+      "inputs": [[0, 1, 1, 5, 0, 0, -1, -1], [0, 0, 3, 0, 1, 0, -1, -1]],
+      "expected": [0, 1, 4, 5, 1, 0, -1, -1]
+    },
+    {
+      "id": "truncation_shorter_first",
+      "description": "Arrays of different lengths are truncated to the shortest before merging",
+      "inputs": [[1, 0, -1], [2, 1, 0, -1, 5]],
+      "expected": [3, 1, -1]
+    },
+    {
+      "id": "truncation_longer_first",
+      "description": "Truncation result is the same regardless of input order",
+      "inputs": [[2, 1, 0, -1, 5], [1, 0, -1]],
+      "expected": [3, 1, -1]
+    },
+    {
+      "id": "truncation_to_empty",
+      "description": "An empty array truncates everything to empty",
+      "inputs": [[], [1, 2, 3]],
+      "expected": []
+    },
+    {
+      "id": "truncation_discards_trailing_lines",
+      "description": "Trailing covered lines beyond the shortest array are silently discarded",
+      "inputs": [[1, 1], [1, 1, 1, 1, 1]],
+      "expected": [2, 2]
+    },
+    {
+      "id": "three_arrays_sum",
+      "description": "Hit counts are summed across three arrays",
+      "inputs": [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+      "expected": [1, 1, 1]
+    },
+    {
+      "id": "three_arrays_omit_poisons",
+      "description": "A single omit in one of three arrays poisons that position",
+      "inputs": [[1, 2, 3], [1, -1, 3], [1, 2, 3]],
+      "expected": [3, -1, 9]
+    },
+    {
+      "id": "three_arrays_different_lengths",
+      "description": "Three arrays of different lengths are all truncated to the shortest",
+      "inputs": [[1, 2, 3, 4, 5], [1, 0, -1], [2, 1, 0, 0]],
+      "expected": [4, 3, -1]
+    },
+    {
+      "id": "four_arrays",
+      "description": "Summation works across four arrays",
+      "inputs": [[1, 0], [2, 0], [3, 0], [4, 1]],
+      "expected": [10, 1]
+    },
+    {
+      "id": "covered_missed_omit_three_way",
+      "description": "When the same position is covered, missed, and omitted across three arrays, omit wins",
+      "inputs": [[1], [0], [-1]],
+      "expected": [-1]
+    },
+    {
+      "id": "all_empty",
+      "description": "Multiple empty arrays produce an empty result",
+      "inputs": [[], []],
+      "expected": []
+    },
+    {
+      "id": "all_omit",
+      "description": "A file where every line is omitted in all arrays",
+      "inputs": [[-1, -1, -1], [-1, -1, -1]],
+      "expected": [-1, -1, -1]
+    },
+    {
+      "id": "all_missed",
+      "description": "A file where every line is missed in all arrays",
+      "inputs": [[0, 0, 0], [0, 0, 0]],
+      "expected": [0, 0, 0]
+    },
+    {
+      "id": "all_covered",
+      "description": "A file where every line is covered in all arrays",
+      "inputs": [[1, 2, 3], [4, 5, 6]],
+      "expected": [5, 7, 9]
+    },
+    {
+      "id": "large_hit_counts",
+      "description": "Large hit counts are summed correctly",
+      "inputs": [[1000, 0], [500, 1]],
+      "expected": [1500, 1]
+    }
+  ]
+}

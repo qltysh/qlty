@@ -1,5 +1,649 @@
 # Changelog
 
+## v0.662.0 (2026-10-22)
+
+### Fixed
+
+- Stop `qlty upgrade --verify-attestations` and report an error when attestations cannot be verified, such as when `gh` is missing, older than 2.67.0, or not signed in, instead of upgrading as if verification had passed (#2962)
+
+## v0.661.0 (2026-10-22)
+
+### Security
+
+- Bump the managed Node runtime to 22.23.4, which blocks the compromised eMudhra certificates and fixes the October 2026 Node security releases, including a Brotli out-of-bounds write (CVE-2026-111497) that allows remote code execution (#2960)
+- Bump the managed Python runtime to 3.11.17 so Python plugin installs (such as `ruff`, `black`, and `semgrep`) use pip 26.2.2, which rejects the compromised eMudhra certificate authorities (#2964)
+- Reject credentials sent over plain HTTP to non-local hosts and stop following HTTP redirects in the `qlty-slop-one` LLM client (#2963)
+
+## v0.660.0 (2026-10-21)
+
+### Security
+
+- Stop trusting the compromised eMudhra intermediate certificate authorities. HTTPS downloads, Qlty Cloud requests and crash reports now reject their certificates on every platform (#2958)
+- On Linux, Git-based plugin sources (`repository =` in `qlty.toml`) are verified against the system CA bundle. Install your distribution's latest `ca-certificates` update, including updates from its security repository. On Alpine, upgrade `ca-certificates-bundle`, which is the package stock images ship.
+- On macOS and Windows, qlty uses the operating system's certificate checks. Install current OS updates.
+
+### Fixed
+
+- Report issues from Biome instead of failing with `missing field 'location'` when a diagnostic has no location, such as a file over Biome's `files.maxSize` (#2956)
+
+## v0.659.0 (2026-10-20)
+
+### Fixed
+
+- Emit valid SARIF 2.1.0 from `qlty check --sarif` and `qlty smells --sarif` so GitHub's `upload-sarif` accepts the output without jq workarounds (#2954)
+
+## v0.658.0 (2026-10-20)
+
+### Fixed
+
+- Scan Gradle's `gradle/verification-metadata.xml` with the `osv-scanner` plugin so Gradle projects that use dependency verification without lockfiles are checked for vulnerabilities (#2951) — thanks @dkowis!
+
+## v0.657.0 (2026-10-16)
+
+### Improved
+
+- Show the `--trigger` flag in `qlty check --help` (it was previously hidden) and describe it in `qlty fmt --help`. (#2943)
+
+## v0.656.0 (2026-10-16)
+
+- Add a hidden `qlty cli-reference` command that prints the CLI command tree as JSON
+
+## v0.655.0 (2026-10-16)
+
+### Fixed
+
+- Pass the repository's `.gitleaks.toml` to gitleaks with `--config` so allowlists and custom rules are honored instead of silently ignored (gitleaks only auto-discovers the config when `--source` is a directory, but qlty scans one file per invocation). Also add `.gitleaksignore` to the plugin's cache key so edits to it invalidate cached results, and drop the unrecognized `.gitleaks.config` config file name (#2919)
+- Parse `note` as a level in `qlty.toml` triage and ignore config. `level_from_str` previously returned `Level::Unspecified` for `note`, so `[[triage]] set.level = "note"` left issues with no level, and `match.levels = ["note"]` (and `[[ignore]] levels = ["note"]`) failed to match note-level issues (#2922)
+
+## v0.654.0 (2026-10-13)
+
+### New
+
+- Add a `--skip` flag to `qlty check` and `qlty fmt`, the counterpart to `--filter`: run every enabled plugin except the ones listed (for example `qlty check --skip eslint` or `qlty check --filter eslint,rubocop --skip rubocop`). A `plugin` entry removes the plugin entirely while a `plugin:rule` entry keeps it running and drops matching issues. An unknown name fails with `Plugin not found: <name>`, and skipping every enabled plugin fails with `All enabled plugins were skipped` (#2913)
+
+### Fixed
+
+- Run the prettier formatter from the staging root like every other formatter so the staged `.prettierignore` is honored, fixing ignored files still being reformatted. A prepare script links the tool install's `node_modules` into the staging root so bare plugin names in `.prettierrc` continue to resolve (#2916)
+
+## Notice: CLI releases served over HTTPS only (2026-09-14)
+
+CLI releases are now served over HTTPS only. Versions before v0.590.0 fetch the latest-release manifest over HTTP, so `qlty upgrade` and `qlty version` now fail on them with an error naming an `http://` URL. `qlty check`, `qlty fmt`, `qlty coverage publish`, and `qlty --version` are unaffected. To recover, run `qlty upgrade --version 0.644.0`, which skips the manifest lookup, or re-run the installer (`curl https://qlty.sh | sh` on macOS and Linux, `powershell -c "iwr https://qlty.sh | iex"` on Windows).
+
+## v0.653.0 (2026-10-08)
+
+### Improved
+
+- Bump the semgrep and trufflehog plugins to semgrep 1.179.0 and trufflehog 3.97.4. This fixes fresh semgrep installs that began failing on 2026-10-08 with `ImportError: cannot import name 'eval_type_backport'` after pydantic 2.14.0 removed that function (#2910, #2907)
+
+### Fixed
+
+- Pin `qlty plugins upgrade <name>` (run without a version) to the plugin's validated `known_good_version` instead of the unvalidated `latest_version`, matching `qlty init`. When a plugin has no `known_good_version`, the command now fails with "No known good version for plugin" instead of reporting success without changing anything (#2909)
+
+## v0.652.0 (2026-10-05)
+
+### Fixed
+
+- Require `qlty deinit` to run at the repository root like `qlty init`, instead of removing `.qlty` from the current directory. Run from a subdirectory it now fails with "This must be run at the root of a Git repository" rather than deleting a stray `sub/.qlty` while leaving the real configuration in place (#2904)
+- Automatically prune stale `.qlty/out/invoke-*.yaml` and other cache files during `qlty check`, at most once every 24 hours, so invocation files no longer accumulate indefinitely (one repository had built up ~349k files / 1.6 GB). Pruning is best-effort, never clears the plugin cache, and does not run during `qlty build` or `qlty fmt` (#2886)
+
+## v0.651.0 (2026-10-01)
+
+### Fixed
+
+- Create the repository library (including the plugin cache directory) even when running with `--no-cache`, so installing PHP tools such as PHPStan no longer fails on Windows with "PHP temp directory ... does not exist or is not writable to Composer" (#2875)
+
+## v0.650.0 (2026-09-30)
+
+### Fixed
+
+- Give PHPStan its own temp directory per repository so concurrent runs on different PHPStan major versions no longer delete each other's cached DI containers, which caused `Unable to include ... Container_*.php` failures (#2873)
+- Key PHP tool sandboxes on `composer.json` and `composer.lock` contents instead of just the tool name, so each repository runs against its own packages instead of whichever repository installed first (fixing stale coding standards, "Referenced sniff X does not exist", and phantom PHPStan findings). PHP tools are reinstalled once after upgrading (#2872)
+- Lower the slop-one report's floating bar closer to the bottom of the page (#2869)
+
+## v0.649.0 (2026-09-26)
+
+### New
+
+- Run `qlty slop-one` as a pre-push hook: it compares each changed file with its earlier version and blocks the push when a file's maintainability declines, printing a refactoring prompt a coding agent can act on. Adds `--upstream`, `--upstream-from-pre-push`, `--max-drop`, `--prompt`, and `--trigger` options, a `comparison` object in `--json` output, and `qlty githooks install --slop-one` to install the hook (#2867)
+
+## v0.648.0 (2026-09-25)
+
+### New
+
+- Add `qlty slop-one`, which scores a source file's maintainability from 1 to 10 and builds a weekly and monthly trends report for a whole repository as a self-contained HTML file (#2861). Thanks to @fhwang for the contribution!
+
+## v0.646.0 (2026-09-25)
+
+### Improved
+
+- Bump the hadolint, swiftlint, and terraform plugins to hadolint 2.15.1 (adding Dockerfile rules DL3063, DL3065, and DL3066), swiftlint 0.65.1, and terraform 1.16.0 (#2859)
+
+## v0.645.0 (2026-09-23)
+
+### New
+
+- Expose `properties.threshold` and `properties.actual` on all eight maintainability smells in both native JSON and SARIF output, so consumers no longer need to parse messages for measurements and can read values beyond the configured threshold (#2851)
+
+### Improved
+
+- Compute repository cache state once per run instead of per invocation, making `qlty check` up to 4x faster on large repositories with per-file linters such as gitleaks (#2856)
+
+### Fixed
+
+- Exclude arithmetic, bitwise, and comparison operators from cyclomatic complexity, which previously inflated scores by counting non-branching operators as extra paths (#2852)
+- Include active check filters in issue cache keys, preventing a filtered check from caching an empty result that a later unfiltered check would incorrectly reuse (#2837)
+
+## v0.644.0 (2026-08-28)
+
+### Fixed
+
+- Bump redocly from 2.32.2 to 2.41.0, which patches CVE-2026-63325 (arbitrary code execution via Arazzo `$faker` expressions) and CVE-2026-63225 (path traversal in the `split` command) (#2847)
+- Fix shfmt reporting unparseable shell files as clean; files it cannot parse now surface a plugin error instead of silently passing with zero findings (#2847)
+
+## v0.643.0 (2026-08-22)
+
+### New
+
+- Add maintainability analysis for Elixir, including complexity metrics (cyclomatic, cognitive, function/class/field counts, LCOM4), structure smells, and duplication detection (#2843)
+
+## v0.642.0 (2026-08-14)
+
+### Fixed
+
+- Bump PHP_CodeSniffer from 3.10.3 to 3.13.6, which patches GHSA-hmqg-cxww-wqhq and restores installs that Composer now blocks on the vulnerable pin (#2839)
+- Bump haml-lint from 0.69.0 to 0.77.0, fixing a `Cannot handle Haml version` failure when fresh installs resolve Haml 7.3.x (#2839)
+
+## v0.641.0 (2026-08-03)
+
+### Improved
+
+- Bump the eslint, oxlint, and prisma plugins to eslint 10, oxlint 1.x, and prisma 7 (#2825)
+
+### Fixed
+
+- Switch Biome >= 2.4 to the stable `rdjson` reporter, restoring lint results that were dropped when Biome 2.4 changed its unstable `json` reporter output (#2821)
+
+## v0.640.0 (2026-07-28)
+
+- Add a `pre-release` channel to the release promotion workflow, so new releases auto-promote to `pre-release` and promotion to `latest` becomes a deliberate step (#2832)
+
+## v0.639.0 (2026-07-23)
+
+### Fixed
+
+- Honor `package-lock.json` when installing node-based linters from `package_file`, so the locked versions are respected instead of npm resolving the latest versions matching the `package.json` semver ranges (#2829)
+- Honor `composer.lock` when installing PHP linters from `package_file`, so the locked versions are respected instead of `composer update` re-resolving to the latest matching versions (#2830)
+
+## v0.638.0 (2026-07-22)
+
+### Improved
+
+- Bump the managed Node runtime from 21.7.3 to 22.23.1 LTS, so plugins that require even-numbered LTS Node lines (such as eslint 10, knip 6, oxlint 1.x, and prisma 7) install their native dependencies correctly (#2827)
+
+## v0.637.0 (2026-07-21)
+
+### Improved
+
+- Merge a `[[plugins.definitions.X.drivers.Y.version]]` block in qlty.toml into a source's versioned driver entry with the same `version_matcher`, allowing per-version driver field overrides instead of being silently unreachable (#2823)
+
+### Fixed
+
+- Apply user-configured driver fields (such as `prepare_script`) to version-matched drivers for plugins with versioned drivers (eslint, stylelint, knip, golangci-lint, trufflehog, radarlint-\*), instead of silently discarding them at plan time (#2822)
+
+## v0.636.0 (2026-07-17)
+
+### Improved
+
+- Classify npm `EUNSUPPORTEDPROTOCOL` failures caused by `workspace:`/`catalog:` dependencies with a clear message explaining that pnpm/yarn workspace protocols are not supported (#2819)
+- Surface the full error cause chain in install error details so failures without command output (such as package-file staging errors) are no longer reported with empty details (#2819)
+
+## v0.635.0 (2026-07-17)
+
+### Improved
+
+- Include the failing install command's captured output in build messages when a plugin install fails, instead of only a log file path (#2803)
+- Classify npm install auth and not-found failures (`E401`/`E403`/`E404`) with actionable messages linking to the build secrets docs (#2816)
+- Classify bundler and gem install auth and not-found failures with actionable messages (#2817)
+
+## v0.634.0 (2026-07-15)
+
+### Improved
+
+- Update linter plugin versions, including a PMD bump that clears GHSA-8rr6-2qw5-pc7r (stored XSS in HTML renderers) (#2812)
+
+### Fixed
+
+- Pin TypeScript to 6.0.3 for Knip so it no longer crashes when npm resolves TypeScript 7.0 (#2811)
+
+## v0.633.0 (2026-07-08)
+
+### New
+
+- Add `--selection` to `qlty coverage publish` and `qlty coverage complete` for uploads from a selective (subset) test run (#2802)
+
+## v0.632.1 (2026-07-08)
+
+### Fixed
+
+- Recreate dangling `.qlty/out` and `.qlty/logs` symlinks after the cache is deleted (#2805)
+
+## v0.632.0 (2026-07-01)
+
+### New
+
+- Add native CI detection for Harness CI to coverage uploads (#2799)
+
+## v0.631.0 (2026-06-23)
+
+### Fixed
+
+- Scrub environment variable values from serialized invocation records (#2797)
+
+## v0.630.0 (2026-05-08)
+
+### Fixed
+
+- Revert the Biome `--config-path` change from v0.629.0 (#2791)
+
+## v0.629.0 (2026-05-07)
+
+### Fixed
+
+- Pass `--config-path` to Biome so configs in `.qlty/configs/` are honored (#2788)
+- Pass `--config` to Knip so configs in `.qlty/configs/` are honored in nested-package layouts (#2789)
+
+## v0.628.0 (2026-05-06)
+
+### New
+
+- Add VB.NET maintainability support (#2759)
+
+### Fixed
+
+- Pass `--force-exclusion` to RuboCop so `AllCops: Exclude` is respected (#2786)
+
+## v0.627.0 (2026-05-05)
+
+### New
+
+- Add Scala maintainability support (#2778)
+
+### Fixed
+
+- Clamp line counters to file bounds to prevent overflow crashes during metrics analysis (#2777)
+
+## v0.626.0 (2026-05-01)
+
+### Fixed
+
+- Handle `-1` line numbers in editorconfig-checker output so its issues are reported (#2773)
+
+## v0.625.0 (2026-04-24)
+
+### New
+
+- Centralize config loading with `--skip-source-fetch` support, with graceful fallback in `qlty coverage publish` (#2766)
+
+## v0.624.0 (2026-04-22)
+
+### Fixed
+
+- Revert the config loading centralization from v0.623.0 due to a `qlty coverage publish` regression (#2764)
+
+## v0.623.0 (2026-04-20)
+
+### New
+
+- Centralize config loading with `--skip-source-fetch` support (#2762)
+
+## v0.622.0 (2026-04-16)
+
+### Fixed
+
+- Resolve Stylelint `extends` and `plugins` against the tool install directory (#2757)
+- Tag outbound TruffleHog verification calls with a `qlty` user-agent suffix (#2758)
+
+## v0.621.0 (2026-04-15)
+
+### New
+
+- Add C and C++ language support (#2746)
+
+### Fixed
+
+- Update OpenAPI globs to support nested paths (#2750) — thanks @cussiol!
+
+## v0.620.0 (2026-04-15)
+
+### Fixed
+
+- Detect branch on Travis CI push builds (#2753)
+
+## v0.619.0 (2026-04-09)
+
+### New
+
+- Add `editorconfig-checker` plugin (#2747)
+- Add `spectral` linter plugin (#2705) — thanks @cussiol!
+
+### Fixed
+
+- Fix off-by-one error in ast-grep parsing by converting 0-indexed line/column numbers to 1-indexed (#2738) — thanks @samwightt!
+
+## v0.618.0 (2026-03-18)
+
+### New
+
+- Add golangci-lint format driver for v2+ (#2733)
+
+### Changed
+
+- Fetch sources before loading config in `coverage publish` (#2698). **Behavior change:** previously, `qlty coverage publish` would silently swallow errors when loading `qlty.toml` — including failures to fetch shared private sources — and continue. It now fails fast if `qlty.toml` is invalid or if private sources cannot be fetched. Most users should be unaffected, since an invalid `qlty.toml` is typically surfaced earlier by local or cloud `qlty check` runs. If you hit this, either fix the underlying configuration or source-fetch issue, or remove `qlty.toml` if it is not in use.
+
+### Fixed
+
+- Preserve Git auth state across credential callback invocations (#2734)
+- Support literal targets in formatter rewrite diff (#2732)
+- Skip unmatched driver versions instead of failing (#2730)
+
+## v0.617.0 (2026-03-17)
+
+### New
+
+- Add client-side coverage summing before upload (#2722)
+
+### Fixed
+
+- Write duplication migration settings to both `identical_code` and `similar_code` (#2721)
+
+## v0.616.0 (2026-03-05)
+
+### Fixed
+
+- Prevent deletion of pre-existing config files during cleanup (#2710)
+- Return `None` when `invocation_directory` equals `target_root` (#2709)
+
+## v0.615.0 (2026-03-02)
+
+### Improved
+
+- Bump Trivy to v0.69.2 (#2706)
+
+### Fixed
+
+- Remove `suggested` arg from Trivy drivers (#2707)
+
+## v0.614.0 (2026-02-26)
+
+### Fixed
+
+- Include underlying error in symlink failure log messages (#2702)
+
+## v0.613.0 (2026-02-14)
+
+### New
+
+- Add multi-release support for the Python runtime to enable 3.13+ (#2694)
+
+## v0.612.0 (2026-02-11)
+
+No changes. (Release was triggered by internal improvements.)
+
+## v0.611.0 (2026-02-10)
+
+### Fixed
+
+- Update `haml-lint` to version 0.69.0 (#2678)
+
+## v0.610.0 (2026-02-10)
+
+### Fixed
+
+- Isolate Composer cache per tool to prevent race conditions in PHP plugins (#2677)
+
+## v0.609.0 (2026-02-06)
+
+### New
+
+- Add `--skip-source-fetch` flag to `fmt` command (#2672)
+
+## v0.608.0 (2026-02-05)
+
+### New
+
+- Add `--skip-source-fetch` flag to `check` command (#2670)
+
+## v0.607.0 (2026-02-05)
+
+### New
+
+- Add `qlty sources fetch` command (#2667)
+- Verify SLSA provenance with the `gh` CLI during upgrade (#2547)
+- Require HTTPS for all outgoing HTTP requests (#2517)
+
+### Fixed
+
+- Change `zizmor` suggested setting from config to targets (#2575)
+- Disable `radarlint-js` auto-suggestion (#2574)
+- Handle empty stdin in pre-push hook gracefully (#2548)
+
+## v0.606.0 (2025-12-30)
+
+### Improved
+
+- Move temp data to `$HOME/.qlty/tmp` (#2516)
+
+### Fixed
+
+- Block auto-downgrades (#2515)
+
+## v0.605.0 (2025-12-26)
+
+### New
+
+- Add Jenkins CI environment detection (#2613)
+
+## v0.601.0 (2025-12-24)
+
+### Fixed
+
+- Use mypy JSON output for more consistent parsing (#2609)
+
+## v0.596.0 (2025-12-17)
+
+### Fixed
+
+- Update Ripgrep parser to use plugin name for custom plugin support (#2585)
+
+## v0.595.0 (2025-12-12)
+
+### New
+
+- Add support for Jacoco reports with group elements for multi-module projects (#2572)
+
+## v0.594.0 (2025-12-10)
+
+### New
+
+- Add xccov-json coverage format parser for Apple's xccov JSON format (#2568)
+
+## v0.593.0 (2025-12-04)
+
+### New
+
+- Add `--guess-java-src-dirs` flag to `coverage publish` for automatic Java/Kotlin source directory discovery (#2552)
+
+### Fixed
+
+- Handle JaCoCo reports with no packages (#2554)
+- Add file path context to coverage parsing errors (#2553)
+
+## v0.592.0 (2025-11-23)
+
+### Improved
+
+- Use cached GitHub API responses to reduce rate limit usage (#2522)
+
+## v0.591.0 (2025-11-21)
+
+### Improved
+
+- Add Bitrise CI environment detection (#2519)
+
+## v0.590.0 (2025-11-21)
+
+### New
+
+- Add attestations for installer scripts (#2514)
+
+### Fixed
+
+- Use HTTPS for URLs in code (#2513)
+- Improve add-prefix path handling in coverage transformer (#2501)
+- Support passing through env vars for NullTool (#2471)
+
+## v0.589.0 (2025-11-15)
+
+### Fixed
+
+- Move to new Ruby mechanism (#2507)
+- Allow lockfile issues for Brakeman (#2500)
+
+## v0.586.0 (2025-10-28)
+
+### Improved
+
+- Add warnings on unexpected config attributes (#2464)
+
+## v0.585.0 (2025-10-23)
+
+### Fixed
+
+- Fix broken URLs in error messages (#2472)
+- Fix plugins enable behaviour interaction with suggested directive (#2465)
+
+## v0.584.0 (2025-10-17)
+
+No changes. (Release was triggered by internal improvements.)
+
+## v0.583.0 (2025-10-16)
+
+### Fixed
+
+- Revert behavior introduced in 0.582.0 which inadvertently caused our TOML parsing to become more strict in certain cases (#2452)
+
+## v0.582.0 (2025-10-16)
+
+### New
+
+- Add automatic path fixing for CI/CD environments when publishing coverage (#2338)
+
+### Fixed
+
+- Unify plugins enable and qlty init behaviour for package_file and filters (#2334)
+- Warn on excluding config_file (#2446)
+
+## v0.581.0 (2025-10-09)
+
+### New
+
+- Add install only flag to check command (#2426)
+- Add support for engines in config migrate (#2439)
+
+### Fixed
+
+- Fix prettier success_codes configuration (#2428)
+- Fix plugin configs not to include affects cache (#2427)
+
+#### Notes
+
+NB: There was no release version: 0.580.0
+
+## v0.579.0 (2025-09-29)
+
+### Fixed
+
+- Ensure 'false' is not interpreted as a pull request number from BuildKite's environment (#2423)
+
+## v0.578.0 (2025-09-26)
+
+### New
+
+- Ensure read important env vars for BuildKite for coverage publishing (#2415)
+
+### Improved
+
+- Reduce snippet size limits for storage and performance optimization (#2409)
+
+## v0.577.0 (2025-09-25)
+
+### Fixed
+
+- Fix interaction of exported_config_paths and copy_configs_into_tool_install directives (#2402)
+
+#### Notes
+
+NB: There was no release versions: 0.575.0, 0.576.0
+
+## v0.574.0 (2025-09-12)
+
+### Improved
+
+- Improve coverage publish output (#2378)
+
+## v0.573.0 (2025-09-11)
+
+### Improved
+
+- Adjust plugin suggestions to prioritize commonly used tools (#2373)
+
+### Fixed
+
+- Remove `./` from beginning of `--add-prefix` in coverage command (#2376)
+
+## v0.572.0 (2025-09-08)
+
+### Fixed
+
+- Improve error handling when retrieving commit metadata (#2371)
+
+## v0.571.0 (2025-09-04)
+
+### New
+
+- Add `skip_errored_plugins` option to install command (#2366)
+
+## v0.570.0 (2025-08-29)
+
+### Fixed
+
+- Escape special characters in file paths for glob matching (#2337)
+
+## v0.569.0 (2025-08-27)
+
+### New
+
+- Add ktlint plugin (#2352)
+
+## v0.568.0 (2025-08-22)
+
+### Improved
+
+- Add debug statements to jacoco parser (#2339)
+
+## v0.567.0 (2025-08-20)
+
+### New
+
+- Support JACOCO_SOURCE_PATH environment variable for coverage resolution (#2332)
+
+### Fixed
+
+- Never check rustc version to avoid unneeded breakages (#2317)
+- Ensure ZDOTDIR environment variable is properly set (#2315)
+
+Thank you @mgnisia for your contribution!
+
 ## v0.566.0 (2025-08-15)
 
 ### New

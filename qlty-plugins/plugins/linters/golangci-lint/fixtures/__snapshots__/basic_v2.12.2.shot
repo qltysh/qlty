@@ -1,0 +1,58 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=golangci-lint fixture=basic version=2.12.2 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.go",
+        "range": {
+          "startColumn": 12,
+          "startLine": 8,
+        },
+      },
+      "message": "Error return value of \`time.Parse\` is not checked",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "errcheck",
+      "snippet": "	time.Parse("asdf", "")",
+      "snippetWithContext": "package main
+
+import "time"
+
+// ✋✋✋✋
+// this is the main function 🏃
+func main() {
+	time.Parse("asdf", "")
+}",
+      "tool": "golangci-lint",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "basic.in.go",
+        "range": {
+          "startColumn": 1,
+          "startLine": 6,
+        },
+      },
+      "message": "Comment should end in a period",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "godot",
+      "snippet": "// this is the main function 🏃",
+      "snippetWithContext": "package main
+
+import "time"
+
+// ✋✋✋✋
+// this is the main function 🏃
+func main() {
+	time.Parse("asdf", "")
+}",
+      "tool": "golangci-lint",
+    },
+  ],
+}
+`;

@@ -6,6 +6,7 @@ mod reader;
 mod report;
 mod results;
 mod settings;
+mod summing;
 mod upload;
 
 pub use metrics::CoverageMetrics;

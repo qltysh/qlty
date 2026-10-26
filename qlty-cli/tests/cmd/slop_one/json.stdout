@@ -1,0 +1,636 @@
+{
+  "schema_version": 1,
+  "model": {
+    "id": "maintainability-003-actual-magnitudes",
+    "sha256": "75abf3e26f868eb12b567bbe2af45ef97fd6a3fbaf27eed0bc303f822c8a4d35",
+    "extractor_profile": "qlty-actual-magnitudes-001",
+    "components": 640,
+    "features": 39,
+    "threshold_risk": 0.6073781128742494,
+    "threshold_score": 5.0,
+    "score_scale": "threshold-centered-1-10-v1",
+    "training": {
+      "candidate": "all_actual",
+      "files": 304,
+      "projects": 5,
+      "languages": [
+        "Java"
+      ],
+      "label_draws": 64,
+      "projects_per_component": 2,
+      "config": {
+        "model": "logistic",
+        "features": "combined",
+        "balanced": true,
+        "C": 0.01,
+        "depth": 4,
+        "min_leaf": 10
+      },
+      "features_sha256": "8aacd2680427d27e362614534c1d47c9f175ff7d8bb83ad12d2e10fd4bb050cf",
+      "benchmark_metrics": {
+        "precision": 0.9016393442622951,
+        "recall": 0.8333333333333334,
+        "f1": 0.8661417322834646,
+        "accuracy": 0.944078947368421,
+        "tp": 55,
+        "fp": 6,
+        "fn": 11,
+        "tn": 232,
+        "n": 304
+      },
+      "scope": "Refitted on the existing exposed 304-file Java benchmark. Other languages and function-level predictions are not validated by this benchmark.",
+      "threshold_method": "Minimum precision/recall margin then F1 rule on project-held-out predictions. Existing exposed labels; not an independent test."
+    },
+    "measurement_policy": {
+      "id": "actual-magnitudes-rust5-cyclomatic",
+      "boolean_thresholds": {
+        "default": 4,
+        "Rust": 5
+      },
+      "magnitude": "Every maximum magnitude uses Qlty properties.actual: depth, count, cyclomatic complexity, or duplicated lines. Finding count, density, and coverage remain separate inputs.",
+      "qlty_commit": "7460e0bc34845c7208321d9ec1eb234ae51b2950",
+      "parent_model_sha256": "2515e5465edc8bf02c0623daaa07281031ce7a965bc158ea9bb8d8dd92d518d9",
+      "rationale": "User-authorized migration to actual magnitudes throughout scoring and reports; preserves Rust threshold 5 and the cyclomatic-complexity fix."
+    },
+    "score_meaning": "Relative maintainability score; higher is better. Not a calibrated human grade."
+  },
+  "passed": true,
+  "results": [
+    {
+      "path": "lib/simple.py",
+      "language": "Python",
+      "source_scope": {
+        "policy": "whole-file",
+        "original_lines": 9,
+        "analyzed_lines": 9,
+        "excluded_lines": 0,
+        "excluded_modules": []
+      },
+      "passed": true,
+      "score": 8.750588080103471,
+      "risk": 0.15177309082186924,
+      "baseline_score": 7.074398996505691,
+      "threshold_score": 5.0,
+      "threshold_risk": 0.6073781128742494,
+      "score_scale": "threshold-centered-1-10-v1",
+      "score_margin": 3.750588080103471,
+      "explanation_residual": -8.881784197001252e-16,
+      "factors": [
+        {
+          "id": "function-parameters",
+          "name": "Function parameters",
+          "score_contribution": -0.0004863080898513659,
+          "measurements": [
+            {
+              "id": "log_count",
+              "name": "Finding count",
+              "transform": "log1p",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.0787787918438453,
+              "score_contribution": 0.0063850135892183245
+            },
+            {
+              "id": "count_per_100_source_lines",
+              "name": "Findings per 100 source lines",
+              "transform": "identity",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.1856187710783564,
+              "score_contribution": -0.009009472535639978
+            },
+            {
+              "id": "log_max_magnitude",
+              "name": "Maximum parameters",
+              "transform": "log1p",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.18872373631928524,
+              "score_contribution": 0.005146274568072552
+            },
+            {
+              "id": "line_coverage_fraction",
+              "name": "Source-line coverage",
+              "transform": "identity",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.002078732430114828,
+              "score_contribution": -0.0030081237115022644
+            }
+          ],
+          "observed": {
+            "count": 0,
+            "max_magnitude": 0.0,
+            "covered_lines": 0,
+            "locations": [],
+            "max_actual": 0.0,
+            "threshold": 6,
+            "magnitude_basis": "actual",
+            "magnitude_unit": "Parameters"
+          }
+        },
+        {
+          "id": "identical-code",
+          "name": "Identical code",
+          "score_contribution": 0.0,
+          "measurements": [
+            {
+              "id": "log_count",
+              "name": "Finding count",
+              "transform": "log1p",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.0,
+              "score_contribution": 0.0
+            },
+            {
+              "id": "count_per_100_source_lines",
+              "name": "Findings per 100 source lines",
+              "transform": "identity",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.0,
+              "score_contribution": 0.0
+            },
+            {
+              "id": "log_max_magnitude",
+              "name": "Maximum duplicated lines",
+              "transform": "log1p",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.0,
+              "score_contribution": 0.0
+            },
+            {
+              "id": "line_coverage_fraction",
+              "name": "Source-line coverage",
+              "transform": "identity",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.0,
+              "score_contribution": 0.0
+            }
+          ],
+          "observed": {
+            "count": 0,
+            "max_magnitude": 0.0,
+            "covered_lines": 0,
+            "locations": [],
+            "max_actual": 0.0,
+            "threshold": 15,
+            "magnitude_basis": "actual",
+            "magnitude_unit": "Duplicated lines"
+          }
+        },
+        {
+          "id": "return-statements",
+          "name": "Return statements",
+          "score_contribution": 0.0038678844287502027,
+          "measurements": [
+            {
+              "id": "log_count",
+              "name": "Finding count",
+              "transform": "log1p",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.041692351952003076,
+              "score_contribution": 0.0019408826628472767
+            },
+            {
+              "id": "count_per_100_source_lines",
+              "name": "Findings per 100 source lines",
+              "transform": "identity",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.023325667302113853,
+              "score_contribution": 0.00015062070478719867
+            },
+            {
+              "id": "log_max_magnitude",
+              "name": "Maximum return statements",
+              "transform": "log1p",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.10841673593834175,
+              "score_contribution": 0.003324423347033298
+            },
+            {
+              "id": "line_coverage_fraction",
+              "name": "Source-line coverage",
+              "transform": "identity",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.011520490905804807,
+              "score_contribution": -0.0015480422859175706
+            }
+          ],
+          "observed": {
+            "count": 0,
+            "max_magnitude": 0.0,
+            "covered_lines": 0,
+            "locations": [],
+            "max_actual": 0.0,
+            "threshold": 6,
+            "magnitude_basis": "actual",
+            "magnitude_unit": "Return statements"
+          }
+        },
+        {
+          "id": "boilerplate",
+          "name": "Routine boilerplate",
+          "score_contribution": 0.014714492258988904,
+          "observed": {
+            "value": 0.74,
+            "excerpts": [
+              {
+                "start_line": 1,
+                "end_line": 9,
+                "value": 0.74,
+                "weight_bytes": 145
+              }
+            ]
+          }
+        },
+        {
+          "id": "boolean-logic",
+          "name": "Boolean logic",
+          "score_contribution": 0.02273471877963816,
+          "measurements": [
+            {
+              "id": "log_count",
+              "name": "Finding count",
+              "transform": "log1p",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.009120357638946648,
+              "score_contribution": 0.003368255002953409
+            },
+            {
+              "id": "count_per_100_source_lines",
+              "name": "Findings per 100 source lines",
+              "transform": "identity",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.001805777249994899,
+              "score_contribution": 0.00579213556887403
+            },
+            {
+              "id": "log_max_magnitude",
+              "name": "Maximum boolean depth",
+              "transform": "log1p",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.025602710580052753,
+              "score_contribution": 0.003662329255329652
+            },
+            {
+              "id": "line_coverage_fraction",
+              "name": "Source-line coverage",
+              "transform": "identity",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.000051736575202213965,
+              "score_contribution": 0.00991199895248107
+            }
+          ],
+          "observed": {
+            "count": 0,
+            "max_magnitude": 0.0,
+            "covered_lines": 0,
+            "locations": [],
+            "max_actual": 0.0,
+            "threshold": 4,
+            "magnitude_basis": "actual",
+            "magnitude_unit": "Boolean depth"
+          }
+        },
+        {
+          "id": "similar-code",
+          "name": "Similar code",
+          "score_contribution": 0.0611744175438304,
+          "measurements": [
+            {
+              "id": "log_count",
+              "name": "Finding count",
+              "transform": "log1p",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.025080983507103284,
+              "score_contribution": 0.01682999379946278
+            },
+            {
+              "id": "count_per_100_source_lines",
+              "name": "Findings per 100 source lines",
+              "transform": "identity",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.007737419781792701,
+              "score_contribution": 0.011770277033596996
+            },
+            {
+              "id": "log_max_magnitude",
+              "name": "Maximum duplicated lines",
+              "transform": "log1p",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.11616107176898736,
+              "score_contribution": 0.018197753504122324
+            },
+            {
+              "id": "line_coverage_fraction",
+              "name": "Source-line coverage",
+              "transform": "identity",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.004269795553058874,
+              "score_contribution": 0.014376393206648302
+            }
+          ],
+          "observed": {
+            "count": 0,
+            "max_magnitude": 0.0,
+            "covered_lines": 0,
+            "locations": [],
+            "max_actual": 0.0,
+            "threshold": 15,
+            "magnitude_basis": "actual",
+            "magnitude_unit": "Duplicated lines"
+          }
+        },
+        {
+          "id": "nested-control-flow",
+          "name": "Nested control flow",
+          "score_contribution": 0.1007986102616198,
+          "measurements": [
+            {
+              "id": "log_count",
+              "name": "Finding count",
+              "transform": "log1p",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.10646531686355916,
+              "score_contribution": 0.030653764554639362
+            },
+            {
+              "id": "count_per_100_source_lines",
+              "name": "Findings per 100 source lines",
+              "transform": "identity",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.04329789216258629,
+              "score_contribution": 0.0288979342676192
+            },
+            {
+              "id": "log_max_magnitude",
+              "name": "Maximum nesting depth",
+              "transform": "log1p",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.16637867710785761,
+              "score_contribution": 0.02741512095902645
+            },
+            {
+              "id": "line_coverage_fraction",
+              "name": "Source-line coverage",
+              "transform": "identity",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.003250060657392501,
+              "score_contribution": 0.013831790480334791
+            }
+          ],
+          "observed": {
+            "count": 0,
+            "max_magnitude": 0.0,
+            "covered_lines": 0,
+            "locations": [],
+            "max_actual": 0.0,
+            "threshold": 5,
+            "magnitude_basis": "actual",
+            "magnitude_unit": "Nesting depth"
+          }
+        },
+        {
+          "id": "hand_enumerated_data",
+          "name": "Hand-enumerated data",
+          "score_contribution": 0.11035482403287941,
+          "observed": {
+            "value": 0.0,
+            "excerpts": [
+              {
+                "start_line": 1,
+                "end_line": 9,
+                "value": 0.0,
+                "weight_bytes": 145
+              }
+            ]
+          }
+        },
+        {
+          "id": "control_flow",
+          "name": "Difficulty following execution paths",
+          "score_contribution": 0.12658449915761968,
+          "observed": {
+            "value": 0.005,
+            "excerpts": [
+              {
+                "start_line": 1,
+                "end_line": 9,
+                "value": 0.005,
+                "weight_bytes": 145
+              }
+            ]
+          }
+        },
+        {
+          "id": "mirrored_state",
+          "name": "Manually synchronized state",
+          "score_contribution": 0.14956164203271305,
+          "observed": {
+            "value": 0.0,
+            "excerpts": [
+              {
+                "start_line": 1,
+                "end_line": 9,
+                "value": 0.0,
+                "weight_bytes": 145
+              }
+            ]
+          }
+        },
+        {
+          "id": "deep_reasoning",
+          "name": "Interacting conditions and state",
+          "score_contribution": 0.1811409980286786,
+          "observed": {
+            "value": 0.09,
+            "excerpts": [
+              {
+                "start_line": 1,
+                "end_line": 9,
+                "value": 0.09,
+                "weight_bytes": 145
+              }
+            ]
+          }
+        },
+        {
+          "id": "file-complexity",
+          "name": "File complexity",
+          "score_contribution": 0.18755806850879053,
+          "measurements": [
+            {
+              "id": "log_count",
+              "name": "Finding count",
+              "transform": "log1p",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.11628455989656966,
+              "score_contribution": 0.05216691522434981
+            },
+            {
+              "id": "count_per_100_source_lines",
+              "name": "Findings per 100 source lines",
+              "transform": "identity",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.032755503353322245,
+              "score_contribution": 0.03302666668595843
+            },
+            {
+              "id": "log_max_magnitude",
+              "name": "Maximum cyclomatic complexity",
+              "transform": "log1p",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.8069054048217147,
+              "score_contribution": 0.050197985831080615
+            },
+            {
+              "id": "line_coverage_fraction",
+              "name": "Source-line coverage",
+              "transform": "identity",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.1677595470564446,
+              "score_contribution": 0.05216650076740169
+            }
+          ],
+          "observed": {
+            "count": 0,
+            "max_magnitude": 0.0,
+            "covered_lines": 0,
+            "locations": [],
+            "max_actual": 0.0,
+            "threshold": 50,
+            "magnitude_basis": "actual",
+            "magnitude_unit": "Cyclomatic complexity"
+          }
+        },
+        {
+          "id": "function-complexity",
+          "name": "Function complexity",
+          "score_contribution": 0.19856923840662422,
+          "measurements": [
+            {
+              "id": "log_count",
+              "name": "Finding count",
+              "transform": "log1p",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.18916217807983013,
+              "score_contribution": 0.04527315287613503
+            },
+            {
+              "id": "count_per_100_source_lines",
+              "name": "Findings per 100 source lines",
+              "transform": "identity",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.06985618976768689,
+              "score_contribution": 0.04266121104911105
+            },
+            {
+              "id": "log_max_magnitude",
+              "name": "Maximum cyclomatic complexity",
+              "transform": "log1p",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.6547730662290709,
+              "score_contribution": 0.059943399610604055
+            },
+            {
+              "id": "line_coverage_fraction",
+              "name": "Source-line coverage",
+              "transform": "identity",
+              "feature_value": 0.0,
+              "reference_feature_value": 0.06125682158412331,
+              "score_contribution": 0.05069147487077409
+            }
+          ],
+          "observed": {
+            "count": 0,
+            "max_magnitude": 0.0,
+            "covered_lines": 0,
+            "locations": [],
+            "max_actual": 0.0,
+            "threshold": 18,
+            "magnitude_basis": "actual",
+            "magnitude_unit": "Cyclomatic complexity"
+          }
+        },
+        {
+          "id": "duplicated_logic",
+          "name": "Duplicated logic",
+          "score_contribution": 0.2289955396754836,
+          "observed": {
+            "value": 0.0,
+            "excerpts": [
+              {
+                "start_line": 1,
+                "end_line": 9,
+                "value": 0.0,
+                "weight_bytes": 145
+              }
+            ]
+          }
+        },
+        {
+          "id": "direct_unmaintainable",
+          "name": "Overall difficulty of maintenance",
+          "score_contribution": 0.2906204585720158,
+          "observed": {
+            "value": 0.08,
+            "excerpts": [
+              {
+                "start_line": 1,
+                "end_line": 9,
+                "value": 0.08,
+                "weight_bytes": 145
+              }
+            ]
+          }
+        }
+      ],
+      "explanation_method": "Original additive model contributions along a straight feature path, rescaled between the reference and file scores. Describes the model, not causal effects of edits.",
+      "explanation_notes": [
+        "Each Qlty factor combines four related measurements of its findings. Their contributions sum to the factor contribution; they are not four independent defects.",
+        "Different smell factors can cover the same source lines.",
+        "Score margin is score minus cutoff. Its size is not a calibrated confidence estimate."
+      ]
+    },
+    {
+      "path": "tests/test_simple.py",
+      "passed": null,
+      "score": null,
+      "skipped": true,
+      "reason": "Test file excluded: glob matches 'tests/**'. Use --include-tests to evaluate it.",
+      "source_scope": {
+        "policy": "excluded-test-file",
+        "exclusion": {
+          "policy": "qlty-workspace-test-patterns",
+          "matched_path": "tests/test_simple.py",
+          "path_scope": "qlty-workspace",
+          "kind": "glob",
+          "matched": "tests/**"
+        }
+      }
+    }
+  ],
+  "errors": 0,
+  "skipped": 1,
+  "evaluated": 1,
+  "summary": {
+    "scope": "supplied-files",
+    "evaluated_files": 1,
+    "passed_files": 1,
+    "failed_files": 0,
+    "skipped_files": 1,
+    "error_files": 0,
+    "median_score": 8.750588080103471,
+    "pass_rate": 1.0,
+    "lowest_scoring_files": [
+      {
+        "path": "lib/simple.py",
+        "score": 8.750588080103471,
+        "passed": true
+      }
+    ]
+  },
+  "usage": {
+    "requests": 0,
+    "cost_upper_bound_usd": 0.0,
+    "input_tokens": 0,
+    "unconfirmed_requests": 0,
+    "budget_usd": 1.0
+  }
+}

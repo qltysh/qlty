@@ -1,22 +1,61 @@
-name: Promote a Release to Latest
+name: Promote a Release
+run-name: Promote ${{ inputs.version || 'the latest release' }} to ${{ inputs.channel }}
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "The version to promote as latest (e.g. v1.0.0)"
-        required: true
+        description: "The version to promote (e.g. v1.0.0). Leave blank to promote the latest GitHub release."
+        required: false
         type: string
+      channel:
+        description: "The channel to promote the version to"
+        required: true
+        type: choice
+        options:
+          - latest
+          - pre-release
+        default: latest
   workflow_call:
     inputs:
       version:
         required: true
         type: string
+      channel:
+        required: true
+        type: string
+    secrets:
+      QLTY_RELEASE_AWS_ROLE_ARN:
+        required: true
+      QLTY_APP_PRIVATE_KEY:
+        required: true
 permissions:
   contents: read
-  "id-token": "write"
 jobs:
+  resolve:
+    name: Resolve version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+    steps:
+      - name: Resolve version
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUTS_VERSION: ${{ inputs.version }}
+        run: |
+          VERSION="${INPUTS_VERSION}"
+          if [ -z "$VERSION" ]; then
+            VERSION="$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName)"
+            echo "No version provided, promoting the latest release: $VERSION"
+          fi
+          if [ -z "$VERSION" ]; then
+            echo "Could not determine a version to promote" >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
   test:
     name: ${{ matrix.runner }}
+    needs: resolve
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -27,24 +66,150 @@ jobs:
           - runner: macos-15
             command: curl https://qlty.sh | sh
           - runner: windows-latest
-            command: powershell -c "iwr https://qlty.sh | iex"
+            command: powershell -c "iwr -UseBasicParsing https://qlty.sh | iex"
     steps:
       - name: Install qlty and validate
         env:
-          QLTY_VERSION: ${{ inputs.version }}
+          QLTY_VERSION: ${{ needs.resolve.outputs.version }}
         run: ${{ matrix.command }} && ~/.qlty/bin/qlty version --no-upgrade-check
         shell: sh
+  verify:
+    name: Verify attestations
+    needs: resolve
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify every release archive on S3 with the check qlty-action runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESOLVED_VERSION: ${{ needs.resolve.outputs.version }}
+        run: |
+          TAG="v${RESOLVED_VERSION#v}"
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' \
+            | grep -E '\.(tar\.xz|zip)$' > archives.txt
+          test -s archives.txt
+          while read -r archive; do
+            curl -fsSL -o "$archive" "https://qlty-releases.s3.amazonaws.com/qlty/${TAG}/${archive}"
+            gh attestation verify "$archive" --owner qltysh --hostname github.com
+          done < archives.txt
   promote:
-    needs: test
+    permissions:
+      contents: read
+      id-token: write
+    needs: [resolve, test, verify]
     runs-on: ubuntu-latest
     steps:
       - name: Setup AWS CLI
-        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
+        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838
         with:
           role-to-assume: ${{ secrets.QLTY_RELEASE_AWS_ROLE_ARN }}
           role-session-name: ${{ vars.QLTY_RELEASE_AWS_ROLE_SESSION_NAME }}
           aws-region: ${{ vars.QLTY_RELEASE_AWS_REGION }}
       - name: Upload to S3
         run: |
-          VERSION="${{ inputs.version }}"
-          aws s3 cp --recursive ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/v${VERSION#v}/ ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}/latest/
+          VERSION="${RESOLVED_VERSION}"
+          CHANNEL="${INPUTS_CHANNEL}"
+          if [ "$CHANNEL" != "latest" ] && [ "$CHANNEL" != "pre-release" ]; then
+            echo "Unknown channel: $CHANNEL" >&2
+            exit 1
+          fi
+          aws s3 cp --recursive "${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/v${VERSION#v}/" "${VARS_QLTY_RELEASE_AWS_S3_DESTINATION}/${CHANNEL}/"
+        env:
+          RESOLVED_VERSION: ${{ needs.resolve.outputs.version }}
+          INPUTS_CHANNEL: ${{ inputs.channel }}
+          VARS_QLTY_RELEASE_AWS_S3_DESTINATION: ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}
+  homebrew-tap:
+    if: inputs.channel == 'latest'
+    needs: [resolve, promote]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/create-github-app-token@7e473efe3cb98aa54f8d4bac15400b15fad77d94 # v2
+        id: app-token
+        with:
+          app-id: ${{ vars.QLTY_APP_ID }}
+          private-key: ${{ secrets.QLTY_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: homebrew-tap
+
+      - name: Get GitHub App User ID
+        id: get-user-id
+        run: echo "user-id=$(gh api "/users/${STEPS_APP_TOKEN_OUTPUTS_APP_SLUG}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          STEPS_APP_TOKEN_OUTPUTS_APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+
+      - name: Download Homebrew formula from the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESOLVED_VERSION: ${{ needs.resolve.outputs.version }}
+        run: gh release download "v${RESOLVED_VERSION#v}" --repo "$GITHUB_REPOSITORY" --pattern qlty.rb --dir formula
+
+      - name: Checkout tap
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          repository: ${{ github.repository_owner }}/homebrew-tap
+          token: ${{ steps.app-token.outputs.token }}
+          path: homebrew-tap
+
+      - name: Publish formula
+        working-directory: homebrew-tap
+        env:
+          RESOLVED_VERSION: ${{ needs.resolve.outputs.version }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+          APP_USER_ID: ${{ steps.get-user-id.outputs.user-id }}
+        run: |
+          VERSION="${RESOLVED_VERSION#v}"
+          grep -q "version \"${VERSION}\"" ../formula/qlty.rb
+          cp ../formula/qlty.rb Formula/qlty.rb
+
+          if git diff --quiet; then
+            echo "Formula already at ${VERSION}"
+            exit 0
+          fi
+
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "${APP_USER_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
+          git add Formula/qlty.rb
+          git commit -m "qlty ${VERSION}"
+          git push origin HEAD:main
+  cli-docs:
+    if: inputs.channel == 'latest'
+    needs: promote
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/create-github-app-token@7e473efe3cb98aa54f8d4bac15400b15fad77d94 # v2
+        id: app-token
+        with:
+          app-id: ${{ vars.QLTY_APP_ID }}
+          private-key: ${{ secrets.QLTY_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: cloud
+          permission-actions: write
+
+      - name: Regenerate CLI reference docs
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          RUN_ID="$(gh api --method POST \
+            -H "X-GitHub-Api-Version: 2026-03-10" \
+            "repos/${OWNER}/cloud/actions/workflows/cli_docs_release.yml/dispatches" \
+            -f ref=main --jq .workflow_run_id)"
+          if [[ ! "$RUN_ID" =~ ^[0-9]+$ ]]; then
+            echo "::error::Dispatch did not return a workflow run ID"
+            exit 1
+          fi
+
+          RUN_URL="https://github.com/${OWNER}/cloud/actions/runs/${RUN_ID}"
+          echo "Waiting for ${RUN_URL}"
+          DEADLINE=$(( $(date +%s) + 50 * 60 ))
+          while [ "$(date +%s)" -lt "$DEADLINE" ]; do
+            STATE="$(gh run view "$RUN_ID" --repo "${OWNER}/cloud" --json status,conclusion --jq '.status + " " + .conclusion' || true)"
+            case "$STATE" in
+              "completed success") echo "CLI docs regenerated: ${RUN_URL}"; exit 0 ;;
+              completed*) echo "::error::CLI docs run finished with '${STATE#completed }': ${RUN_URL}"; exit 1 ;;
+            esac
+            sleep 30
+          done
+          echo "::error::Timed out waiting for ${RUN_URL}"
+          exit 1

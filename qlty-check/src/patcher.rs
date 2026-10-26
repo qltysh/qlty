@@ -36,7 +36,7 @@ impl Patcher {
 
     fn issue_is_safe(issue: &Issue) -> bool {
         let full_rule_key = format!("{}:{}", issue.tool, issue.rule_key);
-        !UNSAFE_RULES.contains(&full_rule_key.as_str())
+        !UNSAFE_RULES.contains(&full_rule_key.as_str()) && !issue.suggestions[0].r#unsafe
     }
 
     pub fn new(staging_area: &StagingArea) -> Self {
@@ -355,6 +355,36 @@ mod test {
                     location: Some(Location::default()),
                     suggestions: vec![Suggestion {
                         patch: "PATCH".to_string(),
+                        ..Default::default()
+                    }],
+                    ..Default::default()
+                },
+                allow_unsafe: true,
+                expected: true,
+            },
+            TestData {
+                issue: Issue {
+                    tool: "tool".to_string(),
+                    rule_key: "unsafe_suggestion".to_string(),
+                    location: Some(Location::default()),
+                    suggestions: vec![Suggestion {
+                        patch: "PATCH".to_string(),
+                        r#unsafe: true,
+                        ..Default::default()
+                    }],
+                    ..Default::default()
+                },
+                allow_unsafe: false,
+                expected: false,
+            },
+            TestData {
+                issue: Issue {
+                    tool: "tool".to_string(),
+                    rule_key: "unsafe_suggestion".to_string(),
+                    location: Some(Location::default()),
+                    suggestions: vec![Suggestion {
+                        patch: "PATCH".to_string(),
+                        r#unsafe: true,
                         ..Default::default()
                     }],
                     ..Default::default()

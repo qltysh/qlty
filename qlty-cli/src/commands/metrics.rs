@@ -86,12 +86,11 @@ impl Metrics {
         self.run_assertions()?;
 
         let workspace = Workspace::new()?;
-        workspace.fetch_sources()?;
+        let config = workspace.load_config(false)?;
 
         let mut steps = Steps::new(self.quiet, 3);
         steps.start(THINKING, "Planning... ");
 
-        let config = workspace.config()?;
         let target_mode = self.compute_target_mode(&workspace);
         let mut workspace_entry_finder_builder = WorkspaceEntryFinderBuilder {
             mode: target_mode.clone(),

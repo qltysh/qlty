@@ -1,0 +1,31 @@
+{
+  "text": "fn first() {}  \n  fn second() {}\nstruct Point { x: i32 }\n",
+  "line_map": [
+    1,
+    3,
+    4
+  ],
+  "excluded_modules": [
+    {
+      "name": "tests",
+      "start_line": 1,
+      "end_line": 3,
+      "reason": "inline module named test or tests"
+    }
+  ],
+  "has_code": true,
+  "info": {
+    "policy": "rust-inline-tests-001",
+    "original_lines": 4,
+    "analyzed_lines": 3,
+    "excluded_lines": 1,
+    "excluded_modules": [
+      {
+        "name": "tests",
+        "start_line": 1,
+        "end_line": 3,
+        "reason": "inline module named test or tests"
+      }
+    ]
+  }
+}

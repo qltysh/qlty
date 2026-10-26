@@ -5,7 +5,9 @@ use crate::publish::Settings;
 use crate::transformer::AddPrefix;
 use crate::transformer::AppendMetadata;
 use crate::transformer::ComputeSummary;
+use crate::transformer::DefaultPathFixer;
 use crate::transformer::IgnorePaths;
+use crate::transformer::PrependSrcDir;
 use crate::transformer::StripDotSlashPrefix;
 use crate::transformer::StripPrefix;
 use crate::utils::extract_path_and_format;
@@ -52,11 +54,15 @@ impl Planner {
         let metadata_planner = MetadataPlanner::new(&self.settings, crate::ci::current());
         let metadata = metadata_planner.compute()?;
 
+        let transformers = self.compute_transformers(&metadata)?;
+        let auto_path_fixing_enabled = transformers.iter().any(|t| t.is_default_path_fixer());
+
         Ok(Plan {
             metadata: metadata.clone(),
             report_files: self.compute_report_files()?,
-            transformers: self.compute_transformers(&metadata)?,
+            transformers,
             skip_missing_files: self.settings.skip_missing_files,
+            auto_path_fixing_enabled,
         })
     }
 
@@ -90,13 +96,31 @@ impl Planner {
 
         transformers.push(Box::new(ComputeSummary::new()));
 
+        // Check if user provided any manual path fixing options
+        let has_manual_path_fixing =
+            self.settings.strip_prefix.is_some() || self.settings.add_prefix.is_some();
+
         if let Some(prefix) = self.settings.strip_prefix.clone() {
             transformers.push(Box::new(StripPrefix::new(prefix)));
         } else if let Ok(strip_prefix) = StripPrefix::new_from_git_root() {
             transformers.push(Box::new(strip_prefix));
         }
 
+        // Apply default path fixing only if no manual path fixing options are provided
+        if !has_manual_path_fixing {
+            transformers.push(Box::new(DefaultPathFixer::new()?));
+        }
+
         transformers.push(Box::new(StripDotSlashPrefix));
+
+        // Add PrependSrcDir transformer if Java src dirs were discovered
+        // This runs after path normalization so it receives clean relative paths
+        if !self.settings.java_src_dirs.is_empty() {
+            transformers.push(Box::new(PrependSrcDir::new(
+                self.settings.root.clone(),
+                self.settings.java_src_dirs.clone(),
+            )));
+        }
 
         if self.config.coverage.ignores.is_some() {
             transformers.push(Box::new(IgnorePaths::new(
@@ -107,6 +131,8 @@ impl Planner {
         if let Some(prefix) = self.settings.add_prefix.clone() {
             transformers.push(Box::new(AddPrefix::new(&prefix)));
         }
+
+        transformers.push(Box::new(StripDotSlashPrefix));
 
         transformers.push(Box::new(AppendMetadata::new(metadata)));
         Ok(transformers)
@@ -144,6 +170,7 @@ impl MetadataPlanner {
             nanos: now.nanosecond() as i32,
         });
         metadata.tag = self.settings.tag.clone();
+        metadata.selection = self.settings.selection.clone();
 
         Ok(metadata)
     }
@@ -175,6 +202,7 @@ impl MetadataPlanner {
         metadata.name = self.settings.name.clone();
         metadata.total_parts_count = self.settings.total_parts_count;
         metadata.incomplete = self.settings.incomplete;
+        metadata.selection = self.settings.selection.clone();
 
         // Override metadata with command line arguments
         if let Some(build_id) = self.settings.override_build_id.clone() {
@@ -294,6 +322,7 @@ impl MetadataPlanner {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use qlty_types::tests::v1::FileCoverage;
 
     #[derive(Debug)]
     struct TestCI {
@@ -581,6 +610,141 @@ mod tests {
     }
 
     #[test]
+    fn test_selection_set_from_settings() {
+        let settings = Settings {
+            selection: Some("selected".to_string()),
+            ..Default::default()
+        };
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute().unwrap();
+        assert_eq!(metadata.selection, Some("selected".to_string()));
+    }
+
+    #[test]
+    fn test_selection_defaults_to_none() {
+        let settings = Settings::default();
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute().unwrap();
+        assert_eq!(metadata.selection, None);
+    }
+
+    #[test]
+    fn test_minimal_selection_set_from_settings() {
+        let settings = Settings {
+            selection: Some("selected".to_string()),
+            ..Default::default()
+        };
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute_minimal().unwrap();
+        assert_eq!(metadata.selection, Some("selected".to_string()));
+    }
+
+    #[test]
+    fn test_minimal_selection_defaults_to_none() {
+        let settings = Settings::default();
+        let metadata_planner = MetadataPlanner::new(&settings, None);
+        let metadata = metadata_planner.compute_minimal().unwrap();
+        assert_eq!(metadata.selection, None);
+    }
+
+    #[test]
+    fn test_default_path_fixer_added_when_no_manual_options() {
+        use qlty_config::QltyConfig;
+
+        let config = QltyConfig::default();
+        let settings = Settings {
+            override_commit_time: Some("1729100000".to_string()),
+            ..Default::default()
+        };
+
+        let planner = Planner::new(&config, &settings);
+        let metadata = CoverageMetadata::default();
+        let transformers = planner.compute_transformers(&metadata).unwrap();
+
+        // Should contain DefaultPathFixer when no manual options are set
+        let has_default_fixer = transformers
+            .iter()
+            .any(|t| format!("{:?}", t).contains("DefaultPathFixer"));
+        assert!(
+            has_default_fixer,
+            "DefaultPathFixer should be added when no manual path fixing options are provided"
+        );
+    }
+
+    #[test]
+    fn test_default_path_fixer_not_added_with_strip_prefix() {
+        use qlty_config::QltyConfig;
+
+        let config = QltyConfig::default();
+        let settings = Settings {
+            strip_prefix: Some("/home/user/project".to_string()),
+            override_commit_time: Some("1729100000".to_string()),
+            ..Default::default()
+        };
+
+        let planner = Planner::new(&config, &settings);
+        let metadata = CoverageMetadata::default();
+        let transformers = planner.compute_transformers(&metadata).unwrap();
+
+        // Should NOT contain DefaultPathFixer when strip_prefix is set
+        let has_default_fixer = transformers
+            .iter()
+            .any(|t| format!("{:?}", t).contains("DefaultPathFixer"));
+        assert!(
+            !has_default_fixer,
+            "DefaultPathFixer should not be added when strip_prefix is provided"
+        );
+    }
+
+    #[test]
+    fn test_default_path_fixer_not_added_with_add_prefix() {
+        use qlty_config::QltyConfig;
+
+        let config = QltyConfig::default();
+        let settings = Settings {
+            add_prefix: Some("src/".to_string()),
+            override_commit_time: Some("1729100000".to_string()),
+            ..Default::default()
+        };
+
+        let planner = Planner::new(&config, &settings);
+        let metadata = CoverageMetadata::default();
+        let transformers = planner.compute_transformers(&metadata).unwrap();
+
+        // Should NOT contain DefaultPathFixer when add_prefix is set
+        let has_default_fixer = transformers
+            .iter()
+            .any(|t| format!("{:?}", t).contains("DefaultPathFixer"));
+        assert!(
+            !has_default_fixer,
+            "DefaultPathFixer should not be added when add_prefix is provided"
+        );
+    }
+
+    #[test]
+    fn test_default_path_fixer_not_added_with_both_options() {
+        use qlty_config::QltyConfig;
+
+        let config = QltyConfig::default();
+        let settings = Settings {
+            strip_prefix: Some("/home/user/project".to_string()),
+            add_prefix: Some("src/".to_string()),
+            override_commit_time: Some("1729100000".to_string()),
+            ..Default::default()
+        };
+
+        let planner = Planner::new(&config, &settings);
+        let metadata = CoverageMetadata::default();
+        let transformers = planner.compute_transformers(&metadata).unwrap();
+
+        // Should NOT contain DefaultPathFixer when both options are set
+        let has_default_fixer = transformers
+            .iter()
+            .any(|t| format!("{:?}", t).contains("DefaultPathFixer"));
+        assert!(!has_default_fixer, "DefaultPathFixer should not be added when both strip_prefix and add_prefix are provided");
+    }
+
+    #[test]
     fn test_reference_type_merge_group() {
         #[derive(Debug)]
         struct MergeGroupTestCI;
@@ -654,5 +818,32 @@ mod tests {
         let metadata = metadata_planner.compute().unwrap();
 
         assert_eq!(metadata.reference_type, ReferenceType::MergeGroup as i32);
+    }
+
+    #[test]
+    fn test_strip_dot_slash_from_added_prefix() {
+        let settings = Settings {
+            add_prefix: Some("./project/".to_string()),
+            ..Default::default()
+        };
+
+        let config = QltyConfig::default();
+        let planner = Planner::new(&config, &settings);
+        let plan = planner.compute().unwrap();
+
+        let file_coverage = FileCoverage {
+            path: "src/main.rs".to_string(),
+            ..Default::default()
+        };
+
+        let mut transformed = Some(file_coverage);
+        for transformer in &plan.transformers {
+            if let Some(fc) = transformed {
+                transformed = transformer.transform(fc);
+            }
+        }
+
+        let result = transformed.unwrap();
+        assert_eq!(result.path, "project/src/main.rs");
     }
 }

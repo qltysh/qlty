@@ -3,10 +3,19 @@ use tree_sitter::{Node, Query};
 
 pub const QUERY_MATCH_LIMIT: usize = 256;
 
-pub fn matches_count(query: &Query, node: &Node, capture_name: &str, filter: &NodeFilter) -> usize {
+/// `source_file` supplies the text that tree-sitter needs to evaluate a query's text
+/// predicates (`#match?`, `#eq?`, `#not-match?`). Queries without text predicates are
+/// unaffected by it.
+pub fn matches_count(
+    query: &Query,
+    node: &Node,
+    capture_name: &str,
+    filter: &NodeFilter,
+    source_file: &File,
+) -> usize {
     let mut cursor = tree_sitter::QueryCursor::new();
     cursor.set_match_limit(QUERY_MATCH_LIMIT as u32);
-    let all_matches = cursor.matches(query, *node, "".as_bytes());
+    let all_matches = cursor.matches(query, *node, source_file.contents.as_bytes());
 
     let mut count = 0;
 

@@ -8,9 +8,12 @@ use anyhow::{anyhow, bail, Context as _, Result};
 use config::{Config, File, FileFormat};
 use console::style;
 use qlty_types::level_from_str;
+use serde::de::IntoDeserializer;
+use serde_json::Value as JsonValue;
 use std::collections::HashMap;
+use std::env;
 use std::path::Path;
-use toml::Value;
+use toml::{map::Map, Value};
 use tracing::{debug, trace, warn};
 
 const EXPECTED_CONFIG_VERSION: &str = "0";
@@ -19,7 +22,7 @@ const QLTY_TOML_PARSE_ERROR: &str = r#"There was an error reading your qlty.toml
 
 Please make sure you are using the latest version of the CLI with `qlty upgrade`.
 
-For more information, please visit: https://qlty.io/docs/troubleshooting/qlty-toml-parse-error"#;
+For more information, please visit: https://docs.qlty.sh/qlty-toml"#;
 
 pub struct Builder;
 
@@ -254,7 +257,8 @@ impl Builder {
         }
     }
 
-    pub fn toml_to_config(toml: Value) -> Result<QltyConfig> {
+    pub fn toml_to_config(mut toml: Value) -> Result<QltyConfig> {
+        Self::overlay_driver_fields_into_versions(&mut toml)?;
         let mut config: QltyConfig = Self::parse_toml_as_config(toml)?;
         Self::insert_ignores_from_exclude_patterns(&mut config);
         let config = Self::post_process_config(config);
@@ -263,14 +267,128 @@ impl Builder {
         config
     }
 
+    // Driver fields set outside the version array (e.g. a user's prepare_script in
+    // qlty.toml) would otherwise be lost when the planner replaces the driver with
+    // the version-matched entry, so they are merged into every versioned entry here.
+    fn overlay_driver_fields_into_versions(toml: &mut Value) -> Result<()> {
+        let Some(definitions) = toml
+            .get_mut("plugins")
+            .and_then(|plugins| plugins.get_mut("definitions"))
+            .and_then(|definitions| definitions.as_table_mut())
+        else {
+            return Ok(());
+        };
+
+        for (plugin_name, definition) in definitions.iter_mut() {
+            let Some(drivers) = definition
+                .get_mut("drivers")
+                .and_then(|drivers| drivers.as_table_mut())
+            else {
+                continue;
+            };
+
+            for (driver_name, driver) in drivers.iter_mut() {
+                let Some(driver_table) = driver.as_table_mut() else {
+                    continue;
+                };
+
+                if !driver_table.get("version").is_some_and(Value::is_array) {
+                    continue;
+                }
+
+                let overlay: Map<String, Value> = driver_table
+                    .iter()
+                    .filter(|(key, _)| {
+                        key.as_str() != "version" && key.as_str() != "version_matcher"
+                    })
+                    .map(|(key, value)| (key.clone(), value.clone()))
+                    .collect();
+
+                if overlay.is_empty() {
+                    continue;
+                }
+
+                let Some(versions) = driver_table
+                    .get_mut("version")
+                    .and_then(|versions| versions.as_array_mut())
+                else {
+                    continue;
+                };
+
+                for versioned_driver in versions.iter_mut() {
+                    if versioned_driver.is_table() {
+                        *versioned_driver = TomlMerge::merge(
+                            versioned_driver.clone(),
+                            Value::Table(overlay.clone()),
+                        )
+                        .map_err(|error| anyhow!("{error}"))
+                        .with_context(|| {
+                            format!(
+                                "Failed to merge driver configuration into the versioned definitions of driver '{driver_name}' for plugin '{plugin_name}'"
+                            )
+                        })?;
+                    }
+                }
+            }
+        }
+
+        Ok(())
+    }
+
     fn parse_toml_as_config(toml: Value) -> Result<QltyConfig> {
         let yaml = serde_yaml::to_string(&toml).unwrap();
         let file = File::from_str(&yaml, FileFormat::Yaml);
         let builder = Config::builder().add_source(file);
         let config = builder.build()?;
+        Self::warn_on_unexpected_config(&config);
+
         config
             .try_deserialize()
             .context("Invalid TOML configuration")
+    }
+
+    fn warn_on_unexpected_config(config: &Config) {
+        if Self::config_validation_disabled() {
+            return;
+        }
+
+        let json_value: JsonValue = match config.clone().try_deserialize() {
+            Ok(value) => value,
+            Err(error) => {
+                debug!(
+                    "Skipping unexpected config warning; unable to deserialize config: {}",
+                    error
+                );
+                return;
+            }
+        };
+
+        let warning_result: std::result::Result<QltyConfig, _> = serde_ignored::deserialize(
+            json_value.into_deserializer(),
+            |path| {
+                let path = path.to_string();
+                let warning_message = format!(
+                    "{} The `{}` entry in qlty.toml is not part of the supported configuration and will be ignored.",
+                    style("WARNING:").bold().yellow(),
+                    style(path).bold()
+                );
+                warn_once(&warning_message);
+            },
+        );
+
+        if let Err(error) = warning_result {
+            trace!("Failed to inspect unexpected config entries: {}", error);
+        }
+    }
+
+    fn config_validation_disabled() -> bool {
+        match env::var("QLTY_DISABLE_CONFIG_VALIDATION") {
+            Ok(value) => {
+                let normalized = value.trim().to_ascii_lowercase();
+                normalized == "1" || normalized == "true"
+            }
+            Err(_) => false,
+        }
     }
 
     fn post_process_config(config: QltyConfig) -> Result<QltyConfig> {
@@ -464,8 +582,32 @@ fn sort_enabled_plugins(plugins: &mut [EnabledPlugin]) {
 mod test {
     use super::*;
     use crate::config::{CheckTrigger, ExtraPackage, IssueMode, PluginFetch};
+    use crate::warning_tracker::{clear_warnings, collected_warnings};
     use std::path::PathBuf;
+    use std::sync::{LazyLock, Mutex, MutexGuard};
     use toml::{toml, Value::Table};
+
+    static WARNINGS_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
+
+    struct WarningTestContext {
+        _lock: MutexGuard<'static, ()>,
+    }
+
+    impl WarningTestContext {
+        fn new() -> Self {
+            let lock = WARNINGS_LOCK
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            clear_warnings();
+            WarningTestContext { _lock: lock }
+        }
+    }
+
+    impl Drop for WarningTestContext {
+        fn drop(&mut self) {
+            clear_warnings();
+        }
+    }
 
     #[test]
     fn test_extract_sources_with_only_source() {
@@ -495,6 +637,93 @@ mod test {
 
         let result = Builder::extract_sources(Table(input));
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_stringified_booleans_are_parsed() {
+        let _ctx = WarningTestContext::new();
+
+        let invalid_config = toml! {
+            config_version = "0"
+
+            [plugins.definitions.rubocop]
+            runtime = "ruby"
+
+            [smells.boolean_logic]
+            enabled = "false"
+        };
+
+        let result = Builder::toml_to_config(Table(invalid_config));
+        assert!(result.is_ok());
+
+        let warnings = collected_warnings();
+        assert!(warnings.is_empty(), "Unexpected warnings: {:?}", warnings);
+    }
+
+    #[test]
+    fn test_unknown_fields_emit_warning() {
+        let _ctx = WarningTestContext::new();
+
+        let invalid_config = toml! {
+            config_version = "0"
+            unexpected_key = "value"
+
+            [plugins.definitions.rubocop]
+            runtime = "ruby"
+        };
+
+        let result = Builder::toml_to_config(Table(invalid_config));
+        assert!(result.is_ok());
+
+        let warnings = collected_warnings();
+        assert!(warnings
+            .iter()
+            .any(|warning| warning.contains("unexpected_key")));
+    }
+
+    #[test]
+    fn test_valid_config_no_warnings() {
+        let _ctx = WarningTestContext::new();
+
+        let valid_config = toml! {
+            config_version = "0"
+
+            [[plugin]]
+            name = "rubocop"
+            version = "1.56.3"
+
+            [plugins.definitions.rubocop]
+            runtime = "ruby"
+        };
+
+        let result = Builder::toml_to_config(Table(valid_config));
+        assert!(result.is_ok());
+
+        let warnings = collected_warnings();
+        assert!(warnings.is_empty(), "Unexpected warnings: {:?}", warnings);
+    }
+
+    #[test]
+    fn test_unknown_nested_field_emit_warning() {
+        let _ctx = WarningTestContext::new();
+
+        let invalid_config = toml! {
+            config_version = "0"
+
+            [coverage]
+            unexpected_nested = true
+
+            [plugins.definitions.rubocop]
+            runtime = "ruby"
+        };
+
+        let result = Builder::toml_to_config(Table(invalid_config));
+        assert!(result.is_ok());
+
+        let warnings = collected_warnings();
+        assert!(warnings
+            .iter()
+            .any(|warning| warning.contains("coverage.unexpected_nested")));
     }
 
     #[test]
@@ -1055,5 +1284,202 @@ mod test {
         assert_eq!(config.plugin[1].version, "2.0.0");
 
         assert_eq!(config.plugin[1].mode, Some(IssueMode::Block));
+    }
+
+    #[test]
+    fn test_versioned_driver_overlays_outer_driver_fields() {
+        let sources = toml! {
+            config_version = "0"
+
+            [plugins.definitions.mylint]
+            file_types = ["ALL"]
+
+            [[plugins.definitions.mylint.drivers.lint.version]]
+            version_matcher = "<2.0.0"
+            script = "mylint-legacy ${target}"
+            success_codes = [0]
+            output = "pass_fail"
+
+            [[plugins.definitions.mylint.drivers.lint.version]]
+            version_matcher = ">=2.0.0"
+            script = "mylint ${target}"
+            success_codes = [0]
+            output = "pass_fail"
+        };
+        let qlty_config = toml! {
+            config_version = "0"
+
+            [plugins.definitions.mylint.drivers.lint]
+            prepare_script = "npm install"
+        };
+
+        let config =
+            Builder::full_config(toml::Value::Table(sources), toml::Value::Table(qlty_config))
+                .unwrap();
+
+        let driver = &config.plugins.definitions["mylint"].drivers["lint"];
+        assert_eq!(driver.version.len(), 2);
+        assert_eq!(
+            driver.version[0].prepare_script,
+            Some("npm install".to_string())
+        );
+        assert_eq!(
+            driver.version[1].prepare_script,
+            Some("npm install".to_string())
+        );
+    }
+
+    #[test]
+    fn test_versioned_driver_overlay_overrides_versioned_fields() {
+        let sources = toml! {
+            config_version = "0"
+
+            [plugins.definitions.mylint]
+            file_types = ["ALL"]
+
+            [[plugins.definitions.mylint.drivers.lint.version]]
+            version_matcher = "<2.0.0"
+            script = "mylint-legacy ${target}"
+            success_codes = [0]
+            output = "pass_fail"
+            timeout = 300
+        };
+        let qlty_config = toml! {
+            config_version = "0"
+
+            [plugins.definitions.mylint.drivers.lint]
+            timeout = 900
+        };
+
+        let config =
+            Builder::full_config(toml::Value::Table(sources), toml::Value::Table(qlty_config))
+                .unwrap();
+
+        let driver = &config.plugins.definitions["mylint"].drivers["lint"];
+        assert_eq!(driver.version[0].timeout, 900);
+        assert_eq!(driver.version[0].script, "mylint-legacy ${target}");
+    }
+
+    #[test]
+    fn test_versioned_driver_overlay_preserves_version_matchers() {
+        let sources = toml! {
+            config_version = "0"
+
+            [plugins.definitions.mylint]
+            file_types = ["ALL"]
+
+            [[plugins.definitions.mylint.drivers.lint.version]]
+            version_matcher = "<2.0.0"
+            script = "mylint-legacy ${target}"
+            success_codes = [0]
+            output = "pass_fail"
+
+            [[plugins.definitions.mylint.drivers.lint.version]]
+            version_matcher = ">=2.0.0"
+            script = "mylint ${target}"
+            success_codes = [0]
+            output = "pass_fail"
+        };
+        let qlty_config = toml! {
+            config_version = "0"
+
+            [plugins.definitions.mylint.drivers.lint]
+            version_matcher = ">=9.9.9"
+            prepare_script = "npm install"
+        };
+
+        let config =
+            Builder::full_config(toml::Value::Table(sources), toml::Value::Table(qlty_config))
+                .unwrap();
+
+        let driver = &config.plugins.definitions["mylint"].drivers["lint"];
+        assert_eq!(
+            driver.version[0].version_matcher,
+            Some("<2.0.0".to_string())
+        );
+        assert_eq!(
+            driver.version[1].version_matcher,
+            Some(">=2.0.0".to_string())
+        );
+    }
+
+    #[test]
+    fn test_driver_without_versions_is_unchanged_by_overlay() {
+        let sources = toml! {
+            config_version = "0"
+
+            [plugins.definitions.mylint]
+            file_types = ["ALL"]
+
+            [plugins.definitions.mylint.drivers.lint]
+            script = "mylint ${target}"
+            success_codes = [0]
+            output = "pass_fail"
+        };
+        let qlty_config = toml! {
+            config_version = "0"
+
+            [plugins.definitions.mylint.drivers.lint]
+            prepare_script = "npm install"
+        };
+
+        let config =
+            Builder::full_config(toml::Value::Table(sources), toml::Value::Table(qlty_config))
+                .unwrap();
+
+        let driver = &config.plugins.definitions["mylint"].drivers["lint"];
+        assert!(driver.version.is_empty());
+        assert_eq!(driver.prepare_script, Some("npm install".to_string()));
+        assert_eq!(driver.script, "mylint ${target}");
+    }
+
+    #[test]
+    fn test_versioned_drivers_with_same_version_matcher_are_merged() {
+        let sources = toml! {
+            config_version = "0"
+
+            [plugins.definitions.mylint]
+            file_types = ["ALL"]
+
+            [[plugins.definitions.mylint.drivers.lint.version]]
+            version_matcher = "<2.0.0"
+            script = "mylint-legacy ${target}"
+            success_codes = [0]
+            output = "pass_fail"
+
+            [[plugins.definitions.mylint.drivers.lint.version]]
+            version_matcher = ">=2.0.0"
+            script = "mylint ${target}"
+            success_codes = [0]
+            output = "pass_fail"
+        };
+        let qlty_config = toml! {
+            config_version = "0"
+
+            [[plugins.definitions.mylint.drivers.lint.version]]
+            version_matcher = ">=2.0.0"
+            prepare_script = "npm install"
+        };
+
+        let config =
+            Builder::full_config(toml::Value::Table(sources), toml::Value::Table(qlty_config))
+                .unwrap();
+
+        let driver = &config.plugins.definitions["mylint"].drivers["lint"];
+        assert_eq!(driver.version.len(), 2);
+        assert_eq!(
+            driver.version[0].version_matcher,
+            Some("<2.0.0".to_string())
+        );
+        assert_eq!(driver.version[0].prepare_script, None);
+        assert_eq!(
+            driver.version[1].version_matcher,
+            Some(">=2.0.0".to_string())
+        );
+        assert_eq!(
+            driver.version[1].prepare_script,
+            Some("npm install".to_string())
+        );
+        assert_eq!(driver.version[1].script, "mylint ${target}");
     }
 }

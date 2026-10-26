@@ -1,0 +1,21 @@
+config_version = "0"
+
+[plugins.definitions.spectral]
+runtime = "node"
+package = "@stoplight/spectral-cli"
+file_types = ["openapi"]
+config_files = [".spectral.yml", ".spectral.yaml", ".spectral.json", ".spectral.js"]
+latest_version = "6.15.0"
+known_good_version = "6.15.0"
+version_command = "spectral --version"
+description = "Static analysis tool for OpenAPI, AsyncAPI and Arazzo specifications"
+suggested_mode = "comment"
+
+[plugins.definitions.spectral.drivers.lint]
+script = "spectral lint --format=github-actions ${target}"
+success_codes = [0, 1]
+output = "stdout"
+output_format = "regex"
+output_regex = '::(?P<severity>[^ ]+) title=(?P<code>[^,]+),file=(?P<path>[^,]+),col=(?P<col>\d+),endColumn=(?P<end_col>\d+),line=(?P<line>\d+),endLine=(?P<end_line>\d+)::(?P<message>.+)'
+cache_results = true
+output_missing = "parse"

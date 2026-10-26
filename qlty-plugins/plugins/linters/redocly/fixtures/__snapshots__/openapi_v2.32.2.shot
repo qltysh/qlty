@@ -1,0 +1,185 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=redocly fixture=openapi version=2.32.2 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "openapi.in.yaml",
+        "range": {
+          "endColumn": 8,
+          "endLine": 1,
+          "startColumn": 1,
+          "startLine": 1,
+        },
+      },
+      "message": "Servers must be present.",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "no-empty-servers",
+      "snippet": "openapi: 3.0.0",
+      "snippetWithContext": "openapi: 3.0.0
+components:
+  requestBodies:
+    TestRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    TestSchema:
+      title: TestSchema",
+      "tool": "redocly",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "openapi.in.yaml",
+        "range": {
+          "endColumn": 15,
+          "endLine": 10,
+          "startColumn": 5,
+          "startLine": 10,
+        },
+      },
+      "message": "Component: "TestSchema" is never used.",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "no-unused-components",
+      "snippet": "    TestSchema:",
+      "snippetWithContext": "openapi: 3.0.0
+components:
+  requestBodies:
+    TestRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    TestSchema:
+      title: TestSchema
+      allOf:
+        - $ref: '#/components/requestBodies/TestRequestBody'",
+      "tool": "redocly",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "openapi.in.yaml",
+        "range": {
+          "endColumn": 14,
+          "endLine": 5,
+          "startColumn": 7,
+          "startLine": 5,
+        },
+      },
+      "message": "Property \`content\` is not expected here.",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "struct",
+      "snippet": "      content:",
+      "snippetWithContext": "openapi: 3.0.0
+components:
+  requestBodies:
+    TestRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    TestSchema:
+      title: TestSchema
+      allOf:
+        - $ref: '#/components/requestBodies/TestRequestBody'",
+      "tool": "redocly",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "openapi.in.yaml",
+        "range": {
+          "endColumn": 62,
+          "endLine": 13,
+          "startColumn": 1,
+          "startLine": 1,
+        },
+      },
+      "message": "The field \`info\` must be present on this level.",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "struct",
+      "snippet": "openapi: 3.0.0
+components:
+  requestBodies:
+    TestRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    TestSchema:
+      title: TestSchema
+      allOf:
+        - $ref: '#/components/requestBodies/TestRequestBody'",
+      "snippetWithContext": "openapi: 3.0.0
+components:
+  requestBodies:
+    TestRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    TestSchema:
+      title: TestSchema
+      allOf:
+        - $ref: '#/components/requestBodies/TestRequestBody'",
+      "tool": "redocly",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "openapi.in.yaml",
+        "range": {
+          "endColumn": 62,
+          "endLine": 13,
+          "startColumn": 1,
+          "startLine": 1,
+        },
+      },
+      "message": "The field \`paths\` must be present on this level.",
+      "mode": "MODE_COMMENT",
+      "ruleKey": "struct",
+      "snippet": "openapi: 3.0.0
+components:
+  requestBodies:
+    TestRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    TestSchema:
+      title: TestSchema
+      allOf:
+        - $ref: '#/components/requestBodies/TestRequestBody'",
+      "snippetWithContext": "openapi: 3.0.0
+components:
+  requestBodies:
+    TestRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+  schemas:
+    TestSchema:
+      title: TestSchema
+      allOf:
+        - $ref: '#/components/requestBodies/TestRequestBody'",
+      "tool": "redocly",
+    },
+  ],
+}
+`;

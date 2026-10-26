@@ -9,7 +9,6 @@ use crate::planner::config_files::plugin_configs;
 use crate::planner::config_files::PluginConfigFile;
 use crate::Settings;
 use anyhow::{bail, Error, Result};
-use check_filters::CheckFilters;
 use console::style;
 use document_url_generator::DocumentUrlGenerator;
 use itertools::Itertools;
@@ -77,6 +76,7 @@ pub struct Planner {
 impl Planner {
     pub fn new(verb: ExecutionVerb, settings: &Settings) -> Result<Self> {
         let workspace = Workspace::for_root(&settings.root)?;
+        workspace.library()?.create()?;
         let cache = Self::build_cache(&workspace, settings)?;
         let issue_cache = IssueCache::new(cache.clone());
 
@@ -262,9 +262,8 @@ impl Planner {
             self.transformers.push(Box::new(ignore.clone()));
         }
 
-        self.transformers.push(Box::new(CheckFilters {
-            filters: self.settings.filters.clone(),
-        }));
+        self.transformers
+            .push(Box::new(self.settings.check_filters.clone()));
 
         self.transformers.push(Box::new(LevelFilter {
             level: self.settings.level,
@@ -347,7 +346,14 @@ impl Planner {
         Ok(Plan {
             verb: self.verb,
             target_mode,
-            settings: self.settings.clone(),
+            progress_enabled: self.settings.progress,
+            install_only: self.settings.install_only,
+            skip_errored_plugins: self.settings.skip_errored_plugins,
+            ai_enabled: self.settings.ai,
+            fix_enabled: self.settings.fix,
+            allow_unsafe: self.settings.r#unsafe,
+            auth_token: self.settings.auth_token.clone(),
+            check_filters: self.settings.check_filters.clone(),
             workspace: self.workspace.clone(),
             config: self.config.clone(),
             issue_cache: self.issue_cache.clone(),
@@ -381,11 +387,8 @@ impl Planner {
 
     fn build_cache(workspace: &Workspace, settings: &Settings) -> Result<Box<dyn Cache>> {
         if settings.cache {
-            let library = workspace.library()?;
-            library.create()?;
-
             Ok(Box::new(FilesystemCache::new(
-                library.results_dir().join("issues"),
+                workspace.library()?.results_dir().join("issues"),
                 "protos",
             )))
         } else {

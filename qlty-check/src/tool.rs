@@ -1,7 +1,9 @@
 pub mod command_builder;
+pub mod command_error;
 mod download;
 mod github;
 pub mod go;
+pub mod install_failure;
 mod installations;
 pub mod java;
 pub mod node;
@@ -20,9 +22,11 @@ use crate::ui::ProgressTask;
 use anyhow::{bail, Context, Result};
 use chrono::Utc;
 use command_builder::Command;
+use command_error::ToolCommandError;
 use console::style;
 use duct::Expression;
 use fslock::LockFile;
+use install_failure::InstallFailure;
 use installations::initialize_installation;
 use installations::write_to_file;
 use qlty_analysis::join_path_string;
@@ -110,6 +114,39 @@ pub fn global_tools_root() -> String {
     )
 }
 
+pub fn update_package_hash<T: Tool + ?Sized>(tool: &T, sha: &mut sha2::Sha256) -> Result<()> {
+    if let Some(runtime) = tool.runtime() {
+        runtime.update_hash(sha)?;
+    }
+
+    if let Some(plugin) = tool.plugin() {
+        if let Some(package) = plugin.package {
+            sha.update(&package);
+        }
+
+        if let Some(version) = plugin.version {
+            sha.update(&version);
+        }
+
+        let mut extra_packages = plugin.extra_packages.clone();
+        extra_packages.sort_by(|a, b| a.name.cmp(&b.name));
+
+        for package in extra_packages {
+            sha.update(&package.name);
+            sha.update(&package.version);
+        }
+
+        if let Some(package_file) = plugin.package_file {
+            sha.update(std::fs::read_to_string(package_file)?);
+        }
+
+        for filter in &plugin.package_filters {
+            sha.update(filter);
+        }
+    }
+    Ok(())
+}
+
 fn lock_error() -> Error {
     Error::other("Failed to acquire lock for tool installation")
 }
@@ -161,31 +198,7 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
-        if let Some(runtime) = self.runtime() {
-            runtime.update_hash(sha)?;
-        }
-
-        if let Some(plugin) = self.plugin() {
-            sha.update(plugin.package.as_ref().unwrap());
-            sha.update(plugin.version.as_ref().unwrap());
-
-            let mut extra_packages = plugin.extra_packages.clone();
-            extra_packages.sort_by(|a, b| a.name.cmp(&b.name));
-
-            for package in extra_packages {
-                sha.update(&package.name);
-                sha.update(&package.version);
-            }
-
-            if let Some(package_file) = plugin.package_file {
-                sha.update(std::fs::read_to_string(package_file)?);
-            }
-
-            for filter in &plugin.package_filters {
-                sha.update(filter);
-            }
-        }
-        Ok(())
+        update_package_hash(self, sha)
     }
 
     fn pre_setup(&self, task: &ProgressTask) -> Result<()> {
@@ -260,7 +273,6 @@ pub trait Tool: Debug + Sync + Send {
                     let log_path = self.install_log_path();
                     if Path::new(&log_path).exists() {
                         const BUILD_LOG_LINES_LIMIT: usize = 50;
-                        const STDERR_LOG_LINES_LIMIT: usize = 20;
 
                         fn extract_last_lines(lines: &[&str], limit: usize) -> String {
                             lines[lines.len().saturating_sub(limit)..].join("\n")
@@ -273,7 +285,7 @@ pub trait Tool: Debug + Sync + Send {
                                     let build_log =
                                         extract_last_lines(&lines, BUILD_LOG_LINES_LIMIT);
                                     let stderr_log =
-                                        extract_last_lines(&lines, STDERR_LOG_LINES_LIMIT);
+                                        extract_last_lines(&lines, self.install_log_tail_lines());
                                     (build_log, stderr_log)
                                 }
                                 Err(err) => {
@@ -377,10 +389,12 @@ pub trait Tool: Debug + Sync + Send {
 
                     attempts += 1;
                     if attempts >= max_attempts {
-                        error!(
-                            "Max attempts reached for tool installation: {}",
-                            self.name()
-                        );
+                        if max_attempts > 0 {
+                            error!(
+                                "Max attempts reached for tool installation: {}",
+                                self.name()
+                            );
+                        }
                         return Err(e);
                     }
 
@@ -409,6 +423,10 @@ pub trait Tool: Debug + Sync + Send {
             "Package file installation for {} is not implemented",
             self.name()
         );
+    }
+
+    fn classify_install_failure(&self, _error: &ToolCommandError) -> Option<InstallFailure> {
+        None
     }
 
     fn post_install(&self, _task: &ProgressTask) -> Result<()> {
@@ -446,11 +464,16 @@ pub trait Tool: Debug + Sync + Send {
 
         let output = result?;
         if !output.status.success() {
-            bail!(
-                "Command {:?} exited with code {}",
-                command.lock().map_err(|_| lock_error())?,
-                output.status.code().unwrap_or_default()
-            );
+            let mut command_error = ToolCommandError {
+                command: command.lock().map_err(|_| lock_error())?.clone(),
+                exit_code: exit_status_code(&output.status),
+                stdout: String::from_utf8_lossy(&output.stdout).to_string(),
+                stderr: String::from_utf8_lossy(&output.stderr).to_string(),
+                failure: None,
+            };
+            command_error.failure = self.classify_install_failure(&command_error);
+
+            return Err(command_error.into());
         }
 
         Ok(())
@@ -658,6 +681,10 @@ pub trait Tool: Debug + Sync + Send {
             self.parent_directory(),
             format!("{}-install.log", self.directory_name())
         )
+    }
+
+    fn install_log_tail_lines(&self) -> usize {
+        20
     }
 
     fn clone_box(&self) -> Box<dyn Tool>;

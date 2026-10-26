@@ -32,7 +32,7 @@ pub struct Build {
     #[arg(long)]
     pub backfill: bool,
 
-    /// Generate AI fixes (requires OpenAI API key)
+    /// Generate AI fixes (requires Qlty Cloud authentication)
     #[arg(long)]
     pub ai: bool,
 
@@ -60,12 +60,7 @@ pub struct Build {
 impl Build {
     pub fn execute(&self, _args: &Arguments) -> Result<CommandSuccess, CommandError> {
         let workspace = Workspace::require_initialized()?;
-
-        if self.fetch_sources {
-            workspace.fetch_sources()?;
-        }
-
-        let config = workspace.config()?;
+        let config = workspace.load_config(!self.fetch_sources)?;
 
         let mut report = Report {
             metadata: self.build_metadata(&config),
@@ -322,7 +317,13 @@ impl Build {
             }
         });
 
+        let generated_at = Some(Timestamp {
+            seconds: now.unix_timestamp(),
+            nanos: now.nanosecond() as i32,
+        });
+
         let mut metadata = Metadata {
+            id: Uuid::now_v7().to_string(),
             workspace_id: env::var("QLTY_WORKSPACE_ID").unwrap_or_default(),
             project_id: match config.project_id {
                 Some(ref id) => id.clone(),
@@ -345,10 +346,18 @@ impl Build {
             pull_request_number,
             tracked_branch_id: env::var("QLTY_TRACKED_BRANCH_ID").ok(),
             result: AnalysisResult::Success.into(),
+            generated_at,
             ..Default::default()
         };
 
         self.append_commit_metadata(&mut metadata);
+
+        metadata.time = if self.backfill {
+            metadata.committed_at
+        } else {
+            generated_at
+        };
+
         metadata
     }
 

@@ -4,7 +4,7 @@ import * as fs from "fs";
 import path from "path";
 import { testResults } from "tests";
 import toml from "toml";
-import { QltyDriver } from "./driver";
+import { QltyDriver, SETUP_TIMEOUT_MS } from "./driver";
 import { OPTIONS } from "./utils";
 import semver from "semver";
 
@@ -12,7 +12,14 @@ Debug.inspectOpts!.hideDate = true;
 
 // Currently unsupported tools on Windows
 const SKIP_LINTERS = {
-  win32: ["semgrep", "swiftlint", "dockerfmt", "swiftformat", "stringslint"],
+  win32: [
+    "editorconfig-checker",
+    "semgrep",
+    "swiftlint",
+    "dockerfmt",
+    "swiftformat",
+    "stringslint",
+  ],
   linux: ["stringslint", "swiftformat", "swiftlint"],
 } as { [key in NodeJS.Platform]: string[] };
 
@@ -172,7 +179,7 @@ export const runLinterTest = (
 
           beforeAll(async () => {
             await driver.setUp(input);
-          });
+          }, SETUP_TIMEOUT_MS);
 
           test(`version=${linterVersion}`, async () => {
             const logOutput = async () => {

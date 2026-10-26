@@ -1,0 +1,27 @@
+config_version = "0"
+
+[plugins.definitions.alpha]
+file_types = ["shell"]
+
+[plugins.definitions.alpha.drivers.format]
+script = "echo formatted by alpha"
+success_codes = [0]
+output = "rewrite"
+driver_type = "formatter"
+
+[plugins.definitions.beta]
+file_types = ["shell"]
+
+[plugins.definitions.beta.drivers.format]
+script = "echo formatted by beta"
+success_codes = [0]
+output = "rewrite"
+driver_type = "formatter"
+
+[[plugin]]
+name = "alpha"
+version = "1.0.0"
+
+[[plugin]]
+name = "beta"
+version = "1.0.0"

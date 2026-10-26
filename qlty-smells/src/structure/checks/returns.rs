@@ -1,4 +1,4 @@
-use qlty_analysis::code::{capture_by_name, capture_source};
+use qlty_analysis::code::{capture_by_name, capture_by_name_option, node_source};
 use qlty_analysis::code::{File, NodeCounter};
 use qlty_types::analysis::v1::{Issue, Level};
 use qlty_types::calculate_effort_minutes;
@@ -42,7 +42,10 @@ pub fn check(threshold: usize, source_file: Arc<File>, tree: &Tree) -> Vec<Issue
             let message = format!(
                 "Function with many returns (count = {}): {}",
                 return_count,
-                capture_source(function_query, "name", &function_match, &source_file)
+                match capture_by_name_option(function_query, "name", &function_match) {
+                    Some(capture) => node_source(&capture.node, &source_file),
+                    None => language.function_name_from_node(&source_file, &function_capture.node),
+                }
             );
 
             issues.push(Issue {
@@ -56,7 +59,12 @@ pub fn check(threshold: usize, source_file: Arc<File>, tree: &Tree) -> Vec<Issue
                     BASE_EFFORT_MINUTES,
                     EFFORT_MINUTES_PER_VALUE_DELTA,
                 ),
-                ..issue_for(&source_file, &function_capture.node)
+                ..issue_for(
+                    &source_file,
+                    &function_capture.node,
+                    threshold,
+                    return_count,
+                )
             });
         }
     }
@@ -93,7 +101,7 @@ mod test {
                         return"#
                     .trim(),
             ));
-            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), @r#"
+            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
             - tool: qlty
               driver: structure
               ruleKey: return-statements
@@ -115,6 +123,9 @@ mod test {
                   endColumn: 31
                   startByte: 0
                   endByte: 103
+              properties:
+                actual: 3
+                threshold: 1
             "#);
         }
     }
@@ -146,7 +157,7 @@ mod test {
                 }"#
                 .trim(),
             ));
-            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), @r#"
+            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
             - tool: qlty
               driver: structure
               ruleKey: return-statements
@@ -168,6 +179,9 @@ mod test {
                   endColumn: 18
                   startByte: 0
                   endByte: 118
+              properties:
+                actual: 3
+                threshold: 1
             "#);
         }
     }
@@ -201,7 +215,7 @@ mod test {
                 "#
                 .trim(),
             ));
-            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), @r#"
+            insta::assert_yaml_snapshot!(check(1, source_file.clone(), &source_file.parse()), { "[].properties" => insta::sorted_redaction() }, @r#"
             - tool: qlty
               driver: structure
               ruleKey: return-statements
@@ -223,7 +237,32 @@ mod test {
                   endColumn: 24
                   startByte: 0
                   endByte: 162
+              properties:
+                actual: 4
+                threshold: 1
             "#);
+        }
+    }
+
+    mod elixir {
+        use super::*;
+
+        #[test]
+        fn no_return_smell_on_branchy_function() {
+            let source_file = Arc::new(File::from_string(
+                "elixir",
+                "defmodule M do\n def f(x) do\n  case x do\n   1 -> :a\n   2 -> :b\n   _ -> :c\n  end\n end\nend",
+            ));
+            assert_eq!(0, check(1, source_file.clone(), &source_file.parse()).len());
+        }
+
+        #[test]
+        fn no_return_smell_on_cond_function() {
+            let source_file = Arc::new(File::from_string(
+                "elixir",
+                "defmodule M do\n def f(x) do\n  cond do\n   x > 2 -> :a\n   x > 1 -> :b\n   true -> :c\n  end\n end\nend",
+            ));
+            assert_eq!(0, check(1, source_file.clone(), &source_file.parse()).len());
         }
     }
 }

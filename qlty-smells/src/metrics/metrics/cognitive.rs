@@ -1,5 +1,4 @@
 use qlty_analysis::code::{File, NodeExt, NodeFilter, Visitor};
-use qlty_analysis::Language;
 use tree_sitter::Node;
 use tree_sitter::TreeCursor;
 
@@ -28,8 +27,8 @@ pub struct CognitiveComplexity<'a> {
 }
 
 impl Visitor for CognitiveComplexity<'_> {
-    fn language(&self) -> &Box<dyn Language + Sync> {
-        self.source_file.language()
+    fn source_file(&self) -> &File {
+        self.source_file
     }
 
     fn skip_node(&self, node: &Node) -> bool {
@@ -110,19 +109,16 @@ impl Visitor for CognitiveComplexity<'_> {
 
     fn visit_function(&mut self, cursor: &mut TreeCursor) {
         let node = cursor.node();
-        let name = self.source_file.language().function_name_node(&node);
+        let lang = self.source_file.language();
+        let name_string = lang.function_name_from_node(self.source_file, &node);
+        let normalized = lang.normalize_identifier(&name_string);
 
-        let name_string = name
-            .utf8_text(self.source_file.contents.as_bytes())
-            .unwrap()
-            .to_string();
+        let decorator = lang.is_decorator_function(&node);
 
-        let decorator = self.source_file.language().is_decorator_function(&node);
-
-        self.functions.push(name_string.clone());
+        self.functions.push(normalized.clone());
 
         if !decorator {
-            self.counted_functions.push(name_string);
+            self.counted_functions.push(normalized);
         }
 
         if self.counted_functions.len() > 1 {
@@ -173,14 +169,16 @@ impl<'a> CognitiveComplexity<'a> {
     }
 
     fn is_recursive_call(&self, node: &Node) -> bool {
-        let (receiver, function_name) = self
-            .source_file
-            .language()
-            .call_identifiers(self.source_file, node);
+        let lang = self.source_file.language();
+        let (receiver, function_name) = lang.call_identifiers(self.source_file, node);
 
-        receiver.as_deref() == self.language().self_keyword()
+        let normalized_receiver = receiver.as_deref().map(|r| lang.normalize_identifier(r));
+        let normalized_self = lang.self_keyword().map(|s| lang.normalize_identifier(s));
+        let normalized_fn = lang.normalize_identifier(&function_name);
+
+        normalized_receiver == normalized_self
             && !self.functions.is_empty()
-            && function_name == *self.functions.last().unwrap()
+            && normalized_fn == *self.functions.last().unwrap()
     }
 
     fn process_binary_child_node(&mut self, cursor: &mut TreeCursor) {
@@ -199,15 +197,20 @@ impl<'a> CognitiveComplexity<'a> {
             .utf8_text(self.source_file.contents.as_bytes())
             .unwrap();
 
-        if self.language().boolean_operator_nodes().contains(&operator) {
+        let normalized_operator = self.language().normalize_identifier(operator);
+        if self
+            .language()
+            .boolean_operator_nodes()
+            .contains(&normalized_operator.as_str())
+        {
             if let Some(last_operator) = self.last_operator.as_ref() {
-                if last_operator != operator {
+                if last_operator != &normalized_operator {
                     self.on_incrementor(cursor);
                 }
             } else {
                 self.on_incrementor(cursor);
             }
-            self.last_operator = Some(operator.to_string());
+            self.last_operator = Some(normalized_operator);
         }
     }
 
@@ -237,6 +240,32 @@ impl<'a> CognitiveComplexity<'a> {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    mod vbnet {
+        use super::*;
+
+        #[test]
+        fn mixed_case_self_recursion_counts() {
+            let source_file = File::from_string(
+                "vbnet",
+                r#"
+Public Class Foo
+    Public Sub DoWork()
+        Me.dowork()
+    End Sub
+End Class
+"#,
+            );
+            assert_eq!(
+                1,
+                count(
+                    &source_file,
+                    &source_file.parse().root_node(),
+                    &NodeFilter::empty()
+                )
+            );
+        }
+    }
 
     mod java {
         use super::*;
@@ -768,6 +797,105 @@ mod test {
                     &source_file.parse().root_node(),
                     &NodeFilter::empty()
                 )
+            );
+        }
+    }
+
+    mod elixir {
+        use super::*;
+
+        fn cognitive(source: &str) -> usize {
+            let source_file = File::from_string("elixir", source);
+            count(
+                &source_file,
+                &source_file.parse().root_node(),
+                &NodeFilter::empty(),
+            )
+        }
+
+        #[test]
+        fn function_signature_is_not_recursion() {
+            assert_eq!(0, cognitive("defmodule M do\n def a(x), do: x\nend"));
+        }
+
+        #[test]
+        fn real_self_recursion_counts() {
+            assert_eq!(
+                1,
+                cognitive("defmodule M do\n def fact(n), do: n * fact(n - 1)\nend")
+            );
+        }
+
+        #[test]
+        fn nested_case_inside_if_is_weighted_by_depth() {
+            assert_eq!(
+                3,
+                cognitive(
+                    "defmodule M do\n def f(x) do\n  if x do\n   case x do\n    1 -> :a\n    _ -> :b\n   end\n  end\n end\nend"
+                )
+            );
+        }
+
+        #[test]
+        fn a_clause_group_increments_once() {
+            assert_eq!(
+                1,
+                cognitive(
+                    "defmodule M do\n def f(:a), do: 1\n def f(:b), do: 2\n def f(:c), do: 3\n def f(_), do: 4\nend"
+                )
+            );
+        }
+
+        #[test]
+        fn a_clause_group_matches_the_case_form_it_replaces() {
+            let clauses = cognitive(
+                "defmodule M do\n def f(:a), do: 1\n def f(:b), do: 2\n def f(_), do: 3\nend",
+            );
+            let arms = cognitive(
+                "defmodule M do\n def f(x) do\n  case x do\n   :a -> 1\n   :b -> 2\n   _ -> 3\n  end\n end\nend",
+            );
+            assert_eq!(arms, clauses);
+        }
+
+        #[test]
+        fn a_single_clause_function_does_not_increment() {
+            assert_eq!(0, cognitive("defmodule M do\n def f(x), do: x\nend"));
+        }
+
+        #[test]
+        fn separate_clause_groups_increment_separately() {
+            assert_eq!(
+                2,
+                cognitive(
+                    "defmodule M do\n def f(0), do: 1\n def f(n), do: n\n def g(0), do: 1\n def g(n), do: n\nend"
+                )
+            );
+        }
+
+        #[test]
+        fn the_two_else_spellings_agree() {
+            let keyword =
+                cognitive("defmodule M do\n def f(x) do\n  if x, do: 1, else: 2\n end\nend");
+            let block = cognitive(
+                "defmodule M do\n def f(x) do\n  if x do\n   1\n  else\n   2\n  end\n end\nend",
+            );
+            assert_eq!(2, keyword);
+            assert_eq!(block, keyword);
+        }
+
+        #[test]
+        fn an_ordinary_else_keyword_does_not_increment() {
+            assert_eq!(
+                0,
+                cognitive("defmodule M do\n def f, do: config(else: 1)\nend")
+            );
+        }
+
+        #[test]
+        fn alternating_boolean_operators_increment_once_per_change() {
+            assert_eq!(
+                2,
+                cognitive("defmodule M do\n def f(a, b, c, d), do: a and b and c or d\nend")
             );
         }
     }

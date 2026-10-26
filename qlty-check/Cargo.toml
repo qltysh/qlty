@@ -55,6 +55,7 @@ shell-escape.workspace = true
 sysinfo.workspace = true
 tar.workspace = true
 tempfile.workspace = true
+thiserror.workspace = true
 tracing.workspace = true
 ureq.workspace = true
 url.workspace = true

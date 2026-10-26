@@ -1,0 +1,234 @@
+{
+ "model": {
+  "id": "test-model",
+  "sha256": "model-sha",
+  "threshold_score": 5.0,
+  "score_scale": "threshold-centered-1-10-v1",
+  "score_meaning": "Relative maintainability score; higher is better.",
+  "measurement_policy": {
+   "id": "test-policy"
+  }
+ },
+ "interval": "month",
+ "periods": [
+  {
+   "period_start": "2026-08-01",
+   "period_end_exclusive": "2026-09-01",
+   "as_of": "2026-09-01T00:00:00-04:00",
+   "partial": false,
+   "commit": "m1m1m1m1m1m1m1m1m1m1m1m1m1m1m1m1m1m1m1m1",
+   "committed_at": "2026-08-01T09:00:00-04:00",
+   "first_parent_index": 0,
+   "files": [
+    {
+     "path": "src/a.ts",
+     "blob": "blob-src/a.ts",
+     "suffix": ".ts",
+     "version": "blob-src/a.ts.ts",
+     "source_sha256": "sha-src/a.ts",
+     "source_scope": {
+      "policy": "whole-file",
+      "original_lines": 100,
+      "analyzed_lines": 100,
+      "excluded_lines": 0,
+      "excluded_modules": []
+     },
+     "score": 6.0,
+     "score_scale": "threshold-centered-1-10-v1",
+     "passed": true,
+     "language": "TypeScript",
+     "code_lines": 100,
+     "cyclomatic": 10,
+     "mass": 100.0,
+     "measurement_key": "key-src/a.ts"
+    },
+    {
+     "path": "src/b.ts",
+     "blob": "blob-src/b.ts",
+     "suffix": ".ts",
+     "version": "blob-src/b.ts.ts",
+     "source_sha256": "sha-src/b.ts",
+     "source_scope": {
+      "policy": "whole-file",
+      "original_lines": 25,
+      "analyzed_lines": 25,
+      "excluded_lines": 0,
+      "excluded_modules": []
+     },
+     "score": 4.0,
+     "score_scale": "threshold-centered-1-10-v1",
+     "passed": false,
+     "language": "TypeScript",
+     "code_lines": 25,
+     "cyclomatic": 10,
+     "mass": 50.0,
+     "measurement_key": "key-src/b.ts"
+    }
+   ],
+   "summary": {
+    "candidate_files": 2,
+    "files": 2,
+    "fails": 0,
+    "errors": 0,
+    "inline_only_skips": 0,
+    "loc": 125,
+    "mass": 150.0,
+    "maintainable_fraction": 0.5,
+    "median": 5.0,
+    "loc_weighted_mean": 5.0
+   },
+   "test_paths_excluded": 0,
+   "test_exclusions": [],
+   "source_exclusions": {
+    "files": 0,
+    "by_category": {}
+   },
+   "analysis_errors": [],
+   "change": null
+  },
+  {
+   "period_start": "2026-09-01",
+   "period_end_exclusive": "2026-10-01",
+   "as_of": "2026-09-20T12:00:00-04:00",
+   "partial": true,
+   "commit": "c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2",
+   "committed_at": "2026-09-01T09:00:00-04:00",
+   "first_parent_index": 3,
+   "files": [
+    {
+     "path": "src/a.ts",
+     "blob": "blob-src/a.ts",
+     "suffix": ".ts",
+     "version": "blob-src/a.ts.ts",
+     "source_sha256": "sha-src/a.ts",
+     "source_scope": {
+      "policy": "whole-file",
+      "original_lines": 144,
+      "analyzed_lines": 144,
+      "excluded_lines": 0,
+      "excluded_modules": []
+     },
+     "score": 4.0,
+     "score_scale": "threshold-centered-1-10-v1",
+     "passed": false,
+     "language": "TypeScript",
+     "code_lines": 144,
+     "cyclomatic": 10,
+     "mass": 120.0,
+     "measurement_key": "key-src/a.ts"
+    },
+    {
+     "path": "src/c.ts",
+     "blob": "blob-src/c.ts",
+     "suffix": ".ts",
+     "version": "blob-src/c.ts.ts",
+     "source_sha256": "sha-src/c.ts",
+     "source_scope": {
+      "policy": "whole-file",
+      "original_lines": 9,
+      "analyzed_lines": 9,
+      "excluded_lines": 0,
+      "excluded_modules": []
+     },
+     "score": 7.0,
+     "score_scale": "threshold-centered-1-10-v1",
+     "passed": true,
+     "language": "TypeScript",
+     "code_lines": 9,
+     "cyclomatic": 10,
+     "mass": 30.0,
+     "measurement_key": "key-src/c.ts"
+    }
+   ],
+   "summary": {
+    "candidate_files": 2,
+    "files": 2,
+    "fails": 0,
+    "errors": 0,
+    "inline_only_skips": 0,
+    "loc": 153,
+    "mass": 150.0,
+    "maintainable_fraction": 0.5,
+    "median": 5.0,
+    "loc_weighted_mean": 5.0
+   },
+   "test_paths_excluded": 0,
+   "test_exclusions": [],
+   "source_exclusions": {
+    "files": 0,
+    "by_category": {}
+   },
+   "analysis_errors": [],
+   "change": {
+    "positive": 0.0,
+    "negative": -1.3333333333333333,
+    "net": -1.3333333333333333,
+    "compared_groups": 1,
+    "changed_groups": 1,
+    "compared_previous_mass": 100.0,
+    "previous_project_mass": 150.0,
+    "comparison_coverage_of_retained_scored_mass": 1.0,
+    "contributions": [
+     {
+      "before_paths": [
+       "src/a.ts"
+      ],
+      "after_paths": [
+       "src/a.ts"
+      ],
+      "before_score": 6.0,
+      "after_score": 4.0,
+      "before_mass": 100.0,
+      "after_mass": 120.0,
+      "previous_mass_share": 0.6666666666666666,
+      "score_change": -2.0,
+      "contribution": -1.3333333333333333,
+      "matching": [
+       {
+        "kind": "same-path"
+       }
+      ],
+      "changed": true
+     }
+    ],
+    "uncompared_groups": [],
+    "unresolved_movements": [],
+    "additions": {
+     "summary": {
+      "candidate_files": 1,
+      "files": 1,
+      "fails": 0,
+      "errors": 0,
+      "inline_only_skips": 0,
+      "loc": 9,
+      "mass": 30.0,
+      "maintainable_fraction": 0.5,
+      "median": 5.0,
+      "loc_weighted_mean": 5.0
+     },
+     "files": [
+      "src/c.ts"
+     ]
+    },
+    "removals": {
+     "summary": {
+      "candidate_files": 1,
+      "files": 1,
+      "fails": 0,
+      "errors": 0,
+      "inline_only_skips": 0,
+      "loc": 25,
+      "mass": 50.0,
+      "maintainable_fraction": 0.5,
+      "median": 5.0,
+      "loc_weighted_mean": 5.0
+     },
+     "files": [
+      "src/b.ts"
+     ]
+    },
+    "structural_groups": 0
+   }
+  }
+ ]
+}

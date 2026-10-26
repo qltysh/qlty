@@ -1,5 +1,6 @@
 {
   "metadata": {
+    "id": "[..]",
     "buildId": "[..]",
     "result": "ANALYSIS_RESULT_SUCCESS",
     "filesAnalyzed": 44,
@@ -11,14 +12,19 @@
     "committerName": "TEST",
     "authorEmail": "test@codeclimate.com",
     "authorName": "TEST",
-    "authoredAt": "2024-01-01T00:00:00+00:00"
+    "authoredAt": "2024-01-01T00:00:00+00:00",
+    "generatedAt": "[..]",
+    "time": "[..]"
   },
   "messages": [],
   "invocations": [],
   "issues": [
     {
+      "analysisId": "[..]",
       "buildId": "[..]",
       "analyzedAt": "[..]",
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "similar-code",
@@ -54,12 +60,17 @@
         [..],
         [..],
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "duplication",
       "ruleKey": "similar-code",
@@ -95,12 +106,17 @@
         [..],
         [..],
         [..]
+        [..]
+        [..]
       },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "boolean-logic",
@@ -123,11 +139,18 @@
           "endByte": 48
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "file-complexity",
@@ -151,14 +174,21 @@
           "endByte": 515
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "file.path": "file_complexity.js"
       },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-complexity",
@@ -182,14 +212,21 @@
           "endByte": 514
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "partialFingerprints": {
         "function.name": "main"
       },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "function-parameters",
@@ -212,11 +249,18 @@
           "endByte": 73
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -239,11 +283,18 @@
           "endByte": 484
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "nested-control-flow",
@@ -266,11 +317,18 @@
           "endByte": 221
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "return-statements",
@@ -293,11 +351,18 @@
           "endByte": 381
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
+      "generatedAt": "[..]",
+      "time": "[..]",
       "tool": "qlty",
       "driver": "structure",
       "ruleKey": "return-statements",
@@ -321,11 +386,16 @@
           "endByte": 948
         }
       },
+      "properties": {
+        [..]
+        [..]
+      },
       "mode": "MODE_BLOCK"
     }
   ],
   "stats": [
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "boolean_logic.js",
@@ -342,10 +412,13 @@
       "commentLines": 0,
       "blankLines": 1,
       "complexity": 2,
-      "cyclomatic": 7,
-      "lcom4": 0
+      "cyclomatic": 5,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "count_conditional_assignment.js",
@@ -363,9 +436,12 @@
       "blankLines": 0,
       "complexity": 2,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "count_function_with_ternary.js",
@@ -382,10 +458,13 @@
       "commentLines": 1,
       "blankLines": 0,
       "complexity": 1,
-      "cyclomatic": 4,
-      "lcom4": 0
+      "cyclomatic": 2,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "count_non_sequential_logical_operators.js",
@@ -403,9 +482,12 @@
       "blankLines": 0,
       "complexity": 3,
       "cyclomatic": 5,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "count_recursion.js",
@@ -423,9 +505,12 @@
       "blankLines": 0,
       "complexity": 1,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "multiple_conditionals.js",
@@ -442,10 +527,13 @@
       "commentLines": 0,
       "blankLines": 0,
       "complexity": 7,
-      "cyclomatic": 21,
-      "lcom4": 0
+      "cyclomatic": 11,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "cyclo_basic.js",
@@ -463,9 +551,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "cyclo_if.js",
@@ -483,9 +574,12 @@
       "blankLines": 0,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "cyclo_if_else.js",
@@ -503,9 +597,12 @@
       "blankLines": 0,
       "complexity": 2,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "cyclo_if_else_if.js",
@@ -523,9 +620,12 @@
       "blankLines": 0,
       "complexity": 2,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "cyclo_if_else_if_else.js",
@@ -543,9 +643,12 @@
       "blankLines": 0,
       "complexity": 3,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "empty_function.js",
@@ -563,9 +666,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "empty_if.js",
@@ -583,9 +689,12 @@
       "blankLines": 0,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "if_with_bool.js",
@@ -603,9 +712,12 @@
       "blankLines": 0,
       "complexity": 2,
       "cyclomatic": 3,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "iterative_for_of.js",
@@ -623,9 +735,12 @@
       "blankLines": 0,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "iterative_map.js",
@@ -643,9 +758,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "iterative_methods_with_filter_and_include.js",
@@ -662,10 +780,13 @@
       "commentLines": 0,
       "blankLines": 2,
       "complexity": 1,
-      "cyclomatic": 5,
-      "lcom4": 0
+      "cyclomatic": 4,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "while_loop.js",
@@ -683,9 +804,12 @@
       "blankLines": 0,
       "complexity": 1,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "class_declaration.js",
@@ -702,10 +826,13 @@
       "commentLines": 0,
       "blankLines": 1,
       "complexity": 0,
-      "cyclomatic": 2,
-      "lcom4": 0
+      "cyclomatic": 1,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "getter_setter_declaration.js",
@@ -723,9 +850,12 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "ignore_collaborators.js",
@@ -743,9 +873,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "multiple.js",
@@ -763,9 +896,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "private_field_declaration.js",
@@ -783,9 +919,12 @@
       "blankLines": 1,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "public_field_declaration.js",
@@ -803,9 +942,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "read.js",
@@ -823,9 +965,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "static_field_declaration.js",
@@ -843,9 +988,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "unique.js",
@@ -863,9 +1011,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "write.js",
@@ -883,9 +1034,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "file_complexity.js",
@@ -902,10 +1056,13 @@
       "commentLines": 0,
       "blankLines": 0,
       "complexity": 55,
-      "cyclomatic": 27,
-      "lcom4": 0
+      "cyclomatic": 11,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "function_complexity.js",
@@ -922,10 +1079,13 @@
       "commentLines": 0,
       "blankLines": 1,
       "complexity": 15,
-      "cyclomatic": 12,
-      "lcom4": 0
+      "cyclomatic": 6,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "function_with_onclick_in_jsx.js",
@@ -942,10 +1102,13 @@
       "commentLines": 0,
       "blankLines": 3,
       "complexity": 0,
-      "cyclomatic": 2,
-      "lcom4": 0
+      "cyclomatic": 1,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "methods_with_parameters.js",
@@ -962,10 +1125,13 @@
       "commentLines": 0,
       "blankLines": 1,
       "complexity": 0,
-      "cyclomatic": 2,
-      "lcom4": 1
+      "cyclomatic": 1,
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "methods_without_parameters.js",
@@ -982,10 +1148,13 @@
       "commentLines": 0,
       "blankLines": 2,
       "complexity": 0,
-      "cyclomatic": 2,
-      "lcom4": 1
+      "cyclomatic": 1,
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "singleton_methods_with_parameters.js",
@@ -1003,9 +1172,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 2,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "singleton_methods_without_parameters.js",
@@ -1023,9 +1195,12 @@
       "blankLines": 0,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "identical.js",
@@ -1042,10 +1217,13 @@
       "commentLines": 0,
       "blankLines": 7,
       "complexity": 4,
-      "cyclomatic": 25,
-      "lcom4": 0
+      "cyclomatic": 5,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "lcom_0.js",
@@ -1063,9 +1241,12 @@
       "blankLines": 5,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "lcom_1-1.js",
@@ -1083,9 +1264,12 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "lcom_1.js",
@@ -1103,9 +1287,12 @@
       "blankLines": 2,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 1
+      "lcom4": 1,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "lcom_2.js",
@@ -1123,9 +1310,12 @@
       "blankLines": 6,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 2
+      "lcom4": 2,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "lines.js",
@@ -1143,9 +1333,12 @@
       "blankLines": 4,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "nested_control.js",
@@ -1162,10 +1355,13 @@
       "commentLines": 0,
       "blankLines": 4,
       "complexity": 26,
-      "cyclomatic": 28,
-      "lcom4": 0
+      "cyclomatic": 24,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "parameters.js",
@@ -1183,9 +1379,12 @@
       "blankLines": 3,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "returns.js",
@@ -1203,9 +1402,12 @@
       "blankLines": 4,
       "complexity": 0,
       "cyclomatic": 1,
-      "lcom4": 0
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "cognitive",
@@ -1221,10 +1423,13 @@
       "commentLines": 1,
       "blankLines": 0,
       "complexity": 14,
-      "cyclomatic": 34,
-      "lcom4": 0
+      "cyclomatic": 22,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "cyclomatic",
@@ -1240,10 +1445,13 @@
       "commentLines": 0,
       "blankLines": 2,
       "complexity": 14,
-      "cyclomatic": 28,
-      "lcom4": 0
+      "cyclomatic": 27,
+      "lcom4": 0,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "fields",
@@ -1259,10 +1467,13 @@
       "commentLines": 0,
       "blankLines": 4,
       "complexity": 0,
-      "cyclomatic": 11,
-      "lcom4": 2
+      "cyclomatic": 10,
+      "lcom4": 2,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "functions",
@@ -1278,10 +1489,13 @@
       "commentLines": 0,
       "blankLines": 6,
       "complexity": 0,
-      "cyclomatic": 9,
-      "lcom4": 2
+      "cyclomatic": 6,
+      "lcom4": 2,
+      "generatedAt": "[..]",
+      "time": "[..]"
     },
     {
+      "analysisId": [..],
       "buildId": [..],
       "analyzedAt": [..],
       "name": "lcom",
@@ -1298,7 +1512,9 @@
       "blankLines": 15,
       "complexity": 0,
       "cyclomatic": 4,
-      "lcom4": 4
+      "lcom4": 4,
+      "generatedAt": "[..]",
+      "time": "[..]"
     }
   ]
 }

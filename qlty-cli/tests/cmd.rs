@@ -1,7 +1,39 @@
 use crate::helpers::{
     setup_and_run_diff_test_cases, setup_and_run_test_cases, setup_and_run_test_cases_without_git,
 };
+use indoc::indoc;
+use qlty_config::Library;
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    process::{Command, Output},
+};
 use trycmd::TestCases;
+
+struct CacheCleanup(PathBuf);
+
+impl Drop for CacheCleanup {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir_all(&self.0);
+    }
+}
+
+fn run_qlty(root: &Path, args: &[&str]) -> Output {
+    Command::new(env!("CARGO_BIN_EXE_qlty"))
+        .current_dir(root)
+        .env("QLTY_TELEMETRY", "off")
+        .args(args)
+        .output()
+        .unwrap()
+}
+
+fn command_output(output: &Output) -> String {
+    format!(
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    )
+}
 
 #[test]
 fn version_tests() {
@@ -30,6 +62,137 @@ fn check_tests() {
     setup_and_run_test_cases("tests/cmd/check/*.toml");
 }
 
+fn write_cache_repro_fixture(root: &Path) {
+    fs::create_dir_all(root.join(".qlty")).unwrap();
+    fs::write(
+        root.join(".gitignore"),
+        ".qlty/logs\n.qlty/out\n.qlty/results\n.qlty/sources\n.qlty/tmp\n",
+    )
+    .unwrap();
+    fs::write(root.join("sample.js"), "const answer = 42;\n").unwrap();
+    fs::write(
+        root.join(".qlty/qlty.toml"),
+        indoc! {r#"
+            config_version = "0"
+
+            [plugins.definitions.cache-repro]
+            file_types = ["javascript"]
+            known_good_version = "1.0.0"
+
+            [plugins.definitions.cache-repro.drivers.lint]
+            script = "echo sample.js:1 LINT: reproducible lint issue"
+            success_codes = [0]
+            output = "stdout"
+            output_format = "regex"
+            output_regex = '((?P<path>.*):(?P<line>-?\d+) (?P<code>\S+): (?P<message>.+))'
+            output_level = "high"
+            cache_results = true
+
+            [plugins.definitions.cache-repro.drivers.format]
+            script = "exit 0"
+            success_codes = [0]
+            output = "rewrite"
+            driver_type = "formatter"
+
+            [[plugin]]
+            name = "cache-repro"
+            version = "1.0.0"
+        "#},
+    )
+    .unwrap();
+}
+
+#[test]
+fn filtered_check_does_not_pollute_unfiltered_issue_cache() {
+    let fixture = tempfile::tempdir().unwrap();
+    let root = fixture.path();
+    write_cache_repro_fixture(root);
+
+    let _repository = qlty_test_utilities::git::init(root);
+    let cache_directory = Library::new(root).unwrap().cache_directory().unwrap();
+    let _cache_cleanup = CacheCleanup(cache_directory);
+
+    let filtered = run_qlty(
+        root,
+        &[
+            "check",
+            "--all",
+            "--filter=cache-repro:fmt",
+            "--no-upgrade-check",
+            "--no-progress",
+        ],
+    );
+    assert!(filtered.status.success(), "{}", command_output(&filtered));
+
+    let unfiltered = run_qlty(
+        root,
+        &[
+            "check",
+            "--all",
+            "--no-formatters",
+            "--no-upgrade-check",
+            "--no-progress",
+        ],
+    );
+    assert_eq!(
+        unfiltered.status.code(),
+        Some(1),
+        "an unfiltered check reused the filtered cache entry\n{}",
+        command_output(&unfiltered)
+    );
+    assert!(
+        command_output(&unfiltered).contains("reproducible lint issue"),
+        "{}",
+        command_output(&unfiltered)
+    );
+}
+
+#[test]
+fn skipped_check_does_not_pollute_unskipped_issue_cache() {
+    let fixture = tempfile::tempdir().unwrap();
+    let root = fixture.path();
+    write_cache_repro_fixture(root);
+
+    let _repository = qlty_test_utilities::git::init(root);
+    let cache_directory = Library::new(root).unwrap().cache_directory().unwrap();
+    let _cache_cleanup = CacheCleanup(cache_directory);
+
+    let skipped = run_qlty(
+        root,
+        &[
+            "check",
+            "--all",
+            "--no-formatters",
+            "--skip=cache-repro:LINT",
+            "--no-upgrade-check",
+            "--no-progress",
+        ],
+    );
+    assert!(skipped.status.success(), "{}", command_output(&skipped));
+
+    let unskipped = run_qlty(
+        root,
+        &[
+            "check",
+            "--all",
+            "--no-formatters",
+            "--no-upgrade-check",
+            "--no-progress",
+        ],
+    );
+    assert_eq!(
+        unskipped.status.code(),
+        Some(1),
+        "a plain check reused the skipped cache entry\n{}",
+        command_output(&unskipped)
+    );
+    assert!(
+        command_output(&unskipped).contains("reproducible lint issue"),
+        "{}",
+        command_output(&unskipped)
+    );
+}
+
 #[test]
 fn fmt_tests() {
     setup_and_run_test_cases("tests/cmd/fmt/*.toml");
@@ -46,6 +209,16 @@ fn network_tests() {
 #[test]
 fn smells_tests() {
     setup_and_run_test_cases("tests/cmd/smells/**/*.toml");
+}
+
+#[test]
+fn slop_one_tests() {
+    setup_and_run_test_cases("tests/cmd/slop_one/**/*.toml");
+}
+
+#[test]
+fn sources_tests() {
+    setup_and_run_test_cases("tests/cmd/sources/**/*.toml");
 }
 
 #[test]
@@ -82,4 +255,39 @@ fn init_network_tests() {
 #[test]
 fn git_based_check_tests() {
     setup_and_run_diff_test_cases("tests/cmd/check/diff_tests/*.toml");
+}
+
+fn install_githooks(args: &[&str]) -> String {
+    let fixture = tempfile::tempdir().unwrap();
+    let root = fixture.path();
+    fs::create_dir_all(root.join(".qlty")).unwrap();
+    fs::write(root.join(".qlty/qlty.toml"), "config_version = \"0\"\n").unwrap();
+    let _repository = qlty_test_utilities::git::init(root);
+    let output = run_qlty(root, &[&["githooks", "install"], args].concat());
+    assert!(output.status.success());
+    fs::read_to_string(root.join(".qlty/hooks/pre-push.sh")).unwrap()
+}
+
+#[test]
+fn deinit_from_a_subdirectory_is_rejected() {
+    let fixture = tempfile::tempdir().unwrap();
+    let root = fixture.path();
+    fs::create_dir_all(root.join(".qlty")).unwrap();
+    fs::create_dir_all(root.join("sub/.qlty")).unwrap();
+    fs::write(root.join(".qlty/qlty.toml"), "config_version = \"0\"\n").unwrap();
+    let _repository = qlty_test_utilities::git::init(root);
+    let output = run_qlty(&root.join("sub"), &["deinit", "--yes"]);
+    assert!(!output.status.success());
+    assert!(root.join("sub/.qlty").exists());
+}
+
+#[test]
+fn githooks_install_leaves_slop_one_out_by_default() {
+    assert!(!install_githooks(&[]).contains("slop-one"));
+}
+
+#[test]
+fn githooks_install_with_slop_one_adds_it_to_the_pre_push_hook() {
+    assert!(install_githooks(&["--slop-one"])
+        .contains("qlty slop-one --trigger pre-push --upstream-from-pre-push"));
 }

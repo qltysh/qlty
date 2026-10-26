@@ -1,0 +1,6 @@
+{
+  "ignoreDependencies": [
+    "@aws-sdk/client-batch",
+    "@aws-sdk/client-cloudwatch-logs"
+  ]
+}

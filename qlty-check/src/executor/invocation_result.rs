@@ -42,6 +42,28 @@ pub enum InvocationStatus {
     ParseError,
 }
 
+fn keys_only_env(env: HashMap<String, String>) -> HashMap<String, String> {
+    if env_scrubbing_disabled() {
+        return env;
+    }
+
+    scrub_env_values(env)
+}
+
+fn scrub_env_values(env: HashMap<String, String>) -> HashMap<String, String> {
+    env.into_keys().map(|key| (key, String::new())).collect()
+}
+
+fn env_scrubbing_disabled() -> bool {
+    match std::env::var("QLTY_INSECURE_KEEP_INVOCATION_ENV") {
+        Ok(value) => {
+            let normalized = value.trim().to_ascii_lowercase();
+            normalized == "1" || normalized == "true"
+        }
+        Err(_) => false,
+    }
+}
+
 impl InvocationResult {
     pub fn from_command_output(
         plan: &InvocationPlan,
@@ -59,9 +81,11 @@ impl InvocationResult {
             invocation: Invocation {
                 workspace_id: Default::default(),
                 project_id: Default::default(),
+                analysis_id: Default::default(),
                 reference: Default::default(),
                 build_id: Default::default(),
                 build_timestamp: Default::default(),
+                generated_at: Default::default(),
                 commit_sha: Default::default(),
                 id: plan.invocation_id.clone(),
                 qlty_cli_version: QLTY_VERSION.to_string(),
@@ -83,9 +107,14 @@ impl InvocationResult {
                     .collect(),
                 script: rerun.to_string(),
                 cwd: path_to_string(&plan.invocation_directory),
-                env: plan.tool.env().with_context(|| {
+                // Record only the environment variable names, not their values. Values can
+                // contain user secrets (e.g. `${env.NAME}` interpolation), and this struct is
+                // serialized into invocation artifacts that get uploaded, where redaction does
+                // not reach. Set QLTY_INSECURE_KEEP_INVOCATION_ENV=1 to retain values for
+                // local debugging.
+                env: keys_only_env(plan.tool.env().with_context(|| {
                     format!("Failed to get environment for {}", plan.tool.name())
-                })?,
+                })?),
                 started_at: Some(start_time.into()),
                 duration_secs: duration as f32,
                 exit_code: exec_result.exit_code,
@@ -288,7 +317,18 @@ impl InvocationResult {
     fn handle_output_rewrite(&mut self) -> Result<()> {
         let mut formatted = vec![];
 
-        for target_path in self.invocation.target_paths.iter() {
+        let paths_to_check: Vec<String> = if self.plan.driver.target.target_type != TargetType::File
+        {
+            self.plan
+                .workspace_entries
+                .iter()
+                .map(|e| e.path_string())
+                .collect()
+        } else {
+            self.invocation.target_paths.clone()
+        };
+
+        for target_path in paths_to_check.iter() {
             let prefixed_target_path = self.prefixed_file_path(target_path);
 
             let workspace_path = self.plan.workspace.root.join(&prefixed_target_path);
@@ -372,8 +412,14 @@ impl InvocationResult {
     fn create_file_result_for_autofmts(&self) -> Result<Vec<FileResult>> {
         let mut file_results: Vec<FileResult> = Vec::new();
 
-        for target in self.plan.targets.iter() {
-            let staged_path = self.plan.target_root.join(&target.path);
+        let entries_to_check: Vec<_> = if self.plan.driver.target.target_type != TargetType::File {
+            self.plan.workspace_entries.iter().collect()
+        } else {
+            self.plan.targets.iter().collect()
+        };
+
+        for entry in entries_to_check {
+            let staged_path = self.plan.target_root.join(&entry.path);
             let staged_contents = match std::fs::read_to_string(&staged_path) {
                 Ok(content) => content,
                 Err(_) => {
@@ -382,7 +428,7 @@ impl InvocationResult {
                 }
             };
 
-            let prefixed_target_path = self.prefixed_file_path(&target.path_string());
+            let prefixed_target_path = self.prefixed_file_path(&entry.path_string());
 
             let workspace_path = self.plan.workspace.root.join(&prefixed_target_path);
             let workspace_contents = std::fs::read_to_string(&workspace_path)?;
@@ -451,8 +497,10 @@ impl InvocationResult {
             self.plan.tool.clone(),
             Arc::new(self.plan.plugin.clone()),
             self.invocation.driver_name.clone(),
+            self.plan.settings.check_filters.clone(),
             Arc::new(configs.clone()),
             self.plan.plugin.affects_cache.clone(),
+            cache.repository(),
         );
 
         for target in &self.plan.targets {
@@ -523,5 +571,35 @@ impl InvocationResult {
         } else {
             PathBuf::from(path)
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn scrub_env_values_drops_values() {
+        let mut env = HashMap::new();
+        env.insert("SECRET_TOKEN".to_string(), "super-secret".to_string());
+        env.insert("PATH".to_string(), "/usr/bin".to_string());
+
+        let scrubbed = scrub_env_values(env);
+
+        assert_eq!(scrubbed.get("SECRET_TOKEN"), Some(&String::new()));
+        assert_eq!(scrubbed.get("PATH"), Some(&String::new()));
+    }
+
+    #[test]
+    fn scrub_env_values_preserves_keys() {
+        let mut env = HashMap::new();
+        env.insert("SECRET_TOKEN".to_string(), "super-secret".to_string());
+        env.insert("PATH".to_string(), "/usr/bin".to_string());
+
+        let scrubbed = scrub_env_values(env);
+
+        assert_eq!(scrubbed.len(), 2);
+        assert!(scrubbed.contains_key("SECRET_TOKEN"));
+        assert!(scrubbed.contains_key("PATH"));
     }
 }

@@ -1,11 +1,11 @@
 mod driver;
+mod install_error;
 mod invocation_result;
 mod invocation_script;
 pub mod staging_area;
 
 use self::staging_area::{load_config_file_from_qlty_dir, load_config_file_from_repository};
 use crate::llm::Fixer;
-use crate::planner::check_filters::CheckFilters;
 use crate::planner::config_files::config_globset;
 use crate::planner::source_extractor::SourceExtractor;
 use crate::Tool;
@@ -16,9 +16,9 @@ use crate::{
 };
 use crate::{cache::IssuesCacheHit, planner::Plan, results::FormattedFile, Results};
 use anyhow::{bail, Context, Result};
-use chrono::Utc;
 pub use driver::Driver;
 use ignore::{DirEntry, WalkBuilder, WalkState};
+use install_error::install_error_message;
 pub use invocation_result::{InvocationResult, InvocationStatus};
 pub use invocation_script::{compute_invocation_script, plan_target_list};
 use itertools::Itertools;
@@ -51,7 +51,7 @@ pub struct Executor {
 
 impl Executor {
     pub fn new(plan: &Plan) -> Self {
-        let progress = Progress::new(plan.settings.progress, plan.progress_increments());
+        let progress = Progress::new(plan.progress_enabled, plan.progress_increments());
         Self {
             plan: plan.clone(),
             progress,
@@ -61,6 +61,10 @@ impl Executor {
 
     pub fn install_and_invoke(&self) -> Result<Results> {
         let install_messages = self.install()?;
+        if self.plan.install_only {
+            return Ok(Results::new(install_messages, vec![], vec![], vec![]));
+        }
+
         self.run_prepare_scripts()?;
         let mut result = self.invoke()?;
 
@@ -69,26 +73,17 @@ impl Executor {
         Ok(result)
     }
 
-    pub fn install(&self) -> Result<Vec<Message>> {
+    fn install(&self) -> Result<Vec<Message>> {
         let mut install_messages = vec![];
         let installation_results =
             Self::install_tools(self.plan.tools(), self.plan.jobs, self.progress.clone());
 
         for installation_result in installation_results {
             let (name, result) = installation_result;
-            if self.plan.settings.skip_errored_plugins {
+            if self.plan.skip_errored_plugins {
                 if let Err(err) = result {
                     error!("Error installing tool {}: {:?}", name, err);
-
-                    install_messages.push(Message {
-                        timestamp: Some(Utc::now().into()),
-                        module: "qlty_check::executor".to_string(),
-                        ty: "executor.install.error".to_string(),
-                        level: MessageLevel::Error.into(),
-                        message: format!("Error installing tool {}", name),
-                        details: err.to_string(),
-                        ..Default::default()
-                    });
+                    install_messages.push(install_error_message(&name, &err));
                 }
             } else {
                 result?;
@@ -140,7 +135,7 @@ impl Executor {
             .invocations
             .iter()
             .filter(|invocation| {
-                if self.plan.settings.skip_errored_plugins {
+                if self.plan.skip_errored_plugins {
                     invocation.tool.is_installed()
                 } else {
                     true
@@ -168,15 +163,14 @@ impl Executor {
         let mut invocations = vec![];
         self.plan.workspace.library()?.create()?;
 
-        let mut transformers: Vec<Box<dyn IssueTransformer>> = vec![Box::new(CheckFilters {
-            filters: self.plan.settings.filters.clone(),
-        })];
+        let mut transformers: Vec<Box<dyn IssueTransformer>> =
+            vec![Box::new(self.plan.check_filters.clone())];
 
         transformers.push(Box::new(SourceExtractor {
             staging_area: self.plan.staging_area.clone(),
         }));
 
-        if self.plan.settings.ai {
+        if self.plan.ai_enabled {
             transformers.push(Box::new(Fixer::new(&self.plan, self.progress.clone())));
         }
 
@@ -192,7 +186,7 @@ impl Executor {
         let mut issues = Self::build_issue_results(
             &self.plan.hits,
             &invocations,
-            self.plan.settings.skip_errored_plugins,
+            self.plan.skip_errored_plugins,
         )?;
         let formatted = Self::build_formatted(&invocations);
 
@@ -310,6 +304,26 @@ impl Executor {
 
         let mut loaded_config_files = vec![];
 
+        // load exported config paths before anything else
+        for config_file in &exported_config_paths {
+            if self.plan.workspace.root != self.plan.staging_area.destination_directory {
+                // for formatters
+                if let Some(path) = load_config_file_from_source(
+                    config_file,
+                    &self.plan.staging_area.destination_directory,
+                )? {
+                    loaded_config_files.push(path);
+                }
+            }
+
+            // for linters
+            if let Some(path) =
+                load_config_file_from_source(config_file, &self.plan.workspace.root)?
+            {
+                loaded_config_files.push(path);
+            }
+        }
+
         self.check_and_copy_configs_into_tool_install(&mut loaded_config_files)?;
         self.plan_plugins_fetch(&mut loaded_config_files)?;
 
@@ -326,48 +340,22 @@ impl Executor {
         for config_file in &config_file_names {
             if self.plan.workspace.root != self.plan.staging_area.destination_directory {
                 // for formatters
-                let loaded_config_file = load_config_file_from_qlty_dir(
+                if let Some(path) = load_config_file_from_qlty_dir(
                     config_file,
                     &self.plan.workspace,
                     &self.plan.staging_area.destination_directory,
-                )?;
-
-                if !loaded_config_file.is_empty() {
-                    loaded_config_files.push(loaded_config_file);
+                )? {
+                    loaded_config_files.push(path);
                 }
             }
 
             // for linters
-            let loaded_config_file = load_config_file_from_qlty_dir(
+            if let Some(path) = load_config_file_from_qlty_dir(
                 config_file,
                 &self.plan.workspace,
                 &self.plan.workspace.root,
-            )?;
-
-            if !loaded_config_file.is_empty() {
-                loaded_config_files.push(loaded_config_file);
-            }
-        }
-
-        for config_file in &exported_config_paths {
-            if self.plan.workspace.root != self.plan.staging_area.destination_directory {
-                // for formatters
-                let loaded_config_file = load_config_file_from_source(
-                    config_file,
-                    &self.plan.staging_area.destination_directory,
-                )?;
-
-                if !loaded_config_file.is_empty() {
-                    loaded_config_files.push(loaded_config_file);
-                }
-            }
-
-            // for linters
-            let loaded_config_file =
-                load_config_file_from_source(config_file, &self.plan.workspace.root)?;
-
-            if !loaded_config_file.is_empty() {
-                loaded_config_files.push(loaded_config_file);
+            )? {
+                loaded_config_files.push(path);
             }
         }
 
@@ -405,7 +393,7 @@ impl Executor {
             for fetch in fetches {
                 fetch
                     .download_file_to(&directories)
-                    .with_context(|| format!("Failed to fetch file for plugin: {}", plugin_name))?;
+                    .with_context(|| format!("Failed to fetch file for plugin: {plugin_name}"))?;
 
                 loaded_config_files.push(fetch.path.clone());
             }
@@ -481,7 +469,7 @@ impl Executor {
                         return None;
                     }
 
-                    if self.plan.settings.skip_errored_plugins && !plan.tool.is_installed() {
+                    if self.plan.skip_errored_plugins && !plan.tool.is_installed() {
                         warn!(
                             "Skipping invocation for {} because --skip-errored-plugins is set and the tool is not installed",
                             plan.invocation_label()

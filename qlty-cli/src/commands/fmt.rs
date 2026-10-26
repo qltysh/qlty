@@ -3,7 +3,7 @@ use crate::{Arguments, CommandError, CommandSuccess, Trigger};
 use anyhow::Result;
 use clap::Args;
 use duct::cmd;
-use qlty_check::{planner::Planner, CheckFilter, Executor, Processor, Settings};
+use qlty_check::{planner::Planner, CheckFilters, Executor, Processor, Settings};
 use qlty_config::Workspace;
 use qlty_types::analysis::v1::ExecutionVerb;
 use std::path::PathBuf;
@@ -30,11 +30,39 @@ pub struct Fmt {
     #[arg(long)]
     pub jobs: Option<u32>,
 
-    /// Filter by plugin or check
-    #[arg(long)]
+    /// Only run these formatter plugins (comma-separated)
+    ///
+    /// Examples:
+    ///   --filter prettier                     Run only prettier
+    ///   --filter prettier,black               Run only prettier and black
+    ///
+    /// Use with --skip to remove plugins from what --filter selects.
+    #[arg(long, verbatim_doc_comment)]
     filter: Option<String>,
 
-    #[arg(value_enum, long, default_value = "manual")]
+    /// Don't run these formatter plugins (comma-separated)
+    ///
+    /// Examples:
+    ///   --skip prettier                       Run every formatter except prettier
+    ///   --skip prettier,black                 Run every formatter except prettier and black
+    ///
+    /// With --filter, --filter picks what runs first and --skip removes from it.
+    /// When both match, --skip wins:
+    ///   --filter prettier,black --skip black  Run only prettier
+    ///
+    /// Every plugin named must be enabled, and skipping every plugin is an error.
+    #[arg(long, verbatim_doc_comment)]
+    skip: Option<String>,
+
+    /// Run as this trigger, so only formatters whose `triggers` include it run
+    ///
+    /// Each plugin's `triggers` list in qlty.toml names the triggers it runs
+    /// on. A plugin with no `triggers` list runs on every trigger. Qlty's git
+    /// hooks pass `pre-commit` to `qlty fmt` and `pre-push` to `qlty check`.
+    ///
+    /// Examples:
+    ///   --trigger pre-commit                  Run only formatters that run on pre-commit
+    #[arg(value_enum, long, verbatim_doc_comment, default_value = "manual")]
     trigger: Trigger,
 
     /// Print verbose output
@@ -54,6 +82,10 @@ pub struct Fmt {
 
     /// Files to analyze
     pub paths: Vec<PathBuf>,
+
+    /// Skip fetching sources before formatting
+    #[arg(long)]
+    skip_source_fetch: bool,
 }
 
 impl Fmt {
@@ -61,7 +93,7 @@ impl Fmt {
         self.validate_options()?;
 
         let workspace = Workspace::require_initialized()?;
-        workspace.fetch_sources()?;
+        workspace.prepare_sources(self.skip_source_fetch)?;
 
         let settings = self.build_settings()?;
         let plan = Planner::new(ExecutionVerb::Fmt, &settings)?.compute()?;
@@ -130,7 +162,8 @@ impl Fmt {
         settings.all = (self.sample.unwrap_or(0) > 0) || self.all;
         settings.jobs = self.jobs;
         settings.progress = !self.no_progress;
-        settings.filters = CheckFilter::from_optional_list(self.filter.clone());
+        settings.check_filters =
+            CheckFilters::from_optional_lists(self.filter.clone(), self.skip.clone());
         settings.upstream = self.upstream.clone();
         settings.index = self.index;
         settings.index_file = self.index_file.clone();
