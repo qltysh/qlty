@@ -194,6 +194,29 @@ fn skipped_check_does_not_pollute_unskipped_issue_cache() {
 }
 
 #[test]
+fn cached_diff_check_prints_the_same_output_as_uncached() {
+    let fixture = tempfile::tempdir().unwrap();
+    let root = fixture.path();
+    write_cache_repro_fixture(root);
+
+    let _repository = qlty_test_utilities::git::init(root);
+    let cache_directory = Library::new(root).unwrap().cache_directory().unwrap();
+    let _cache_cleanup = CacheCleanup(cache_directory);
+    fs::write(root.join("sample.js"), "const answer = 43;\n").unwrap();
+
+    let args = [
+        "check",
+        "--no-formatters",
+        "--no-upgrade-check",
+        "--no-progress",
+    ];
+    let uncached = run_qlty(root, &args);
+    let cached = run_qlty(root, &args);
+
+    assert_eq!(command_output(&uncached), command_output(&cached));
+}
+
+#[test]
 fn fmt_tests() {
     setup_and_run_test_cases("tests/cmd/fmt/*.toml");
 }

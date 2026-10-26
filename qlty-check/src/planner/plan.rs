@@ -34,7 +34,6 @@ pub struct Plan {
     pub transformers: Vec<Box<dyn IssueTransformer>>,
     pub invocations: Vec<InvocationPlan>,
     pub fail_level: Option<Level>,
-    pub total_targets_count: usize,
 }
 
 impl Plan {

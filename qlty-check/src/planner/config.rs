@@ -332,7 +332,6 @@ mod test {
             plugin_configs: HashMap::new(),
             invocations: vec![],
             transformers: vec![],
-            total_targets_count: 0,
         }
     }
 
