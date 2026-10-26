@@ -58,6 +58,7 @@ impl Processor {
             fixable: self.fixable.clone(),
             issues: self.issues.clone(),
             counts: self.counts,
+            cached_targets_count: self.plan.hits.len(),
         })
     }
 

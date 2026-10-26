@@ -21,6 +21,7 @@ pub struct Report {
     pub fixed: HashSet<FixedResult>,
     pub fixable: HashSet<FixedResult>,
     pub counts: IssueCount,
+    pub cached_targets_count: usize,
 }
 
 impl Report {
@@ -53,6 +54,7 @@ impl Report {
             .iter()
             .map(|invocation| invocation.plan.targets.len())
             .sum::<usize>()
+            + self.cached_targets_count
     }
 
     pub fn unformatted_count(&self) -> usize {
