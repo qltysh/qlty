@@ -585,7 +585,7 @@ pub trait Tool: Debug + Sync + Send {
                     "Failed to get version for package {:?}: {:?} {:?}",
                     self.name(),
                     cmd_output,
-                    &env,
+                    env.keys().collect::<Vec<_>>(),
                 );
 
                 bail!(
@@ -1231,6 +1231,29 @@ mod test {
         };
         let env = tool.extra_env_vars().unwrap();
         assert_eq!(env.get("TEST"), Some(&"value".to_string()));
+    }
+
+    #[test]
+    #[traced_test]
+    fn test_installed_version_failure_logs_env_names_only() {
+        let tool = TestTool {
+            version_command: Some("exit 1".into()),
+            extra_env_vars: HashMap::from([
+                ("API_TOKEN".into(), "version-check-secret-value".into()),
+                (
+                    "HTTPS_PROXY".into(),
+                    "https://proxy-user:proxy-password@example.invalid".into(),
+                ),
+            ]),
+            ..TestTool::default()
+        };
+
+        assert!(tool.installed_version().is_err());
+        assert!(logs_contain("Failed to get version for package"));
+        assert!(logs_contain("API_TOKEN"));
+        assert!(logs_contain("HTTPS_PROXY"));
+        assert!(!logs_contain("version-check-secret-value"));
+        assert!(!logs_contain("proxy-password"));
     }
 
     #[test]
