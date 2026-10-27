@@ -1,0 +1,10 @@
+require:
+  - ./lib/rubocop/cop/custom/my_custom_cop.rb
+  - ./lib/rubocop/cop/custom/another_cop.rb
+  - rubocop-rails
+
+AllCops:
+  TargetRubyVersion: 3.0
+  Exclude:
+    - 'vendor/**/*'
+    - 'tmp/**/*'
