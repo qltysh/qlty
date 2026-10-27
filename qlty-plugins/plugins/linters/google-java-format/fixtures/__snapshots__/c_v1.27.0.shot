@@ -1,13 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`linter=google-java-format fixture=e version=1.22.0 1`] = `
+exports[`linter=google-java-format fixture=c version=1.27.0 1`] = `
 {
   "issues": [
     {
       "category": "CATEGORY_STYLE",
       "level": "LEVEL_FMT",
       "location": {
-        "path": "e.in.java",
+        "path": "c.in.java",
       },
       "message": "Incorrect formatting, autoformat by running \`qlty fmt\`.",
       "mode": "MODE_BLOCK",
