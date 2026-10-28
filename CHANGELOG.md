@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.663.0 (2026-10-28)
+
+### Improved
+
+- Describe what `--verify-attestations` needs and does in `qlty upgrade --help` (#2971)
+
+### Fixed
+
+- Count cached files so `qlty check` diff runs no longer report `No modified files for checks were found on your branch` when every changed file's results come from the cache (#2354)
+- Repair `qlty upgrade` on Windows launched from PowerShell 7, which could report success without replacing the binary (#2973)
+- Pin Composer and key PHP plugins on it and the system PHP version, so PHP plugins reinstall after a CLI upgrade or a PHP minor-version change. PHP plugins now need PHP 7.2.5 or later, which Composer 2.10.3 requires. A PHP plugin pinned in `qlty.toml` to a version with a known security advisory no longer installs; move it to a newer version (#2974)
+- Log only the variable names, not their values, when a tool's version check fails (#2979)
+
 ## v0.662.0 (2026-10-22)
 
 ### Fixed
