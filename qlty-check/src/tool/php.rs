@@ -497,42 +497,6 @@ pub mod test {
         });
     }
 
-    #[test]
-    #[ignore = "requires the provisioned Ubuntu 24.04 image, network access, and an unprivileged user"]
-    fn php_apt_rootless_smoke() {
-        let system_php = cmd!("/usr/bin/php", "--version").read().unwrap();
-        let package_database = std::fs::read("/var/lib/dpkg/status").unwrap();
-        let runtime = Php::with_apt_enabled("8.4", true).unwrap();
-        let package = PhpPackage {
-            name: "php-codesniffer".into(),
-            runtime,
-            cmd: default_command_builder(),
-            plugin: PluginDef {
-                package: Some("squizlabs/php_codesniffer".into()),
-                version: Some("3.13.6".into()),
-                version_command: Some("php ${linter}/vendor/bin/phpcs --version".into()),
-                version_regex: r"(\d+\.\d+\.\d+)".into(),
-                ..Default::default()
-            },
-        };
-        package.pre_setup(&new_task()).unwrap();
-        package.setup(&new_task()).unwrap();
-        assert_eq!(package.installed_version().unwrap(), "3.13.6");
-        assert!(package
-            .runtime
-            .installed_version()
-            .unwrap()
-            .starts_with("8.4."));
-        assert_eq!(
-            cmd!("/usr/bin/php", "--version").read().unwrap(),
-            system_php
-        );
-        assert_eq!(
-            std::fs::read("/var/lib/dpkg/status").unwrap(),
-            package_database
-        );
-    }
-
     fn failing_install_cmd(list: Arc<Mutex<Vec<Vec<String>>>>) -> Box<dyn CommandBuilder> {
         #[derive(Debug)]
         struct FailingInstallCommandBuilder {

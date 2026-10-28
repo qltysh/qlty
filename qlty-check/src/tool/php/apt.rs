@@ -361,7 +361,9 @@ mod tests {
     #[test]
     fn generates_private_configuration_with_module_priorities() {
         let dir = tempfile::tempdir().unwrap();
-        let root = dir.path().join("root");
+        // Exercise backslash escaping on Unix as well as Windows.
+        let directory = dir.path().join(r"php\cache with spaces");
+        let root = directory.join("root");
         fs::create_dir_all(root.join("usr/lib/php/20240924")).unwrap();
         fs::write(root.join("usr/lib/php/20240924/tokenizer.so"), "").unwrap();
         let modules = root.join("usr/share/php8.4-common/common");
@@ -372,12 +374,15 @@ mod tests {
             "; priority=20\nextension=tokenizer.so\n",
         )
         .unwrap();
-        configure(dir.path(), "8.4").unwrap();
-        assert!(dir.path().join("conf.d/10-pdo.ini").is_file());
-        assert!(dir.path().join("conf.d/20-tokenizer.ini").is_file());
-        assert!(fs::read_to_string(dir.path().join("php.ini"))
+        configure(&directory, "8.4").unwrap();
+        assert!(directory.join("conf.d/10-pdo.ini").is_file());
+        assert!(directory.join("conf.d/20-tokenizer.ini").is_file());
+        assert!(fs::read_to_string(directory.join("php.ini"))
             .unwrap()
-            .contains(&root.join("usr/lib/php/20240924").display().to_string()));
+            .contains(&format!(
+                "extension_dir={:?}",
+                root.join("usr/lib/php/20240924").to_string_lossy()
+            )));
     }
 
     #[test]
