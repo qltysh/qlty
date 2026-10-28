@@ -364,8 +364,9 @@ mod tests {
         // Exercise backslash escaping on Unix as well as Windows.
         let directory = dir.path().join(r"php\cache with spaces");
         let root = directory.join("root");
-        fs::create_dir_all(root.join("usr/lib/php/20240924")).unwrap();
-        fs::write(root.join("usr/lib/php/20240924/tokenizer.so"), "").unwrap();
+        let extension_dir = root.join("usr/lib/php").join("20240924");
+        fs::create_dir_all(&extension_dir).unwrap();
+        fs::write(extension_dir.join("tokenizer.so"), "").unwrap();
         let modules = root.join("usr/share/php8.4-common/common");
         fs::create_dir_all(&modules).unwrap();
         fs::write(modules.join("pdo.ini"), "; priority=10\nextension=pdo.so\n").unwrap();
@@ -381,7 +382,7 @@ mod tests {
             .unwrap()
             .contains(&format!(
                 "extension_dir={:?}",
-                root.join("usr/lib/php/20240924").to_string_lossy()
+                extension_dir.to_string_lossy()
             )));
     }
 
