@@ -16,7 +16,7 @@ use tracing::{debug, error, info, warn};
 
 use super::PhpPackage;
 
-pub const COMPOSER_VERSION: &str = "2.10.3";
+pub const COMPOSER_VERSION: &str = "2.11.0";
 
 #[derive(Debug, Clone)]
 pub struct Composer {
