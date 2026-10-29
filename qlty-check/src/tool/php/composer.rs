@@ -16,11 +16,12 @@ use tracing::{debug, error, info, warn};
 
 use super::PhpPackage;
 
-pub const COMPOSER_VERSION: &str = "2.10.3";
+pub const COMPOSER_VERSION: &str = "2.11.0";
 
 #[derive(Debug, Clone)]
 pub struct Composer {
     pub cmd: Box<dyn CommandBuilder>,
+    pub version: String,
 }
 
 impl Tool for Composer {
@@ -33,19 +34,19 @@ impl Tool for Composer {
     }
 
     fn version(&self) -> Option<String> {
-        Some(COMPOSER_VERSION.to_string())
+        Some(self.version.clone())
     }
 
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
         sha.update(self.name().as_bytes());
-        sha.update(COMPOSER_VERSION.as_bytes());
+        sha.update(self.version.as_bytes());
 
         Ok(())
     }
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
-        task.set_message(&format!("Installing composer v{COMPOSER_VERSION}"));
-        info!("Installing composer {}", COMPOSER_VERSION);
+        task.set_message(&format!("Installing composer v{}", self.version));
+        info!("Installing composer {}", self.version);
 
         self.run_command(self.cmd.build(
             "php",
@@ -58,10 +59,7 @@ impl Tool for Composer {
         // verify its signature
         self.run_command(self.cmd.build(
             "php",
-            vec![
-                "composer-setup.php",
-                &format!("--version={COMPOSER_VERSION}"),
-            ],
+            vec!["composer-setup.php", &format!("--version={}", self.version)],
         ))?;
 
         Ok(())
@@ -315,6 +313,7 @@ pub mod test {
     fn test_directory_name_starts_with_pinned_version() {
         let composer = Composer {
             cmd: stub_cmd(Arc::new(Mutex::new(vec![]))),
+            version: COMPOSER_VERSION.to_string(),
         };
 
         assert!(composer
@@ -340,9 +339,8 @@ pub mod test {
                 package_filters: vec!["foo".to_string()],
                 ..Default::default()
             },
-            runtime: Php {
-                version: "1.0.0".to_string(),
-            },
+            runtime: Php::new("1.0.0"),
+            composer_version: COMPOSER_VERSION.to_string(),
         };
 
         let composer_file = temp_path.path().join("composer.json");
@@ -396,9 +394,8 @@ pub mod test {
                 )),
                 ..Default::default()
             },
-            runtime: Php {
-                version: "1.0.0".to_string(),
-            },
+            runtime: Php::new("1.0.0"),
+            composer_version: COMPOSER_VERSION.to_string(),
         };
 
         let composer_file = temp_path.path().join("composer.json");
