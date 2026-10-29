@@ -7,7 +7,7 @@ use super::ToolType;
 use crate::tool::{finalize_installation_from_cmd_result, update_package_hash, RuntimeTool};
 use crate::ui::{ProgressBar, ProgressTask};
 use anyhow::{bail, Context, Result};
-use composer::{Composer, COMPOSER_VERSION};
+use composer::Composer;
 use duct::cmd;
 use itertools::Itertools;
 use once_cell::sync::OnceCell;
@@ -28,9 +28,6 @@ static SYSTEM_PHP_MINOR_VERSION: OnceCell<String> = OnceCell::new();
 #[derive(Debug, Clone)]
 pub struct Php {
     pub version: String,
-    // The major and minor version in this runtime's cache key. When None, it
-    // is read from the system PHP once per run
-    minor_version: Option<String>,
 }
 
 impl Tool for Php {
@@ -50,7 +47,7 @@ impl Tool for Php {
         sha.update(self.name().as_bytes());
         // Composer resolves plugin dependencies for the PHP that installs them,
         // so a new minor version of the system PHP reinstalls PHP plugins
-        sha.update(self.minor_version().as_bytes());
+        sha.update(self.system_minor_version().as_bytes());
         Ok(())
     }
 
@@ -77,13 +74,6 @@ impl Tool for Php {
 }
 
 impl Php {
-    pub fn new(version: &str) -> Self {
-        Self {
-            version: version.to_string(),
-            minor_version: None,
-        }
-    }
-
     fn verify_installation(&self, env: HashMap<String, String>) -> Result<()> {
         let cmd = cmd!("php", "--version")
             .full_env(env)
@@ -106,11 +96,8 @@ impl Php {
         Ok(())
     }
 
-    fn minor_version(&self) -> &str {
-        match &self.minor_version {
-            Some(minor_version) => minor_version,
-            None => SYSTEM_PHP_MINOR_VERSION.get_or_init(|| self.detect_system_minor_version()),
-        }
+    fn system_minor_version(&self) -> &'static str {
+        SYSTEM_PHP_MINOR_VERSION.get_or_init(|| self.detect_system_minor_version())
     }
 
     fn detect_system_minor_version(&self) -> String {
@@ -155,7 +142,6 @@ impl RuntimeTool for Php {
             name: name.to_owned(),
             plugin: plugin.clone(),
             runtime: self.clone(),
-            composer_version: COMPOSER_VERSION.to_string(),
             cmd: default_command_builder(),
         })
     }
@@ -166,7 +152,6 @@ pub struct PhpPackage {
     pub name: String,
     pub plugin: PluginDef,
     pub runtime: Php,
-    composer_version: String,
     cmd: Box<dyn CommandBuilder>,
 }
 
@@ -287,7 +272,6 @@ impl PhpPackage {
     fn composer(&self) -> Composer {
         Composer {
             cmd: self.cmd.clone(),
-            version: self.composer_version.clone(),
         }
     }
 }
@@ -296,6 +280,7 @@ impl RunnableArchive for PhpPackage {}
 
 #[cfg(test)]
 pub mod test {
+    use super::composer::COMPOSER_VERSION;
     use super::*;
     use crate::{
         tool::command_builder::test::{reroute_tools_root, stub_cmd, ENV_LOCK},
@@ -327,8 +312,9 @@ pub mod test {
                 version: Some("1.0.0".to_string()),
                 ..Default::default()
             },
-            runtime: Php::new("1.0.0"),
-            composer_version: COMPOSER_VERSION.to_string(),
+            runtime: super::Php {
+                version: "1.0.0".to_string(),
+            },
         };
         reroute_tools_root(&temp_path, &pkg);
         callback(&mut pkg, &temp_path, &list).unwrap();
@@ -436,7 +422,9 @@ pub mod test {
             pkg.plugin.package_file = Some(pkg_file.to_str().unwrap().to_string());
             reroute_tools_root(&temp_path, pkg);
 
-            let composer = pkg.composer();
+            let composer = Composer {
+                cmd: stub_cmd(list.clone()),
+            };
 
             pkg.package_file_install(&new_task())?;
             assert_eq!(
@@ -485,7 +473,9 @@ pub mod test {
             pkg.plugin.package_file = Some(pkg_file.to_str().unwrap().to_string());
             reroute_tools_root(&temp_path, pkg);
 
-            let composer = pkg.composer();
+            let composer = Composer {
+                cmd: stub_cmd(list.clone()),
+            };
 
             pkg.package_file_install(&new_task())?;
             assert_eq!(
@@ -535,7 +525,9 @@ pub mod test {
             pkg.cmd = failing_install_cmd(list.clone());
             reroute_tools_root(&temp_path, pkg);
 
-            let composer = pkg.composer();
+            let composer = Composer {
+                cmd: failing_install_cmd(list.clone()),
+            };
 
             pkg.package_file_install(&new_task())?;
             assert_eq!(
@@ -596,7 +588,9 @@ pub mod test {
             pkg.plugin.package_filters = vec!["test".to_string()];
             reroute_tools_root(&temp_path, pkg);
 
-            let composer = pkg.composer();
+            let composer = Composer {
+                cmd: stub_cmd(list.clone()),
+            };
 
             pkg.package_file_install(&new_task())?;
             assert_eq!(
@@ -640,8 +634,9 @@ pub mod test {
                 package_file: Some(package_file.to_str().unwrap().to_string()),
                 ..Default::default()
             },
-            runtime: Php::new("1.0.0"),
-            composer_version: COMPOSER_VERSION.to_string(),
+            runtime: super::Php {
+                version: "1.0.0".to_string(),
+            },
         }
     }
 
@@ -707,38 +702,5 @@ pub mod test {
         pkg_b.plugin.package_filters = vec!["tool".to_string()];
 
         assert_eq!(pkg_a.directory_name(), pkg_b.directory_name());
-    }
-
-    fn php_package_with_versions(composer_version: &str, php_minor_version: &str) -> PhpPackage {
-        PhpPackage {
-            cmd: default_command_builder(),
-            name: "tool".into(),
-            plugin: PluginDef {
-                package: Some("test".to_string()),
-                version: Some("1.0.0".to_string()),
-                ..Default::default()
-            },
-            runtime: Php {
-                version: "1.0.0".to_string(),
-                minor_version: Some(php_minor_version.to_string()),
-            },
-            composer_version: composer_version.to_string(),
-        }
-    }
-
-    #[test]
-    fn php_package_directory_name_differs_by_composer_version() {
-        assert_ne!(
-            php_package_with_versions("2.10.3", "8.4").directory_name(),
-            php_package_with_versions("2.11.0", "8.4").directory_name()
-        );
-    }
-
-    #[test]
-    fn php_package_directory_name_differs_by_php_minor_version() {
-        assert_ne!(
-            php_package_with_versions("2.11.0", "8.3").directory_name(),
-            php_package_with_versions("2.11.0", "8.4").directory_name()
-        );
     }
 }

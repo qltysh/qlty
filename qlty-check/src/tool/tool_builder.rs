@@ -173,7 +173,9 @@ impl ToolBuilder<'_> {
             Runtime::Java => Box::new(java::Java {
                 version: version.to_string(),
             }),
-            Runtime::Php => Box::new(php::Php::new(version)),
+            Runtime::Php => Box::new(php::Php {
+                version: version.to_string(),
+            }),
         }
     }
 
@@ -196,7 +198,9 @@ impl ToolBuilder<'_> {
             Runtime::Java => Box::new(java::Java {
                 version: version.to_string(),
             }),
-            Runtime::Php => Box::new(php::Php::new(version)),
+            Runtime::Php => Box::new(php::Php {
+                version: version.to_string(),
+            }),
         }
     }
 }
