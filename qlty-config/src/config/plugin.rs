@@ -120,6 +120,9 @@ pub struct DriverDef {
 
     #[serde(default)]
     pub config_script: Option<String>,
+
+    #[serde(default)]
+    pub config_missing: ConfigMissing,
 }
 
 fn default_driver_timeout() -> u64 {
@@ -157,6 +160,19 @@ pub enum DriverBatchBy {
 
     #[serde(rename = "config_file")]
     ConfigFile,
+}
+
+/// Handling of targets with no config above them when batching by config file
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]
+pub enum ConfigMissing {
+    /// Skip targets with no config above them when other configs exist
+    #[default]
+    #[serde(rename = "skip")]
+    Skip,
+
+    /// Run targets with no config above them without a config
+    #[serde(rename = "run")]
+    Run,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default, JsonSchema)]

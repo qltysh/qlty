@@ -6,7 +6,7 @@ use std::{
 
 use anyhow::Result;
 use qlty_config::{
-    config::{DriverBatchBy, DriverDef},
+    config::{ConfigMissing, DriverBatchBy, DriverDef},
     Library,
 };
 use tracing::warn;
@@ -189,8 +189,7 @@ impl TargetBatcher {
                     .entry(config)
                     .or_insert_with(Vec::new)
                     .push(target.clone()),
-                // A driver with a config_script can run without a config file
-                None if self.driver.config_script.is_some() => {
+                None if self.driver.config_missing == ConfigMissing::Run => {
                     unconfigured_targets.push(target.clone())
                 }
                 None => {}
@@ -486,31 +485,46 @@ mod test {
             .is_some());
     }
 
+    fn compute_with_nested_config_only(config_missing: ConfigMissing) -> Vec<DriverTargetBatch> {
+        let mut target_batcher = setup_target_batcher(
+            DriverBatchBy::ConfigFile,
+            1,
+            InvocationDirectoryDef::default(),
+        );
+        target_batcher.driver.config_missing = config_missing;
+        target_batcher.plugin_configs =
+            vec![plugin_config_file("/User/test/project_root/sub/config2")];
+
+        let targets = vec![target_files("file1"), target_files("sub/file2")];
+        let mut batches = target_batcher.compute(&targets).unwrap();
+        batches.sort_by_key(|batch| batch.config_file.is_none());
+        batches
+    }
+
     #[test]
-    fn test_compute_with_config_file_batching_without_root_config() {
-        for optional_config in [false, true] {
-            let mut target_batcher = setup_target_batcher(
-                DriverBatchBy::ConfigFile,
-                1,
-                InvocationDirectoryDef::default(),
-            );
-            target_batcher.driver.config_script =
-                optional_config.then(|| "--config ${config_file}".to_string());
-            let config = plugin_config_file("/User/test/project_root/sub/config2");
-            target_batcher.plugin_configs = vec![config.clone()];
+    fn test_compute_with_config_file_batching_skips_targets_without_config() {
+        let batches = compute_with_nested_config_only(ConfigMissing::Skip);
 
-            let targets = vec![target_files("file1"), target_files("sub/file2")];
-            let mut batches = target_batcher.compute(&targets).unwrap();
-            batches.sort_by_key(|batch| batch.config_file.is_none());
+        assert_eq!(batches.len(), 1);
+        assert_eq!(batches[0].targets[0].path, PathBuf::from("sub/file2"));
+        assert_eq!(
+            batches[0].config_file,
+            Some(plugin_config_file("/User/test/project_root/sub/config2"))
+        );
+    }
 
-            assert_eq!(batches.len(), if optional_config { 2 } else { 1 });
-            assert_eq!(batches[0].targets[0].path, PathBuf::from("sub/file2"));
-            assert_eq!(batches[0].config_file, Some(config));
-            if optional_config {
-                assert_eq!(batches[1].targets[0].path, PathBuf::from("file1"));
-                assert_eq!(batches[1].config_file, None);
-            }
-        }
+    #[test]
+    fn test_compute_with_config_file_batching_runs_targets_without_config() {
+        let batches = compute_with_nested_config_only(ConfigMissing::Run);
+
+        assert_eq!(batches.len(), 2);
+        assert_eq!(batches[0].targets[0].path, PathBuf::from("sub/file2"));
+        assert_eq!(
+            batches[0].config_file,
+            Some(plugin_config_file("/User/test/project_root/sub/config2"))
+        );
+        assert_eq!(batches[1].targets[0].path, PathBuf::from("file1"));
+        assert_eq!(batches[1].config_file, None);
     }
 
     #[test]

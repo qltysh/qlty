@@ -17,6 +17,7 @@ description = "A pluggable Terraform linter"
 [plugins.definitions.tflint.drivers.lint]
 script = "tflint --format=sarif --force ${config_script}"
 config_script = "--config ${config_file}"
+config_missing = "run"
 prepare_script = "tflint --init ${config_script}"
 success_codes = [0, 1, 2]
 output = "stdout"
