@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.665.0 (2026-10-29)
+
+### Security
+
+- Upgrade the pinned Composer to 2.11.0, which drops the compromised eMudhra certificate root from its bundled CA list and rejects the compromised intermediates even when the system store trusts their roots. Each machine installs Composer 2.11.0 and reinstalls its PHP plugins on the next run (#2984)
+
 ## v0.664.0 (2026-10-29)
 
 ### Security
