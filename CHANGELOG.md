@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.664.0 (2026-10-29)
+
+### Security
+
+- Default the managed Java runtime to Temurin 25.0.5+8, which rejects the compromised eMudhra intermediate certificate authorities that the previous default still trusted. `radarlint-kotlin` moves to 2.1.0 and `google-java-format` defaults to 1.32.0 so Java plugins keep working on Java 25 (#2977)
+
 ## v0.663.0 (2026-10-28)
 
 ### Improved
