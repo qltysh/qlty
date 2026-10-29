@@ -1,0 +1,30 @@
+name: Community inbox
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 14 * * 1-5" # weekdays at 14:00 UTC
+
+permissions:
+  issues: read
+  pull-requests: read
+  discussions: read
+
+jobs:
+  overdue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: 24
+
+      - name: Post community items waiting for a reply
+        run: node .github/scripts/community_overdue.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK: ${{ secrets.COMMUNITY_INBOX_SLACK_WEBHOOK }}
+          SLA_BUSINESS_DAYS: 2
