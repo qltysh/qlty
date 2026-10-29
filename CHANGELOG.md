@@ -4,7 +4,14 @@
 
 ### Security
 
-- Default the managed Java runtime to Temurin 25.0.5+8, which rejects the compromised eMudhra intermediate certificate authorities that the previous default still trusted. `radarlint-kotlin` moves to 2.1.0 and `google-java-format` defaults to 1.32.0 so Java plugins keep working on Java 25 (#2977)
+- Default the managed Java runtime to Temurin 25.0.5+8, which rejects the compromised eMudhra intermediate certificate authorities that the previous default still trusted. `radarlint-kotlin` moves to 2.1.0 so Kotlin analysis keeps working on Java 25. See GHSA-f55x-97q4-pfrc (#2977)
+
+## Notice: Java plugins run on Java 25 (2026-10-29)
+
+From v0.664.0, Java-based plugins run on Temurin 25.0.5+8 unless `qlty.toml` pins a Java version under `[runtimes.enabled]`. If you added the interim `java = "25.0.5+8"` pin from GHSA-f55x-97q4-pfrc, you can remove it.
+
+- **More Kotlin issues.** radarlint-kotlin 2.1.0 bundles a newer SonarSource Kotlin analyzer that resolves types and parses newer Kotlin syntax, so it reports more issues than 2.0.0. In our tests on open source projects, Kotlin issue counts rose by 4% to 15%. `kotlin:S1128`, `kotlin:S1862` and `kotlin:S6619` report some false positives. To turn a rule off, add a line such as `radarlint.rules.kotlin.S1128=false` to `radarlint.properties`.
+- **Pinned plugin versions that fail on Java 25.** radarlint-kotlin 2.0.0 and earlier analyze nothing and report no error, so upgrade to 2.1.0. google-java-format 1.26.0 and earlier crash, so upgrade to 1.27.0 or later. If you can't upgrade yet, pin `java = "22.0.1+8"` under `[runtimes.enabled]`, and remove the pin once you upgrade, because Java 22 still trusts the compromised certificate authorities.
 
 ## v0.663.0 (2026-10-28)
 
