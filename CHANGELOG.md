@@ -6,6 +6,12 @@
 
 - Upgrade the pinned Composer to 2.11.0, which drops the compromised eMudhra certificate root from its bundled CA list and rejects the compromised intermediates even when the system store trusts their roots. Each machine installs Composer 2.11.0 and reinstalls its PHP plugins on the next run (#2984)
 
+## Notice: PHP plugins reinstall once (2026-10-29)
+
+From v0.665.0, the first run that uses a PHP plugin reinstalls every PHP plugin, with no cache clearing needed. PHP plugins don't run Composer, so a new Composer alone wouldn't need a reinstall. This one does because of the plugin code already on disk. An earlier Composer downloaded that code, and it could have accepted a connection that presented the compromised eMudhra certificates. Reinstalling downloads the code again through Composer 2.11.0, which rejects them.
+
+- **The first run needs network access.** It downloads Composer from getcomposer.org and the plugins from Packagist. On a machine that can't reach them, PHP plugins fail to install until it can.
+
 ## v0.664.0 (2026-10-29)
 
 ### Security
