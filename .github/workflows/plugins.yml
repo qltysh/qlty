@@ -99,6 +99,10 @@ jobs:
 
       - name: Run plugins tests
         working-directory: plugins
+        env:
+          # Package installs are several times slower on the Windows runner, and
+          # the older plugin versions are already covered by the other platforms.
+          QLTY_PLUGINS_LATEST_VERSION_ONLY: ${{ contains(matrix.os, 'windows') && '1' || '' }}
         run: |
           npm ci --ignore-scripts
           npm test
