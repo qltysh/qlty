@@ -18,13 +18,25 @@ use std::{
 const SOURCES: &str = "/opt/qlty/php-apt/sources.list";
 static UPDATED: Lazy<Mutex<HashSet<PathBuf>>> = Lazy::new(Mutex::default);
 
+pub(super) fn update_hash(requested: &str, sha: &mut Sha256) {
+    // Keep paths stable from planning through installation and later CLI calls.
+    // Bump the profile when changing packages, configuration, or image ABI.
+    for value in [
+        "php-apt-ubuntu24.04-v2",
+        std::env::consts::ARCH,
+        requested,
+        SOURCES,
+    ] {
+        sha.update(value.as_bytes());
+        sha.update([0]);
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct AptPhp {
     pub version: String,
     pub debian_version: String,
     minor: String,
-    architecture: String,
-    source: String,
     state: PathBuf,
 }
 
@@ -42,13 +54,11 @@ impl AptPhp {
                     .any(|line| line == "VERSION_ID=\"24.04\"" || line == "VERSION_ID=24.04"),
             "Rootless APT PHP requires Ubuntu 24.04; disable QLTY_FEATURE_PHP_APT_INSTALL to use PHP from PATH on this machine"
         );
-        let architecture = match std::env::consts::ARCH {
-            "x86_64" => "amd64",
-            "aarch64" => "arm64",
+        match std::env::consts::ARCH {
+            "x86_64" | "aarch64" => {}
             other => bail!("Unsupported architecture for rootless APT PHP: {other}"),
-        }
-        .to_owned();
-        let source = fs::read_to_string(SOURCES).with_context(|| {
+        };
+        fs::read_to_string(SOURCES).with_context(|| {
             format!("The runner must provision the signed PHP package source at {SOURCES}")
         })?;
         let state = Library::global_cache_root()?.join("php-apt");
@@ -56,8 +66,6 @@ impl AptPhp {
             version: String::new(),
             debian_version: String::new(),
             minor,
-            architecture,
-            source,
             state,
         };
         runtime.update()?;
@@ -112,19 +120,6 @@ impl AptPhp {
         Ok(())
     }
 
-    pub fn update_hash(&self, sha: &mut Sha256) {
-        // Bump the profile when changing packages, configuration, or image ABI.
-        for value in [
-            "php-apt-ubuntu24.04-v1",
-            &self.architecture,
-            &self.debian_version,
-            &self.source,
-        ] {
-            sha.update(value.as_bytes());
-            sha.update([0]);
-        }
-    }
-
     fn packages(&self) -> Vec<String> {
         let mut suffixes = vec!["cli", "common", "mbstring", "xml", "readline"];
         if Version::parse(&self.version).unwrap() < Version::new(8, 5, 0) {
@@ -173,6 +168,7 @@ impl AptPhp {
         tool.run_command(cmd("php", ["-r", "foreach (['ctype','iconv','phar','tokenizer','mbstring','dom','SimpleXML','xmlwriter','openssl','json'] as $extension) { if (!extension_loaded($extension)) { fwrite(STDERR, 'Missing PHP extension: '.$extension.PHP_EOL); exit(1); } }"]))
             .context("The extracted PHP runtime could not load its required extensions. The runner image must provide the matching shared libraries")?;
         fs::write(directory.join("apt-version"), &self.debian_version)?;
+        fs::write(directory.join("php-version"), &self.version)?;
         Ok(())
     }
 }
@@ -301,8 +297,6 @@ pub(super) fn test_runtime(version: &str, revision: &str) -> AptPhp {
         version: version.into(),
         debian_version: format!("{version}-{revision}+ubuntu24.04.1"),
         minor: requested_minor(version).unwrap(),
-        architecture: "arm64".into(),
-        source: "signed test source".into(),
         state: PathBuf::from("/unused"),
     }
 }

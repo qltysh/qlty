@@ -357,18 +357,19 @@ To select a different minor version:
 php = "8.4"
 ```
 
-Qlty resolves the newest available patch in that minor line, downloads the versioned
-CLI and extension packages into its user cache, and extracts them without sudo or
-running package installation scripts. Composer and PHP linters use that interpreter
-and its private configuration. Runtime and package caches include the resolved Debian
-package revision. This mode requires the shared libraries provided by the runner image;
+During installation, Qlty resolves the newest available patch in that minor line,
+downloads the versioned CLI and extension packages into its user cache, and extracts
+them without sudo or running package installation scripts. Composer and PHP linters
+use that interpreter and its private configuration. Runtime and package caches use
+the requested PHP version and installation profile, so later CLI commands reuse the
+installed patch. This mode requires the shared libraries provided by the runner image;
 it does not install missing system libraries or arbitrary additional extensions.
 
 An exact version such as `8.4.27` must be present in the configured repository. Older
 patches may be removed upstream and are not guaranteed to remain installable. Package
-metadata is refreshed once per CLI process, so this experimental mode requires access
-to the repository even when a runtime is cached. Available packages are resolved before
-the tool cache is selected.
+metadata is refreshed only when installation is needed, at most once per CLI process.
+Reusing an installed runtime does not contact APT. A fresh runner resolves the available
+patch again; an existing cache retains its installed patch until cleared.
 
 When the flag is unset or disabled, Qlty uses PHP from `$PATH` as before.
 

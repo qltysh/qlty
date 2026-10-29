@@ -354,7 +354,7 @@ pub mod test {
             },
             runtime: Php {
                 version: "1.0.0".to_string(),
-                apt: None,
+                apt_enabled: false,
             },
         };
 
@@ -411,7 +411,7 @@ pub mod test {
             },
             runtime: Php {
                 version: "1.0.0".to_string(),
-                apt: None,
+                apt_enabled: false,
             },
         };
 
