@@ -50,7 +50,7 @@ impl Tool for Php {
             sha.update(b"runner-php-v1\0");
             sha.update(path_to_native_string(root).as_bytes());
             sha.update(b"\0");
-            sha.update(self.version.as_bytes());
+            sha.update(self.runner_minor_version().as_bytes());
         } else {
             // Composer resolves plugin dependencies for the PHP that installs them,
             // so a new minor version of the system PHP reinstalls PHP plugins
@@ -112,7 +112,11 @@ impl Php {
     fn runner_directory(&self) -> Option<PathBuf> {
         self.runner_root
             .as_ref()
-            .map(|root| root.join(&self.version))
+            .map(|root| root.join(self.runner_minor_version()))
+    }
+
+    fn runner_minor_version(&self) -> String {
+        self.version.split('.').take(2).join(".")
     }
 
     fn verify_runner_version(&self) -> Result<()> {
@@ -120,10 +124,10 @@ impl Php {
             return Ok(());
         };
         ensure!(
-            Regex::new(r"^\d+\.\d+(?:\.\d+)?$")
+            Regex::new(r"^\d+\.\d+(?:\.(?:\d+|[xX]))?$")
                 .unwrap()
                 .is_match(&self.version),
-            "PHP version must be major.minor or major.minor.patch"
+            "PHP version must be major.minor, major.minor.patch, or major.minor.x"
         );
         let directory = self.runner_directory().unwrap();
         if !directory.join("bin/php").is_file() {
@@ -142,9 +146,7 @@ impl Php {
         }
         let installed = self.expected_version()?.unwrap();
         ensure!(
-            installed == self.version
-                || (self.version.split('.').count() == 2
-                    && installed.starts_with(&format!("{}.", self.version))),
+            installed.starts_with(&format!("{}.", self.runner_minor_version())),
             "Runner PHP {} does not match requested version {}",
             installed,
             self.version
@@ -432,71 +434,110 @@ pub mod test {
         assert_eq!(Php::minor_version_from_output("PHP 8.4.8 (cli)"), None);
     }
 
-    fn baked_php_fixture(root: &std::path::Path) {
-        for (minor, version) in [("8.1", "8.1.34"), ("8.4", "8.4.27")] {
-            for requested in [minor, version] {
-                let directory = root.join(requested);
-                std::fs::create_dir_all(directory.join("bin")).unwrap();
-                std::fs::write(directory.join("bin/php"), "fixture").unwrap();
-                std::fs::write(directory.join("version"), version).unwrap();
-            }
+    fn baked_php_fixture(root: &std::path::Path, requested: &str) -> Php {
+        let directory = root.join("8.3");
+        std::fs::create_dir_all(directory.join("bin")).unwrap();
+        std::fs::write(directory.join("bin/php"), "fixture").unwrap();
+        std::fs::write(directory.join("version"), "8.3.36").unwrap();
+        Php {
+            version: requested.into(),
+            runner_root: Some(root.to_path_buf()),
         }
     }
 
-    #[test]
-    fn baked_php_selects_the_interpreter_for_plugins_and_composer() {
+    fn assert_baked_php_selection(requested: &str) {
         with_php_package(|pkg, temp, _| {
             let root = temp.path().join("runtimes");
-            baked_php_fixture(&root);
-            let mut fingerprints = std::collections::HashSet::new();
-            for requested in ["8.1", "8.1.34", "8.4", "8.4.27"] {
-                pkg.runtime = Php {
-                    version: requested.into(),
-                    runner_root: Some(root.clone()),
-                };
-                pkg.runtime.verify_runner_version()?;
-                let bin = root.join(requested).join("bin");
-                assert_eq!(
-                    split_paths(&pkg.composer().env()?["PATH"]).next().unwrap(),
-                    bin
-                );
-                assert!(split_paths(&pkg.env()?["PATH"]).any(|path| path == bin));
-                assert!(fingerprints.insert(pkg.fingerprint()));
-                assert_eq!(
-                    pkg.runtime.expected_version()?,
-                    Some(
-                        if requested.starts_with("8.1") {
-                            "8.1.34"
-                        } else {
-                            "8.4.27"
-                        }
-                        .into()
-                    )
-                );
-            }
+            pkg.runtime = baked_php_fixture(&root, requested);
+            pkg.runtime.verify_runner_version()?;
+            let bin = root.join("8.3/bin");
+            assert_eq!(
+                split_paths(&pkg.composer().env()?["PATH"]).next().unwrap(),
+                bin
+            );
+            assert!(split_paths(&pkg.env()?["PATH"]).any(|path| path == bin));
+            assert_eq!(pkg.runtime.expected_version()?, Some("8.3.36".into()));
             Ok(())
         });
     }
 
     #[test]
-    fn baked_php_rejects_unavailable_versions_before_using_path_php() {
+    fn baked_php_selects_a_minor_line() {
+        assert_baked_php_selection("8.3");
+    }
+
+    #[test]
+    fn baked_php_resolves_an_old_patch_to_its_minor_line() {
+        assert_baked_php_selection("8.3.7");
+    }
+
+    #[test]
+    fn baked_php_selects_a_patch_wildcard() {
+        assert_baked_php_selection("8.3.x");
+    }
+
+    #[test]
+    fn baked_php_selects_an_uppercase_patch_wildcard() {
+        assert_baked_php_selection("8.3.X");
+    }
+
+    #[test]
+    fn baked_php_package_cache_matches_for_the_same_minor() {
+        with_php_package(|pkg, temp, _| {
+            pkg.runtime = baked_php_fixture(temp.path(), "8.3");
+            let minor_fingerprint = pkg.fingerprint();
+            pkg.runtime.version = "8.3.7".into();
+            assert_eq!(pkg.fingerprint(), minor_fingerprint);
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn baked_php_package_cache_differs_between_minors() {
+        with_php_package(|pkg, temp, _| {
+            pkg.runtime = baked_php_fixture(temp.path(), "8.3");
+            let fingerprint = pkg.fingerprint();
+            pkg.runtime.version = "8.4".into();
+            assert_ne!(pkg.fingerprint(), fingerprint);
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn baked_php_hashes_without_an_installed_interpreter() {
         let root = tempdir().unwrap();
-        baked_php_fixture(root.path());
-        for version in ["8.5", "8.4.26", "../8.4", "system"] {
-            let runtime = Php {
-                version: version.into(),
-                runner_root: Some(root.path().to_path_buf()),
-            };
-            // Planning can construct and hash unused tools without executing PHP.
-            assert!(!runtime.fingerprint().is_empty());
-            let error = runtime.install(&new_task()).unwrap_err().to_string();
-            if version.starts_with("8.") {
-                assert!(error.contains("not baked into this runner"), "{error}");
-                assert!(error.contains("8.4.27"), "{error}");
-            } else {
-                assert!(error.contains("major.minor"), "{error}");
-            }
-        }
+        let runtime = Php {
+            version: "8.3".into(),
+            runner_root: Some(root.path().join("missing")),
+        };
+        assert!(!runtime.fingerprint().is_empty());
+    }
+
+    #[test]
+    fn baked_php_rejects_unavailable_minors_before_using_path_php() {
+        let root = tempdir().unwrap();
+        let runtime = baked_php_fixture(root.path(), "8.0");
+        let error = runtime.install(&new_task()).unwrap_err().to_string();
+        assert_eq!(
+            error,
+            "PHP 8.0 is not baked into this runner image. Available versions: 8.3"
+        );
+    }
+
+    #[test]
+    fn baked_php_rejects_parent_directory_requests() {
+        let root = tempdir().unwrap();
+        let runtime = baked_php_fixture(root.path(), "../8.3");
+        let error = runtime.install(&new_task()).unwrap_err().to_string();
+        assert!(error.contains("major.minor"));
+    }
+
+    #[test]
+    fn baked_php_rejects_system_version_requests() {
+        let root = tempdir().unwrap();
+        let runtime = baked_php_fixture(root.path(), "system");
+        let error = runtime.install(&new_task()).unwrap_err().to_string();
+        assert!(error.contains("major.minor"));
     }
 
     fn failing_install_cmd(list: Arc<Mutex<Vec<Vec<String>>>>) -> Box<dyn CommandBuilder> {

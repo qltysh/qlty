@@ -359,9 +359,15 @@ The initial supported lines are 8.1, 8.2, 8.3, and 8.4; the default is 8.3. The
 runner image pins the exact Sury package revision for each line. A new patch reaches
 customers only after those pins are explicitly updated and a new image is released.
 Qlty selects the baked interpreter for Composer and PHP plugins without installing
-system packages or contacting APT during a run. Exact patch requests must match a
-version included in the image; unavailable versions fail instead of falling back
-to the default PHP. Each interpreter uses its own PHP configuration and extensions.
+system packages or contacting APT during a run. `8.3`, `8.3.7`, and `8.3.x` all select
+the image's pinned 8.3 patch. Patch numbers select their minor line rather than
+requiring that historical patch. Unsupported minor lines fail instead of falling
+back to the default PHP. Each interpreter uses its own configuration and extensions.
+
+Previously, PHP runtime configuration was ignored. Before enabling baked PHP,
+review existing settings: patches within 8.1-8.4 resolve to their supported minor
+line, while unsupported lines such as `7.4` and major-only values such as `8` need
+to be changed to a supported minor line.
 
 Without `QLTY_PHP_RUNTIMES_DIR`, PHP continues to come from the local `$PATH`.
 
