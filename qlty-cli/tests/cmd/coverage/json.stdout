@@ -2,6 +2,7 @@
   "metadata": {
     "buildId": "[..]",
     "ci": "GitHub",
+    "repositoryWebUrl": "https://github.com/qltysh/qlty",
     "branch": "feature-branch-1",
     "commitSha": "2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67",
     "commitMessage": "initial/n",
@@ -17,7 +18,8 @@
     "uploaderTool": "qltysh/qlty-action-coverage",
     "publishCommand": "[..]qlty[..] coverage publish --dry-run --print --json --override-commit-sha 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67 --add-prefix rails/ --tag rails --no-validate lcov.info",
     "uploaderToolVersion": "v1.0.0",
-    "referenceType": "REFERENCE_TYPE_BRANCH"
+    "referenceType": "REFERENCE_TYPE_BRANCH",
+    "repositoryId": "123"
   },
   "report_files": [
     {

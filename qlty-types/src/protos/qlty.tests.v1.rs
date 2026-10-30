@@ -90,6 +90,8 @@ pub struct CoverageMetadata {
     pub complete: bool,
     #[prost(string, optional, tag="44")]
     pub selection: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(string, optional, tag="45")]
+    pub repository_id: ::core::option::Option<::prost::alloc::string::String>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ReportFile {
