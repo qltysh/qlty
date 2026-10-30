@@ -14,7 +14,7 @@ use std::env::split_paths;
 use std::path::PathBuf;
 use tracing::{debug, error, info, warn};
 
-use super::PhpPackage;
+use super::{Php, PhpPackage};
 
 pub const COMPOSER_VERSION: &str = "2.11.0";
 
@@ -27,6 +27,7 @@ pub const PHP_PACKAGE_CACHE_BUSTER: &str = "composer2.11.0";
 #[derive(Debug, Clone)]
 pub struct Composer {
     pub cmd: Box<dyn CommandBuilder>,
+    pub runtime: Option<Php>,
 }
 
 impl Tool for Composer {
@@ -45,6 +46,9 @@ impl Tool for Composer {
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
         sha.update(self.name().as_bytes());
         sha.update(COMPOSER_VERSION.as_bytes());
+        if let Some(runtime) = &self.runtime {
+            runtime.update_hash(sha)?;
+        }
 
         Ok(())
     }
@@ -82,9 +86,16 @@ impl Tool for Composer {
     }
 
     fn extra_env_paths(&self) -> Result<Vec<String>> {
+        if self.runtime.is_some() {
+            return Ok(Vec::new());
+        }
         std::env::var("PATH")
             .with_context(|| "PATH environment variable not found for composer")
             .map(|path| split_paths(&path).map(path_to_native_string).collect_vec())
+    }
+
+    fn runtime(&self) -> Option<Box<dyn Tool>> {
+        self.runtime.as_ref().map(|runtime| runtime.clone_box())
     }
 }
 
@@ -321,6 +332,7 @@ pub mod test {
     fn test_directory_name_starts_with_pinned_version() {
         let composer = Composer {
             cmd: stub_cmd(Arc::new(Mutex::new(vec![]))),
+            runtime: None,
         };
 
         assert!(composer
@@ -348,6 +360,7 @@ pub mod test {
             },
             runtime: Php {
                 version: "1.0.0".to_string(),
+                apt_enabled: false,
             },
         };
 
@@ -404,6 +417,7 @@ pub mod test {
             },
             runtime: Php {
                 version: "1.0.0".to_string(),
+                apt_enabled: false,
             },
         };
 

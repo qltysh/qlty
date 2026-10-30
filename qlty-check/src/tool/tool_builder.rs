@@ -46,7 +46,7 @@ impl ToolBuilder<'_> {
                     .with_context(|| format!("Runtime not found: {}", runtime))?,
             );
 
-        let runtime = Self::runtime_tool(runtime.to_owned(), &runtime_version);
+        let runtime = Self::runtime_tool(runtime.to_owned(), &runtime_version)?;
         let package = runtime.package_tool(self.plugin_name, self.plugin);
 
         Ok(package)
@@ -84,7 +84,7 @@ impl ToolBuilder<'_> {
             Some(Self::release_runtime_tool(
                 runtime.to_owned(),
                 &runtime_version,
-            ))
+            )?)
         } else {
             None
         };
@@ -151,12 +151,12 @@ impl ToolBuilder<'_> {
             Runtime::Ruby => Some("3.3.7".to_owned()),
             Runtime::Rust => Some("1.77.2".to_owned()),
             Runtime::Java => Some("25.0.5+8".to_owned()),
-            Runtime::Php => Some("8.3.7".to_owned()),
+            Runtime::Php => Some("8.3".to_owned()),
         }
     }
 
-    fn runtime_tool(runtime: Runtime, version: &str) -> Box<dyn RuntimeTool> {
-        match runtime {
+    fn runtime_tool(runtime: Runtime, version: &str) -> Result<Box<dyn RuntimeTool>> {
+        Ok(match runtime {
             Runtime::Node => Box::new(node::NodeJS {
                 version: version.to_string(),
             }),
@@ -173,15 +173,13 @@ impl ToolBuilder<'_> {
             Runtime::Java => Box::new(java::Java {
                 version: version.to_string(),
             }),
-            Runtime::Php => Box::new(php::Php {
-                version: version.to_string(),
-            }),
-        }
+            Runtime::Php => Box::new(php::Php::new(version)?),
+        })
     }
 
     // Since can't cast Box<dyn RuntimeTool> into Box<dyn Tool> directly, we need to
-    fn release_runtime_tool(runtime: Runtime, version: &str) -> Box<dyn Tool> {
-        match runtime {
+    fn release_runtime_tool(runtime: Runtime, version: &str) -> Result<Box<dyn Tool>> {
+        Ok(match runtime {
             Runtime::Node => Box::new(node::NodeJS {
                 version: version.to_string(),
             }),
@@ -198,9 +196,20 @@ impl ToolBuilder<'_> {
             Runtime::Java => Box::new(java::Java {
                 version: version.to_string(),
             }),
-            Runtime::Php => Box::new(php::Php {
-                version: version.to_string(),
-            }),
-        }
+            Runtime::Php => Box::new(php::Php::new(version)?),
+        })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn php_defaults_to_minor_version() {
+        assert_eq!(
+            ToolBuilder::latest_runtime_version(&Runtime::Php),
+            Some("8.3".into())
+        );
     }
 }

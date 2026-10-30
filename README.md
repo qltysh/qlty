@@ -347,6 +347,36 @@ Qlty CLI is available for MacOS, Linux, and Windows on x86 and ARM platforms.
 
 Certain PHP linters require a working installation of PHP available in your `$PATH`. To install PHP, use [Homebrew](https://brew.sh/) or an alternative method.
 
+On an Ubuntu 24.04 runner provisioned with the signed Ondrej Sury PHP PPA,
+`QLTY_FEATURE_PHP_APT_INSTALL=true` enables an experimental alternative. Qlty installs
+the configured PHP version, defaulting to the newest available patch in the 8.3 line.
+To select a different minor version:
+
+```toml
+[runtimes.enabled]
+php = "8.4"
+```
+
+During installation, Qlty resolves the newest available patch in that minor line,
+downloads the versioned CLI and extension packages into its user cache, and extracts
+them without sudo or running package installation scripts. Composer and PHP linters
+use that interpreter and its private configuration. Runtime and package caches use
+the requested PHP version and installation profile, so later CLI commands reuse the
+installed patch. This mode requires the shared libraries provided by the runner image;
+it does not install missing system libraries or arbitrary additional extensions.
+
+An exact version such as `8.4.27` must be present in the configured repository. Older
+patches may be removed upstream and are not guaranteed to remain installable. Package
+metadata is refreshed only when installation is needed, at most once per CLI process.
+Reusing an installed runtime does not contact APT. A fresh runner resolves the available
+patch again; an existing cache retains its installed patch until cleared.
+
+When the flag is unset or disabled, Qlty uses PHP from `$PATH` as before.
+
+The runner provisions `/opt/qlty/php-apt/sources.list` with an explicit `signed-by`
+keyring. Qlty keeps APT metadata and downloads under the user's `.qlty/cache`; it does
+not modify `/etc/apt`, `/var/lib/dpkg`, or the global PHP executable.
+
 ---
 
 ## 🛟 Help or Feedback

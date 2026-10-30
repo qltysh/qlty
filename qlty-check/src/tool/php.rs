@@ -1,3 +1,4 @@
+mod apt;
 pub mod composer;
 use super::command_builder::{default_command_builder, CommandBuilder};
 use super::installations::initialize_installation;
@@ -28,6 +29,7 @@ static SYSTEM_PHP_MINOR_VERSION: OnceCell<String> = OnceCell::new();
 #[derive(Debug, Clone)]
 pub struct Php {
     pub version: String,
+    pub(crate) apt_enabled: bool,
 }
 
 impl Tool for Php {
@@ -45,13 +47,26 @@ impl Tool for Php {
 
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
         sha.update(self.name().as_bytes());
-        // Composer resolves plugin dependencies for the PHP that installs them,
-        // so a new minor version of the system PHP reinstalls PHP plugins
-        sha.update(self.system_minor_version().as_bytes());
+        if self.apt_enabled {
+            apt::update_hash(&self.version, sha);
+        } else {
+            // Composer resolves plugin dependencies for the PHP that installs them,
+            // so a new minor version of the system PHP reinstalls PHP plugins.
+            sha.update(self.system_minor_version().as_bytes());
+        }
         Ok(())
     }
 
     fn install(&self, task: &ProgressTask) -> Result<()> {
+        if self.apt_enabled {
+            task.set_message(&format!("Resolving PHP {}", self.version));
+            let apt = apt::AptPhp::resolve(&self.version)?;
+            task.set_message(&format!(
+                "Extracting PHP {} ({})",
+                apt.version, apt.debian_version
+            ));
+            return apt.install(self, task);
+        }
         task.set_message("Verifying Php installation");
         self.verify_installation(self.env()?)?;
 
@@ -59,7 +74,18 @@ impl Tool for Php {
     }
 
     fn version_command(&self) -> Option<String> {
-        None // None so that version is not validated for now
+        self.apt_enabled.then(|| "php --version".to_owned())
+    }
+
+    fn expected_version(&self) -> Result<Option<String>> {
+        if self.apt_enabled {
+            let version =
+                std::fs::read_to_string(PathBuf::from(self.directory()).join("php-version"))
+                    .context("Failed to read the installed PHP version")?;
+            Ok(Some(version.trim().to_owned()))
+        } else {
+            Ok(None)
+        }
     }
 
     fn clone_box(&self) -> Box<dyn Tool> {
@@ -67,13 +93,56 @@ impl Tool for Php {
     }
 
     fn extra_env_paths(&self) -> Result<Vec<String>> {
-        std::env::var("PATH")
-            .with_context(|| "PATH environment variable not found for php runtime")
-            .map(|path| split_paths(&path).map(path_to_native_string).collect_vec())
+        let mut paths = Vec::new();
+        if self.apt_enabled {
+            paths.push(path_to_native_string(
+                PathBuf::from(self.directory()).join("bin"),
+            ));
+        }
+        paths.extend(
+            std::env::var("PATH")
+                .with_context(|| "PATH environment variable not found for php runtime")
+                .map(|path| split_paths(&path).map(path_to_native_string).collect_vec())?,
+        );
+        Ok(paths)
+    }
+
+    fn extra_env_vars(&self) -> Result<HashMap<String, String>> {
+        if self.apt_enabled {
+            let directory = PathBuf::from(self.directory());
+            Ok(HashMap::from([
+                (
+                    "PHPRC".to_owned(),
+                    path_to_native_string(directory.join("php.ini")),
+                ),
+                (
+                    "PHP_INI_SCAN_DIR".to_owned(),
+                    path_to_native_string(directory.join("conf.d")),
+                ),
+            ]))
+        } else {
+            Ok(["PHPRC", "PHP_INI_SCAN_DIR"]
+                .into_iter()
+                .filter_map(|key| std::env::var(key).ok().map(|value| (key.to_owned(), value)))
+                .collect())
+        }
     }
 }
 
 impl Php {
+    pub fn new(version: &str) -> Result<Self> {
+        let enabled = std::env::var("QLTY_FEATURE_PHP_APT_INSTALL")
+            .is_ok_and(|value| ["true", "1", "on"].contains(&value.to_ascii_lowercase().as_str()));
+        Self::with_apt_enabled(version, enabled)
+    }
+
+    fn with_apt_enabled(version: &str, enabled: bool) -> Result<Self> {
+        Ok(Self {
+            version: version.to_owned(),
+            apt_enabled: enabled,
+        })
+    }
+
     fn verify_installation(&self, env: HashMap<String, String>) -> Result<()> {
         let cmd = cmd!("php", "--version")
             .full_env(env)
@@ -248,7 +317,7 @@ impl Tool for PhpPackage {
     }
 
     fn extra_env_vars(&self) -> Result<HashMap<String, String>> {
-        let mut env = HashMap::new();
+        let mut env = self.runtime.extra_env_vars()?;
         env.insert(
             "COMPOSER_VENDOR_DIR".to_string(),
             path_to_native_string(PathBuf::from(format!("{}/vendor", self.directory()))),
@@ -266,12 +335,24 @@ impl Tool for PhpPackage {
         );
         Ok(env)
     }
+
+    fn extra_env_vars_with_plugin_env(&self) -> Result<HashMap<String, String>> {
+        let mut env = self.extra_env_vars()?;
+        env.extend(self.load_environment_vars(&self.plugin.environment));
+        if self.runtime.apt_enabled {
+            // Plugin definitions historically forwarded the host scan directory.
+            // Never mix those modules with an extracted interpreter's ABI.
+            env.extend(self.runtime.extra_env_vars()?);
+        }
+        Ok(env)
+    }
 }
 
 impl PhpPackage {
     fn composer(&self) -> Composer {
         Composer {
             cmd: self.cmd.clone(),
+            runtime: self.runtime.apt_enabled.then(|| self.runtime.clone()),
         }
     }
 }
@@ -314,6 +395,7 @@ pub mod test {
             },
             runtime: super::Php {
                 version: "1.0.0".to_string(),
+                apt_enabled: false,
             },
         };
         reroute_tools_root(&temp_path, &pkg);
@@ -346,6 +428,113 @@ pub mod test {
     #[test]
     fn php_minor_version_from_output_rejects_unexpected_output() {
         assert_eq!(Php::minor_version_from_output("PHP 8.4.8 (cli)"), None);
+    }
+
+    #[test]
+    fn php_apt_resolution_is_deferred_until_install() {
+        assert!(!Php::with_apt_enabled("8.4", false).unwrap().apt_enabled);
+        assert!(
+            !Php::with_apt_enabled("invalid old setting", false)
+                .unwrap()
+                .apt_enabled
+        );
+        assert!(Php::with_apt_enabled("8.4", false)
+            .unwrap()
+            .version_command()
+            .is_none());
+
+        // Construction and hashing must work without a provisioned APT source.
+        let runtime = Php::with_apt_enabled("8.4", true).unwrap();
+        assert!(runtime.apt_enabled);
+        assert_eq!(runtime.version(), Some("8.4".into()));
+        assert!(!runtime.fingerprint().is_empty());
+
+        // An invalid request fails during installation before platform checks
+        // or network access, making this regression test portable.
+        let invalid = Php::with_apt_enabled("system", true).unwrap();
+        assert!(!invalid.fingerprint().is_empty());
+        assert!(invalid
+            .install(&new_task())
+            .unwrap_err()
+            .to_string()
+            .contains("major.minor"));
+    }
+
+    #[test]
+    fn php_apt_requested_version_separates_runtime_composer_and_package_caches() {
+        with_php_package(|pkg, _, _| {
+            let system_package = pkg.fingerprint();
+            let system_composer = pkg.composer().fingerprint();
+            pkg.runtime = Php::with_apt_enabled("8.4", true)?;
+            let runtime_a = pkg.runtime.fingerprint();
+            let composer_a = pkg.composer().fingerprint();
+            let package_a = pkg.fingerprint();
+            assert_ne!(system_package, package_a);
+            assert_ne!(system_composer, composer_a);
+            for version in ["8.5", "8.4.27"] {
+                pkg.runtime = Php::with_apt_enabled(version, true)?;
+                assert_ne!(runtime_a, pkg.runtime.fingerprint());
+                assert_ne!(composer_a, pkg.composer().fingerprint());
+                assert_ne!(package_a, pkg.fingerprint());
+            }
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn php_apt_installation_metadata_preserves_cache_paths() {
+        with_php_package(|pkg, _, _| {
+            pkg.runtime = Php::with_apt_enabled("8.4", true)?;
+            let runtime_directory = pkg.runtime.directory();
+            let composer_directory = pkg.composer().directory();
+            let package_directory = pkg.directory();
+            std::fs::create_dir_all(&runtime_directory)?;
+            std::fs::write(
+                PathBuf::from(&runtime_directory).join("php-version"),
+                "8.4.27",
+            )?;
+            std::fs::write(pkg.runtime.donefile_path(), "")?;
+
+            // A later CLI process reconstructs the same paths while validation
+            // checks the exact patch recorded during installation.
+            pkg.runtime = Php::with_apt_enabled("8.4", true)?;
+            assert_eq!(pkg.runtime.directory(), runtime_directory);
+            assert_eq!(pkg.composer().directory(), composer_directory);
+            assert_eq!(pkg.directory(), package_directory);
+            assert_eq!(pkg.runtime.expected_version()?, Some("8.4.27".into()));
+            pkg.runtime.setup(&new_task())?;
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn php_apt_configuration_reaches_composer_and_overrides_host_plugin_settings() {
+        with_php_package(|pkg, _, _| {
+            pkg.runtime = Php::with_apt_enabled("8.4.27", true)?;
+            pkg.plugin
+                .environment
+                .push(qlty_config::config::PluginEnvironment {
+                    name: "PHP_INI_SCAN_DIR".into(),
+                    value: "/host/php/conf.d".into(),
+                    ..Default::default()
+                });
+            let runtime_env = pkg.runtime.env()?;
+            let composer_env = pkg.composer().env()?;
+            let package_env = pkg.env()?;
+            for name in ["PHPRC", "PHP_INI_SCAN_DIR"] {
+                assert_eq!(runtime_env[name], composer_env[name]);
+                assert_eq!(runtime_env[name], package_env[name]);
+            }
+            let bin = PathBuf::from(pkg.runtime.directory()).join("bin");
+            assert_eq!(split_paths(&composer_env["PATH"]).next().unwrap(), bin);
+            let package_paths = split_paths(&package_env["PATH"]).collect_vec();
+            assert!(package_paths.contains(&bin));
+            assert!(package_env.contains_key("COMPOSER_VENDOR_DIR"));
+            for path in split_paths(&std::env::var("PATH")?) {
+                assert!(package_paths.contains(&path));
+            }
+            Ok(())
+        });
     }
 
     fn failing_install_cmd(list: Arc<Mutex<Vec<Vec<String>>>>) -> Box<dyn CommandBuilder> {
@@ -424,6 +613,7 @@ pub mod test {
 
             let composer = Composer {
                 cmd: stub_cmd(list.clone()),
+                runtime: None,
             };
 
             pkg.package_file_install(&new_task())?;
@@ -475,6 +665,7 @@ pub mod test {
 
             let composer = Composer {
                 cmd: stub_cmd(list.clone()),
+                runtime: None,
             };
 
             pkg.package_file_install(&new_task())?;
@@ -527,6 +718,7 @@ pub mod test {
 
             let composer = Composer {
                 cmd: failing_install_cmd(list.clone()),
+                runtime: None,
             };
 
             pkg.package_file_install(&new_task())?;
@@ -590,6 +782,7 @@ pub mod test {
 
             let composer = Composer {
                 cmd: stub_cmd(list.clone()),
+                runtime: None,
             };
 
             pkg.package_file_install(&new_task())?;
@@ -636,6 +829,7 @@ pub mod test {
             },
             runtime: super::Php {
                 version: "1.0.0".to_string(),
+                apt_enabled: false,
             },
         }
     }
