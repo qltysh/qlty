@@ -146,6 +146,12 @@ impl CI for GitHub {
         }
     }
 
+    fn repository_id(&self) -> Option<String> {
+        self.env
+            .var("GITHUB_REPOSITORY_ID")
+            .filter(|id| !id.is_empty())
+    }
+
     fn pull_url(&self) -> String {
         if self.pull_number() != "" {
             format!("{}/pull/{}", self.repository_url(), self.pull_number())
@@ -227,12 +233,25 @@ mod test {
             "https://github.com".to_string(),
         );
         env.insert("GITHUB_REPOSITORY".to_string(), "qltysh/qlty".to_string());
+        env.insert("GITHUB_REPOSITORY_ID".to_string(), "123".to_string());
 
         let ci = GitHub {
             env: Box::new(HashMapEnv::new(env)),
         };
         assert_eq!(&ci.repository_name(), "qltysh/qlty");
         assert_eq!(&ci.repository_url(), "https://github.com/qltysh/qlty");
+
+        let metadata = ci.metadata();
+        assert_eq!(
+            metadata.repository_web_url,
+            "https://github.com/qltysh/qlty"
+        );
+        assert_eq!(metadata.repository_id, Some("123".to_string()));
+
+        let ci = GitHub {
+            env: Box::new(HashMapEnv::default()),
+        };
+        assert_eq!(ci.repository_id(), None);
     }
 
     #[test]

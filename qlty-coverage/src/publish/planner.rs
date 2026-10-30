@@ -230,6 +230,7 @@ impl MetadataPlanner {
         if let Some(commit_data) = commit_metadata {
             // Git is available, use git metadata
             metadata.commit_message = commit_data.commit_message;
+            metadata.repository_origin_url = commit_data.origin_url.unwrap_or_default();
             metadata.committer_email = commit_data.committer_email;
             metadata.committer_name = commit_data.committer_name;
             metadata.author_email = commit_data.author_email;
