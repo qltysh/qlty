@@ -7,7 +7,7 @@ use super::ToolType;
 use crate::tool::{finalize_installation_from_cmd_result, update_package_hash, RuntimeTool};
 use crate::ui::{ProgressBar, ProgressTask};
 use anyhow::{bail, Context, Result};
-use composer::Composer;
+use composer::{Composer, PHP_PACKAGE_CACHE_BUSTER};
 use duct::cmd;
 use itertools::Itertools;
 use once_cell::sync::OnceCell;
@@ -170,7 +170,7 @@ impl Tool for PhpPackage {
 
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
         update_package_hash(self, sha)?;
-        self.composer().update_hash(sha)?;
+        sha.update(PHP_PACKAGE_CACHE_BUSTER.as_bytes());
 
         if self.plugin.package_file.is_some() {
             if let Some(lock_file) = Composer::lock_file_to_stage(&self.plugin)? {
@@ -702,5 +702,29 @@ pub mod test {
         pkg_b.plugin.package_filters = vec!["tool".to_string()];
 
         assert_eq!(pkg_a.directory_name(), pkg_b.directory_name());
+    }
+
+    #[test]
+    fn php_package_cache_key_matches_v0_665_0() {
+        let pkg = PhpPackage {
+            cmd: default_command_builder(),
+            name: "tool".into(),
+            plugin: PluginDef {
+                package: Some("test".to_string()),
+                version: Some("1.0.0".to_string()),
+                ..Default::default()
+            },
+            runtime: Php {
+                version: "1.0.0".to_string(),
+            },
+        };
+        let mut expected = sha2::Sha256::new();
+        update_package_hash(&pkg, &mut expected).unwrap();
+        expected.update(b"composer");
+        expected.update(b"2.11.0");
+        let mut actual = sha2::Sha256::new();
+        pkg.update_hash(&mut actual).unwrap();
+
+        assert_eq!(actual.finalize(), expected.finalize());
     }
 }

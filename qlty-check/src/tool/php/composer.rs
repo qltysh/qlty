@@ -18,6 +18,12 @@ use super::PhpPackage;
 
 pub const COMPOSER_VERSION: &str = "2.11.0";
 
+// Hashed into every PHP plugin's cache key instead of COMPOSER_VERSION, so
+// moving the Composer pin doesn't reinstall PHP plugins. Change it only when
+// installed plugins must be reinstalled. This value writes the same bytes the
+// keys held for Composer 2.11.0, so plugins installed by v0.665.0 keep theirs
+pub const PHP_PACKAGE_CACHE_BUSTER: &str = "composer2.11.0";
+
 #[derive(Debug, Clone)]
 pub struct Composer {
     pub cmd: Box<dyn CommandBuilder>,
