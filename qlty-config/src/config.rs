@@ -24,7 +24,7 @@ pub use exclude::Exclude;
 pub use file_type::FileType;
 pub use language::Language;
 pub use plugin::{
-    CheckTrigger, DriverBatchBy, DriverDef, DriverType, EnabledPlugin, ExtraPackage,
+    CheckTrigger, ConfigMissing, DriverBatchBy, DriverDef, DriverType, EnabledPlugin, ExtraPackage,
     InvocationDirectoryDef, InvocationDirectoryType, IssueMode, OutputDestination, OutputFormat,
     OutputMissing, PackageFileCandidate, Platform, PluginDef, PluginEnvironment, PluginFetch,
     Runtime, SuggestionMode, TargetDef, TargetType,

@@ -6,7 +6,7 @@ use std::{
 
 use anyhow::Result;
 use qlty_config::{
-    config::{DriverBatchBy, DriverDef},
+    config::{ConfigMissing, DriverBatchBy, DriverDef},
     Library,
 };
 use tracing::warn;
@@ -169,6 +169,7 @@ impl TargetBatcher {
         });
 
         let mut config_targets_map = HashMap::new();
+        let mut unconfigured_targets = vec![];
         let prefixed_workspace_root = self
             .workspace_root
             .join(self.current_prefix.as_deref().unwrap_or(""));
@@ -176,18 +177,31 @@ impl TargetBatcher {
         for target in targets {
             let full_target_path = target.full_path(&prefixed_workspace_root)?;
 
-            for config in &sorted_configs {
+            let nearest_config = sorted_configs.iter().find(|config| {
                 let config_path =
                     normalize_config_path(config, &self.workspace_root, &workspace_config_path);
 
-                if full_target_path.starts_with(config_path.parent().unwrap()) {
-                    config_targets_map
-                        .entry(config)
-                        .or_insert_with(Vec::new)
-                        .push(target.clone());
-                    break;
+                full_target_path.starts_with(config_path.parent().unwrap())
+            });
+
+            match nearest_config {
+                Some(config) => config_targets_map
+                    .entry(config)
+                    .or_insert_with(Vec::new)
+                    .push(target.clone()),
+                None if self.driver.config_missing == ConfigMissing::Run => {
+                    unconfigured_targets.push(target.clone())
                 }
+                None => {}
             }
+        }
+
+        for targets in unconfigured_targets.chunks(self.compute_chunk_size()) {
+            driver_target_batches.push(DriverTargetBatch {
+                targets: targets.to_vec(),
+                invocation_directory: None,
+                config_file: None,
+            });
         }
 
         for (config, targets) in config_targets_map {
@@ -469,6 +483,48 @@ mod test {
             .iter()
             .find(|t| t.path == PathBuf::from("file1"))
             .is_some());
+    }
+
+    fn compute_with_nested_config_only(config_missing: ConfigMissing) -> Vec<DriverTargetBatch> {
+        let mut target_batcher = setup_target_batcher(
+            DriverBatchBy::ConfigFile,
+            1,
+            InvocationDirectoryDef::default(),
+        );
+        target_batcher.driver.config_missing = config_missing;
+        target_batcher.plugin_configs =
+            vec![plugin_config_file("/User/test/project_root/sub/config2")];
+
+        let targets = vec![target_files("file1"), target_files("sub/file2")];
+        let mut batches = target_batcher.compute(&targets).unwrap();
+        batches.sort_by_key(|batch| batch.config_file.is_none());
+        batches
+    }
+
+    #[test]
+    fn test_compute_with_config_file_batching_skips_targets_without_config() {
+        let batches = compute_with_nested_config_only(ConfigMissing::Skip);
+
+        assert_eq!(batches.len(), 1);
+        assert_eq!(batches[0].targets[0].path, PathBuf::from("sub/file2"));
+        assert_eq!(
+            batches[0].config_file,
+            Some(plugin_config_file("/User/test/project_root/sub/config2"))
+        );
+    }
+
+    #[test]
+    fn test_compute_with_config_file_batching_runs_targets_without_config() {
+        let batches = compute_with_nested_config_only(ConfigMissing::Run);
+
+        assert_eq!(batches.len(), 2);
+        assert_eq!(batches[0].targets[0].path, PathBuf::from("sub/file2"));
+        assert_eq!(
+            batches[0].config_file,
+            Some(plugin_config_file("/User/test/project_root/sub/config2"))
+        );
+        assert_eq!(batches[1].targets[0].path, PathBuf::from("file1"));
+        assert_eq!(batches[1].config_file, None);
     }
 
     #[test]

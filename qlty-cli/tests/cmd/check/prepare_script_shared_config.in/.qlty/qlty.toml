@@ -1,0 +1,25 @@
+config_version = "0"
+
+[plugins.definitions.prepare]
+file_types = ["terraform"]
+config_files = [".prepare-config"]
+
+[[plugins.definitions.prepare.environment]]
+# Git is outside the default plugin PATH on Windows.
+name = "PATH"
+value = "${env.PATH}"
+
+[plugins.definitions.prepare.drivers.lint]
+# The fixture's git reset restores the tracked empty file after each test.
+prepare_script = "echo ${config_script}>> prepared.txt"
+config_script = "prepared"
+# Each target directory must be prepared exactly once, on every platform.
+script = "git diff --no-index --ignore-space-at-eol --exit-code expected.txt prepared.txt"
+runs_from = { type = "target_directory" }
+batch_by = "config_file"
+success_codes = [0]
+output = "pass_fail"
+
+[[plugin]]
+name = "prepare"
+version = "1.0.0"

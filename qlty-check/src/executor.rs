@@ -20,6 +20,7 @@ pub use driver::Driver;
 use ignore::{DirEntry, WalkBuilder, WalkState};
 use install_error::install_error_message;
 pub use invocation_result::{InvocationResult, InvocationStatus};
+use invocation_script::compute_prepare_script;
 pub use invocation_script::{compute_invocation_script, plan_target_list};
 use itertools::Itertools;
 use qlty_analysis::utils::fs::path_to_string;
@@ -41,6 +42,17 @@ use tracing::{debug, error, info, warn};
 
 const MAX_ISSUES: usize = 50_000;
 const MAX_ISSUES_PER_FILE: usize = 500;
+
+#[derive(Default)]
+struct ConfigFileCleanup(Vec<String>);
+
+impl Drop for ConfigFileCleanup {
+    fn drop(&mut self) {
+        for path in &self.0 {
+            std::fs::remove_file(path).ok();
+        }
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct Executor {
@@ -65,7 +77,6 @@ impl Executor {
             return Ok(Results::new(install_messages, vec![], vec![], vec![]));
         }
 
-        self.run_prepare_scripts()?;
         let mut result = self.invoke()?;
 
         result.messages.extend(install_messages);
@@ -129,7 +140,8 @@ impl Executor {
     }
 
     pub fn run_prepare_scripts(&self) -> Result<()> {
-        let mut prepare_scripts: HashMap<String, &InvocationPlan> = HashMap::new();
+        let mut prepare_scripts: HashMap<(String, String, PathBuf), &InvocationPlan> =
+            HashMap::new();
 
         self.plan
             .invocations
@@ -142,16 +154,24 @@ impl Executor {
                 }
             })
             .for_each(|invocation: &InvocationPlan| {
-                if invocation.driver.prepare_script.is_some() {
-                    // Prevent multiple prepare scripts for the same driver and plugin and
-                    // store invocation plan to run the prepare script later
-                    prepare_scripts.insert(invocation.invocation_label(), invocation);
+                if let Some(prepare_script) = &invocation.driver.prepare_script {
+                    // Prepare once per driver, expanded script, and working directory.
+                    prepare_scripts.insert(
+                        (
+                            invocation.invocation_label(),
+                            compute_prepare_script(invocation, prepare_script),
+                            invocation.invocation_directory.clone(),
+                        ),
+                        invocation,
+                    );
                 }
             });
 
-        for (key, invocation) in prepare_scripts {
-            let task = self.progress.task(&key, "Running prepare script...");
-            invocation.driver.run_prepare_script(invocation, &task)?;
+        for ((label, script, _), invocation) in prepare_scripts {
+            let task = self.progress.task(&label, "Running prepare script...");
+            invocation
+                .driver
+                .run_prepare_script(invocation, &script, &task)?;
             task.clear();
         }
 
@@ -175,9 +195,11 @@ impl Executor {
         }
 
         if !self.plan.invocations.is_empty() {
-            let loaded_config_files = self.stage_workspace_entries()?;
+            // Keep configs available for preparation and linting, and clean up on errors too.
+            let mut config_cleanup = ConfigFileCleanup::default();
+            self.stage_workspace_entries(&mut config_cleanup.0)?;
+            self.run_prepare_scripts()?;
             invocations = self.run_invocations(&transformers)?;
-            self.cleanup_config_files(&loaded_config_files)?;
         } else {
             info!("No invocations to run, skipping all runtimes.");
         }
@@ -218,7 +240,7 @@ impl Executor {
         Ok(())
     }
 
-    fn stage_workspace_entries(&self) -> Result<Vec<String>> {
+    fn stage_workspace_entries(&self, loaded_config_files: &mut Vec<String>) -> Result<()> {
         let timer = Instant::now();
         let sub_timer = Instant::now();
 
@@ -302,8 +324,6 @@ impl Executor {
 
         let sub_timer = Instant::now();
 
-        let mut loaded_config_files = vec![];
-
         // load exported config paths before anything else
         for config_file in &exported_config_paths {
             if self.plan.workspace.root != self.plan.staging_area.destination_directory {
@@ -324,8 +344,8 @@ impl Executor {
             }
         }
 
-        self.check_and_copy_configs_into_tool_install(&mut loaded_config_files)?;
-        self.plan_plugins_fetch(&mut loaded_config_files)?;
+        self.check_and_copy_configs_into_tool_install(loaded_config_files)?;
+        self.plan_plugins_fetch(loaded_config_files)?;
 
         for config_file in &repository_config_files {
             if let Err(err) = load_config_file_from_repository(
@@ -372,7 +392,7 @@ impl Executor {
             timer.elapsed().as_secs_f32()
         );
 
-        Ok(loaded_config_files)
+        Ok(())
     }
 
     fn plan_plugins_fetch(&self, loaded_config_files: &mut Vec<String>) -> Result<()> {
@@ -638,14 +658,6 @@ impl Executor {
         Ok(issues)
     }
 
-    fn cleanup_config_files(&self, loaded_config_files: &[String]) -> Result<()> {
-        for config_file in loaded_config_files {
-            std::fs::remove_file(Path::new(config_file)).ok();
-        }
-
-        Ok(())
-    }
-
     fn format_number(n: usize) -> String {
         n.to_string()
             .chars()
@@ -777,4 +789,121 @@ fn walk_collect_entries_parallel(builder: &WalkBuilder) -> Vec<DirEntry> {
 
     let dents = dents.lock().unwrap();
     dents.to_vec()
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::{tool::command_builder::test::ENV_LOCK, Planner, Settings};
+    use indoc::indoc;
+    use qlty_types::analysis::v1::ExecutionVerb;
+    use std::fs;
+    use tempfile::tempdir_in;
+
+    fn executor_with_exported_config(root: &Path) -> Executor {
+        fs::create_dir_all(root.join(".qlty")).unwrap();
+        fs::create_dir(root.join("shared")).unwrap();
+        fs::write(root.join("shared/config.yml"), "exported config").unwrap();
+        fs::write(root.join("sample.sh"), "echo test\n").unwrap();
+        fs::write(
+            root.join(".qlty/qlty.toml"),
+            indoc! {r#"
+                config_version = "0"
+
+                [plugins.definitions.cleanup]
+                file_types = ["shell"]
+                config_files = ["config.yml"]
+
+                [plugins.definitions.cleanup.drivers.lint]
+                script = "exit 0"
+                success_codes = [0]
+                output = "pass_fail"
+
+                [[plugin]]
+                name = "cleanup"
+                version = "1.0.0"
+            "#},
+        )
+        .unwrap();
+        let _repository = qlty_test_utilities::git::init(root);
+        let settings = Settings {
+            root: root.to_path_buf(),
+            all: true,
+            cache: false,
+            progress: false,
+            ..Default::default()
+        };
+        let mut planner = Planner::new(ExecutionVerb::Check, &settings).unwrap();
+        let mut plan = planner.compute().unwrap();
+        assert_eq!(plan.invocations.len(), 1);
+        plan.invocations[0].plugin.exported_config_paths = vec![root.join("shared/config.yml")];
+        Executor::new(&plan)
+    }
+
+    #[test]
+    fn test_exported_config_cleanup_on_success_and_failure() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        for (prepare_script, fail_invocation) in
+            [("exit 0", false), ("exit 42", false), ("exit 0", true)]
+        {
+            for existing_root_config in [false, true] {
+                // The planner restricts targets to the current working directory.
+                let fixture = tempdir_in(std::env::current_dir().unwrap()).unwrap();
+                let root = fixture.path();
+                if existing_root_config {
+                    fs::write(root.join("config.yml"), "repository config").unwrap();
+                }
+                if fail_invocation {
+                    // Fail while writing invocation artifacts, after the driver runs.
+                    fs::create_dir(root.join(".qlty")).unwrap();
+                    fs::write(root.join(".qlty/out"), "not a directory").unwrap();
+                }
+                let mut executor = executor_with_exported_config(root);
+                executor.plan.invocations[0].driver.prepare_script =
+                    Some(prepare_script.to_owned());
+
+                let result = executor.install_and_invoke();
+                if prepare_script == "exit 42" {
+                    assert!(result
+                        .unwrap_err()
+                        .to_string()
+                        .contains("prepare_script exited with non-zero code 42"));
+                } else if fail_invocation {
+                    assert!(result
+                        .unwrap_err()
+                        .to_string()
+                        .contains("FATAL error occurred running 1 invocations"));
+                } else {
+                    result.unwrap();
+                }
+
+                if existing_root_config {
+                    assert_eq!(
+                        fs::read_to_string(root.join("config.yml")).unwrap(),
+                        "repository config"
+                    );
+                    assert!(!fs::symlink_metadata(root.join("config.yml"))
+                        .unwrap()
+                        .file_type()
+                        .is_symlink());
+                } else {
+                    assert!(fs::symlink_metadata(root.join("config.yml")).is_err());
+                }
+                assert_eq!(
+                    fs::read_to_string(root.join("shared/config.yml")).unwrap(),
+                    "exported config"
+                );
+                fs::remove_dir_all(
+                    executor
+                        .plan
+                        .workspace
+                        .library()
+                        .unwrap()
+                        .cache_directory()
+                        .unwrap(),
+                )
+                .unwrap();
+            }
+        }
+    }
 }
