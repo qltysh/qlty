@@ -347,6 +347,31 @@ Qlty CLI is available for MacOS, Linux, and Windows on x86 and ARM platforms.
 
 Certain PHP linters require a working installation of PHP available in your `$PATH`. To install PHP, use [Homebrew](https://brew.sh/) or an alternative method.
 
+Runner images that set `QLTY_PHP_RUNTIMES_DIR=/opt/qlty/php` provide a fixed set of
+PHP versions. Select a supported minor line in your configuration:
+
+```toml
+[runtimes.enabled]
+php = "8.4"
+```
+
+The initial supported lines are 8.1, 8.2, 8.3, 8.4, and 8.5; the default is 8.3. The
+runner installs the available Sury packages at image build time and records the
+exact installed revisions. New patches reach customers through runner image
+releases; rebuilding an image for unrelated changes can also update PHP.
+Qlty selects the baked interpreter for Composer and PHP plugins without installing
+system packages or contacting APT during a run. `8.3`, `8.3.7`, and `8.3.x` all select
+the image's baked 8.3 patch. Patch numbers select their minor line rather than
+requiring that historical patch. Each interpreter uses its own configuration and
+extensions.
+
+Previously, PHP runtime configuration was ignored. To preserve working builds,
+unsupported or unrecognized values such as `7.4`, `8.0`, `8`, `^8.3`, and `latest`
+produce a warning during installation and use the image's PHP 8.3. Set a supported
+minor line to select that interpreter explicitly.
+
+Without `QLTY_PHP_RUNTIMES_DIR`, PHP continues to come from the local `$PATH`.
+
 ---
 
 ## 🛟 Help or Feedback
