@@ -18,10 +18,11 @@ use sha2::Digest;
 use std::collections::HashMap;
 use std::env::split_paths;
 use std::fmt::Debug;
-use std::path::PathBuf;
-use tracing::debug;
+use std::path::{Path, PathBuf};
+use tracing::{debug, warn};
 
 const UNKNOWN_SYSTEM_PHP_VERSION: &str = "unknown";
+const RUNNER_PHP_FALLBACK_VERSION: &str = "8.3";
 
 static SYSTEM_PHP_MINOR_VERSION: OnceCell<String> = OnceCell::new();
 
@@ -110,9 +111,21 @@ impl Php {
     }
 
     fn runner_directory(&self) -> Option<PathBuf> {
-        self.runner_root
-            .as_ref()
-            .map(|root| root.join(self.runner_minor_version()))
+        self.runner_root.as_ref().map(|root| {
+            self.requested_runner_directory(root)
+                .unwrap_or_else(|| root.join(RUNNER_PHP_FALLBACK_VERSION))
+        })
+    }
+
+    fn requested_runner_directory(&self, root: &Path) -> Option<PathBuf> {
+        if !Regex::new(r"^\d+\.\d+(?:\.(?:\d+|[xX]))?$")
+            .unwrap()
+            .is_match(&self.version)
+        {
+            return None;
+        }
+        let directory = root.join(self.runner_minor_version());
+        directory.join("bin/php").is_file().then_some(directory)
     }
 
     fn runner_minor_version(&self) -> String {
@@ -123,34 +136,26 @@ impl Php {
         let Some(root) = &self.runner_root else {
             return Ok(());
         };
-        ensure!(
-            Regex::new(r"^\d+\.\d+(?:\.(?:\d+|[xX]))?$")
-                .unwrap()
-                .is_match(&self.version),
-            "PHP version must be major.minor, major.minor.patch, or major.minor.x"
-        );
         let directory = self.runner_directory().unwrap();
-        if !directory.join("bin/php").is_file() {
-            let mut available = std::fs::read_dir(root)
-                .with_context(|| format!("Runner PHP directory is missing: {}", root.display()))?
-                .filter_map(|entry| entry.ok())
-                .filter(|entry| entry.path().is_dir())
-                .map(|entry| entry.file_name().to_string_lossy().into_owned())
-                .collect_vec();
-            available.sort();
-            bail!(
-                "PHP {} is not baked into this runner image. Available versions: {}",
-                self.version,
-                available.join(", ")
-            );
-        }
+        ensure!(
+            directory.join("bin/php").is_file(),
+            "Runner PHP installation is missing: {}",
+            directory.display()
+        );
+        let minor = directory.file_name().unwrap().to_string_lossy();
         let installed = self.expected_version()?.unwrap();
         ensure!(
-            installed.starts_with(&format!("{}.", self.runner_minor_version())),
-            "Runner PHP {} does not match requested version {}",
+            installed.starts_with(&format!("{minor}.")),
+            "Runner PHP {} does not match selected minor {}",
             installed,
-            self.version
+            minor
         );
+        if self.requested_runner_directory(root).is_none() {
+            warn!(
+                "Requested PHP {:?} is not available in this runner image; using PHP {}",
+                self.version, installed
+            );
+        }
         Ok(())
     }
 
@@ -514,30 +519,59 @@ pub mod test {
     }
 
     #[test]
-    fn baked_php_rejects_unavailable_minors_before_using_path_php() {
+    #[tracing_test::traced_test]
+    fn baked_php_warns_when_falling_back_to_8_3() {
         let root = tempdir().unwrap();
         let runtime = baked_php_fixture(root.path(), "8.0");
-        let error = runtime.install(&new_task()).unwrap_err().to_string();
-        assert_eq!(
-            error,
-            "PHP 8.0 is not baked into this runner image. Available versions: 8.3"
-        );
+        runtime.verify_runner_version().unwrap();
+        assert!(logs_contain("Requested PHP \"8.0\""));
+        assert!(logs_contain("using PHP 8.3.36"));
     }
 
     #[test]
-    fn baked_php_rejects_parent_directory_requests() {
-        let root = tempdir().unwrap();
-        let runtime = baked_php_fixture(root.path(), "../8.3");
-        let error = runtime.install(&new_task()).unwrap_err().to_string();
-        assert!(error.contains("major.minor"));
+    fn baked_php_falls_back_for_7_4() {
+        assert_baked_php_selection("7.4");
     }
 
     #[test]
-    fn baked_php_rejects_system_version_requests() {
+    fn baked_php_falls_back_for_8_0() {
+        assert_baked_php_selection("8.0");
+    }
+
+    #[test]
+    fn baked_php_falls_back_for_major_only_requests() {
+        assert_baked_php_selection("8");
+    }
+
+    #[test]
+    fn baked_php_falls_back_for_version_ranges() {
+        assert_baked_php_selection("^8.3");
+    }
+
+    #[test]
+    fn baked_php_falls_back_for_latest() {
+        assert_baked_php_selection("latest");
+    }
+
+    #[test]
+    fn baked_php_falls_back_for_parent_directory_requests() {
+        assert_baked_php_selection("../8.3");
+    }
+
+    #[test]
+    fn baked_php_falls_back_for_system_version_requests() {
+        assert_baked_php_selection("system");
+    }
+
+    #[test]
+    fn baked_php_errors_when_the_fallback_is_missing() {
         let root = tempdir().unwrap();
-        let runtime = baked_php_fixture(root.path(), "system");
+        let runtime = Php {
+            version: "latest".into(),
+            runner_root: Some(root.path().to_path_buf()),
+        };
         let error = runtime.install(&new_task()).unwrap_err().to_string();
-        assert!(error.contains("major.minor"));
+        assert!(error.contains("Runner PHP installation is missing"));
     }
 
     fn failing_install_cmd(list: Arc<Mutex<Vec<Vec<String>>>>) -> Box<dyn CommandBuilder> {
