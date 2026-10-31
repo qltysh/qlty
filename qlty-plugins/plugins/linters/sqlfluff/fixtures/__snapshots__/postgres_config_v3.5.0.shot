@@ -1,0 +1,100 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=sqlfluff fixture=postgres_config version=3.5.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "test.sql",
+        "range": {
+          "endColumn": 22,
+          "endLine": 1,
+          "startColumn": 17,
+          "startLine": 1,
+        },
+      },
+      "message": "Unnecessary quoted identifier "bar".",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "RF06",
+      "snippet": "SELECT "foo" AS "bar";",
+      "snippetWithContext": "SELECT "foo" AS "bar";",
+      "suggestions": [
+        {
+          "patch": "--- original
++++ modified
+@@ -1 +1 @@
+-SELECT "foo" AS "bar";
++SELECT "foo" AS bar;
+",
+          "replacements": [
+            {
+              "data": "bar",
+              "location": {
+                "path": "test.sql",
+                "range": {
+                  "endByte": 21,
+                  "endColumn": 22,
+                  "endLine": 1,
+                  "startByte": 16,
+                  "startColumn": 17,
+                  "startLine": 1,
+                },
+              },
+            },
+          ],
+          "source": "SUGGESTION_SOURCE_TOOL",
+        },
+      ],
+      "tool": "sqlfluff",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": "test.sql",
+        "range": {
+          "endColumn": 13,
+          "endLine": 1,
+          "startColumn": 8,
+          "startLine": 1,
+        },
+      },
+      "message": "Unnecessary quoted identifier "foo".",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "RF06",
+      "snippet": "SELECT "foo" AS "bar";",
+      "snippetWithContext": "SELECT "foo" AS "bar";",
+      "suggestions": [
+        {
+          "patch": "--- original
++++ modified
+@@ -1 +1 @@
+-SELECT "foo" AS "bar";
++SELECT foo AS "bar";
+",
+          "replacements": [
+            {
+              "data": "foo",
+              "location": {
+                "path": "test.sql",
+                "range": {
+                  "endByte": 12,
+                  "endColumn": 13,
+                  "endLine": 1,
+                  "startByte": 7,
+                  "startColumn": 8,
+                  "startLine": 1,
+                },
+              },
+            },
+          ],
+          "source": "SUGGESTION_SOURCE_TOOL",
+        },
+      ],
+      "tool": "sqlfluff",
+    },
+  ],
+}
+`;
