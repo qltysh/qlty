@@ -120,13 +120,20 @@ impl Php {
     }
 
     fn requested_runner_directory(&self, root: &Path) -> Option<PathBuf> {
-        if !Regex::new(r"^\d+\.\d+(?:\.(?:\d+|[xX]))?$")
-            .unwrap()
-            .is_match(&self.version)
+        let mut parts = self.version.split('.');
+        let major = parts.next()?;
+        let minor = parts.next()?;
+        let patch = parts.next();
+        let is_number =
+            |part: &str| !part.is_empty() && part.bytes().all(|byte| byte.is_ascii_digit());
+        if !is_number(major)
+            || !is_number(minor)
+            || patch.is_some_and(|part| !is_number(part) && !matches!(part, "x" | "X"))
+            || parts.next().is_some()
         {
             return None;
         }
-        let directory = root.join(self.runner_minor_version());
+        let directory = root.join(format!("{major}.{minor}"));
         directory.join("bin/php").is_file().then_some(directory)
     }
 
