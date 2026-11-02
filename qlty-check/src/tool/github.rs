@@ -408,7 +408,8 @@ impl GitHubReleaseTool {
     ) -> Result<Vec<serde_json::Value>> {
         let proxy_url = format!("{}/repos/{}/releases/tags/{}", GITHUB_PROXY_BASE, repo, tag);
 
-        match self.get_release_assets(&proxy_url) {
+        // The proxy uses its own token and never gets the user's.
+        match self.get_release_assets(&proxy_url, None) {
             Ok(assets) => Ok(assets),
             Err(e) => {
                 if Self::should_fallback_to_api(&e) {
@@ -418,7 +419,7 @@ impl GitHubReleaseTool {
                     );
                     let api_url =
                         format!("{}/repos/{}/releases/tags/{}", GITHUB_API_BASE, repo, tag);
-                    self.get_release_assets(&api_url)
+                    self.get_release_assets(&api_url, user_github_token().as_deref())
                 } else {
                     Err(e)
                 }
@@ -439,7 +440,11 @@ impl GitHubReleaseTool {
         }
     }
 
-    fn get_release_assets(&self, url: &str) -> Result<Vec<serde_json::Value>> {
+    fn get_release_assets(
+        &self,
+        url: &str,
+        github_token: Option<&str>,
+    ) -> Result<Vec<serde_json::Value>> {
         let mut request = http::get(url)?
             .set(
                 "User-Agent",
@@ -447,8 +452,8 @@ impl GitHubReleaseTool {
             )
             .set("X-GitHub-Api-Version", GITHUB_API_VERSION);
 
-        if let Ok(auth_token) = std::env::var("QLTY_GITHUB_TOKEN") {
-            request = request.set("Authorization", &format!("Bearer {}", auth_token));
+        if let Some(token) = github_token {
+            request = request.set("Authorization", &format!("Bearer {}", token));
         }
 
         let mut installation = initialize_installation(self)?;
@@ -461,6 +466,18 @@ impl GitHubReleaseTool {
             .ok_or_else(|| anyhow::anyhow!("No assets found"))
             .cloned()
     }
+}
+
+// The user's QLTY_GITHUB_TOKEN, for requests made directly to api.github.com.
+// It is never sent to github-proxy.qlty.sh, which does not use it.
+// An empty value is treated as unset, since GitHub rejects an empty bearer
+// token with 401.
+fn user_github_token() -> Option<String> {
+    non_empty_token(std::env::var("QLTY_GITHUB_TOKEN").ok())
+}
+
+fn non_empty_token(token: Option<String>) -> Option<String> {
+    token.filter(|t| !t.trim().is_empty())
 }
 
 fn finalize_installation_from_assets_fetch(
@@ -482,8 +499,16 @@ fn finalize_installation_from_assets_fetch(
 
 #[cfg(test)]
 mod test {
-    use super::{GitHubRelease, GitHubReleaseAsset};
+    use super::{non_empty_token, GitHubRelease, GitHubReleaseAsset};
     use qlty_config::config::{DownloadFileType, ReleaseDef};
+
+    #[test]
+    fn test_empty_github_token_is_unset() {
+        assert_eq!(non_empty_token(None), None);
+        assert_eq!(non_empty_token(Some("".into())), None);
+        assert_eq!(non_empty_token(Some("  \n".into())), None);
+        assert_eq!(non_empty_token(Some("ghp_x".into())), Some("ghp_x".into()));
+    }
 
     #[test]
     fn test_windows_x86_64_asset() {
