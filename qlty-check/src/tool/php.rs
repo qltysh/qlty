@@ -29,7 +29,7 @@ static SYSTEM_PHP_MINOR_VERSION: OnceCell<String> = OnceCell::new();
 #[derive(Debug, Clone)]
 pub struct Php {
     pub version: String,
-    pub(crate) runner_root: Option<PathBuf>,
+    pub(crate) php_runtimes_dir: Option<PathBuf>,
 }
 
 impl Tool for Php {
@@ -47,7 +47,7 @@ impl Tool for Php {
 
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
         sha.update(self.name().as_bytes());
-        if let Some(root) = &self.runner_root {
+        if let Some(root) = &self.php_runtimes_dir {
             sha.update(b"runner-php-v1\0");
             sha.update(path_to_native_string(root).as_bytes());
             sha.update(b"\0");
@@ -69,7 +69,9 @@ impl Tool for Php {
     }
 
     fn version_command(&self) -> Option<String> {
-        self.runner_root.as_ref().map(|_| "php --version".into())
+        self.php_runtimes_dir
+            .as_ref()
+            .map(|_| "php --version".into())
     }
 
     fn expected_version(&self) -> Result<Option<String>> {
@@ -106,12 +108,12 @@ impl Php {
     pub fn new(version: &str) -> Self {
         Self {
             version: version.to_owned(),
-            runner_root: std::env::var_os("QLTY_PHP_RUNTIMES_DIR").map(PathBuf::from),
+            php_runtimes_dir: std::env::var_os("QLTY_PHP_RUNTIMES_DIR").map(PathBuf::from),
         }
     }
 
     fn runner_directory(&self) -> Option<PathBuf> {
-        self.runner_root.as_ref().map(|root| {
+        self.php_runtimes_dir.as_ref().map(|root| {
             self.requested_runner_directory(root)
                 .unwrap_or_else(|| root.join(RUNNER_PHP_FALLBACK_VERSION))
         })
@@ -133,7 +135,7 @@ impl Php {
     }
 
     fn verify_runner_version(&self) -> Result<()> {
-        let Some(root) = &self.runner_root else {
+        let Some(root) = &self.php_runtimes_dir else {
             return Ok(());
         };
         let directory = self.runner_directory().unwrap();
@@ -359,7 +361,7 @@ impl PhpPackage {
             cmd: self.cmd.clone(),
             runtime: self
                 .runtime
-                .runner_root
+                .php_runtimes_dir
                 .as_ref()
                 .map(|_| self.runtime.clone()),
         }
@@ -404,7 +406,7 @@ pub mod test {
             },
             runtime: super::Php {
                 version: "1.0.0".to_string(),
-                runner_root: None,
+                php_runtimes_dir: None,
             },
         };
         reroute_tools_root(&temp_path, &pkg);
@@ -446,7 +448,7 @@ pub mod test {
         std::fs::write(directory.join("version"), "8.3.36").unwrap();
         Php {
             version: requested.into(),
-            runner_root: Some(root.to_path_buf()),
+            php_runtimes_dir: Some(root.to_path_buf()),
         }
     }
 
@@ -513,7 +515,7 @@ pub mod test {
         let root = tempdir().unwrap();
         let runtime = Php {
             version: "8.3".into(),
-            runner_root: Some(root.path().join("missing")),
+            php_runtimes_dir: Some(root.path().join("missing")),
         };
         assert!(!runtime.fingerprint().is_empty());
     }
@@ -568,7 +570,7 @@ pub mod test {
         let root = tempdir().unwrap();
         let runtime = Php {
             version: "latest".into(),
-            runner_root: Some(root.path().to_path_buf()),
+            php_runtimes_dir: Some(root.path().to_path_buf()),
         };
         let error = runtime.install(&new_task()).unwrap_err().to_string();
         assert!(error.contains("Runner PHP installation is missing"));
@@ -866,7 +868,7 @@ pub mod test {
             },
             runtime: super::Php {
                 version: "1.0.0".to_string(),
-                runner_root: None,
+                php_runtimes_dir: None,
             },
         }
     }
@@ -947,7 +949,7 @@ pub mod test {
             },
             runtime: Php {
                 version: "1.0.0".to_string(),
-                runner_root: None,
+                php_runtimes_dir: None,
             },
         };
         let mut expected = sha2::Sha256::new();

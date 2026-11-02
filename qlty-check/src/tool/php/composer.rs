@@ -360,7 +360,7 @@ pub mod test {
             },
             runtime: Php {
                 version: "1.0.0".to_string(),
-                runner_root: None,
+                php_runtimes_dir: None,
             },
         };
 
@@ -417,7 +417,7 @@ pub mod test {
             },
             runtime: Php {
                 version: "1.0.0".to_string(),
-                runner_root: None,
+                php_runtimes_dir: None,
             },
         };
 
