@@ -1,0 +1,32 @@
+# Test for qltysh/qltysh#1278, acceptance criterion 2. Lives only on the
+# app-key-branch-test-1278 branch; delete the branch once the issue closes.
+#
+# Pushing this branch runs both jobs. Before the fix, "without-environment"
+# prints a non-zero length (any write member's branch reads the org secret).
+# After QLTY_APP_PRIVATE_KEY moves into the qlty-releases environment and
+# the org secret is gone, it prints 0 and "with-environment" is rejected
+# because this branch is not allowed to deploy to qlty-releases.
+name: App key branch test
+on:
+  push:
+    branches:
+      - app-key-branch-test-1278
+permissions: {}
+jobs:
+  without-environment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print the length of QLTY_APP_PRIVATE_KEY
+        env:
+          KEY: ${{ secrets.QLTY_APP_PRIVATE_KEY }}
+        run: |
+          echo "QLTY_APP_PRIVATE_KEY length on ${GITHUB_REF_NAME} without an environment: ${#KEY}"
+  with-environment:
+    runs-on: ubuntu-latest
+    environment: qlty-releases
+    steps:
+      - name: Print the length of QLTY_APP_PRIVATE_KEY
+        env:
+          KEY: ${{ secrets.QLTY_APP_PRIVATE_KEY }}
+        run: |
+          echo "QLTY_APP_PRIVATE_KEY length on ${GITHUB_REF_NAME} in qlty-releases: ${#KEY}"
