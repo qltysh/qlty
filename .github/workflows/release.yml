@@ -20,6 +20,7 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    environment: qlty-releases
     outputs:
       version: ${{ steps.version.outputs.version }}
       tag: v${{ steps.version.outputs.version }}
@@ -30,6 +31,13 @@ jobs:
           app-id: ${{ vars.QLTY_APP_ID }}
           private-key: ${{ secrets.QLTY_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
+          repositories: qlty
+          permission-contents: write
+
+      - name: Check the token reaches one repository
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: test "$(gh api /installation/repositories --jq .total_count)" = 1
 
       - name: Get GitHub App User ID
         id: get-user-id

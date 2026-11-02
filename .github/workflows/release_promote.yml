@@ -121,6 +121,7 @@ jobs:
     if: inputs.channel == 'latest'
     needs: [resolve, promote]
     runs-on: ubuntu-latest
+    environment: qlty-releases
     steps:
       - uses: actions/create-github-app-token@7e473efe3cb98aa54f8d4bac15400b15fad77d94 # v2
         id: app-token
@@ -129,6 +130,12 @@ jobs:
           private-key: ${{ secrets.QLTY_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: homebrew-tap
+          permission-contents: write
+
+      - name: Check the token reaches one repository
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: test "$(gh api /installation/repositories --jq .total_count)" = 1
 
       - name: Get GitHub App User ID
         id: get-user-id
@@ -176,6 +183,7 @@ jobs:
     needs: promote
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    environment: qlty-releases
     steps:
       - uses: actions/create-github-app-token@7e473efe3cb98aa54f8d4bac15400b15fad77d94 # v2
         id: app-token
@@ -185,6 +193,11 @@ jobs:
           owner: ${{ github.repository_owner }}
           repositories: cloud
           permission-actions: write
+
+      - name: Check the token reaches one repository
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: test "$(gh api /installation/repositories --jq .total_count)" = 1
 
       - name: Regenerate CLI reference docs
         env:
