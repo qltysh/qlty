@@ -159,7 +159,12 @@ impl Php {
             installed,
             minor
         );
-        if self.requested_runner_directory(root).is_none() {
+        let patch_mismatch = self
+            .version
+            .split('.')
+            .nth(2)
+            .is_some_and(|patch| !matches!(patch, "x" | "X") && self.version != installed);
+        if self.requested_runner_directory(root).is_none() || patch_mismatch {
             warn!(
                 "Requested PHP {:?} is not available in this runner image; using PHP {}",
                 self.version, installed
@@ -476,23 +481,49 @@ pub mod test {
     }
 
     #[test]
+    #[tracing_test::traced_test]
     fn baked_php_selects_a_minor_line() {
         assert_baked_php_selection("8.3");
+        assert!(!logs_contain("Requested PHP"));
     }
 
     #[test]
+    #[tracing_test::traced_test]
     fn baked_php_resolves_an_old_patch_to_its_minor_line() {
         assert_baked_php_selection("8.3.7");
+        assert!(logs_contain(
+            "Requested PHP \"8.3.7\" is not available in this runner image; using PHP 8.3.36"
+        ));
     }
 
     #[test]
+    #[tracing_test::traced_test]
+    fn baked_php_warns_for_a_newer_patch_request() {
+        assert_baked_php_selection("8.3.87");
+        assert!(logs_contain(
+            "Requested PHP \"8.3.87\" is not available in this runner image; using PHP 8.3.36"
+        ));
+    }
+
+    #[test]
+    #[tracing_test::traced_test]
+    fn baked_php_does_not_warn_for_a_matching_patch() {
+        assert_baked_php_selection("8.3.36");
+        assert!(!logs_contain("Requested PHP"));
+    }
+
+    #[test]
+    #[tracing_test::traced_test]
     fn baked_php_selects_a_patch_wildcard() {
         assert_baked_php_selection("8.3.x");
+        assert!(!logs_contain("Requested PHP"));
     }
 
     #[test]
+    #[tracing_test::traced_test]
     fn baked_php_selects_an_uppercase_patch_wildcard() {
         assert_baked_php_selection("8.3.X");
+        assert!(!logs_contain("Requested PHP"));
     }
 
     #[test]

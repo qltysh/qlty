@@ -362,8 +362,9 @@ releases; rebuilding an image for unrelated changes can also update PHP.
 Qlty selects the baked interpreter for Composer and PHP plugins without installing
 system packages or contacting APT during a run. `8.3`, `8.3.7`, and `8.3.x` all select
 the image's baked 8.3 patch. Patch numbers select their minor line rather than
-requiring that historical patch. Each interpreter uses its own configuration and
-extensions.
+requiring that historical patch. If an exact patch request differs from the baked
+version, Qlty logs a warning during installation with the requested and selected
+versions. Each interpreter uses its own configuration and extensions.
 
 Previously, PHP runtime configuration was ignored. To preserve working builds,
 unsupported or unrecognized values such as `7.4`, `8.0`, `8`, `^8.3`, and `latest`
