@@ -272,6 +272,19 @@ mod test {
     }
 
     #[test]
+    fn test_inherited_edition_without_workspace_package_edition() {
+        let root = tempdir().unwrap();
+        write_file(root.path(), "Cargo.toml", "[workspace]\n");
+        write_file(
+            root.path(),
+            "crates/foo/Cargo.toml",
+            "[package]\nedition.workspace = true\n",
+        );
+
+        assert_eq!(find_edition(&root, "crates/foo/src/lib.rs"), None);
+    }
+
+    #[test]
     fn test_virtual_manifest() {
         let root = tempdir().unwrap();
         write_file(
@@ -317,5 +330,27 @@ mod test {
         );
 
         assert_eq!(find_edition(&root, "src/lib.rs"), None);
+    }
+
+    #[test]
+    fn test_non_string_edition() {
+        let root = tempdir().unwrap();
+        write_file(root.path(), "Cargo.toml", "[package]\nedition = 2021\n");
+
+        assert_eq!(find_edition(&root, "src/lib.rs"), None);
+    }
+
+    #[test]
+    fn test_directory_edition_is_cached() {
+        let root = tempdir().unwrap();
+        write_file(root.path(), "Cargo.toml", "[package]\nedition = \"2021\"\n");
+        let finder = CargoEditionFinder::new(root.path());
+        finder.find(&root.path().join("src/lib.rs"));
+        write_file(root.path(), "Cargo.toml", "[package]\nedition = \"2018\"\n");
+
+        assert_eq!(
+            finder.find(&root.path().join("src/main.rs")),
+            Some("2021".to_string())
+        );
     }
 }
