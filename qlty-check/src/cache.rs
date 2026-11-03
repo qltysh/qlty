@@ -353,6 +353,10 @@ impl IssuesCacheKey {
         }
     }
 
+    pub fn add_edition(&mut self, edition: &str) {
+        self.digest.add("edition", edition);
+    }
+
     pub fn finalize(&mut self, target: &Target) {
         self.digest.add("target_path", &target.path_string());
 
@@ -482,5 +486,23 @@ mod test {
         });
 
         assert!(!key.add_target_sha(&target("lib/hello.rb")));
+    }
+
+    #[test]
+    fn test_edition_changes_digest() {
+        let repository = RepositoryState {
+            tree_sha: Some("abc123".to_string()),
+            dirty_paths: vec![],
+        };
+        let target = target("src/lib.rs");
+        let mut key_2018 = cache_key(repository.clone());
+        let mut key_2021 = cache_key(repository);
+
+        key_2018.add_edition("2018");
+        key_2018.finalize(&target);
+        key_2021.add_edition("2021");
+        key_2021.finalize(&target);
+
+        assert_ne!(key_2018.hexdigest(), key_2021.hexdigest());
     }
 }

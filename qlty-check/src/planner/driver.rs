@@ -1,4 +1,5 @@
 use super::{
+    cargo_edition::CargoEditionFinder,
     config_files::PluginConfigFile,
     invocation_directory::InvocationDirectoryPlanner,
     plugin::PluginPlanner,
@@ -168,11 +169,22 @@ impl DriverPlanner {
             self.issue_cache.repository(),
         );
 
+        let cargo_edition_finder = (self.driver.batch_by == DriverBatchBy::CargoEdition)
+            .then(|| CargoEditionFinder::new(&self.workspace.root));
+
         let items = self
             .targets
             .par_iter()
             .map(|target| {
                 let mut cache_key = cache_key.clone();
+
+                if let Some(edition) = cargo_edition_finder
+                    .as_ref()
+                    .and_then(|finder| finder.find(&self.workspace.root.join(&target.path)))
+                {
+                    cache_key.add_edition(&edition);
+                }
+
                 cache_key.finalize(target);
                 (target, cache_key)
             })
@@ -250,6 +262,7 @@ impl DriverPlanner {
                 invocation_directory,
                 targets: driver_target_batch.targets,
                 invocation_directory_def: self.driver.invocation_directory_def.clone(),
+                edition: driver_target_batch.edition,
             });
         }
 

@@ -1,6 +1,6 @@
 use std::{
     cmp::Reverse,
-    collections::HashMap,
+    collections::{BTreeMap, HashMap},
     path::{Path, PathBuf},
 };
 
@@ -12,8 +12,8 @@ use qlty_config::{
 use tracing::warn;
 
 use super::{
-    config_files::PluginConfigFile, invocation_directory::InvocationDirectoryPlanner,
-    target::Target,
+    cargo_edition::CargoEditionFinder, config_files::PluginConfigFile,
+    invocation_directory::InvocationDirectoryPlanner, target::Target,
 };
 
 const MAX_MAX_BATCH: usize = 512;
@@ -23,6 +23,7 @@ pub struct DriverTargetBatch {
     pub targets: Vec<Target>,
     pub invocation_directory: Option<PathBuf>,
     pub config_file: Option<PluginConfigFile>,
+    pub edition: Option<String>,
 }
 
 #[derive(Debug)]
@@ -48,6 +49,7 @@ impl TargetBatcher {
                         targets: targets.to_vec(),
                         invocation_directory: None,
                         config_file: None,
+                        edition: None,
                     });
                 }
             }
@@ -56,6 +58,9 @@ impl TargetBatcher {
             }
             DriverBatchBy::ConfigFile => {
                 self.batch_by_config_files(&mut driver_target_batches, &targets)?;
+            }
+            DriverBatchBy::CargoEdition => {
+                self.batch_by_cargo_edition(&mut driver_target_batches, &targets)?;
             }
         }
 
@@ -125,6 +130,7 @@ impl TargetBatcher {
                     targets: targets.to_vec(),
                     invocation_directory: Some(invocation_directory.clone()),
                     config_file: None,
+                    edition: None,
                 });
             }
         }
@@ -143,6 +149,7 @@ impl TargetBatcher {
                     targets: targets.to_vec(),
                     invocation_directory: None,
                     config_file: None,
+                    edition: None,
                 });
             }
 
@@ -170,9 +177,7 @@ impl TargetBatcher {
 
         let mut config_targets_map = HashMap::new();
         let mut unconfigured_targets = vec![];
-        let prefixed_workspace_root = self
-            .workspace_root
-            .join(self.current_prefix.as_deref().unwrap_or(""));
+        let prefixed_workspace_root = self.prefixed_workspace_root();
 
         for target in targets {
             let full_target_path = target.full_path(&prefixed_workspace_root)?;
@@ -201,6 +206,7 @@ impl TargetBatcher {
                 targets: targets.to_vec(),
                 invocation_directory: None,
                 config_file: None,
+                edition: None,
             });
         }
 
@@ -213,11 +219,49 @@ impl TargetBatcher {
                         path: config.path.clone(),
                         contents: config.contents.clone(),
                     }),
+                    edition: None,
                 });
             }
         }
 
         Ok(())
+    }
+
+    fn batch_by_cargo_edition(
+        &self,
+        driver_target_batches: &mut Vec<DriverTargetBatch>,
+        targets: &[Target],
+    ) -> Result<()> {
+        let cargo_edition_finder = CargoEditionFinder::new(&self.workspace_root);
+        let mut edition_targets_map = BTreeMap::new();
+        let prefixed_workspace_root = self.prefixed_workspace_root();
+
+        for target in targets {
+            let edition = cargo_edition_finder.find(&target.full_path(&prefixed_workspace_root)?);
+
+            edition_targets_map
+                .entry(edition)
+                .or_insert_with(Vec::new)
+                .push(target.clone());
+        }
+
+        for (edition, targets) in edition_targets_map {
+            for targets in targets.chunks(self.compute_chunk_size()) {
+                driver_target_batches.push(DriverTargetBatch {
+                    targets: targets.to_vec(),
+                    invocation_directory: None,
+                    config_file: None,
+                    edition: edition.clone(),
+                });
+            }
+        }
+
+        Ok(())
+    }
+
+    fn prefixed_workspace_root(&self) -> PathBuf {
+        self.workspace_root
+            .join(self.current_prefix.as_deref().unwrap_or(""))
     }
 
     pub fn compute_chunk_size(&self) -> usize {
@@ -261,7 +305,11 @@ mod test {
     use qlty_analysis::WorkspaceEntryKind;
     use qlty_config::config::{InvocationDirectoryDef, InvocationDirectoryType, PluginDef};
     use qlty_test_utilities::git::sample_repo;
-    use std::{fs::File, time::SystemTime};
+    use std::{
+        fs::{create_dir_all, write, File},
+        time::SystemTime,
+    };
+    use tempfile::tempdir;
 
     fn target_files(path: &str) -> Target {
         Target {
@@ -639,5 +687,76 @@ mod test {
 
         assert_eq!(filtered_targets.len(), 1);
         assert_eq!(filtered_targets[0].path, PathBuf::from("lib/hello.rb"));
+    }
+
+    fn target_paths(batch: &DriverTargetBatch) -> Vec<PathBuf> {
+        batch
+            .targets
+            .iter()
+            .map(|target| target.path.clone())
+            .collect()
+    }
+
+    #[test]
+    fn test_compute_with_cargo_edition_batching() {
+        let root = tempdir().unwrap();
+        create_dir_all(root.path().join("crates/foo")).unwrap();
+        write(
+            root.path().join("Cargo.toml"),
+            "[package]\nedition = \"2021\"\n",
+        )
+        .unwrap();
+        write(
+            root.path().join("crates/foo/Cargo.toml"),
+            "[package]\nedition = \"2018\"\n",
+        )
+        .unwrap();
+        let mut target_batcher = setup_target_batcher(
+            DriverBatchBy::CargoEdition,
+            5,
+            InvocationDirectoryDef::default(),
+        );
+        target_batcher.workspace_root = root.path().to_path_buf();
+
+        let targets = vec![
+            target_files("src/lib.rs"),
+            target_files("crates/foo/src/lib.rs"),
+            target_files("tests/workflow.rs"),
+        ];
+
+        let batches = target_batcher.compute(&targets).unwrap();
+
+        assert_eq!(batches.len(), 2);
+        assert_eq!(batches[0].edition, Some("2018".to_string()));
+        assert_eq!(
+            target_paths(&batches[0]),
+            vec![PathBuf::from("crates/foo/src/lib.rs")]
+        );
+        assert_eq!(batches[1].edition, Some("2021".to_string()));
+        assert_eq!(
+            target_paths(&batches[1]),
+            vec![
+                PathBuf::from("src/lib.rs"),
+                PathBuf::from("tests/workflow.rs")
+            ]
+        );
+    }
+
+    #[test]
+    fn test_compute_with_cargo_edition_batching_without_manifest() {
+        let root = tempdir().unwrap();
+        let mut target_batcher = setup_target_batcher(
+            DriverBatchBy::CargoEdition,
+            5,
+            InvocationDirectoryDef::default(),
+        );
+        target_batcher.workspace_root = root.path().to_path_buf();
+
+        let targets = vec![target_files("src/lib.rs")];
+
+        let batches = target_batcher.compute(&targets).unwrap();
+
+        assert_eq!(batches.len(), 1);
+        assert_eq!(batches[0].edition, None);
     }
 }

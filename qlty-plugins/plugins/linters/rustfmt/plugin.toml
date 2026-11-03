@@ -13,7 +13,12 @@ description = "Rust code formatter"
 [plugins.definitions.rustfmt.drivers.format]
 # Without skip_children, rustfmt also formats each `mod foo;` file and fails when
 # that file is not in the sandbox. Stable rustfmt only honors it via --config.
-script = "rustfmt --config skip_children=true ${target}"
+#
+# Like cargo fmt, pass the edition from each file's nearest Cargo.toml, which
+# overrides rustfmt.toml. Without it, rustfmt parses files as Rust 2015.
+script = "rustfmt --config skip_children=true ${edition_script} ${target}"
+edition_script = "--edition ${edition}"
+batch_by = "cargo_edition"
 success_codes = [0]
 output = "rewrite"
 batch = true

@@ -729,6 +729,7 @@ pub mod test {
                 }],
                 invocation_directory: PathBuf::from(staging_directory),
                 invocation_directory_def: InvocationDirectoryDef::default(),
+                edition: None,
             };
 
             let driver = build_driver(vec![], vec![]);
@@ -791,6 +792,7 @@ pub mod test {
             }],
             invocation_directory: PathBuf::from(staging_directory),
             invocation_directory_def: InvocationDirectoryDef::default(),
+            edition: None,
         };
 
         let driver = build_driver(vec![], vec![]);
@@ -840,6 +842,7 @@ pub mod test {
                 kind: InvocationDirectoryType::ToolDir,
                 path: None,
             },
+            edition: None,
         };
 
         let target_list = plan_target_list(&plan);
@@ -871,6 +874,7 @@ pub mod test {
             targets: vec![],
             invocation_directory,
             invocation_directory_def: InvocationDirectoryDef { kind, path: None },
+            edition: None,
         }
     }
 
@@ -1012,6 +1016,7 @@ pub mod test {
                 kind: InvocationDirectoryType::ToolDir,
                 path: None,
             },
+            edition: None,
         };
 
         let target_list = plan_target_list(&plan);

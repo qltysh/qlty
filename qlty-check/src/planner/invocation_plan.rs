@@ -40,6 +40,7 @@ pub struct InvocationPlan {
     pub targets: Vec<Target>,
     pub invocation_directory: PathBuf,
     pub invocation_directory_def: InvocationDirectoryDef,
+    pub edition: Option<String>,
 }
 
 impl InvocationPlan {

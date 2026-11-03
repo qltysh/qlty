@@ -39,9 +39,17 @@ Rustfmt formats: Rust (`.rs`).
 
 ## Troubleshooting
 
-**rustfmt does not format files in a workspace subdirectory.**
-rustfmt requires a `rustfmt.toml` or `rust-project.json` at the crate root. In Cargo workspaces, each member crate may need its own configuration or rustfmt may not find the correct edition setting.
-Ensure a `rustfmt.toml` is present in the workspace root with `edition = "2021"` (or whatever edition the workspace uses). Rustfmt inherits this configuration for member crates.
+**rustfmt reports "`async fn` is not permitted in Rust 2015" or another edition error.**
+Like `cargo fmt`, Qlty passes rustfmt the edition of the package with each file's nearest `Cargo.toml`: its `package.edition`, or `workspace.package.edition` from the workspace root when the package sets `edition.workspace = true`. A package without an `edition` is formatted as Rust 2015, as Cargo builds it. Set `edition` in that package's `Cargo.toml`.
+Files with no `Cargo.toml` above them, or under a `Cargo.toml` with no `[package]`, use the `edition` from `rustfmt.toml`, or Rust 2015 if none is set.
+
+**rustfmt ignores `edition` in `rustfmt.toml`.**
+As with `cargo fmt`, the edition from `Cargo.toml` overrides `edition` in `rustfmt.toml`. To use the `rustfmt.toml` edition instead, override the driver script in `qlty.toml`:
+
+```toml
+[plugins.definitions.rustfmt.drivers.format]
+script = "rustfmt --config skip_children=true ${target}"
+```
 
 **rustfmt reports "error: the attribute `#![feature(...)]` may not be used on stable" on nightly-only code.**
 rustfmt on stable Rust cannot parse some nightly-only syntax. If the project uses nightly-only features, rustfmt will fail to parse those files.

@@ -123,6 +123,9 @@ pub struct DriverDef {
 
     #[serde(default)]
     pub config_missing: ConfigMissing,
+
+    #[serde(default)]
+    pub edition_script: Option<String>,
 }
 
 fn default_driver_timeout() -> u64 {
@@ -160,6 +163,10 @@ pub enum DriverBatchBy {
 
     #[serde(rename = "config_file")]
     ConfigFile,
+
+    /// Batch Rust targets by the edition of the nearest Cargo package, as `cargo fmt` does
+    #[serde(rename = "cargo_edition")]
+    CargoEdition,
 }
 
 /// Handling of targets with no config above them when batching by config file

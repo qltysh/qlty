@@ -3326,6 +3326,7 @@ dependencies = [
  "tar",
  "tempfile",
  "thiserror 2.0.16",
+ "toml 0.8.23",
  "tracing",
  "tracing-test",
  "ureq",
