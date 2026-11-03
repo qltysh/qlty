@@ -151,7 +151,7 @@ impl ToolBuilder<'_> {
             Runtime::Ruby => Some("3.3.7".to_owned()),
             Runtime::Rust => Some("1.77.2".to_owned()),
             Runtime::Java => Some("25.0.5+8".to_owned()),
-            Runtime::Php => Some("8.3.7".to_owned()),
+            Runtime::Php => Some("8.3".to_owned()),
         }
     }
 
@@ -173,9 +173,7 @@ impl ToolBuilder<'_> {
             Runtime::Java => Box::new(java::Java {
                 version: version.to_string(),
             }),
-            Runtime::Php => Box::new(php::Php {
-                version: version.to_string(),
-            }),
+            Runtime::Php => Box::new(php::Php::new(version)),
         }
     }
 
@@ -198,9 +196,7 @@ impl ToolBuilder<'_> {
             Runtime::Java => Box::new(java::Java {
                 version: version.to_string(),
             }),
-            Runtime::Php => Box::new(php::Php {
-                version: version.to_string(),
-            }),
+            Runtime::Php => Box::new(php::Php::new(version)),
         }
     }
 }
