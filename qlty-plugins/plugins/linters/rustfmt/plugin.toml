@@ -11,7 +11,9 @@ affects_cache = ["Cargo.toml", "Cargo.lock"]
 description = "Rust code formatter"
 
 [plugins.definitions.rustfmt.drivers.format]
-script = "rustfmt ${target}"
+# Without skip_children, rustfmt also formats each `mod foo;` file and fails when
+# that file is not in the sandbox. Stable rustfmt only honors it via --config.
+script = "rustfmt --config skip_children=true ${target}"
 success_codes = [0]
 output = "rewrite"
 batch = true
