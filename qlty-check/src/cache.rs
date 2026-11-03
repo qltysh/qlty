@@ -223,6 +223,15 @@ impl InvocationCacheKey {
 
         digest.add("plugin.driver.script", &driver.script);
 
+        if let Some(edition_script) = &driver.edition_script {
+            digest.add("plugin.driver.edition_script", edition_script);
+        }
+
+        digest.add(
+            "plugin.driver.batch_by",
+            &serde_yaml::to_string(&driver.batch_by).unwrap(),
+        );
+
         digest.add("plugin.driver.output", &driver.output.to_string());
 
         digest.add(
@@ -353,6 +362,10 @@ impl IssuesCacheKey {
         }
     }
 
+    pub fn add_edition(&mut self, edition: &str) {
+        self.digest.add("edition", edition);
+    }
+
     pub fn finalize(&mut self, target: &Target) {
         self.digest.add("target_path", &target.path_string());
 
@@ -400,9 +413,27 @@ impl CacheKey for IssuesCacheKey {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::tool::null_tool::NullTool;
     use qlty_analysis::cache::NullCache;
     use qlty_analysis::WorkspaceEntryKind;
+    use qlty_config::config::{DriverBatchBy, DriverDef};
     use std::time::SystemTime;
+
+    fn invocation_digest(driver: DriverDef) -> HashDigest {
+        InvocationCacheKey {
+            qlty_version: QLTY_VERSION.to_string(),
+            tool: Box::new(NullTool::default()),
+            plugin: Arc::new(PluginDef {
+                drivers: HashMap::from([("format".to_string(), driver)]),
+                ..Default::default()
+            }),
+            driver_name: "format".to_string(),
+            check_filters: CheckFilters::default(),
+            affects_cache: HashMap::new(),
+            configs: Arc::new(vec![]),
+        }
+        .build()
+    }
 
     fn cache_key(repository: RepositoryState) -> IssuesCacheKey {
         IssuesCacheKey {
@@ -482,5 +513,49 @@ mod test {
         });
 
         assert!(!key.add_target_sha(&target("lib/hello.rb")));
+    }
+
+    #[test]
+    fn test_edition_changes_digest() {
+        let repository = RepositoryState {
+            tree_sha: Some("abc123".to_string()),
+            dirty_paths: vec![],
+        };
+        let target = target("src/lib.rs");
+        let mut key_2018 = cache_key(repository.clone());
+        let mut key_2021 = cache_key(repository);
+
+        key_2018.add_edition("2018");
+        key_2018.finalize(&target);
+        key_2021.add_edition("2021");
+        key_2021.finalize(&target);
+
+        assert_ne!(key_2018.hexdigest(), key_2021.hexdigest());
+    }
+
+    #[test]
+    fn test_invocation_digest_includes_edition_script() {
+        let digest = invocation_digest(DriverDef {
+            edition_script: Some("--edition ${edition}".to_string()),
+            ..Default::default()
+        });
+
+        assert_eq!(
+            digest.parts.get("plugin.driver.edition_script"),
+            Some(&"--edition ${edition}".to_string())
+        );
+    }
+
+    #[test]
+    fn test_invocation_digest_includes_batch_by() {
+        let digest = invocation_digest(DriverDef {
+            batch_by: DriverBatchBy::CargoEdition,
+            ..Default::default()
+        });
+
+        assert_eq!(
+            digest.parts.get("plugin.driver.batch_by"),
+            Some(&"cargo_edition\n".to_string())
+        );
     }
 }

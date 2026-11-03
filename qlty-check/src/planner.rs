@@ -27,6 +27,7 @@ use std::sync::Arc;
 use std::time::Instant;
 use tracing::{debug, info};
 
+mod cargo_edition;
 pub mod check_filters;
 mod config;
 pub mod config_files;

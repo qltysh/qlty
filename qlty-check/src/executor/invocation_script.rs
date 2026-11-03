@@ -18,6 +18,7 @@ pub fn compute_invocation_script(plan: &InvocationPlan) -> Result<String> {
     // Autoload script first in case it has variables that need to be interpolated
     base_script = replace_autoload_script(plan, base_script);
     base_script = replace_config_script(plan, base_script);
+    base_script = replace_edition_script(plan, base_script);
     base_script = plan.tool.interpolate_variables(&base_script);
     base_script = replace_target_variable(plan, base_script);
     base_script = replace_tmpfile_variable(plan, base_script);
@@ -53,6 +54,20 @@ fn replace_config_script(plan: &InvocationPlan, script: String) -> String {
             script.replace("${config_script}", config_script)
         } else {
             script.replace("${config_script}", "")
+        }
+    } else {
+        script
+    }
+}
+
+fn replace_edition_script(plan: &InvocationPlan, script: String) -> String {
+    if script.contains("${edition_script}") {
+        match (&plan.edition, &plan.driver.edition_script) {
+            (Some(edition), Some(edition_script)) => script.replace(
+                "${edition_script}",
+                &edition_script.replace("${edition}", edition),
+            ),
+            _ => script.replace("${edition_script}", ""),
         }
     } else {
         script
@@ -185,6 +200,7 @@ mod test {
             targets: vec![],
             invocation_directory: PathBuf::from("/var/root"),
             invocation_directory_def: InvocationDirectoryDef::default(),
+            edition: None,
         }
     }
 
@@ -308,5 +324,26 @@ mod test {
         let script = compute_prepare_script(&plan, "tflint --init ${config_script}");
 
         assert_eq!(script, "tflint --init ");
+    }
+
+    #[test]
+    fn test_replace_edition_script_with_edition() {
+        let mut plan = build_plan();
+        plan.driver.edition_script = Some("--edition ${edition}".to_string());
+        plan.edition = Some("2021".to_string());
+
+        let script = replace_edition_script(&plan, "rustfmt ${edition_script}".to_string());
+
+        assert_eq!(script, "rustfmt --edition 2021");
+    }
+
+    #[test]
+    fn test_replace_edition_script_without_edition() {
+        let mut plan = build_plan();
+        plan.driver.edition_script = Some("--edition ${edition}".to_string());
+
+        let script = replace_edition_script(&plan, "rustfmt ${edition_script}".to_string());
+
+        assert_eq!(script, "rustfmt ");
     }
 }

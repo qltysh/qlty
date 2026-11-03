@@ -505,6 +505,11 @@ impl InvocationResult {
 
         for target in &self.plan.targets {
             let mut cache_key = cache_key.clone();
+
+            if let Some(edition) = &self.plan.edition {
+                cache_key.add_edition(edition);
+            }
+
             cache_key.finalize(target);
 
             if let Some(file_result) = file_results_by_path.get(&target.path_string()) {
