@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.666.0 (2026-11-03)
+
+### New
+
+- Select the PHP runtime baked into Qlty Cloud runner images for PHP plugins and Composer, supporting PHP 8.1 through 8.5 with 8.3 as the default (#2988)
+
+### Fixed
+
+- Format Rust files with their Cargo package's `edition`, so `rustfmt` no longer fails to parse 2018+ syntax such as `async fn` (#2992)
+- Run `rustfmt` on only the targeted files, so `qlty fmt` and diff runs no longer fail when a changed file declares a module whose file is not also checked (#2991)
+- Apply the nearest `.tflint.hcl` config to Terraform in subdirectories without their own config, so `tflint` no longer misses configured rulesets (#2932)
+- Stop reinstalling every PHP plugin when the pinned Composer version changes (#2986)
+
 ## v0.665.0 (2026-10-29)
 
 ### Security
