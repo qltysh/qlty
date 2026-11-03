@@ -46,9 +46,6 @@ impl Tool for Composer {
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
         sha.update(self.name().as_bytes());
         sha.update(COMPOSER_VERSION.as_bytes());
-        if let Some(runtime) = &self.runtime {
-            runtime.update_hash(sha)?;
-        }
 
         Ok(())
     }
@@ -338,6 +335,36 @@ pub mod test {
         assert!(composer
             .directory_name()
             .starts_with(&format!("{COMPOSER_VERSION}-")));
+    }
+
+    #[test]
+    fn test_directory_name_matches_with_and_without_baked_php() {
+        let mut composer = Composer {
+            cmd: stub_cmd(Arc::new(Mutex::new(vec![]))),
+            runtime: None,
+        };
+        let directory_name = composer.directory_name();
+        composer.runtime = Some(Php {
+            version: "8.3".into(),
+            php_runtimes_dir: Some(PathBuf::from("/opt/qlty/php")),
+        });
+
+        assert_eq!(composer.directory_name(), directory_name);
+    }
+
+    #[test]
+    fn test_directory_name_matches_across_php_versions() {
+        let mut composer = Composer {
+            cmd: stub_cmd(Arc::new(Mutex::new(vec![]))),
+            runtime: Some(Php {
+                version: "8.3".into(),
+                php_runtimes_dir: Some(PathBuf::from("/opt/qlty/php")),
+            }),
+        };
+        let directory_name = composer.directory_name();
+        composer.runtime.as_mut().unwrap().version = "8.4".into();
+
+        assert_eq!(composer.directory_name(), directory_name);
     }
 
     #[test]
