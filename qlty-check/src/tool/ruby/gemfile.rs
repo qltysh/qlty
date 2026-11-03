@@ -36,7 +36,15 @@ impl RubyGemfile {
                 && line["source".len()..].starts_with([' ', '('])
                 && !line.contains("rubygems.org")
                 && !line.contains(":rubygems")
+                && !self.keeps_source_block(line)
         })
+    }
+
+    // Block-form sources scope their gems, so keeping them never adds a global
+    // source; the block's `end` is already kept when there are no filters.
+    fn keeps_source_block(&self, line: &str) -> bool {
+        let code = line.split(" #").next().unwrap_or_default();
+        self.plugin.package_filters.is_empty() && code.split_whitespace().last() == Some("do")
     }
 
     pub fn copy_package_file(&self, task: &ProgressTask) -> Result<()> {
@@ -73,6 +81,9 @@ impl RubyGemfile {
                 }
                 "gemspec" => {
                     uses_gemspec = true;
+                    new_package_file_contents.push(line);
+                }
+                "source" if self.keeps_source_block(line) => {
                     new_package_file_contents.push(line);
                 }
                 "source" | "ruby" => {}
@@ -542,6 +553,105 @@ mod test {
             pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
 
             assert!(!pkg.package_file_declares_custom_source());
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_copy_package_file_keeps_source_block() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                indoc! {r#"
+                    source "https://rubygems.org"
+                    gem "rubocop", "1.92.0"
+                    source "https://enterprise.contribsys.com/", cooldown: 7 do
+                      gem 'sidekiq-pro', '< 9'
+                      gem 'sidekiq-ent', '< 9'
+                    end
+                "#},
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile"))?,
+                indoc! {r#"
+                    source 'https://rubygems.org'
+                    gem "rubocop", "1.92.0"
+                    source "https://enterprise.contribsys.com/", cooldown: 7 do
+                    gem 'sidekiq-pro', '< 9'
+                    gem 'sidekiq-ent', '< 9'
+                    end"#}
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_copy_package_file_drops_source_block_with_package_filters() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                indoc! {r#"
+                    source "https://rubygems.org"
+                    gem "rubocop", "1.92.0"
+                    source "https://enterprise.contribsys.com/" do
+                      gem 'sidekiq-ent', '< 9'
+                    end
+                "#},
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            pkg.plugin.package_filters = vec!["rubocop".to_string()];
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile"))?,
+                indoc! {r#"
+                    source 'https://rubygems.org'
+                    gem "rubocop", "1.92.0""#}
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_package_file_declares_custom_source_kept_block() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                "source 'https://gems.example.com' do # private\n  gem 'tool', '1.0.0'\nend",
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+
+            assert!(!pkg.package_file_declares_custom_source());
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_package_file_declares_custom_source_block_with_package_filters() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                "source 'https://gems.example.com' do\n  gem 'tool', '1.0.0'\nend",
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            pkg.plugin.package_filters = vec!["tool".to_string()];
+
+            assert!(pkg.package_file_declares_custom_source());
             Ok(())
         });
     }
