@@ -3329,6 +3329,8 @@ dependencies = [
  "toml 0.8.23",
  "tracing",
  "tracing-test",
+ "tree-sitter",
+ "tree-sitter-ruby",
  "ureq",
  "url",
  "zip",

@@ -1,11 +1,12 @@
 use super::RubygemsPackage;
 use crate::ui::ProgressBar;
 use crate::{tool::Tool, ui::ProgressTask};
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use itertools::Itertools;
 use qlty_analysis::{join_path_string, utils::fs::path_to_native_string};
-use std::{collections::HashMap, path::PathBuf};
+use std::{collections::HashMap, ops::RangeInclusive, path::PathBuf};
 use tracing::debug;
+use tree_sitter::Parser;
 
 pub type RubyGemfile = RubygemsPackage;
 
@@ -30,21 +31,19 @@ impl RubyGemfile {
             return false;
         };
 
-        contents.lines().any(|line| {
-            let line = line.trim();
-            line.starts_with("source")
-                && line["source".len()..].starts_with([' ', '('])
-                && !line.contains("rubygems.org")
-                && !line.contains(":rubygems")
-                && !self.keeps_source_block(line)
-        })
+        let Ok(source_calls) = source_calls(&contents) else {
+            return false;
+        };
+
+        source_calls
+            .iter()
+            .any(|call| !call.is_rubygems() && !self.keeps_source(call))
     }
 
     // Block-form sources scope their gems, so keeping them never adds a global
-    // source; the block's `end` is already kept when there are no filters.
-    fn keeps_source_block(&self, line: &str) -> bool {
-        let code = line.split(" #").next().unwrap_or_default();
-        self.plugin.package_filters.is_empty() && code.split_whitespace().last() == Some("do")
+    // source. Filters drop the block's `end`, so the opener must go with it.
+    fn keeps_source(&self, call: &SourceCall) -> bool {
+        call.has_block && self.plugin.package_filters.is_empty()
     }
 
     pub fn copy_package_file(&self, task: &ProgressTask) -> Result<()> {
@@ -57,10 +56,22 @@ impl RubyGemfile {
         task.set_dim_message(&format!("bundle install ({})", package_file_name));
 
         let package_file_contents = std::fs::read_to_string(package_file)?;
+        let source_calls = source_calls(&package_file_contents)?;
         let mut uses_gemspec = false;
         let mut new_package_file_contents = vec!["source 'https://rubygems.org'"];
-        for line in package_file_contents.lines() {
+        for (row, line) in package_file_contents.lines().enumerate() {
             let line = line.trim();
+            // Only a source's opener is decided here; a kept block's body and
+            // `end` are handled like any other line.
+            if let Some(call) = source_calls
+                .iter()
+                .find(|call| call.opener_rows.contains(&row))
+            {
+                if self.keeps_source(call) {
+                    new_package_file_contents.push(line);
+                }
+                continue;
+            }
             let mut tokens = line.split_whitespace();
             match tokens.next().unwrap_or_default() {
                 "gem" => {
@@ -81,9 +92,6 @@ impl RubyGemfile {
                 }
                 "gemspec" => {
                     uses_gemspec = true;
-                    new_package_file_contents.push(line);
-                }
-                "source" if self.keeps_source_block(line) => {
                     new_package_file_contents.push(line);
                 }
                 "source" | "ruby" => {}
@@ -214,6 +222,67 @@ impl RubyGemfile {
             .unwrap()
             .to_string()
     }
+}
+
+struct SourceCall {
+    // Every row of a one-line source, or the rows up to where its block opens.
+    opener_rows: RangeInclusive<usize>,
+    has_block: bool,
+    url: String,
+}
+
+impl SourceCall {
+    fn is_rubygems(&self) -> bool {
+        self.url.contains("rubygems.org") || self.url.contains(":rubygems")
+    }
+}
+
+// Parsed rather than matched line by line, so comments, parentheses and
+// multi-line calls can't hide where a `source` call or its block starts.
+fn source_calls(contents: &str) -> Result<Vec<SourceCall>> {
+    let mut parser = Parser::new();
+    parser
+        .set_language(&tree_sitter_ruby::language())
+        .context("Failed to load the Ruby grammar to parse the Gemfile")?;
+    let tree = parser
+        .parse(contents, None)
+        .context("Failed to parse the Gemfile")?;
+    let source = contents.as_bytes();
+    let mut cursor = tree.walk();
+    let mut nodes = vec![tree.root_node()];
+    let mut calls = vec![];
+
+    while let Some(node) = nodes.pop() {
+        nodes.extend(node.children(&mut cursor));
+
+        let is_source_call = node.kind() == "call"
+            && node.child_by_field_name("receiver").is_none()
+            && node
+                .child_by_field_name("method")
+                .and_then(|method| method.utf8_text(source).ok())
+                == Some("source");
+        if !is_source_call {
+            continue;
+        }
+
+        let block = node.child_by_field_name("block");
+        let opener_end_row = match block {
+            Some(block) => block.start_position().row,
+            None => node.end_position().row,
+        };
+        calls.push(SourceCall {
+            opener_rows: node.start_position().row..=opener_end_row,
+            has_block: block.is_some(),
+            url: node
+                .child_by_field_name("arguments")
+                .and_then(|arguments| arguments.named_child(0))
+                .and_then(|argument| argument.utf8_text(source).ok())
+                .unwrap_or_default()
+                .to_string(),
+        });
+    }
+
+    Ok(calls)
 }
 
 #[cfg(test)]
@@ -587,6 +656,145 @@ mod test {
                     gem 'sidekiq-pro', '< 9'
                     gem 'sidekiq-ent', '< 9'
                     end"#}
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_copy_package_file_keeps_source_block_with_tab_before_comment() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                "source 'https://gems.example.com/' do\t# private\n  gem 'private'\nend\n",
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile"))?,
+                "source 'https://rubygems.org'\nsource 'https://gems.example.com/' do\t# private\ngem 'private'\nend"
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_copy_package_file_keeps_source_block_with_comment_after_do() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                indoc! {r#"
+                    source 'https://gems.example.com/' do# private
+                      gem 'private'
+                    end
+                "#},
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile"))?,
+                indoc! {r#"
+                    source 'https://rubygems.org'
+                    source 'https://gems.example.com/' do# private
+                    gem 'private'
+                    end"#}
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_copy_package_file_drops_source_with_do_in_comment() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                indoc! {r#"
+                    source 'https://gems.example.com/'# nothing else to do
+                    gem 'tool', '1.0.0'
+                "#},
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile"))?,
+                indoc! {r#"
+                    source 'https://rubygems.org'
+                    gem 'tool', '1.0.0'"#}
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_copy_package_file_keeps_multiline_source_block_opener() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                indoc! {r#"
+                    source "https://enterprise.contribsys.com/",
+                      cooldown: 7 do
+                      gem 'sidekiq-ent', '< 9'
+                    end
+                "#},
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile"))?,
+                indoc! {r#"
+                    source 'https://rubygems.org'
+                    source "https://enterprise.contribsys.com/",
+                    cooldown: 7 do
+                    gem 'sidekiq-ent', '< 9'
+                    end"#}
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_copy_package_file_drops_multiline_one_line_source() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                indoc! {r#"
+                    source "https://gems.example.com/",
+                      cooldown: 7
+                    gem 'tool', '1.0.0'
+                "#},
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile"))?,
+                indoc! {r#"
+                    source 'https://rubygems.org'
+                    gem 'tool', '1.0.0'"#}
             );
             Ok(())
         });
