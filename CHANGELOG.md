@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.667.0 (2026-11-03)
+
+### Fixed
+
+- Keep Composer's cache path independent of the PHP version, so the shared Composer PHAR stays at a stable path across PHP runtimes and prepare scripts that reference it keep working (#2994)
+
 ## v0.666.0 (2026-11-03)
 
 ### New
