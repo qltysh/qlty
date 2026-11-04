@@ -44,17 +44,20 @@ impl RubyGemfile {
 
     // A custom source is only kept when Bundler will receive its credentials.
     // Without them it would fail the install for gems the tool rarely needs.
+    // Credentials written into the URL only count for a block: a one-line
+    // source keeps its existing rewrite unless they're passed to the plugin.
     fn keeps_credentialed_source(&self, call: &SourceCall, env: &HashMap<String, String>) -> bool {
         self.plugin.package_filters.is_empty()
             && call.line_starts_with_source
-            && call.has_credentials(env)
+            && (call.has_credentials(env)
+                || (call.block_end_row.is_some() && call.has_url_credentials()))
     }
 
     // The rows a source call decides and whether they are kept. Every other
     // row, including the body and `end` of a kept block, goes through the line
-    // rules in copy_package_file. Those rules drop a line starting with `source`
-    // but keep the rest of its block, leaving a stray `end`, so multi-line
-    // blocks are always decided here.
+    // rules in copy_package_file. Those rules drop only the first line of a
+    // call that starts with `source`, leaving the rest of its block or
+    // arguments behind, so every such call is decided here.
     fn source_rows(
         &self,
         call: &SourceCall,
@@ -73,12 +76,12 @@ impl RubyGemfile {
         let keeps_rubygems = call.is_rubygems()
             && (call.has_multiline_block()
                 || (call.block_end_row.is_none() && keeps_global_source));
-        if keeps_rubygems || call.has_credentials(env) {
+        if keeps_rubygems || self.keeps_credentialed_source(call, env) {
             return Some((call.opener_rows.clone(), true));
         }
 
-        call.block_end_row
-            .map(|end_row| (*call.opener_rows.start()..=end_row, false))
+        let last_row = call.block_end_row.unwrap_or(*call.opener_rows.end());
+        Some((*call.opener_rows.start()..=last_row, false))
     }
 
     pub fn copy_package_file(&self, task: &ProgressTask) -> Result<()> {
@@ -278,20 +281,26 @@ struct SourceCall {
 
 impl SourceCall {
     fn host(&self) -> Option<String> {
-        let url = Url::parse(self.url.trim_matches(['"', '\''])).ok()?;
+        let url = Url::parse(&self.url).ok()?;
         url.host_str().map(str::to_string)
     }
 
     fn is_rubygems(&self) -> bool {
-        self.url == ":rubygems"
-            || self
-                .host()
-                .is_some_and(|host| host == "rubygems.org" || host.ends_with(".rubygems.org"))
+        match self.host() {
+            Some(host) => host == "rubygems.org" || host.ends_with(".rubygems.org"),
+            // Not a plain URL, like `:rubygems` or
+            // `ENV.fetch("GEM_SOURCE", "https://rubygems.org")`.
+            None => self.url == ":rubygems" || self.url.contains("rubygems.org"),
+        }
     }
 
     fn has_credentials(&self, env: &HashMap<String, String>) -> bool {
         self.host()
             .is_some_and(|host| env.contains_key(&credential_key(&host)))
+    }
+
+    fn has_url_credentials(&self) -> bool {
+        Url::parse(&self.url).is_ok_and(|url| !url.username().is_empty())
     }
 
     fn has_multiline_block(&self) -> bool {
@@ -345,6 +354,17 @@ fn source_calls(contents: &str) -> Result<Vec<SourceCall>> {
             url: node
                 .child_by_field_name("arguments")
                 .and_then(|arguments| arguments.named_child(0))
+                .map(|argument| {
+                    // A plain string's content, whatever its quoting (`"…"`,
+                    // `%q{…}`). Anything else, like `:rubygems` or an
+                    // interpolated string, keeps its source text.
+                    let content = (argument.kind() == "string"
+                        && argument.named_child_count() == 1)
+                        .then(|| argument.named_child(0))
+                        .flatten()
+                        .filter(|child| child.kind() == "string_content");
+                    content.unwrap_or(argument)
+                })
                 .and_then(|argument| argument.utf8_text(source).ok())
                 .unwrap_or_default()
                 .to_string(),
@@ -779,6 +799,123 @@ mod test {
                 indoc! {r#"
                     source 'https://rubygems.org'
                     gem "rubocop", "1.92.0""#}
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_copy_package_file_keeps_source_block_with_url_credentials() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                indoc! {r#"
+                    source "https://user:token@gems.example.com/" do
+                      gem 'private'
+                    end
+                "#},
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile"))?,
+                indoc! {r#"
+                    source 'https://rubygems.org'
+                    source "https://user:token@gems.example.com/" do
+                    gem 'private'
+                    end"#}
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_copy_package_file_drops_one_line_source_with_url_credentials() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                indoc! {r#"
+                    source "https://user:token@gems.example.com/"
+                    gem 'tool', '1.0.0'
+                "#},
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile"))?,
+                indoc! {r#"
+                    source 'https://rubygems.org'
+                    gem 'tool', '1.0.0'"#}
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_copy_package_file_keeps_expression_rubygems_source_block() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                indoc! {r#"
+                    source ENV.fetch("GEM_SOURCE", "https://rubygems.org") do
+                      gem "rubocop", "1.92.0"
+                    end
+                "#},
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile"))?,
+                indoc! {r#"
+                    source 'https://rubygems.org'
+                    source ENV.fetch("GEM_SOURCE", "https://rubygems.org") do
+                    gem "rubocop", "1.92.0"
+                    end"#}
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_copy_package_file_keeps_percent_quoted_rubygems_source_block() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                indoc! {r#"
+                    source %q{https://rubygems.org} do
+                      gem "rubocop", "1.92.0"
+                    end
+                "#},
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile"))?,
+                indoc! {r#"
+                    source 'https://rubygems.org'
+                    source %q{https://rubygems.org} do
+                    gem "rubocop", "1.92.0"
+                    end"#}
             );
             Ok(())
         });
