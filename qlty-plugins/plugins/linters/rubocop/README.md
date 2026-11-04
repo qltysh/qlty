@@ -27,6 +27,33 @@ version = "X.Y.Z"
 
 Rubocop will be automatically enabled by `qlty init` if a `.rubocop.yml` configuration file is present.
 
+## Installing from a Gemfile with custom sources
+
+To use your Gemfile's original gem sources, including private source blocks:
+
+```toml
+[[plugin]]
+name = "rubocop"
+package_file = "Gemfile"
+preserve_gemfile_sources = true
+
+[[plugins.definitions.rubocop.environment]]
+name = "BUNDLE_GEMS__EXAMPLE__COM"
+value = "${env.BUNDLE_GEMS__EXAMPLE__COM}"
+```
+
+Set the credential through the environment, or through a Build Secret on Qlty
+Cloud, using the Bundler variable for your source's hostname. Bundler handles
+authentication; missing credentials produce an installation error.
+
+`preserve_gemfile_sources` defaults to `false`, so existing configurations keep
+their current source rewriting. The option applies to Ruby plugins with a
+`package_file` and cannot be combined with `package_filters`. When enabled, Qlty
+preserves the sources and their gems without adding a rubygems.org source. The
+Gemfile must declare the sources it needs. Qlty still removes `ruby` directive
+lines for its managed runtime and stages the Gemfile and `Gemfile.lock` in the
+tool's installation directory.
+
 ## Configuration files
 
 - [`.rubocop.yml`](https://docs.rubocop.org/rubocop/1.63/configuration.html)

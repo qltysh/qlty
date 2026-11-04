@@ -23,6 +23,9 @@ impl RubyGemfile {
     }
 
     pub fn package_file_declares_custom_source(&self) -> bool {
+        if self.plugin.preserve_gemfile_sources == Some(true) {
+            return false; // Sources are used, so the dropped-source diagnostic does not apply.
+        }
         let Some(package_file) = self.plugin.package_file.as_ref() else {
             return false;
         };
@@ -49,10 +52,17 @@ impl RubyGemfile {
         task.set_dim_message(&format!("bundle install ({})", package_file_name));
 
         let package_file_contents = std::fs::read_to_string(package_file)?;
+        let preserve_sources = self.plugin.preserve_gemfile_sources == Some(true);
         let mut uses_gemspec = false;
-        let mut new_package_file_contents = vec!["source 'https://rubygems.org'"];
+        // The original Gemfile supplies its own sources in opt-in mode. Adding
+        // another global source can make an otherwise valid Gemfile fail.
+        let mut new_package_file_contents = if preserve_sources {
+            vec![]
+        } else {
+            vec!["source 'https://rubygems.org'"]
+        };
         for line in package_file_contents.lines() {
-            let line = line.trim();
+            let line = if preserve_sources { line } else { line.trim() };
             let mut tokens = line.split_whitespace();
             match tokens.next().unwrap_or_default() {
                 "gem" => {
@@ -75,7 +85,8 @@ impl RubyGemfile {
                     uses_gemspec = true;
                     new_package_file_contents.push(line);
                 }
-                "source" | "ruby" => {}
+                "ruby" => {}
+                "source" if !preserve_sources => {}
                 _ => {
                     if self.plugin.package_filters.is_empty() {
                         new_package_file_contents.push(line);
@@ -423,6 +434,67 @@ mod test {
                 "#}
                 .trim_end()
             );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_preserve_gemfile_sources() {
+        // Source syntax is left to Bundler, including strings and expressions
+        // that cannot be interpreted statically as URLs.
+        for contents in [
+            "source 'https://gems.example.com'\ngem 'tool'",
+            "source('https://gems.example.com')\ngem 'tool'",
+            "source ENV.fetch('GEM_SOURCE',\n  'https://rubygems.org')\ngem 'tool'",
+            "source %q{https://rubygems.org}\ngem 'tool'",
+            "source 'https://rubygems.org'\nsource 'https://gems.example.com' do# private\n  gem 'tool'\nend",
+            "source 'https://rubygems.org'\ngroup :development do\n  source 'https://gems.example.com' do\n    gem 'tool'\n  end; end",
+            "source 'https://rubygems.org'\nsource 'https://gems.example.com' do; gem 'tool'; end",
+            "source 'https://user:token@gems.example.com'\ngem 'tool'",
+        ] {
+            with_rubygems_package(|pkg, temp_path, _| {
+                let package_file = temp_path.path().join("Gemfile");
+                std::fs::write(&package_file, format!("ruby '2.7.0'\n{contents}\n"))?;
+                std::fs::write(temp_path.path().join("Gemfile.lock"), "original lockfile")?;
+                pkg.plugin.package_file = Some(package_file.to_str().unwrap().into());
+                pkg.plugin.preserve_gemfile_sources = Some(true);
+                reroute_tools_root(temp_path, pkg);
+
+                pkg.copy_package_file(&new_task())?;
+
+                assert_eq!(
+                    std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile"))?,
+                    contents
+                );
+                assert_eq!(
+                    std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile.lock"))?,
+                    "original lockfile"
+                );
+                assert!(!pkg.package_file_declares_custom_source());
+                Ok(())
+            });
+        }
+    }
+
+    #[test]
+    fn test_sources_keep_legacy_rewrite_unless_enabled() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let package_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &package_file,
+                "source 'https://gems.example.com'\nruby '2.7.0'\ngem 'tool'",
+            )?;
+            pkg.plugin.package_file = Some(package_file.to_str().unwrap().into());
+            for setting in [None, Some(false)] {
+                pkg.plugin.preserve_gemfile_sources = setting;
+                reroute_tools_root(temp_path, pkg);
+                pkg.copy_package_file(&new_task())?;
+                assert_eq!(
+                    std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile"))?,
+                    "source 'https://rubygems.org'\ngem 'tool'"
+                );
+                assert!(pkg.package_file_declares_custom_source());
+            }
             Ok(())
         });
     }

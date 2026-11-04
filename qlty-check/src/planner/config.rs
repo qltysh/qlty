@@ -3,7 +3,7 @@ use crate::CheckFilter;
 use anyhow::bail;
 use anyhow::{anyhow, Result};
 use qlty_analysis::workspace_entries::TargetMode;
-use qlty_config::config::{DriverDef, EnabledPlugin, IssueMode, Platform, PluginDef};
+use qlty_config::config::{DriverDef, EnabledPlugin, IssueMode, Platform, PluginDef, Runtime};
 use semver::{Version, VersionReq};
 use std::path::{Path, PathBuf};
 use tracing::{debug, trace, warn};
@@ -228,6 +228,19 @@ fn configure_plugin(
         // This is becoming a weird pattern, we should probably refactor this?
         plugin_def.fetch = enabled_plugin.fetch.clone();
         plugin_def.package_filters = enabled_plugin.package_filters.clone();
+        plugin_def.preserve_gemfile_sources = enabled_plugin
+            .preserve_gemfile_sources
+            .or(plugin_def.preserve_gemfile_sources);
+        if plugin_def.preserve_gemfile_sources == Some(true) {
+            if plugin_def.runtime != Some(Runtime::Ruby) {
+                bail!(
+                    "Plugin '{name}': preserve_gemfile_sources is only supported for Ruby plugins"
+                );
+            }
+            if plugin_def.package_file.is_none() || !plugin_def.package_filters.is_empty() {
+                bail!("Plugin '{name}': preserve_gemfile_sources requires package_file without package_filters");
+            }
+        }
         plugin_def.prefix = enabled_plugin.prefix.clone();
 
         plugin_def
@@ -652,6 +665,57 @@ mod test {
         let plugins: Vec<ActivePlugin> = enabled_plugins(&planner).unwrap();
 
         assert!(plugins.is_empty());
+    }
+
+    #[test]
+    fn test_configure_preserve_gemfile_sources() {
+        let temp = tempdir().unwrap();
+        fs::write(temp.path().join("Gemfile"), "source 'https://rubygems.org'").unwrap();
+        let mut planner = build_planner(QltyConfig::default());
+        planner.workspace.root = temp.path().to_path_buf();
+        planner.config.plugins.definitions.insert(
+            "rubocop".into(),
+            PluginDef {
+                runtime: Some(Runtime::Ruby),
+                ..Default::default()
+            },
+        );
+        let mut enabled: EnabledPlugin = toml::from_str(
+            "name = 'rubocop'\npackage_file = 'Gemfile'\npreserve_gemfile_sources = true",
+        )
+        .unwrap();
+        assert_eq!(
+            configure_plugin(&planner, "rubocop", &enabled)
+                .unwrap()
+                .preserve_gemfile_sources,
+            Some(true)
+        );
+
+        enabled.package_filters = vec!["rubocop".into()];
+        assert!(configure_plugin(&planner, "rubocop", &enabled)
+            .unwrap_err()
+            .to_string()
+            .contains("without package_filters"));
+        enabled.package_filters.clear();
+        enabled.package_file = None;
+        assert!(configure_plugin(&planner, "rubocop", &enabled)
+            .unwrap_err()
+            .to_string()
+            .contains("requires package_file"));
+
+        let definition = planner
+            .config
+            .plugins
+            .definitions
+            .get_mut("rubocop")
+            .unwrap();
+        definition.runtime = Some(Runtime::Node);
+        assert!(configure_plugin(&planner, "rubocop", &enabled)
+            .unwrap_err()
+            .to_string()
+            .contains("only supported for Ruby"));
+        enabled.preserve_gemfile_sources = Some(false);
+        assert!(configure_plugin(&planner, "rubocop", &enabled).is_ok());
     }
 
     #[test]

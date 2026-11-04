@@ -532,6 +532,9 @@ fn merge_enabled_plugins(existing: &EnabledPlugin, new: &EnabledPlugin) -> Enabl
         version,
         skip_upstream: new.skip_upstream.or(existing.skip_upstream),
         package_file: new.package_file.clone().or(existing.package_file.clone()),
+        preserve_gemfile_sources: new
+            .preserve_gemfile_sources
+            .or(existing.preserve_gemfile_sources),
         triggers: prioritize_new_array(&existing.triggers, &new.triggers),
         fetch: prioritize_new_array(&existing.fetch, &new.fetch),
         package_filters: prioritize_new_array(&existing.package_filters, &new.package_filters),
@@ -843,6 +846,29 @@ mod test {
     }
 
     #[test]
+    fn test_merge_preserve_gemfile_sources() {
+        for (existing, new, expected) in [
+            (None, None, None),
+            (None, Some(true), Some(true)),
+            (Some(true), None, Some(true)),
+            (Some(true), Some(false), Some(false)),
+        ] {
+            let existing = EnabledPlugin {
+                preserve_gemfile_sources: existing,
+                ..Default::default()
+            };
+            let new = EnabledPlugin {
+                preserve_gemfile_sources: new,
+                ..Default::default()
+            };
+            assert_eq!(
+                merge_enabled_plugins(&existing, &new).preserve_gemfile_sources,
+                expected
+            );
+        }
+    }
+
+    #[test]
     fn test_merge_enabled_plugins() {
         let existing = EnabledPlugin {
             name: "test".to_string(),
@@ -852,6 +878,7 @@ mod test {
             triggers: vec![CheckTrigger::Manual],
             skip_upstream: Some(true),
             package_file: Some("package1".to_string()),
+            preserve_gemfile_sources: None,
             fetch: vec![PluginFetch {
                 url: "url1".to_string(),
                 path: "path1".to_string(),
@@ -874,6 +901,7 @@ mod test {
             triggers: vec![CheckTrigger::PreCommit],
             skip_upstream: Some(false),
             package_file: Some("package2".to_string()),
+            preserve_gemfile_sources: None,
             fetch: vec![PluginFetch {
                 url: "url2".to_string(),
                 path: "path2".to_string(),
@@ -1124,6 +1152,7 @@ mod test {
                 triggers: vec![CheckTrigger::Manual],
                 skip_upstream: Some(true),
                 package_file: Some("package1".to_string()),
+                preserve_gemfile_sources: None,
                 fetch: vec![PluginFetch {
                     url: "url1".to_string(),
                     path: "path1".to_string(),
@@ -1145,6 +1174,7 @@ mod test {
                 triggers: vec![CheckTrigger::PreCommit],
                 skip_upstream: Some(false),
                 package_file: Some("package2".to_string()),
+                preserve_gemfile_sources: None,
                 fetch: vec![PluginFetch {
                     url: "url2".to_string(),
                     path: "path2".to_string(),

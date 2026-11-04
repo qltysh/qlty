@@ -453,6 +453,38 @@ mod test {
     }
 
     #[test]
+    fn test_preserve_gemfile_sources_changes_result_cache_key() {
+        crate::tool::ruby::test::with_rubygems_package(|pkg, temp, _| {
+            let gemfile = temp.path().join("Gemfile");
+            std::fs::write(&gemfile, "source 'https://rubygems.org'")?;
+            pkg.plugin.package_file = Some(gemfile.to_str().unwrap().into());
+            pkg.plugin
+                .drivers
+                .insert("lint".into(), DriverDef::default());
+            let digest = |pkg: &crate::tool::ruby::RubygemsPackage| {
+                let mut digest = InvocationCacheKey {
+                    qlty_version: QLTY_VERSION.to_string(),
+                    tool: Box::new(pkg.clone()),
+                    plugin: Arc::new(pkg.plugin.clone()),
+                    driver_name: "lint".into(),
+                    check_filters: CheckFilters::default(),
+                    affects_cache: HashMap::new(),
+                    configs: Arc::new(vec![]),
+                }
+                .build();
+                digest.finalize();
+                digest.hexdigest()
+            };
+            let legacy = digest(pkg);
+            pkg.plugin.preserve_gemfile_sources = Some(false);
+            assert_eq!(digest(pkg), legacy);
+            pkg.plugin.preserve_gemfile_sources = Some(true);
+            assert_ne!(digest(pkg), legacy);
+            Ok(())
+        });
+    }
+
+    #[test]
     fn test_repository_state_is_not_computed_until_requested() {
         let cache = IssueCache::new(Box::new(NullCache {}));
 

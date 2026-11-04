@@ -143,6 +143,11 @@ pub fn update_package_hash<T: Tool + ?Sized>(tool: &T, sha: &mut sha2::Sha256) -
         for filter in &plugin.package_filters {
             sha.update(filter);
         }
+
+        // Leave existing install and result cache keys unchanged unless opted in.
+        if plugin.preserve_gemfile_sources == Some(true) {
+            sha.update("preserve_gemfile_sources:v1");
+        }
     }
     Ok(())
 }
@@ -1093,7 +1098,7 @@ mod test {
     fn test_tool_fingerprint() {
         let tempdir = tempdir().unwrap();
         std::fs::write(tempdir.path().join("test"), "[package_file]").unwrap();
-        let tool = TestTool {
+        let mut tool = TestTool {
             runtime: Some(Box::new(TestTool {
                 name: "[runtime]".into(),
                 version: Some("V".into()),
@@ -1127,6 +1132,12 @@ mod test {
         let mut hasher = sha2::Sha256::new();
         hasher.update(hash);
         assert_eq!(tool.fingerprint(), format!("{:x}", hasher.finalize())[..12]);
+
+        let legacy_fingerprint = tool.fingerprint();
+        tool.plugin.as_mut().unwrap().preserve_gemfile_sources = Some(false);
+        assert_eq!(tool.fingerprint(), legacy_fingerprint);
+        tool.plugin.as_mut().unwrap().preserve_gemfile_sources = Some(true);
+        assert_ne!(tool.fingerprint(), legacy_fingerprint);
         drop(tempdir);
     }
 

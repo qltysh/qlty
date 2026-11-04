@@ -377,6 +377,11 @@ pub struct PluginDef {
     #[serde(default)]
     pub package_file: Option<String>,
 
+    /// Preserve Ruby Gemfile sources instead of replacing them with rubygems.org.
+    /// Requires a package_file without package_filters. Defaults to false.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub preserve_gemfile_sources: Option<bool>,
+
     #[serde(default)]
     pub affects_cache: Vec<String>,
 
@@ -695,6 +700,11 @@ pub struct EnabledPlugin {
 
     #[serde(default)]
     pub package_file: Option<String>,
+
+    /// Preserve Ruby Gemfile sources instead of replacing them with rubygems.org.
+    /// Requires a package_file without package_filters. Defaults to false.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub preserve_gemfile_sources: Option<bool>,
 
     #[serde(default)]
     pub extra_packages: Vec<ExtraPackage>,
