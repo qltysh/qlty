@@ -23,6 +23,21 @@
 - Do not add low value comments, let the code speak for itself unless there is something non-obvious
 - Do not remove or modify existing comments unless explicitly asked to
 
+## Regular expressions
+
+Reach for a regex last. Before writing one, try these in order:
+
+1. **A parser, when one exists for the format.** `url::Url` for URLs, `serde_json`, `toml`, `globset` for path patterns. Use `std::path::Path` for paths on this machine, because `Path::starts_with("vendor")` doesn't match `vendored/x`. A path from another machine, such as one in a coverage report, may use `\`, so change it to `/` first. Check a URL with `url.scheme() == "https" && url.host_str() == Some("api.github.com")`. A prefix check such as `starts_with("https://api.github.com")` also accepts `https://api.github.com.evil.example`. If the workspace already depends on a parser for the format, add it to the crate rather than write a regex. A crate new to the workspace needs a person to approve it.
+2. **A `str` method, when the input is flat text.** `starts_with`, `strip_prefix`, `ends_with`, `contains`, `split`, `replace`. Use these only when the input has no quoting or nesting.
+
+A regex is the right tool for:
+
+- **A flat format no parser covers**, such as a linter's `file:line:col` output prefix.
+- **A search over unstructured text**, such as a linter's free-form messages.
+- **A pattern supplied at runtime**, such as a plugin definition or a user's config.
+
+Compile a constant pattern once, in a static, not on every call.
+
 ## Testing
 
 - Unit tests live below implementation `#[cfg(test)]` blocks
