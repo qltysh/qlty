@@ -7,6 +7,7 @@ use qlty_analysis::{join_path_string, utils::fs::path_to_native_string};
 use std::{collections::HashMap, ops::RangeInclusive, path::PathBuf};
 use tracing::debug;
 use tree_sitter::Parser;
+use url::Url;
 
 pub type RubyGemfile = RubygemsPackage;
 
@@ -35,16 +36,49 @@ impl RubyGemfile {
             return false;
         };
 
+        let env = self.env().unwrap_or_default();
         source_calls
             .iter()
-            .any(|call| !call.is_rubygems() && !self.keeps_source(call))
+            .any(|call| !call.is_rubygems() && !self.keeps_credentialed_source(call, &env))
     }
 
-    // Block-form sources scope their gems, so keeping them never adds a global
-    // source. Filters drop the block's `end`, so the opener must go with it. A
-    // block that fits on its opening lines is dropped whole, as it always was.
-    fn keeps_source(&self, call: &SourceCall) -> bool {
-        call.has_multiline_block() && self.plugin.package_filters.is_empty()
+    // A custom source is only kept when Bundler will receive its credentials.
+    // Without them it would fail the install for gems the tool rarely needs.
+    fn keeps_credentialed_source(&self, call: &SourceCall, env: &HashMap<String, String>) -> bool {
+        self.plugin.package_filters.is_empty()
+            && call.line_starts_with_source
+            && call.has_credentials(env)
+    }
+
+    // The rows a source call decides and whether they are kept. Every other
+    // row, including the body and `end` of a kept block, goes through the line
+    // rules in copy_package_file. Those rules drop a line starting with `source`
+    // but keep the rest of its block, leaving a stray `end`, so multi-line
+    // blocks are always decided here.
+    fn source_rows(
+        &self,
+        call: &SourceCall,
+        keeps_global_source: bool,
+        env: &HashMap<String, String>,
+    ) -> Option<(RangeInclusive<usize>, bool)> {
+        if !call.line_starts_with_source {
+            return None;
+        }
+        if !self.plugin.package_filters.is_empty() {
+            return call
+                .has_multiline_block()
+                .then(|| (call.opener_rows.clone(), false));
+        }
+
+        let keeps_rubygems = call.is_rubygems()
+            && (call.has_multiline_block()
+                || (call.block_end_row.is_none() && keeps_global_source));
+        if keeps_rubygems || call.has_credentials(env) {
+            return Some((call.opener_rows.clone(), true));
+        }
+
+        call.block_end_row
+            .map(|end_row| (*call.opener_rows.start()..=end_row, false))
     }
 
     pub fn copy_package_file(&self, task: &ProgressTask) -> Result<()> {
@@ -58,17 +92,26 @@ impl RubyGemfile {
 
         let package_file_contents = std::fs::read_to_string(package_file)?;
         let source_calls = source_calls(&package_file_contents)?;
+        let env = self.env()?;
+        // Bundler 4 rejects more than one global source, so a kept one replaces
+        // the default rubygems.org source instead of adding to it.
+        let keeps_global_source = source_calls
+            .iter()
+            .any(|call| call.block_end_row.is_none() && self.keeps_credentialed_source(call, &env));
+        let decided_rows = source_calls
+            .iter()
+            .filter_map(|call| self.source_rows(call, keeps_global_source, &env))
+            .collect_vec();
         let mut uses_gemspec = false;
-        let mut new_package_file_contents = vec!["source 'https://rubygems.org'"];
+        let mut new_package_file_contents = if keeps_global_source {
+            vec![]
+        } else {
+            vec!["source 'https://rubygems.org'"]
+        };
         for (row, line) in package_file_contents.lines().enumerate() {
             let line = line.trim();
-            // A source call's opening lines are decided here; a kept block's body
-            // and `end`, and every other line, go through the rules below.
-            if let Some(call) = source_calls
-                .iter()
-                .find(|call| call.line_starts_with_source && call.opener_rows.contains(&row))
-            {
-                if self.keeps_source(call) {
+            if let Some((_, keep)) = decided_rows.iter().find(|(rows, _)| rows.contains(&row)) {
+                if *keep {
                     new_package_file_contents.push(line);
                 }
                 continue;
@@ -234,8 +277,21 @@ struct SourceCall {
 }
 
 impl SourceCall {
+    fn host(&self) -> Option<String> {
+        let url = Url::parse(self.url.trim_matches(['"', '\''])).ok()?;
+        url.host_str().map(str::to_string)
+    }
+
     fn is_rubygems(&self) -> bool {
-        self.url.contains("rubygems.org") || self.url.contains(":rubygems")
+        self.url == ":rubygems"
+            || self
+                .host()
+                .is_some_and(|host| host == "rubygems.org" || host.ends_with(".rubygems.org"))
+    }
+
+    fn has_credentials(&self, env: &HashMap<String, String>) -> bool {
+        self.host()
+            .is_some_and(|host| env.contains_key(&credential_key(&host)))
     }
 
     fn has_multiline_block(&self) -> bool {
@@ -298,8 +354,17 @@ fn source_calls(contents: &str) -> Result<Vec<SourceCall>> {
     Ok(calls)
 }
 
+// Mirrors Bundler::Settings.key_for, which looks up a source's credentials by host.
+fn credential_key(host: &str) -> String {
+    format!(
+        "BUNDLE_{}",
+        host.replace('.', "__").replace('-', "___").to_uppercase()
+    )
+}
+
 #[cfg(test)]
 mod test {
+    use super::credential_key;
     use crate::{
         tool::{
             command_builder::test::reroute_tools_root,
@@ -313,7 +378,16 @@ mod test {
         join_path_string,
         utils::fs::{path_to_native_string, path_to_string},
     };
+    use qlty_config::config::PluginEnvironment;
     use std::{env::split_paths, fs::create_dir_all, path::Path};
+
+    fn bundler_credential(name: &str) -> Vec<PluginEnvironment> {
+        vec![PluginEnvironment {
+            name: name.to_string(),
+            value: "user:pass".to_string(),
+            ..Default::default()
+        }]
+    }
 
     #[test]
     fn test_package_file_install_and_validate() {
@@ -640,7 +714,138 @@ mod test {
     }
 
     #[test]
-    fn test_copy_package_file_keeps_source_block() {
+    fn test_credential_key() {
+        assert_eq!(
+            credential_key("my-gems.example.com"),
+            "BUNDLE_MY___GEMS__EXAMPLE__COM"
+        );
+    }
+
+    #[test]
+    fn test_copy_package_file_drops_source_block_without_credentials() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                indoc! {r#"
+                    gem "rubocop", "1.92.0"
+                    source "https://enterprise.contribsys.com/", cooldown: 7 do
+                      gem 'sidekiq-pro', '< 9'
+                      platforms :ruby do
+                        gem 'sidekiq-ent', '< 9'
+                      end
+                    end
+                    gem "rake"
+                "#},
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile"))?,
+                indoc! {r#"
+                    source 'https://rubygems.org'
+                    gem "rubocop", "1.92.0"
+                    gem "rake""#}
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_copy_package_file_drops_rubygems_lookalike_source_block() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                indoc! {r#"
+                    gem "rubocop", "1.92.0"
+                    source "https://nexus.example.com/repository/rubygems.org-private/" do
+                      gem 'private'
+                    end
+                "#},
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile"))?,
+                indoc! {r#"
+                    source 'https://rubygems.org'
+                    gem "rubocop", "1.92.0""#}
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_copy_package_file_keeps_rubygems_source_block() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                indoc! {r#"
+                    source "https://rubygems.org" do
+                      gem "rubocop", "1.92.0"
+                    end
+                "#},
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile"))?,
+                indoc! {r#"
+                    source 'https://rubygems.org'
+                    source "https://rubygems.org" do
+                    gem "rubocop", "1.92.0"
+                    end"#}
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_copy_package_file_keeps_credentialed_global_source() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                indoc! {r#"
+                    source "https://rubygems.org"
+                    source "https://gems.example.com"
+                    gem "rubocop", "1.92.0"
+                "#},
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            pkg.plugin.environment = bundler_credential("BUNDLE_GEMS__EXAMPLE__COM");
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile"))?,
+                indoc! {r#"
+                    source "https://rubygems.org"
+                    source "https://gems.example.com"
+                    gem "rubocop", "1.92.0""#}
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_copy_package_file_keeps_credentialed_source_block() {
         with_rubygems_package(|pkg, temp_path, _| {
             let req_file = temp_path.path().join("Gemfile");
             std::fs::write(
@@ -656,6 +861,7 @@ mod test {
             )
             .unwrap();
             pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            pkg.plugin.environment = bundler_credential("BUNDLE_ENTERPRISE__CONTRIBSYS__COM");
             reroute_tools_root(temp_path, pkg);
 
             pkg.copy_package_file(&new_task()).unwrap();
@@ -675,7 +881,7 @@ mod test {
     }
 
     #[test]
-    fn test_copy_package_file_keeps_source_block_with_tab_before_comment() {
+    fn test_copy_package_file_keeps_credentialed_source_block_with_tab_before_comment() {
         with_rubygems_package(|pkg, temp_path, _| {
             let req_file = temp_path.path().join("Gemfile");
             std::fs::write(
@@ -684,6 +890,7 @@ mod test {
             )
             .unwrap();
             pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            pkg.plugin.environment = bundler_credential("BUNDLE_GEMS__EXAMPLE__COM");
             reroute_tools_root(temp_path, pkg);
 
             pkg.copy_package_file(&new_task()).unwrap();
@@ -697,7 +904,7 @@ mod test {
     }
 
     #[test]
-    fn test_copy_package_file_keeps_source_block_with_comment_after_do() {
+    fn test_copy_package_file_keeps_credentialed_source_block_with_comment_after_do() {
         with_rubygems_package(|pkg, temp_path, _| {
             let req_file = temp_path.path().join("Gemfile");
             std::fs::write(
@@ -710,6 +917,7 @@ mod test {
             )
             .unwrap();
             pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            pkg.plugin.environment = bundler_credential("BUNDLE_GEMS__EXAMPLE__COM");
             reroute_tools_root(temp_path, pkg);
 
             pkg.copy_package_file(&new_task()).unwrap();
@@ -754,7 +962,7 @@ mod test {
     }
 
     #[test]
-    fn test_copy_package_file_keeps_multiline_source_block_opener() {
+    fn test_copy_package_file_keeps_credentialed_multiline_source_block_opener() {
         with_rubygems_package(|pkg, temp_path, _| {
             let req_file = temp_path.path().join("Gemfile");
             std::fs::write(
@@ -768,6 +976,7 @@ mod test {
             )
             .unwrap();
             pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            pkg.plugin.environment = bundler_credential("BUNDLE_ENTERPRISE__CONTRIBSYS__COM");
             reroute_tools_root(temp_path, pkg);
 
             pkg.copy_package_file(&new_task()).unwrap();
@@ -922,7 +1131,7 @@ mod test {
     }
 
     #[test]
-    fn test_package_file_declares_custom_source_kept_block() {
+    fn test_package_file_declares_custom_source_credentialed_block() {
         with_rubygems_package(|pkg, temp_path, _| {
             let req_file = temp_path.path().join("Gemfile");
             std::fs::write(
@@ -931,6 +1140,7 @@ mod test {
             )
             .unwrap();
             pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            pkg.plugin.environment = bundler_credential("BUNDLE_GEMS__EXAMPLE__COM");
 
             assert!(!pkg.package_file_declares_custom_source());
             Ok(())
