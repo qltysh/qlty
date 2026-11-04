@@ -9,6 +9,25 @@ use tracing::debug;
 
 pub type RubyGemfile = RubygemsPackage;
 
+const SOURCE_PREAMBLE: &str = r#"source "https://rubygems.org"
+
+# Added by Qlty. Global sources are replaced by rubygems.org above. A source
+# block is kept only when Bundler has credentials for it, so its gems can
+# install; otherwise its gems are left out. The Ruby version is Qlty's own.
+require "uri"
+
+def source(url, *args, &block)
+  return unless block
+
+  uri = URI.parse(url.to_s) rescue nil
+  super if url == :rubygems ||
+    (uri && (uri.host == "rubygems.org" || uri.user || Bundler.settings.credentials_for(uri)))
+end
+
+def ruby(*); end
+
+"#;
+
 impl RubyGemfile {
     pub fn gemfile_install(&self, task: &ProgressTask) -> Result<()> {
         self.copy_package_file(task)?;
@@ -88,8 +107,15 @@ impl RubyGemfile {
             self.copy_gemspec_files(package_file, &self.name, &self.plugin.package_filters)?;
         }
 
+        // Without filters, Bundler evaluates the whole Gemfile, so its `source`
+        // and `ruby` calls are redefined in Ruby rather than rewritten as text.
+        let new_package_file_contents = if self.plugin.package_filters.is_empty() {
+            format!("{SOURCE_PREAMBLE}{package_file_contents}")
+        } else {
+            new_package_file_contents.join("\n")
+        };
         let new_package_file_path = join_path_string!(self.directory(), package_file_name);
-        std::fs::write(new_package_file_path, new_package_file_contents.join("\n"))?;
+        std::fs::write(new_package_file_path, new_package_file_contents)?;
 
         if self.plugin.package_filters.is_empty() {
             let package_file_path = PathBuf::from(package_file);
@@ -207,6 +233,7 @@ impl RubyGemfile {
 
 #[cfg(test)]
 mod test {
+    use super::SOURCE_PREAMBLE;
     use crate::{
         tool::{
             command_builder::test::reroute_tools_root,
@@ -390,18 +417,18 @@ mod test {
     fn test_package_file_install_and_validate_with_no_package_filter() {
         with_rubygems_package(|pkg, temp_path, _| {
             let req_file = &temp_path.path().join("Gemfile");
-            std::fs::write(
-                req_file,
-                indoc! {r#"
-                    source 'https://not-rubygems.org'
-                    ruby '2.7.0'
-                    gemspec
-                    gem 'tool', '1.0.0'
-                    gem 'tool_dep', '1.2.0'
-                    gem 'unrelated', '1.0.0'
-                "#},
-            )
-            .unwrap();
+            let gemfile = indoc! {r#"
+                source 'https://not-rubygems.org'
+                ruby '2.7.0'
+                gemspec
+                gem 'tool', '1.0.0'
+                gem 'tool_dep', '1.2.0'
+                gem 'unrelated', '1.0.0'
+                source 'https://gems.example.com' do
+                  gem 'private'
+                end
+            "#};
+            std::fs::write(req_file, gemfile).unwrap();
 
             pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
             reroute_tools_root(temp_path, pkg);
@@ -413,15 +440,8 @@ mod test {
 
             let filtered_package_file_path = Path::new(&pkg.directory()).join("Gemfile");
             assert_eq!(
-                std::fs::read_to_string(filtered_package_file_path)?.trim(),
-                indoc! {r#"
-                    source 'https://rubygems.org'
-                    gemspec
-                    gem 'tool', '1.0.0'
-                    gem 'tool_dep', '1.2.0'
-                    gem 'unrelated', '1.0.0'
-                "#}
-                .trim_end()
+                std::fs::read_to_string(filtered_package_file_path)?,
+                format!("{SOURCE_PREAMBLE}{gemfile}")
             );
             Ok(())
         });
