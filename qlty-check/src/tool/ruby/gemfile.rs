@@ -24,8 +24,6 @@ def source(url, *args, &block)
     (uri && (uri.host == "rubygems.org" || uri.user || Bundler.settings.credentials_for(uri)))
 end
 
-def ruby(*); end
-
 "#;
 
 impl RubyGemfile {
@@ -68,52 +66,24 @@ impl RubyGemfile {
         task.set_dim_message(&format!("bundle install ({})", package_file_name));
 
         let package_file_contents = std::fs::read_to_string(package_file)?;
-        let mut uses_gemspec = false;
-        let mut new_package_file_contents = vec!["source 'https://rubygems.org'"];
-        for line in package_file_contents.lines() {
-            let line = line.trim();
-            let mut tokens = line.split_whitespace();
-            match tokens.next().unwrap_or_default() {
-                "gem" => {
-                    let gem_name = tokens
-                        .next()
-                        .unwrap_or_default()
-                        .replace(['\'', '"', ','], "");
-                    if self.plugin.package_filters.is_empty()
-                        || self.name == gem_name
-                        || self
-                            .plugin
-                            .package_filters
-                            .iter()
-                            .any(|filter| gem_name.contains(filter))
-                    {
-                        new_package_file_contents.push(line);
-                    }
-                }
-                "gemspec" => {
-                    uses_gemspec = true;
-                    new_package_file_contents.push(line);
-                }
-                "source" | "ruby" => {}
-                _ => {
-                    if self.plugin.package_filters.is_empty() {
-                        new_package_file_contents.push(line);
-                    }
-                }
-            }
-        }
+        // Without filters, Bundler evaluates the whole Gemfile, so its `source`
+        // calls are redefined in Ruby rather than rewritten as text.
+        let new_package_file_contents = if self.plugin.package_filters.is_empty() {
+            format!(
+                "{SOURCE_PREAMBLE}{}",
+                without_ruby_lines(&package_file_contents)
+            )
+        } else {
+            self.filtered_package_file(&package_file_contents)
+        };
 
+        let uses_gemspec = package_file_contents
+            .lines()
+            .any(|line| line.split_whitespace().next() == Some("gemspec"));
         if uses_gemspec {
             self.copy_gemspec_files(package_file, &self.name, &self.plugin.package_filters)?;
         }
 
-        // Without filters, Bundler evaluates the whole Gemfile, so its `source`
-        // and `ruby` calls are redefined in Ruby rather than rewritten as text.
-        let new_package_file_contents = if self.plugin.package_filters.is_empty() {
-            format!("{SOURCE_PREAMBLE}{package_file_contents}")
-        } else {
-            new_package_file_contents.join("\n")
-        };
         let new_package_file_path = join_path_string!(self.directory(), package_file_name);
         std::fs::write(new_package_file_path, new_package_file_contents)?;
 
@@ -136,6 +106,36 @@ impl RubyGemfile {
         }
 
         Ok(())
+    }
+
+    // Only the gems the filters select and any `gemspec` line are kept, all
+    // from rubygems.org.
+    fn filtered_package_file(&self, contents: &str) -> String {
+        let mut lines = vec!["source 'https://rubygems.org'"];
+        for line in contents.lines() {
+            let line = line.trim();
+            let mut tokens = line.split_whitespace();
+            match tokens.next().unwrap_or_default() {
+                "gem" => {
+                    let gem_name = tokens
+                        .next()
+                        .unwrap_or_default()
+                        .replace(['\'', '"', ','], "");
+                    if self.name == gem_name
+                        || self
+                            .plugin
+                            .package_filters
+                            .iter()
+                            .any(|filter| gem_name.contains(filter))
+                    {
+                        lines.push(line);
+                    }
+                }
+                "gemspec" => lines.push(line),
+                _ => {}
+            }
+        }
+        lines.join("\n")
     }
 
     fn copy_gemspec_files(
@@ -229,6 +229,20 @@ impl RubyGemfile {
             .unwrap()
             .to_string()
     }
+}
+
+// A `ruby` line is dropped rather than evaluated, because its argument is often
+// read from a file, such as `File.read(".ruby-version")`, that isn't next to the
+// copied Gemfile. `ruby` never takes a block, so dropping the line is safe. It's
+// left blank so the lines after it keep their line numbers.
+fn without_ruby_lines(contents: &str) -> String {
+    contents
+        .split_inclusive('\n')
+        .map(|line| match line.split_whitespace().next() {
+            Some("ruby") => "\n",
+            _ => line,
+        })
+        .collect()
 }
 
 #[cfg(test)]
@@ -417,18 +431,21 @@ mod test {
     fn test_package_file_install_and_validate_with_no_package_filter() {
         with_rubygems_package(|pkg, temp_path, _| {
             let req_file = &temp_path.path().join("Gemfile");
-            let gemfile = indoc! {r#"
-                source 'https://not-rubygems.org'
-                ruby '2.7.0'
-                gemspec
-                gem 'tool', '1.0.0'
-                gem 'tool_dep', '1.2.0'
-                gem 'unrelated', '1.0.0'
-                source 'https://gems.example.com' do
-                  gem 'private'
-                end
-            "#};
-            std::fs::write(req_file, gemfile).unwrap();
+            std::fs::write(
+                req_file,
+                indoc! {r#"
+                    source 'https://not-rubygems.org'
+                    ruby File.read(".ruby-version").strip
+                    gemspec
+                    gem 'tool', '1.0.0'
+                    gem 'tool_dep', '1.2.0'
+                    gem 'unrelated', '1.0.0'
+                    source 'https://gems.example.com' do
+                      gem 'private'
+                    end
+                "#},
+            )
+            .unwrap();
 
             pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
             reroute_tools_root(temp_path, pkg);
@@ -441,7 +458,20 @@ mod test {
             let filtered_package_file_path = Path::new(&pkg.directory()).join("Gemfile");
             assert_eq!(
                 std::fs::read_to_string(filtered_package_file_path)?,
-                format!("{SOURCE_PREAMBLE}{gemfile}")
+                format!(
+                    "{SOURCE_PREAMBLE}{}",
+                    indoc! {r#"
+                        source 'https://not-rubygems.org'
+
+                        gemspec
+                        gem 'tool', '1.0.0'
+                        gem 'tool_dep', '1.2.0'
+                        gem 'unrelated', '1.0.0'
+                        source 'https://gems.example.com' do
+                          gem 'private'
+                        end
+                    "#}
+                )
             );
             Ok(())
         });
