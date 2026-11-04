@@ -3,7 +3,7 @@ mod sys;
 
 use super::command_builder::{default_command_builder, CommandBuilder};
 use super::ruby_source::RubySource;
-use super::{Tool, ToolType};
+use super::{interpolate_env_variables, update_package_hash, Tool, ToolType};
 use crate::tool::command_error::ToolCommandError;
 use crate::tool::download::Download;
 use crate::tool::install_failure::{InstallFailure, InstallFailureKind, BUILD_SECRETS_URL};
@@ -328,6 +328,31 @@ impl Tool for RubygemsPackage {
         Some(self.runtime.clone())
     }
 
+    fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
+        update_package_hash(self, sha)?;
+
+        // Bundler reads settings and credentials from the environment, so
+        // setting or unsetting a variable installs again. Only names are hashed,
+        // so a rotated token doesn't.
+        if self.plugin.package_file.is_some() {
+            let names = self
+                .plugin
+                .environment
+                .iter()
+                .filter(|env| {
+                    env.name != "PATH" && !interpolate_env_variables(&env.value).trim().is_empty()
+                })
+                .map(|env| &env.name)
+                .sorted()
+                .dedup();
+            for name in names {
+                sha.update(name);
+            }
+        }
+
+        Ok(())
+    }
+
     fn version(&self) -> Option<String> {
         if self.plugin.package_file.is_some() {
             Some("bundled".to_string())
@@ -467,7 +492,7 @@ pub mod test {
     };
     use itertools::Itertools;
     use qlty_analysis::{join_path_string, utils::fs::path_to_native_string};
-    use qlty_config::config::PluginDef;
+    use qlty_config::config::{PluginDef, PluginEnvironment};
     use std::sync::{Arc, Mutex};
     use tempfile::{tempdir, TempDir};
 
@@ -692,5 +717,68 @@ pub mod test {
             super::detect_rubygems_failure(&ruby_command_error("Bundler::GemspecError"), true)
                 .is_none()
         );
+    }
+
+    fn with_bundled_rubygems_package(
+        callback: impl Fn(&mut RubygemsPackage) -> anyhow::Result<()>,
+    ) {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let gemfile = temp_path.path().join("Gemfile");
+            std::fs::write(&gemfile, "source 'https://rubygems.org'").unwrap();
+            pkg.plugin.package_file = Some(gemfile.to_str().unwrap().into());
+            callback(pkg)
+        });
+    }
+
+    fn plugin_env(name: &str, value: &str) -> PluginEnvironment {
+        PluginEnvironment {
+            name: name.into(),
+            value: value.into(),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn test_rubygems_package_fingerprint_changes_with_plugin_env() {
+        with_bundled_rubygems_package(|pkg| {
+            let fingerprint = pkg.fingerprint();
+            pkg.plugin.environment = vec![plugin_env("BUNDLE_GEMS__EXAMPLE__COM", "user:token")];
+            assert_ne!(pkg.fingerprint(), fingerprint);
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_rubygems_package_fingerprint_ignores_plugin_env_value() {
+        with_bundled_rubygems_package(|pkg| {
+            pkg.plugin.environment = vec![plugin_env("BUNDLE_GEMS__EXAMPLE__COM", "user:token")];
+            let fingerprint = pkg.fingerprint();
+            pkg.plugin.environment = vec![plugin_env("BUNDLE_GEMS__EXAMPLE__COM", "user:rotated")];
+            assert_eq!(pkg.fingerprint(), fingerprint);
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_rubygems_package_fingerprint_ignores_empty_plugin_env() {
+        with_bundled_rubygems_package(|pkg| {
+            let fingerprint = pkg.fingerprint();
+            pkg.plugin.environment = vec![plugin_env(
+                "BUNDLE_GEMS__EXAMPLE__COM",
+                "${env.QLTY_TEST_UNSET_BUNDLE_CREDENTIAL}",
+            )];
+            assert_eq!(pkg.fingerprint(), fingerprint);
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_rubygems_package_fingerprint_ignores_plugin_env_without_package_file() {
+        with_rubygems_package(|pkg, _, _| {
+            let fingerprint = pkg.fingerprint();
+            pkg.plugin.environment = vec![plugin_env("BUNDLE_GEMS__EXAMPLE__COM", "user:token")];
+            assert_eq!(pkg.fingerprint(), fingerprint);
+            Ok(())
+        });
     }
 }

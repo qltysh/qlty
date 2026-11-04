@@ -114,6 +114,16 @@ pub fn global_tools_root() -> String {
     )
 }
 
+pub fn interpolate_env_variables(value: &str) -> String {
+    Regex::new(r"\$\{env\.(.+?)\}")
+        .unwrap()
+        .replace_all(value, |caps: &regex::Captures| {
+            let key = caps.get(1).unwrap().as_str();
+            std::env::var(key).unwrap_or_default()
+        })
+        .into_owned()
+}
+
 pub fn update_package_hash<T: Tool + ?Sized>(tool: &T, sha: &mut sha2::Sha256) -> Result<()> {
     if let Some(runtime) = tool.runtime() {
         runtime.update_hash(sha)?;
@@ -776,12 +786,7 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn interpolate_variables(&self, value: &str) -> String {
-        let mut result = Regex::new(r"\$\{env\.(.+?)\}")
-            .unwrap()
-            .replace_all(value, |caps: &regex::Captures| {
-                let key = caps.get(1).unwrap().as_str();
-                std::env::var(key).unwrap_or_default()
-            })
+        let mut result = interpolate_env_variables(value)
             .replace("${linter}", &path_to_native_string(self.directory()))
             .replace(
                 "${cachedir}",
