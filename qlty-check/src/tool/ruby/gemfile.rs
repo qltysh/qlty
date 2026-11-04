@@ -41,9 +41,10 @@ impl RubyGemfile {
     }
 
     // Block-form sources scope their gems, so keeping them never adds a global
-    // source. Filters drop the block's `end`, so the opener must go with it.
+    // source. Filters drop the block's `end`, so the opener must go with it. A
+    // block that fits on its opening lines is dropped whole, as it always was.
     fn keeps_source(&self, call: &SourceCall) -> bool {
-        call.is_multiline_source_block() && self.plugin.package_filters.is_empty()
+        call.has_multiline_block() && self.plugin.package_filters.is_empty()
     }
 
     pub fn copy_package_file(&self, task: &ProgressTask) -> Result<()> {
@@ -61,11 +62,11 @@ impl RubyGemfile {
         let mut new_package_file_contents = vec!["source 'https://rubygems.org'"];
         for (row, line) in package_file_contents.lines().enumerate() {
             let line = line.trim();
-            // Only a multi-line source block's opener is decided here; its body
+            // A source call's opening lines are decided here; a kept block's body
             // and `end`, and every other line, go through the rules below.
             if let Some(call) = source_calls
                 .iter()
-                .find(|call| call.is_multiline_source_block() && call.opener_rows.contains(&row))
+                .find(|call| call.line_starts_with_source && call.opener_rows.contains(&row))
             {
                 if self.keeps_source(call) {
                     new_package_file_contents.push(line);
@@ -237,14 +238,9 @@ impl SourceCall {
         self.url.contains("rubygems.org") || self.url.contains(":rubygems")
     }
 
-    // The line rules in copy_package_file drop a line starting with `source`
-    // but keep the rest of its block, leaving a stray `end`. These are the only
-    // source calls they break, so they're the only ones decided from the parse.
-    fn is_multiline_source_block(&self) -> bool {
-        self.line_starts_with_source
-            && self
-                .block_end_row
-                .is_some_and(|end_row| end_row > *self.opener_rows.end())
+    fn has_multiline_block(&self) -> bool {
+        self.block_end_row
+            .is_some_and(|end_row| end_row > *self.opener_rows.end())
     }
 }
 
@@ -784,6 +780,34 @@ mod test {
                     cooldown: 7 do
                     gem 'sidekiq-ent', '< 9'
                     end"#}
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_copy_package_file_drops_multiline_one_line_source() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("Gemfile");
+            std::fs::write(
+                &req_file,
+                indoc! {r#"
+                    source ENV.fetch("GEM_SOURCE",
+                      "https://rubygems.org")
+                    gem 'tool', '1.0.0'
+                "#},
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile"))?,
+                indoc! {r#"
+                    source 'https://rubygems.org'
+                    gem 'tool', '1.0.0'"#}
             );
             Ok(())
         });
