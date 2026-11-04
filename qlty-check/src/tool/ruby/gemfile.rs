@@ -20,8 +20,22 @@ def source(url, *args, &block)
   return unless block
 
   uri = URI.parse(url.to_s) rescue nil
-  super if url == :rubygems ||
-    (uri && (uri.host == "rubygems.org" || uri.user || Bundler.settings.credentials_for(uri)))
+  host = uri&.host
+  if url == :rubygems ||
+      (host && (host == "rubygems.org" || uri.user || Bundler.settings.credentials_for(uri)))
+    return super
+  end
+  # Bundler also evaluates the Gemfile with a subclass to find plugins.
+  return unless instance_of?(Bundler::Dsl)
+
+  if host
+    $stderr.puts "Qlty skipped the gems in the source block for #{host} because Bundler " \
+      "has no credentials for it. To install them, set " \
+      "BUNDLE_#{host.upcase.gsub(".", "__").gsub("-", "___")} in the plugin's environment. " \
+      "See https://docs.qlty.sh/cloud/build-secrets"
+  else
+    $stderr.puts "Qlty skipped the gems in a source block with no host."
+  end
 end
 
 "#;
