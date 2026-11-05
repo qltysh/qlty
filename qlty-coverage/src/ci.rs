@@ -9,6 +9,7 @@ mod jenkins;
 mod semaphore;
 mod travisci;
 
+use crate::git::strip_credentials;
 pub use bitrise::Bitrise;
 pub use buildkite::Buildkite;
 pub use circleci::CircleCI;
@@ -34,6 +35,9 @@ pub trait CI {
     // Information about the repository
     fn repository_name(&self) -> String;
     fn repository_url(&self) -> String;
+    fn repository_id(&self) -> Option<String> {
+        None
+    }
 
     // Information about what is being built
     fn branch(&self) -> String;
@@ -66,6 +70,8 @@ pub trait CI {
     fn metadata(&self) -> CoverageMetadata {
         CoverageMetadata {
             ci: self.ci_name(),
+            repository_web_url: strip_credentials(&self.repository_url()),
+            repository_id: self.repository_id(),
             build_id: self.build_id(),
             commit_sha: self.commit_sha(),
             branch: self.branch(),

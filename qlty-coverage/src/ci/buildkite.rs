@@ -55,7 +55,7 @@ impl CI for Buildkite {
     }
 
     fn repository_url(&self) -> String {
-        String::from("")
+        self.env.var("BUILDKITE_REPO").unwrap_or_default()
     }
 
     fn pull_url(&self) -> String {
@@ -117,6 +117,20 @@ mod test {
         };
 
         assert_eq!(not_buildkite.detect(), false);
+    }
+
+    #[test]
+    fn repository_url() {
+        let mut env: HashMap<String, String> = HashMap::default();
+        env.insert(
+            "BUILDKITE_REPO".to_string(),
+            "git@github.com:qltysh/qlty.git".to_string(),
+        );
+
+        let ci = Buildkite {
+            env: Box::new(HashMapEnv::new(env)),
+        };
+        assert_eq!(&ci.repository_url(), "git@github.com:qltysh/qlty.git");
     }
 
     #[test]

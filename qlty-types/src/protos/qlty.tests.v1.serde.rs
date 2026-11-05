@@ -139,6 +139,9 @@ impl serde::Serialize for CoverageMetadata {
         if self.selection.is_some() {
             len += 1;
         }
+        if self.repository_id.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("qlty.tests.v1.CoverageMetadata", len)?;
         if !self.upload_id.is_empty() {
             struct_ser.serialize_field("uploadId", &self.upload_id)?;
@@ -274,6 +277,9 @@ impl serde::Serialize for CoverageMetadata {
         if let Some(v) = self.selection.as_ref() {
             struct_ser.serialize_field("selection", v)?;
         }
+        if let Some(v) = self.repository_id.as_ref() {
+            struct_ser.serialize_field("repositoryId", v)?;
+        }
         struct_ser.end()
     }
 }
@@ -360,6 +366,8 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             "reference",
             "complete",
             "selection",
+            "repository_id",
+            "repositoryId",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -408,6 +416,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
             Reference,
             Complete,
             Selection,
+            RepositoryId,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -473,6 +482,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                             "reference" => Ok(GeneratedField::Reference),
                             "complete" => Ok(GeneratedField::Complete),
                             "selection" => Ok(GeneratedField::Selection),
+                            "repositoryId" | "repository_id" => Ok(GeneratedField::RepositoryId),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -536,6 +546,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                 let mut reference__ = None;
                 let mut complete__ = None;
                 let mut selection__ = None;
+                let mut repository_id__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::UploadId => {
@@ -806,6 +817,12 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                             }
                             selection__ = map_.next_value()?;
                         }
+                        GeneratedField::RepositoryId => {
+                            if repository_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("repositoryId"));
+                            }
+                            repository_id__ = map_.next_value()?;
+                        }
                     }
                 }
                 Ok(CoverageMetadata {
@@ -853,6 +870,7 @@ impl<'de> serde::Deserialize<'de> for CoverageMetadata {
                     reference: reference__.unwrap_or_default(),
                     complete: complete__.unwrap_or_default(),
                     selection: selection__,
+                    repository_id: repository_id__,
                 })
             }
         }
