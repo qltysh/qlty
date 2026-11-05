@@ -14,15 +14,15 @@ const SOURCE_PREAMBLE: &str = r#"source "https://rubygems.org"
 # Added by Qlty. Global sources are replaced by rubygems.org above. A source
 # block is kept only when Bundler has credentials for it, so its gems can
 # install; otherwise its gems are left out. The Ruby version is Qlty's own.
-require "uri"
-
 def source(url, *args, &block)
   return unless block
 
-  uri = URI.parse(url.to_s) rescue nil
-  host = uri&.host
+  # Not `URI`, which would activate the default uri gem before Bundler checks
+  # the version in the lockfile.
+  _, userinfo, host = url.to_s.match(%r{\A[a-z][a-z0-9+.-]*://(?:([^@/]*)@)?([^/:?#]+)}i).to_a
   if url == :rubygems ||
-      (host && (host == "rubygems.org" || uri.user || Bundler.settings.credentials_for(uri)))
+      (host && (host == "rubygems.org" || !userinfo.to_s.delete(":").empty? ||
+        Bundler.settings[host] || (Bundler.settings[url.to_s] rescue nil)))
     return super
   end
   # Bundler also evaluates the Gemfile with a subclass to find plugins.
@@ -81,11 +81,11 @@ impl RubyGemfile {
 
         let package_file_contents = std::fs::read_to_string(package_file)?;
         // Without filters, Bundler evaluates the whole Gemfile, so its `source`
-        // calls are redefined in Ruby rather than rewritten as text.
+        // blocks are decided in Ruby rather than rewritten as text.
         let new_package_file_contents = if self.plugin.package_filters.is_empty() {
             format!(
                 "{SOURCE_PREAMBLE}{}",
-                without_ruby_lines(&package_file_contents)
+                blank_global_directives(&package_file_contents)
             )
         } else {
             self.filtered_package_file(&package_file_contents)
@@ -245,23 +245,36 @@ impl RubyGemfile {
     }
 }
 
-// A `ruby` line is dropped rather than evaluated, because its argument is often
-// read from a file, such as `File.read(".ruby-version")`, that isn't next to the
-// copied Gemfile. `ruby` never takes a block, so dropping the line is safe. It's
-// left blank so the lines after it keep their line numbers.
-fn without_ruby_lines(contents: &str) -> String {
+// `ruby` lines and one-line global `source` lines are dropped rather than
+// evaluated, as before, because their arguments often read something the tool
+// directory doesn't have, such as `File.read(".ruby-version")` or
+// `ENV.fetch("TOKEN")`. A `source` line with a `do`, or one that continues onto
+// the next line, may open a block, so it's left for the preamble. Lines are left
+// blank so the lines after them keep their line numbers.
+fn blank_global_directives(contents: &str) -> String {
     contents
         .split_inclusive('\n')
-        .map(|line| match line.split_whitespace().next() {
-            Some("ruby") => "\n",
-            _ => line,
+        .map(|line| {
+            let mut tokens = line.split_whitespace();
+            let blank = match tokens.next() {
+                Some("ruby") => true,
+                Some("source") => {
+                    !line.trim_end().ends_with([',', '\\']) && !tokens.any(|token| token == "do")
+                }
+                _ => false,
+            };
+            if blank {
+                "\n"
+            } else {
+                line
+            }
         })
         .collect()
 }
 
 #[cfg(test)]
 mod test {
-    use super::SOURCE_PREAMBLE;
+    use super::{blank_global_directives, SOURCE_PREAMBLE};
     use crate::{
         tool::{
             command_builder::test::reroute_tools_root,
@@ -475,7 +488,7 @@ mod test {
                 format!(
                     "{SOURCE_PREAMBLE}{}",
                     indoc! {r#"
-                        source 'https://not-rubygems.org'
+
 
                         gemspec
                         gem 'tool', '1.0.0'
@@ -489,6 +502,17 @@ mod test {
             );
             Ok(())
         });
+    }
+
+    #[test]
+    fn test_blank_global_directives_keeps_source_continued_onto_next_line() {
+        let gemfile = indoc! {r#"
+            source "https://gems.example.com",
+                   type: "rubygems" do
+              gem "private"
+            end
+        "#};
+        assert_eq!(blank_global_directives(gemfile), gemfile);
     }
 
     #[test]
