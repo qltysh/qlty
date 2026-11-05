@@ -1,0 +1,30 @@
+qlty [..] [..]-[..] ([..])
+[..]
+https://qlty.sh/d/coverage
+
+ SETTINGS 
+
+    cwd: [CWD]
+    dry-run: true
+    tag: backend
+    override-commit-sha: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
+    override-pr-number: 42
+    override-commit-time: 2024-01-01T00:00:00Z
+
+ METADATA 
+
+    CI: unknown
+    Reference Type: PullRequest
+    Commit: 2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67
+    Pull Request: #42
+    Commit Time: 2024-01-01 00:00:00 UTC
+
+ AUTHENTICATION 
+
+    Auth Method: Unknown
+    Token: 123
+
+ SKIPPING... 
+
+    Coverage skip accepted in [..]s!
+

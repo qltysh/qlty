@@ -1,9 +1,11 @@
 mod complete;
 mod publish;
+mod skip;
 mod transform;
 mod utils;
 pub use complete::Complete;
 pub use publish::Publish;
+pub use skip::Skip;
 pub use transform::Transform;
 
 use anyhow::Result;
@@ -28,6 +30,10 @@ pub enum Commands {
 
     /// Mark coverage as complete on Qlty Cloud
     Complete(Complete),
+
+    /// Tell Qlty Cloud that coverage for a tag was intentionally not run
+    #[command(hide = true)]
+    Skip(Skip),
 }
 
 impl Arguments {
@@ -36,6 +42,7 @@ impl Arguments {
             Commands::Transform(command) => command.execute(args),
             Commands::Publish(command) => command.execute(args),
             Commands::Complete(command) => command.execute(args),
+            Commands::Skip(command) => command.execute(args),
         }
     }
 }

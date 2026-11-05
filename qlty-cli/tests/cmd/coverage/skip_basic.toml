@@ -1,0 +1,21 @@
+args = [
+  "coverage",
+  "skip",
+  "--dry-run",
+  "--tag",
+  "backend",
+  "--override-commit-sha",
+  "2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67",
+  "--override-pr-number",
+  "42",
+  "--override-commit-time",
+  "2024-01-01T00:00:00Z"
+]
+bin.name = "qlty"
+status.code = 0
+
+[env]
+remove = ["GITHUB_ACTIONS"]
+
+[env.add]
+QLTY_COVERAGE_TOKEN = "123"
