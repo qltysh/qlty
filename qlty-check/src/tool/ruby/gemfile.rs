@@ -29,12 +29,12 @@ def source(url, *args, &block)
   return unless instance_of?(Bundler::Dsl)
 
   if host
-    $stderr.puts "Qlty skipped the gems in the source block for #{host} because Bundler " \
+    Bundler.ui.warn "Qlty skipped the gems in the source block for #{host} because Bundler " \
       "has no credentials for it. To install them, set " \
       "BUNDLE_#{host.upcase.gsub(".", "__").gsub("-", "___")} in the plugin's environment. " \
       "See https://docs.qlty.sh/cloud/build-secrets"
   else
-    $stderr.puts "Qlty skipped the gems in a source block with no host."
+    Bundler.ui.warn "Qlty skipped the gems in a source block with no host."
   end
 end
 
@@ -505,10 +505,53 @@ mod test {
     }
 
     #[test]
-    fn test_blank_global_directives_keeps_source_continued_onto_next_line() {
+    fn test_blank_global_directives_blanks_one_line_source() {
+        assert_eq!(
+            blank_global_directives(indoc! {r#"
+                source "https://#{ENV.fetch('TOKEN')}@gem.fury.io/acme/"
+                gem "rubocop"
+            "#}),
+            "\ngem \"rubocop\"\n"
+        );
+    }
+
+    #[test]
+    fn test_blank_global_directives_blanks_ruby() {
+        assert_eq!(
+            blank_global_directives(indoc! {r#"
+                ruby File.read(".ruby-version").strip
+                gem "rubocop"
+            "#}),
+            "\ngem \"rubocop\"\n"
+        );
+    }
+
+    #[test]
+    fn test_blank_global_directives_keeps_source_block() {
+        let gemfile = indoc! {r#"
+            source "https://gems.example.com" do
+              gem "private"
+            end
+        "#};
+        assert_eq!(blank_global_directives(gemfile), gemfile);
+    }
+
+    #[test]
+    fn test_blank_global_directives_keeps_source_continued_with_comma() {
         let gemfile = indoc! {r#"
             source "https://gems.example.com",
                    type: "rubygems" do
+              gem "private"
+            end
+        "#};
+        assert_eq!(blank_global_directives(gemfile), gemfile);
+    }
+
+    #[test]
+    fn test_blank_global_directives_keeps_source_continued_with_backslash() {
+        let gemfile = indoc! {r#"
+            source "https://gems.example.com" \
+              do
               gem "private"
             end
         "#};
