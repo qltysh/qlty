@@ -44,6 +44,7 @@ use std::io::Write;
 use std::path::Path;
 use std::process::Output;
 use std::sync::Arc;
+use std::sync::LazyLock;
 use std::sync::Mutex;
 use std::time::Instant;
 use std::{collections::HashMap, fmt::Debug, path::PathBuf};
@@ -112,6 +113,27 @@ pub fn global_tools_root() -> String {
             .expect("Failed to get cache root")
             .join("tools"),
     )
+}
+
+static ENV_VARIABLE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\$\{env\.(.+?)\}").unwrap());
+
+fn interpolate_env_variables(value: &str) -> String {
+    ENV_VARIABLE
+        .replace_all(value, |caps: &regex::Captures| {
+            let key = caps.get(1).unwrap().as_str();
+            std::env::var(key).unwrap_or_default()
+        })
+        .into_owned()
+}
+
+// Whether the tool's environment includes this variable. Only `${env.…}` is
+// filled in, so this can run while the tool directory is being computed; the
+// other placeholders always resolve to a non-empty path.
+pub fn plugin_env_is_set(plugin_env: &PluginEnvironment) -> bool {
+    plugin_env.name != "PATH"
+        && !interpolate_env_variables(&plugin_env.value)
+            .trim()
+            .is_empty()
 }
 
 pub fn update_package_hash<T: Tool + ?Sized>(tool: &T, sha: &mut sha2::Sha256) -> Result<()> {
@@ -722,12 +744,9 @@ pub trait Tool: Debug + Sync + Send {
         let mut env = HashMap::new();
 
         for plugin_env in plugin_environment {
-            if plugin_env.name != "PATH" {
+            if plugin_env_is_set(plugin_env) {
                 let value = self.interpolate_variables(&plugin_env.value);
-                let value = value.trim();
-                if !value.is_empty() {
-                    env.insert(plugin_env.name.clone(), value.to_string());
-                }
+                env.insert(plugin_env.name.clone(), value.trim().to_string());
             }
         }
 
@@ -776,12 +795,7 @@ pub trait Tool: Debug + Sync + Send {
     }
 
     fn interpolate_variables(&self, value: &str) -> String {
-        let mut result = Regex::new(r"\$\{env\.(.+?)\}")
-            .unwrap()
-            .replace_all(value, |caps: &regex::Captures| {
-                let key = caps.get(1).unwrap().as_str();
-                std::env::var(key).unwrap_or_default()
-            })
+        let mut result = interpolate_env_variables(value)
             .replace("${linter}", &path_to_native_string(self.directory()))
             .replace(
                 "${cachedir}",
