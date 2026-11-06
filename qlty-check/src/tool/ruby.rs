@@ -3,7 +3,7 @@ mod sys;
 
 use super::command_builder::{default_command_builder, CommandBuilder};
 use super::ruby_source::RubySource;
-use super::{interpolate_env_variables, update_package_hash, Tool, ToolType};
+use super::{plugin_env_is_set, update_package_hash, Tool, ToolType};
 use crate::tool::command_error::ToolCommandError;
 use crate::tool::download::Download;
 use crate::tool::install_failure::{InstallFailure, InstallFailureKind, BUILD_SECRETS_URL};
@@ -331,22 +331,19 @@ impl Tool for RubygemsPackage {
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
         update_package_hash(self, sha)?;
 
-        // Bundler reads settings and credentials from the environment, so
-        // setting or unsetting a variable installs again. Only names are hashed,
-        // so a rotated token doesn't.
+        // Bundler reads settings and credentials from the environment, so a
+        // change installs again. Values are hashed as written, before `${env.…}`
+        // is filled in, so a token passed that way can rotate without one.
         if self.plugin.package_file.is_some() {
-            let names = self
+            let set_envs = self
                 .plugin
                 .environment
                 .iter()
-                .filter(|env| {
-                    env.name != "PATH" && !interpolate_env_variables(&env.value).trim().is_empty()
-                })
-                .map(|env| &env.name)
-                .sorted()
-                .dedup();
-            for name in names {
-                sha.update(name);
+                .filter(|env| plugin_env_is_set(env))
+                .sorted();
+            for env in set_envs {
+                sha.update(&env.name);
+                sha.update(&env.value);
             }
         }
 
@@ -749,12 +746,29 @@ pub mod test {
     }
 
     #[test]
-    fn test_rubygems_package_fingerprint_ignores_plugin_env_value() {
+    fn test_rubygems_package_fingerprint_changes_with_plugin_env_value() {
         with_bundled_rubygems_package(|pkg| {
-            pkg.plugin.environment = vec![plugin_env("BUNDLE_GEMS__EXAMPLE__COM", "user:token")];
+            pkg.plugin.environment = vec![plugin_env("BUNDLE_WITHOUT", "test")];
             let fingerprint = pkg.fingerprint();
-            pkg.plugin.environment = vec![plugin_env("BUNDLE_GEMS__EXAMPLE__COM", "user:rotated")];
-            assert_eq!(pkg.fingerprint(), fingerprint);
+            pkg.plugin.environment = vec![plugin_env("BUNDLE_WITHOUT", "development")];
+            assert_ne!(pkg.fingerprint(), fingerprint);
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_rubygems_package_fingerprint_ignores_interpolated_plugin_env_value() {
+        with_bundled_rubygems_package(|pkg| {
+            pkg.plugin.environment = vec![plugin_env(
+                "BUNDLE_GEMS__EXAMPLE__COM",
+                "${env.QLTY_TEST_ROTATED_BUNDLE_CREDENTIAL}",
+            )];
+            std::env::set_var("QLTY_TEST_ROTATED_BUNDLE_CREDENTIAL", "user:token");
+            let fingerprint = pkg.fingerprint();
+            std::env::set_var("QLTY_TEST_ROTATED_BUNDLE_CREDENTIAL", "user:rotated");
+            let rotated_fingerprint = pkg.fingerprint();
+            std::env::remove_var("QLTY_TEST_ROTATED_BUNDLE_CREDENTIAL");
+            assert_eq!(rotated_fingerprint, fingerprint);
             Ok(())
         });
     }
