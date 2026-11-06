@@ -1,0 +1,31 @@
+config_version = "0"
+
+[file_types.gitlab-ci]
+globs = [".gitlab-ci.yml", "**/.gitlab-ci.yml", "**/*.gitlab-ci.yml"]
+
+[plugins.releases.glsec]
+github = "glsec/glsec"
+download_type = "targz"
+strip_components = 0
+
+[plugins.definitions.glsec]
+releases = ["glsec"]
+config_files = [".glsec.yml"]
+file_types = ["gitlab-ci"]
+latest_version = "1.23.0"
+known_good_version = "1.23.0"
+version_command = "glsec --version"
+issue_url_format = "https://glsec.github.io/rules/${rule}/"
+description = "Security linter for GitLab CI/CD pipelines"
+security = true
+
+[plugins.definitions.glsec.drivers.lint]
+script = "glsec --format sarif --no-color ${target}"
+success_codes = [0, 1]
+output = "stdout"
+output_format = "sarif"
+output_category = "vulnerability"
+cache_results = true
+batch = true
+suggested = "targets"
+output_missing = "parse"
