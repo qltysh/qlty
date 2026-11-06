@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.668.0 (2026-11-06)
+
+### Fixed
+
+- Install block-form `source` blocks in a Ruby plugin's `package_file`, so Gemfiles with commercial gem sources like Sidekiq Pro no longer fail with `syntax error, unexpected 'end'` (#3003)
+- Reinstall a Ruby `package_file` tool when its plugin `environment` entries change, so a newly added `BUNDLE_<HOST>` credential takes effect instead of failing with `Bundler::GemNotFound` (#3005)
+- Send `QLTY_GITHUB_TOKEN` only on direct requests to `api.github.com`, not to `github-proxy.qlty.sh` (#2989)
+
 ## v0.667.0 (2026-11-03)
 
 ### Fixed
