@@ -76,8 +76,12 @@ impl Client {
     }
 
     pub fn post_coverage_metadata(&self, url: &str, metadata: &CoverageMetadata) -> Result<Value> {
+        self.post_coverage_data(url, &serde_json::to_value(metadata)?)
+    }
+
+    pub fn post_coverage_data(&self, url: &str, data: &Value) -> Result<Value> {
         let response_result = self.post(url)?.send_json(json!({
-            "data": metadata,
+            "data": data,
         }));
 
         match response_result {

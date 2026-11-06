@@ -8,6 +8,8 @@ use clap::Args;
 use console::style;
 use qlty_cloud::{get_legacy_api_url, Client as QltyClient};
 use qlty_coverage::{publish::Settings, token::load_auth_token};
+use qlty_types::tests::v1::CoverageMetadata;
+use serde_json::Value;
 use std::time::Instant;
 
 #[derive(Debug, Args, Default)]
@@ -15,6 +17,10 @@ pub struct Skip {
     #[arg(long)]
     /// The tag whose coverage was intentionally not run
     pub tag: Option<String>,
+
+    #[arg(long)]
+    /// Why coverage was not run, shown in the commit status
+    pub reason: Option<String>,
 
     #[arg(long)]
     /// Override the commit SHA from the CI environment
@@ -78,7 +84,7 @@ impl Skip {
         if !self.dry_run {
             let legacy_api_url = get_legacy_api_url();
             QltyClient::new(Some(&legacy_api_url), Some(token))
-                .post_coverage_metadata("/coverage/skip", &metadata)
+                .post_coverage_data("/coverage/skip", &self.request_data(&metadata)?)
                 .context("Failed to skip coverage")?;
         }
 
@@ -91,6 +97,15 @@ impl Skip {
         }
 
         CommandSuccess::ok()
+    }
+
+    fn request_data(&self, metadata: &CoverageMetadata) -> Result<Value> {
+        let mut data =
+            serde_json::to_value(metadata).context("Failed to serialize coverage metadata")?;
+        if let Some(reason) = &self.reason {
+            data["skipReason"] = Value::from(reason.as_str());
+        }
+        Ok(data)
     }
 
     fn print_section_header(&self, title: &str) {
@@ -114,5 +129,42 @@ impl Skip {
             dry_run: self.dry_run,
             ..Default::default()
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn metadata() -> CoverageMetadata {
+        CoverageMetadata {
+            commit_sha: "2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67".to_string(),
+            tag: Some("backend".to_string()),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn request_data_adds_the_reason_to_the_metadata() {
+        let skip = Skip {
+            reason: Some("No backend changes".to_string()),
+            ..Default::default()
+        };
+
+        let data = skip.request_data(&metadata()).unwrap();
+
+        assert_eq!(
+            data["commitSha"],
+            "2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67"
+        );
+        assert_eq!(data["tag"], "backend");
+        assert_eq!(data["skipReason"], "No backend changes");
+    }
+
+    #[test]
+    fn request_data_omits_the_reason_when_none_is_given() {
+        let data = Skip::default().request_data(&metadata()).unwrap();
+
+        assert_eq!(data.get("skipReason"), None);
     }
 }
