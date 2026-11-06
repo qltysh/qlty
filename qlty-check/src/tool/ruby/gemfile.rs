@@ -9,6 +9,37 @@ use tracing::debug;
 
 pub type RubyGemfile = RubygemsPackage;
 
+const SOURCE_PREAMBLE: &str = r#"source "https://rubygems.org"
+
+# Added by Qlty. Global sources are replaced by rubygems.org above. A source
+# block is kept only when Bundler has credentials for it, so its gems can
+# install; otherwise its gems are left out. The Ruby version is Qlty's own.
+def source(url, *args, &block)
+  return unless block
+
+  # Not `URI`, which would activate the default uri gem before Bundler checks
+  # the version in the lockfile.
+  _, userinfo, host = url.to_s.match(%r{\A[a-z][a-z0-9+.-]*://(?:([^@/]*)@)?([^/:?#]+)}i).to_a
+  if url == :rubygems ||
+      (host && (host == "rubygems.org" || !userinfo.to_s.delete(":").empty? ||
+        Bundler.settings[host] || (Bundler.settings[url.to_s] rescue nil)))
+    return super
+  end
+  # Bundler also evaluates the Gemfile with a subclass to find plugins.
+  return unless instance_of?(Bundler::Dsl)
+
+  if host
+    Bundler.ui.warn "Qlty skipped the gems in the source block for #{host} because Bundler " \
+      "has no credentials for it. To install them, set " \
+      "BUNDLE_#{host.upcase.gsub(".", "__").gsub("-", "___")} in the plugin's environment. " \
+      "See https://docs.qlty.sh/cloud/build-secrets"
+  else
+    Bundler.ui.warn "Qlty skipped the gems in a source block with no host."
+  end
+end
+
+"#;
+
 impl RubyGemfile {
     pub fn gemfile_install(&self, task: &ProgressTask) -> Result<()> {
         self.copy_package_file(task)?;
@@ -49,47 +80,26 @@ impl RubyGemfile {
         task.set_dim_message(&format!("bundle install ({})", package_file_name));
 
         let package_file_contents = std::fs::read_to_string(package_file)?;
-        let mut uses_gemspec = false;
-        let mut new_package_file_contents = vec!["source 'https://rubygems.org'"];
-        for line in package_file_contents.lines() {
-            let line = line.trim();
-            let mut tokens = line.split_whitespace();
-            match tokens.next().unwrap_or_default() {
-                "gem" => {
-                    let gem_name = tokens
-                        .next()
-                        .unwrap_or_default()
-                        .replace(['\'', '"', ','], "");
-                    if self.plugin.package_filters.is_empty()
-                        || self.name == gem_name
-                        || self
-                            .plugin
-                            .package_filters
-                            .iter()
-                            .any(|filter| gem_name.contains(filter))
-                    {
-                        new_package_file_contents.push(line);
-                    }
-                }
-                "gemspec" => {
-                    uses_gemspec = true;
-                    new_package_file_contents.push(line);
-                }
-                "source" | "ruby" => {}
-                _ => {
-                    if self.plugin.package_filters.is_empty() {
-                        new_package_file_contents.push(line);
-                    }
-                }
-            }
-        }
+        // Without filters, Bundler evaluates the whole Gemfile, so its `source`
+        // blocks are decided in Ruby rather than rewritten as text.
+        let new_package_file_contents = if self.plugin.package_filters.is_empty() {
+            format!(
+                "{SOURCE_PREAMBLE}{}",
+                blank_global_directives(&package_file_contents)
+            )
+        } else {
+            self.filtered_package_file(&package_file_contents)
+        };
 
+        let uses_gemspec = package_file_contents
+            .lines()
+            .any(|line| line.split_whitespace().next() == Some("gemspec"));
         if uses_gemspec {
             self.copy_gemspec_files(package_file, &self.name, &self.plugin.package_filters)?;
         }
 
         let new_package_file_path = join_path_string!(self.directory(), package_file_name);
-        std::fs::write(new_package_file_path, new_package_file_contents.join("\n"))?;
+        std::fs::write(new_package_file_path, new_package_file_contents)?;
 
         if self.plugin.package_filters.is_empty() {
             let package_file_path = PathBuf::from(package_file);
@@ -110,6 +120,36 @@ impl RubyGemfile {
         }
 
         Ok(())
+    }
+
+    // Only the gems the filters select and any `gemspec` line are kept, all
+    // from rubygems.org.
+    fn filtered_package_file(&self, contents: &str) -> String {
+        let mut lines = vec!["source 'https://rubygems.org'"];
+        for line in contents.lines() {
+            let line = line.trim();
+            let mut tokens = line.split_whitespace();
+            match tokens.next().unwrap_or_default() {
+                "gem" => {
+                    let gem_name = tokens
+                        .next()
+                        .unwrap_or_default()
+                        .replace(['\'', '"', ','], "");
+                    if self.name == gem_name
+                        || self
+                            .plugin
+                            .package_filters
+                            .iter()
+                            .any(|filter| gem_name.contains(filter))
+                    {
+                        lines.push(line);
+                    }
+                }
+                "gemspec" => lines.push(line),
+                _ => {}
+            }
+        }
+        lines.join("\n")
     }
 
     fn copy_gemspec_files(
@@ -205,8 +245,36 @@ impl RubyGemfile {
     }
 }
 
+// `ruby` lines and one-line global `source` lines are dropped rather than
+// evaluated, as before, because their arguments often read something the tool
+// directory doesn't have, such as `File.read(".ruby-version")` or
+// `ENV.fetch("TOKEN")`. A `source` line with a `do`, or one that continues onto
+// the next line, may open a block, so it's left for the preamble. Lines are left
+// blank so the lines after them keep their line numbers.
+fn blank_global_directives(contents: &str) -> String {
+    contents
+        .split_inclusive('\n')
+        .map(|line| {
+            let mut tokens = line.split_whitespace();
+            let blank = match tokens.next() {
+                Some("ruby") => true,
+                Some("source") => {
+                    !line.trim_end().ends_with([',', '\\']) && !tokens.any(|token| token == "do")
+                }
+                _ => false,
+            };
+            if blank {
+                "\n"
+            } else {
+                line
+            }
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod test {
+    use super::{blank_global_directives, SOURCE_PREAMBLE};
     use crate::{
         tool::{
             command_builder::test::reroute_tools_root,
@@ -394,11 +462,14 @@ mod test {
                 req_file,
                 indoc! {r#"
                     source 'https://not-rubygems.org'
-                    ruby '2.7.0'
+                    ruby File.read(".ruby-version").strip
                     gemspec
                     gem 'tool', '1.0.0'
                     gem 'tool_dep', '1.2.0'
                     gem 'unrelated', '1.0.0'
+                    source 'https://gems.example.com' do
+                      gem 'private'
+                    end
                 "#},
             )
             .unwrap();
@@ -413,18 +484,78 @@ mod test {
 
             let filtered_package_file_path = Path::new(&pkg.directory()).join("Gemfile");
             assert_eq!(
-                std::fs::read_to_string(filtered_package_file_path)?.trim(),
-                indoc! {r#"
-                    source 'https://rubygems.org'
-                    gemspec
-                    gem 'tool', '1.0.0'
-                    gem 'tool_dep', '1.2.0'
-                    gem 'unrelated', '1.0.0'
-                "#}
-                .trim_end()
+                std::fs::read_to_string(filtered_package_file_path)?,
+                format!(
+                    "{SOURCE_PREAMBLE}{}",
+                    indoc! {r#"
+
+
+                        gemspec
+                        gem 'tool', '1.0.0'
+                        gem 'tool_dep', '1.2.0'
+                        gem 'unrelated', '1.0.0'
+                        source 'https://gems.example.com' do
+                          gem 'private'
+                        end
+                    "#}
+                )
             );
             Ok(())
         });
+    }
+
+    #[test]
+    fn test_blank_global_directives_blanks_one_line_source() {
+        assert_eq!(
+            blank_global_directives(indoc! {r#"
+                source "https://#{ENV.fetch('TOKEN')}@gem.fury.io/acme/"
+                gem "rubocop"
+            "#}),
+            "\ngem \"rubocop\"\n"
+        );
+    }
+
+    #[test]
+    fn test_blank_global_directives_blanks_ruby() {
+        assert_eq!(
+            blank_global_directives(indoc! {r#"
+                ruby File.read(".ruby-version").strip
+                gem "rubocop"
+            "#}),
+            "\ngem \"rubocop\"\n"
+        );
+    }
+
+    #[test]
+    fn test_blank_global_directives_keeps_source_block() {
+        let gemfile = indoc! {r#"
+            source "https://gems.example.com" do
+              gem "private"
+            end
+        "#};
+        assert_eq!(blank_global_directives(gemfile), gemfile);
+    }
+
+    #[test]
+    fn test_blank_global_directives_keeps_source_continued_with_comma() {
+        let gemfile = indoc! {r#"
+            source "https://gems.example.com",
+                   type: "rubygems" do
+              gem "private"
+            end
+        "#};
+        assert_eq!(blank_global_directives(gemfile), gemfile);
+    }
+
+    #[test]
+    fn test_blank_global_directives_keeps_source_continued_with_backslash() {
+        let gemfile = indoc! {r#"
+            source "https://gems.example.com" \
+              do
+              gem "private"
+            end
+        "#};
+        assert_eq!(blank_global_directives(gemfile), gemfile);
     }
 
     #[test]
