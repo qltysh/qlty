@@ -14,6 +14,9 @@ args = [
 bin.name = "qlty"
 status.code = 0
 
+[env]
+remove = ["GITHUB_ACTIONS"]
+
 [env.add]
 QLTY_COVERAGE_TOKEN = "123"
 QLTY_COVERAGE_TESTING_WITHOUT_GIT = "true"
