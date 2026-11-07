@@ -1,6 +1,6 @@
 use super::utils::{
     print_authentication_info, print_initial_messages, print_metadata, print_settings,
-    validate_metadata,
+    validate_minimal_metadata,
 };
 use crate::{CommandError, CommandSuccess};
 use anyhow::{Context, Result};
@@ -34,10 +34,6 @@ pub struct Skip {
     /// Override the pull request number from the CI environment
     pub override_pr_number: Option<String>,
 
-    #[arg(long)]
-    /// Set the commit time when git is not available
-    pub override_commit_time: Option<String>,
-
     #[arg(long, short)]
     /// The token to use for authentication.
     /// By default, it retrieves the token from the QLTY_COVERAGE_TOKEN environment variable.
@@ -68,9 +64,9 @@ impl Skip {
         let token = load_auth_token(&self.token, self.project.as_deref())?;
         let metadata =
             qlty_coverage::publish::MetadataPlanner::new(&settings, qlty_coverage::ci::current())
-                .compute()?;
+                .compute_from_ci();
 
-        validate_metadata(&metadata)?;
+        validate_minimal_metadata(&metadata)?;
 
         self.print_section_header(" METADATA ");
         print_metadata(&metadata, self.quiet);
@@ -122,7 +118,6 @@ impl Skip {
             override_commit_sha: self.override_commit_sha.clone(),
             override_branch: self.override_branch.clone(),
             override_pull_request_number: self.override_pr_number.clone(),
-            override_commit_time: self.override_commit_time.clone(),
             tag: self.tag.clone(),
             quiet: self.quiet,
             project: self.project.clone(),

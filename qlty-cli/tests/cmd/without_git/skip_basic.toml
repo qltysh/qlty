@@ -1,0 +1,19 @@
+args = [
+  "coverage",
+  "skip",
+  "--dry-run",
+  "--tag",
+  "backend",
+  "--reason",
+  "No backend changes",
+  "--override-commit-sha",
+  "2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67",
+  "--override-pr-number",
+  "42"
+]
+bin.name = "qlty"
+status.code = 0
+
+[env.add]
+QLTY_COVERAGE_TOKEN = "123"
+QLTY_COVERAGE_TESTING_WITHOUT_GIT = "true"

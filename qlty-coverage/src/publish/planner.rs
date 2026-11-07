@@ -176,54 +176,7 @@ impl MetadataPlanner {
     }
 
     pub fn compute(&self) -> Result<CoverageMetadata> {
-        let now = OffsetDateTime::now_utc();
-
-        let is_merge_group = self
-            .ci
-            .as_ref()
-            .is_some_and(|ci| ci.is_merge_group_branch());
-
-        let mut metadata = if let Some(ref ci) = self.ci {
-            ci.metadata()
-        } else {
-            CoverageMetadata {
-                ci: "unknown".to_string(),
-                publish_command: std::env::args().collect::<Vec<String>>().join(" "),
-                ..CoverageMetadata::default()
-            }
-        };
-        metadata.cli_version = LONG_VERSION.to_string();
-
-        metadata.uploaded_at = Some(Timestamp {
-            seconds: now.unix_timestamp(),
-            nanos: now.nanosecond() as i32,
-        });
-        metadata.tag = self.settings.tag.clone();
-        metadata.name = self.settings.name.clone();
-        metadata.total_parts_count = self.settings.total_parts_count;
-        metadata.incomplete = self.settings.incomplete;
-        metadata.selection = self.settings.selection.clone();
-
-        // Override metadata with command line arguments
-        if let Some(build_id) = self.settings.override_build_id.clone() {
-            metadata.build_id = build_id;
-        }
-
-        if let Some(commit_sha) = self.settings.override_commit_sha.clone() {
-            metadata.commit_sha = commit_sha;
-        }
-
-        if let Some(branch) = self.settings.override_branch.clone() {
-            metadata.branch = branch;
-        }
-
-        if let Some(pull_request_number) = self.settings.override_pull_request_number.clone() {
-            metadata.pull_request_number = pull_request_number;
-        }
-
-        if let Some(git_tag) = self.settings.override_git_tag.as_ref() {
-            metadata.git_tag = Some(git_tag.to_string());
-        }
+        let mut metadata = self.compute_from_ci();
 
         let commit_metadata = retrieve_commit_metadata()?;
 
@@ -275,6 +228,60 @@ impl MetadataPlanner {
             }
         }
 
+        Ok(metadata)
+    }
+
+    /// Metadata from the CI environment and command-line overrides, without reading git.
+    pub fn compute_from_ci(&self) -> CoverageMetadata {
+        let now = OffsetDateTime::now_utc();
+
+        let is_merge_group = self
+            .ci
+            .as_ref()
+            .is_some_and(|ci| ci.is_merge_group_branch());
+
+        let mut metadata = if let Some(ref ci) = self.ci {
+            ci.metadata()
+        } else {
+            CoverageMetadata {
+                ci: "unknown".to_string(),
+                publish_command: std::env::args().collect::<Vec<String>>().join(" "),
+                ..CoverageMetadata::default()
+            }
+        };
+        metadata.cli_version = LONG_VERSION.to_string();
+
+        metadata.uploaded_at = Some(Timestamp {
+            seconds: now.unix_timestamp(),
+            nanos: now.nanosecond() as i32,
+        });
+        metadata.tag = self.settings.tag.clone();
+        metadata.name = self.settings.name.clone();
+        metadata.total_parts_count = self.settings.total_parts_count;
+        metadata.incomplete = self.settings.incomplete;
+        metadata.selection = self.settings.selection.clone();
+
+        // Override metadata with command line arguments
+        if let Some(build_id) = self.settings.override_build_id.clone() {
+            metadata.build_id = build_id;
+        }
+
+        if let Some(commit_sha) = self.settings.override_commit_sha.clone() {
+            metadata.commit_sha = commit_sha;
+        }
+
+        if let Some(branch) = self.settings.override_branch.clone() {
+            metadata.branch = branch;
+        }
+
+        if let Some(pull_request_number) = self.settings.override_pull_request_number.clone() {
+            metadata.pull_request_number = pull_request_number;
+        }
+
+        if let Some(git_tag) = self.settings.override_git_tag.as_ref() {
+            metadata.git_tag = Some(git_tag.to_string());
+        }
+
         metadata.reference_type = if is_merge_group {
             ReferenceType::MergeGroup as i32
         } else if !metadata.pull_request_number.is_empty() {
@@ -287,7 +294,7 @@ impl MetadataPlanner {
             ReferenceType::Unspecified as i32
         };
 
-        Ok(metadata)
+        metadata
     }
 
     fn parse_timestamp(timestamp_str: &str) -> Result<i64> {
