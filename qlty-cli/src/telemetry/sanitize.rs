@@ -99,7 +99,11 @@ fn sanitize_program_windows(program: &str) -> String {
 
 fn subcommand(command: &str) -> String {
     let mut result = vec![];
-    let arg_matches = Arguments::command().get_matches_from(command.split(' '));
+    // The command was rebuilt by joining argv with spaces, so a value containing a space no longer
+    // parses; get_matches_from would exit the process.
+    let Ok(arg_matches) = Arguments::command().try_get_matches_from(command.split(' ')) else {
+        return String::new();
+    };
 
     // This works for up to 3 levels of subcommands. There's probably a better way to do this.
     if let Some((name, arg_matches)) = arg_matches.subcommand() {
@@ -242,6 +246,18 @@ mod test {
                 "qlty".to_owned(),
                 "check".to_owned(),
                 "--all --no-progress --filter=VALUE".to_owned()
+            )
+        );
+    }
+
+    #[test]
+    fn sanitize_unparseable_command() {
+        assert_eq!(
+            sanitize_command("qlty coverage skip --reason No backend changes"),
+            (
+                "qlty".to_owned(),
+                "".to_owned(),
+                "VALUE --reason VALUE VALUE VALUE".to_owned()
             )
         );
     }
