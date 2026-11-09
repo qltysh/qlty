@@ -1,6 +1,7 @@
 pub mod package_json;
 use super::command_builder::default_command_builder;
 use super::command_builder::CommandBuilder;
+use super::update_package_hash;
 use super::Tool;
 use super::ToolType;
 use crate::tool::command_error::ToolCommandError;
@@ -15,6 +16,7 @@ use qlty_config::config::OperatingSystem;
 use qlty_config::config::PluginDef;
 use qlty_config::config::{Cpu, DownloadDef, System};
 use regex::Regex;
+use sha2::Digest;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::path::Path;
@@ -146,6 +148,19 @@ impl Tool for NodePackage {
 
     fn runtime(&self) -> Option<Box<dyn Tool>> {
         Some(Box::new(self.runtime.clone()))
+    }
+
+    // npm installs the locked versions, so a lock-only bump such as
+    // `npm update eslint` installs again.
+    fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
+        update_package_hash(self, sha)?;
+
+        if let Some(lock_file) = self.lock_file_to_stage() {
+            sha.update(b"package-lock.json");
+            sha.update(std::fs::read(lock_file)?);
+        }
+
+        Ok(())
     }
 
     fn version(&self) -> Option<String> {
@@ -548,6 +563,51 @@ pub mod test {
                 ]
             );
 
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn node_package_fingerprint_changes_with_lock_file() {
+        with_node_package(|pkg, temp_path, _| {
+            let pkg_file = temp_path.path().join("package.json");
+            std::fs::write(&pkg_file, r#"{"devDependencies":{"eslint":"^9.0.0"}}"#)?;
+            let lock_file = temp_path.path().join("package-lock.json");
+            std::fs::write(
+                &lock_file,
+                r#"{"packages":{"node_modules/eslint":{"version":"9.0.0"}}}"#,
+            )?;
+            pkg.plugin.package_file = Some(pkg_file.to_str().unwrap().to_string());
+
+            let fingerprint = pkg.fingerprint();
+            std::fs::write(
+                &lock_file,
+                r#"{"packages":{"node_modules/eslint":{"version":"9.1.0"}}}"#,
+            )?;
+            assert_ne!(pkg.fingerprint(), fingerprint);
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn node_package_fingerprint_ignores_lock_file_with_package_filters() {
+        with_node_package(|pkg, temp_path, _| {
+            let pkg_file = temp_path.path().join("package.json");
+            std::fs::write(&pkg_file, r#"{"devDependencies":{"eslint":"^9.0.0"}}"#)?;
+            let lock_file = temp_path.path().join("package-lock.json");
+            std::fs::write(
+                &lock_file,
+                r#"{"packages":{"node_modules/eslint":{"version":"9.0.0"}}}"#,
+            )?;
+            pkg.plugin.package_file = Some(pkg_file.to_str().unwrap().to_string());
+            pkg.plugin.package_filters = vec!["eslint".to_string()];
+
+            let fingerprint = pkg.fingerprint();
+            std::fs::write(
+                &lock_file,
+                r#"{"packages":{"node_modules/eslint":{"version":"9.1.0"}}}"#,
+            )?;
+            assert_eq!(pkg.fingerprint(), fingerprint);
             Ok(())
         });
     }
