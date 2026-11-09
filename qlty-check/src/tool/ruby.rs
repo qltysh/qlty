@@ -347,6 +347,13 @@ impl Tool for RubygemsPackage {
             }
         }
 
+        // Bundler installs the locked versions, so a lock-only bump such as
+        // `bundle update rubocop` installs again.
+        if let Some(lock_file) = self.lock_file_to_stage() {
+            sha.update(b"Gemfile.lock");
+            sha.update(fs::read(lock_file)?);
+        }
+
         Ok(())
     }
 
@@ -490,6 +497,7 @@ pub mod test {
     use itertools::Itertools;
     use qlty_analysis::{join_path_string, utils::fs::path_to_native_string};
     use qlty_config::config::{PluginDef, PluginEnvironment};
+    use std::path::Path;
     use std::sync::{Arc, Mutex};
     use tempfile::{tempdir, TempDir};
 
@@ -791,6 +799,33 @@ pub mod test {
         with_rubygems_package(|pkg, _, _| {
             let fingerprint = pkg.fingerprint();
             pkg.plugin.environment = vec![plugin_env("BUNDLE_GEMS__EXAMPLE__COM", "user:token")];
+            assert_eq!(pkg.fingerprint(), fingerprint);
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_rubygems_package_fingerprint_changes_with_lock_file() {
+        with_bundled_rubygems_package(|pkg| {
+            let lock_file =
+                Path::new(pkg.plugin.package_file.as_ref().unwrap()).with_file_name("Gemfile.lock");
+            std::fs::write(&lock_file, "    rubocop (1.80.0)")?;
+            let fingerprint = pkg.fingerprint();
+            std::fs::write(&lock_file, "    rubocop (1.81.7)")?;
+            assert_ne!(pkg.fingerprint(), fingerprint);
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_rubygems_package_fingerprint_ignores_lock_file_with_package_filters() {
+        with_bundled_rubygems_package(|pkg| {
+            pkg.plugin.package_filters = vec!["rubocop".into()];
+            let lock_file =
+                Path::new(pkg.plugin.package_file.as_ref().unwrap()).with_file_name("Gemfile.lock");
+            std::fs::write(&lock_file, "    rubocop (1.80.0)")?;
+            let fingerprint = pkg.fingerprint();
+            std::fs::write(&lock_file, "    rubocop (1.81.7)")?;
             assert_eq!(pkg.fingerprint(), fingerprint);
             Ok(())
         });

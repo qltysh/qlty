@@ -101,25 +101,32 @@ impl RubyGemfile {
         let new_package_file_path = join_path_string!(self.directory(), package_file_name);
         std::fs::write(new_package_file_path, new_package_file_contents)?;
 
-        if self.plugin.package_filters.is_empty() {
-            let package_file_path = PathBuf::from(package_file);
-            if let Some(parent_dir) = package_file_path.parent() {
-                let lock_file = parent_dir.join("Gemfile.lock");
-                if lock_file.exists() {
-                    let staging_lock_file = join_path_string!(self.directory(), "Gemfile.lock");
+        if let Some(lock_file) = self.lock_file_to_stage() {
+            let staging_lock_file = join_path_string!(self.directory(), "Gemfile.lock");
 
-                    debug!(
-                        "Copying lock file from {} to {}",
-                        lock_file.display(),
-                        staging_lock_file
-                    );
+            debug!(
+                "Copying lock file from {} to {}",
+                lock_file.display(),
+                staging_lock_file
+            );
 
-                    std::fs::copy(lock_file, staging_lock_file)?;
-                }
-            }
+            std::fs::copy(lock_file, staging_lock_file)?;
         }
 
         Ok(())
+    }
+
+    // Filters rebuild the Gemfile from a subset of its gems, so the lock file
+    // is staged only without them
+    pub fn lock_file_to_stage(&self) -> Option<PathBuf> {
+        if !self.plugin.package_filters.is_empty() {
+            return None;
+        }
+
+        PathBuf::from(self.plugin.package_file.as_ref()?)
+            .parent()
+            .map(|parent_dir| parent_dir.join("Gemfile.lock"))
+            .filter(|lock_file| lock_file.exists())
     }
 
     // Only the gems the filters select and any `gemspec` line are kept, all
