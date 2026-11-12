@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Security
+
+- Log the PHP version and package that Qlty Cloud runner images run, and warn when `[runtimes.enabled]` pins a PHP patch affected by CVE-2026-109618 and CVE-2026-109619. The images' PHP has the fix: 8.2.35, 8.3.36, 8.4.27 and 8.5.12, and for PHP 8.1, which has no upstream fix, package 8.1.34-9 (#3014)
+
 ## v0.669.0 (2026-11-13)
 
 ### New
