@@ -28,6 +28,21 @@ Where a parser exists for a format, such as URLs, paths, JSON, HTML or Markdown,
 
 When problems you report share one cause in the change's approach, say so in the most severe finding, list the others, and suggest an approach that avoids them all. Do this only when changing the approach would remove every problem you list. Don't post it as a finding of its own or raise its severity for it. The suggestion is advisory: fixing the problems themselves resolves the findings.
 
+### Decisions
+
+Find the consequential decisions in the change: choices that are hard to reverse after merge (persisted data or schema, a public API or webhook shape, a package or module boundary, a new dependency), product choices the issue didn't settle, architectural or code design choices that later code will copy, and tradeoffs of security, cost, performance or reliability. Start from the Decisions section of the PR description, and add any consequential decision it leaves out.
+
+Rate each decision as a reviewer would: Agree, Lean agree, Torn, Lean disagree or Disagree. Report every decision you don't rate Agree as a finding on the line that makes it, written so a person can act on it without opening the code:
+
+- **Decision:** what the change does, in one sentence.
+- **Rating:** Lean agree, Torn, Lean disagree or Disagree.
+- **Alternatives:** each realistic option, including the one chosen, with its main reason for and against. Say whether the PR description considered it.
+- **Why not Agree:** the concern, the evidence (a file and line, a failing case, or a production fact), and what would move the rating to Agree.
+
+A decision that will be costly to reverse is Important. Any other is a Nit. A product choice that another section of REVIEW.md covers is reported there, not here. Report at most two decision Nits, most consequential first. They don't count toward the three Nits in Cap the nits.
+
+When the change makes a consequential decision and the description has no Decisions section, say so in the review summary, not as a finding.
+
 ### Cap the nits
 
 Report at most three Nits, most consequential first. Nits from a REVIEW.md section with its own cap don't count toward these three.

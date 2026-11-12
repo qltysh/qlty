@@ -69,11 +69,9 @@ Claude Code Review on GitHub follows too, are in REVIEW.md:
 Never resolve a 🔴 thread you didn't fix. If you disagree with a finding, reply with your reasoning and ask a person to
 review.
 
-### Decisions
-
-Every pull request description has a Decisions section listing the consequential decisions in the
-change: the ones a reviewer should weigh in on before merge. A decision is consequential when at
-least one of these holds:
+**Decisions.** Every pull request description has a Decisions section listing the
+consequential decisions in the change: the ones a reviewer should weigh in on before merge. A
+decision is consequential when at least one of these holds:
 
 - It is hard to reverse after merge: persisted data or schema, a public API or webhook shape, a
   package or module boundary, a new dependency.
@@ -91,16 +89,7 @@ else was realistic. Don't invent alternatives no one would pick. If no decision 
 `Decisions: none. Follows <file or pattern>.` If more than four qualify, say so: the PR is probably
 doing too much, and the description should propose how to split it.
 
-Open the section with one row per decision, so a reviewer sees the ratings first:
-
-```markdown
-|     | Decision   | Claude        |
-| --- | ---------- | ------------- |
-| D1  | Short name | Agree         |
-| D2  | Short name | Lean disagree |
-```
-
-Then give each decision its own block:
+Give each decision its own block:
 
 ```markdown
 #### D1. Short name of the decision
@@ -109,35 +98,23 @@ Then give each decision its own block:
 
 **Why it needs a reviewer.** Which of the reasons above applies, in one sentence.
 
-**Options.** The chosen option first, then each realistic alternative, with enough room to judge it.
+**Options.** The chosen option first, then each realistic alternative, with enough room
+to judge it.
 
 1. **Chosen option (this PR).** How it works.
    - For: one reason per line.
    - Against: one cost or risk per line.
-2. **Alternative.** How it would work, and where the codebase already does it this way, if it does.
+2. **Alternative.** How it would work, and where the codebase already does it this way,
+   if it does.
    - For: one reason per line.
    - Against: one cost or risk per line.
 
-**Considered by the author.** Which options were tried or weighed before this PR, and what settled
-it. "Not considered" is a valid answer.
+**Considered.** Which options you tried or weighed before this PR, and what settled it.
+"Not considered" is a valid answer.
 
-**Why this option.** The reasons it beats each alternative, as a list, and what would change the
-choice.
-
-**Claude:** Agree ○ ○ ○ ● ○ Disagree: **Lean disagree**
-
-**Why not Agree.** Required for any rating except Agree. Write it so a reviewer can act without
-opening the code:
-
-- The concern, in one sentence.
-- The evidence: a file and line, a failing case, or a production fact.
-- What would move the rating to Agree.
+**Why this option.** The reasons it beats each alternative, as a list, and what would
+change the choice.
 ```
 
-The five positions, left to right, are Agree, Lean agree, Torn, Lean disagree and Disagree.
-
-The ratings come from a Claude run that did not write the change. Once the description is drafted,
-run a fresh subagent that sees only the diff, the linked issue and the Decisions section, not the
-conversation that wrote the code. It fills in the Claude column, each **Claude:** line and each
-**Why not Agree**. The agent that wrote the code does not edit them. It may add one line,
-**Author's response:**, under a rating.
+Don't rate your own decisions. Claude Code Review rates each one when the PR is marked ready and
+comments on any it doesn't agree with, as `review-common.md` describes.
