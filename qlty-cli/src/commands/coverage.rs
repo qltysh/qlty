@@ -32,7 +32,6 @@ pub enum Commands {
     Complete(Complete),
 
     /// Tell Qlty Cloud that coverage for a tag was intentionally not run
-    #[command(hide = true)]
     Skip(Skip),
 }
 
