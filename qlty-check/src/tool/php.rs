@@ -19,7 +19,7 @@ use std::collections::HashMap;
 use std::env::split_paths;
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
-use tracing::{debug, warn};
+use tracing::{debug, info, warn};
 
 const UNKNOWN_SYSTEM_PHP_VERSION: &str = "unknown";
 const RUNNER_PHP_FALLBACK_VERSION: &str = "8.3";
@@ -169,6 +169,20 @@ impl Php {
                 "Requested PHP {:?} is not available in this runner image; using PHP {}",
                 self.version, installed
             );
+        }
+        match std::fs::read_to_string(directory.join("debian-version")) {
+            Ok(revision) => info!(
+                "Using PHP {} (package {}) from {}",
+                installed,
+                revision.trim(),
+                directory.display()
+            ),
+            Err(error) => info!(
+                "Using PHP {} from {} (package revision unavailable: {})",
+                installed,
+                directory.display(),
+                error
+            ),
         }
         Ok(())
     }
@@ -458,6 +472,11 @@ pub mod test {
         std::fs::create_dir_all(directory.join("bin")).unwrap();
         std::fs::write(directory.join("bin/php"), "fixture").unwrap();
         std::fs::write(directory.join("version"), "8.3.36").unwrap();
+        std::fs::write(
+            directory.join("debian-version"),
+            "8.3.36-1+ubuntu24.04.1+deb.sury.org+1\n",
+        )
+        .unwrap();
         Php {
             version: requested.into(),
             php_runtimes_dir: Some(root.to_path_buf()),
@@ -510,6 +529,26 @@ pub mod test {
     fn baked_php_does_not_warn_for_a_matching_patch() {
         assert_baked_php_selection("8.3.36");
         assert!(!logs_contain("Requested PHP"));
+    }
+
+    #[test]
+    #[tracing_test::traced_test]
+    fn baked_php_logs_the_selected_version_and_package() {
+        assert_baked_php_selection("8.3");
+        assert!(logs_contain(
+            "Using PHP 8.3.36 (package 8.3.36-1+ubuntu24.04.1+deb.sury.org+1)"
+        ));
+    }
+
+    #[test]
+    #[tracing_test::traced_test]
+    fn baked_php_installs_without_a_package_revision() {
+        let root = tempdir().unwrap();
+        let runtime = baked_php_fixture(root.path(), "8.3");
+        std::fs::remove_file(root.path().join("8.3/debian-version")).unwrap();
+        runtime.verify_runner_version().unwrap();
+        assert!(logs_contain("Using PHP 8.3.36 from"));
+        assert!(logs_contain("package revision unavailable"));
     }
 
     #[test]
