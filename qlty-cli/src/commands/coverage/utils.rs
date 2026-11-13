@@ -45,10 +45,14 @@ impl AuthMethod {
         }
     }
 
-    fn masked_token(&self) -> Option<String> {
+    fn masked_token(&self, token: &str) -> Option<String> {
         match self {
-            Self::WorkspaceToken => Some(format!("{COVERAGE_TOKEN_WORKSPACE_PREFIX}…")),
+            Self::WorkspaceToken => match token.split_once('/') {
+                Some((_, project)) => Some(format!("{COVERAGE_TOKEN_WORKSPACE_PREFIX}…/{project}")),
+                None => Some(format!("{COVERAGE_TOKEN_WORKSPACE_PREFIX}…")),
+            },
             Self::ProjectToken => Some(format!("{COVERAGE_TOKEN_PROJECT_PREFIX}…")),
+            Self::Unknown if token.is_empty() => Some("(empty)".to_string()),
             Self::Oidc | Self::Unknown => None,
         }
     }
@@ -249,7 +253,7 @@ pub fn print_authentication_info(token: &str, quiet: bool) {
 
     let auth_method = AuthMethod::detect(token);
     eprintln!("    Auth Method: {}", auth_method.label());
-    if let Some(masked_token) = auth_method.masked_token() {
+    if let Some(masked_token) = auth_method.masked_token(token) {
         eprintln!("    Token: {masked_token}");
     }
     eprintln!();
@@ -342,9 +346,17 @@ mod tests {
     }
 
     #[test]
-    fn test_masked_token_shows_only_workspace_prefix() {
+    fn test_masked_token_shows_workspace_prefix_and_project() {
         assert_eq!(
-            AuthMethod::WorkspaceToken.masked_token(),
+            AuthMethod::WorkspaceToken.masked_token("qltcw_1234567890/my-project"),
+            Some("qltcw_…/my-project".to_string())
+        );
+    }
+
+    #[test]
+    fn test_masked_token_shows_only_workspace_prefix_without_project() {
+        assert_eq!(
+            AuthMethod::WorkspaceToken.masked_token("qltcw_1234567890"),
             Some("qltcw_…".to_string())
         );
     }
@@ -352,19 +364,30 @@ mod tests {
     #[test]
     fn test_masked_token_shows_only_project_prefix() {
         assert_eq!(
-            AuthMethod::ProjectToken.masked_token(),
+            AuthMethod::ProjectToken.masked_token("qltcp_1234567890"),
             Some("qltcp_…".to_string())
         );
     }
 
     #[test]
     fn test_masked_token_omits_oidc_token() {
-        assert_eq!(AuthMethod::Oidc.masked_token(), None);
+        assert_eq!(
+            AuthMethod::Oidc.masked_token("eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJyZXBvIn0.c2lnbmF0dXJl"),
+            None
+        );
     }
 
     #[test]
     fn test_masked_token_omits_unknown_token() {
-        assert_eq!(AuthMethod::Unknown.masked_token(), None);
+        assert_eq!(AuthMethod::Unknown.masked_token("123"), None);
+    }
+
+    #[test]
+    fn test_masked_token_marks_empty_token() {
+        assert_eq!(
+            AuthMethod::Unknown.masked_token(""),
+            Some("(empty)".to_string())
+        );
     }
 
     #[test]
