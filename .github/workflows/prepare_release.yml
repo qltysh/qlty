@@ -68,7 +68,7 @@ jobs:
         env:
           RELEASE_VERSION: ${{ inputs.increment == 'version' && inputs.version || inputs.increment || 'minor' }}
       - name: Draft changelog entry
-        uses: anthropics/claude-code-action@493279a9d94b7cc5d07a98e5e66cb03313805350 # version 1.0.166
+        uses: anthropics/claude-code-action@4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8 # version 1.0.275
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         with:
@@ -81,6 +81,7 @@ jobs:
             LAST_TAG: ${{ steps.version.outputs.last_tag }}
             DATE: ${{ steps.version.outputs.date }}
           claude_args: >-
+            --permission-mode default
             --allowedTools "Read,Grep,Glob,Edit(CHANGELOG.md),Write(CHANGELOG.md),Bash(git log:*),Bash(git show:*),Bash(gh pr view:*),Bash(gh pr list:*),Bash(gh release list:*)"
       - name: Validate drafted changes
         run: |
