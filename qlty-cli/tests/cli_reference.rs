@@ -16,6 +16,7 @@ const PUBLIC_COMMANDS: &[&str] = &[
     "coverage",
     "coverage complete",
     "coverage publish",
+    "coverage skip",
     "coverage transform",
     "dashboard",
     "deinit",
