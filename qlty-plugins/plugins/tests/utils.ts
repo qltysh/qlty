@@ -13,6 +13,9 @@ export interface EnvOptions {
 
   /** Test the output against the latest snapshots of the linter. */
   compareLatestSnapshots: boolean;
+
+  /** Test only the newest snapshot version of each fixture, when one exists. */
+  latestVersionOnly: boolean;
 }
 
 const parseLinterVersion = (value: string): LinterVersion | undefined => {
@@ -30,6 +33,7 @@ export const OPTIONS: EnvOptions = {
   compareLatestSnapshots: Boolean(
     process.env.QLTY_PLUGINS_COMPARE_LATEST_SNAPSHOT,
   ),
+  latestVersionOnly: Boolean(process.env.QLTY_PLUGINS_LATEST_VERSION_ONLY),
 };
 
 const extractStructure = (obj: object): Record<string, unknown> => {

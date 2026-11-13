@@ -167,6 +167,8 @@ e.g. `npm test reek`
 
 Before each check runs, the harness installs the plugin's tools and runtime with `qlty check --install-only`. That step retries up to three times with its own time budget, so a transient download failure or a slow package install does not count against the check's timeout.
 
+By default every snapshot version of a fixture is tested. Set `QLTY_PLUGINS_LATEST_VERSION_ONLY=1` to test only the newest snapshot version of each fixture; a fixture with no snapshots still runs against `known_good_version`. CI uses this on Windows, where package installs are several times slower and the older versions are already covered by the Linux and macOS jobs.
+
 ## Debug
 
 You can use `DEBUG=qlty:MY_PLUGIN` env variable to get debug logs which include a path to the sandbox for a given plugin or `DEBUG=qlty:*` for all of them.
