@@ -6,11 +6,57 @@ use qlty_coverage::publish::Settings;
 use qlty_types::tests::v1::{CoverageMetadata, ReferenceType};
 use regex::Regex;
 use std::path::PathBuf;
+use std::sync::LazyLock;
 use tracing::{info, warn};
 
 const COVERAGE_TOKEN_WORKSPACE_PREFIX: &str = "qltcw_";
 const COVERAGE_TOKEN_PROJECT_PREFIX: &str = "qltcp_";
-const OIDC_REGEX: &str = r"^([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+)$";
+static OIDC_REGEX: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+)$").unwrap()
+});
+
+#[derive(Debug, PartialEq, Eq)]
+enum AuthMethod {
+    WorkspaceToken,
+    ProjectToken,
+    Oidc,
+    Unknown,
+}
+
+impl AuthMethod {
+    fn detect(token: &str) -> Self {
+        if token.starts_with(COVERAGE_TOKEN_WORKSPACE_PREFIX) {
+            Self::WorkspaceToken
+        } else if token.starts_with(COVERAGE_TOKEN_PROJECT_PREFIX) {
+            Self::ProjectToken
+        } else if OIDC_REGEX.is_match(token) {
+            Self::Oidc
+        } else {
+            Self::Unknown
+        }
+    }
+
+    fn label(&self) -> &'static str {
+        match self {
+            Self::WorkspaceToken => "Workspace Token",
+            Self::ProjectToken => "Project Token",
+            Self::Oidc => "OIDC",
+            Self::Unknown => "Unknown",
+        }
+    }
+
+    fn masked_token(&self, token: &str) -> Option<String> {
+        match self {
+            Self::WorkspaceToken => match token.split_once('/') {
+                Some((_, project)) => Some(format!("{COVERAGE_TOKEN_WORKSPACE_PREFIX}…/{project}")),
+                None => Some(format!("{COVERAGE_TOKEN_WORKSPACE_PREFIX}…")),
+            },
+            Self::ProjectToken => Some(format!("{COVERAGE_TOKEN_PROJECT_PREFIX}…")),
+            Self::Unknown if token.is_empty() => Some("(empty)".to_string()),
+            Self::Oidc | Self::Unknown => None,
+        }
+    }
+}
 
 pub fn load_config(skip_source_fetch: bool) -> QltyConfig {
     let Ok(workspace) = Workspace::new() else {
@@ -205,21 +251,11 @@ pub fn print_authentication_info(token: &str, quiet: bool) {
         return;
     }
 
-    let token_type = if token.starts_with(COVERAGE_TOKEN_WORKSPACE_PREFIX) {
-        "Workspace Token"
-    } else if token.starts_with(COVERAGE_TOKEN_PROJECT_PREFIX) {
-        "Project Token"
-    } else if let Ok(oidc_regex) = Regex::new(OIDC_REGEX) {
-        if oidc_regex.is_match(token) {
-            "OIDC"
-        } else {
-            "Unknown"
-        }
-    } else {
-        "ERROR"
-    };
-    eprintln!("    Auth Method: {token_type}");
-    eprintln!("    Token: {token}");
+    let auth_method = AuthMethod::detect(token);
+    eprintln!("    Auth Method: {}", auth_method.label());
+    if let Some(masked_token) = auth_method.masked_token(token) {
+        eprintln!("    Token: {masked_token}");
+    }
     eprintln!();
 }
 
@@ -278,6 +314,80 @@ mod tests {
     fn write_qlty_toml(root: &std::path::Path, contents: &str) {
         fs::create_dir_all(root.join(".qlty")).unwrap();
         fs::write(root.join(".qlty/qlty.toml"), contents).unwrap();
+    }
+
+    #[test]
+    fn test_auth_method_detects_workspace_token() {
+        assert_eq!(
+            AuthMethod::detect("qltcw_1234567890/my-project"),
+            AuthMethod::WorkspaceToken
+        );
+    }
+
+    #[test]
+    fn test_auth_method_detects_project_token() {
+        assert_eq!(
+            AuthMethod::detect("qltcp_1234567890"),
+            AuthMethod::ProjectToken
+        );
+    }
+
+    #[test]
+    fn test_auth_method_detects_oidc_token() {
+        assert_eq!(
+            AuthMethod::detect("eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJyZXBvIn0.c2lnbmF0dXJl"),
+            AuthMethod::Oidc
+        );
+    }
+
+    #[test]
+    fn test_auth_method_detects_unknown_token() {
+        assert_eq!(AuthMethod::detect("123"), AuthMethod::Unknown);
+    }
+
+    #[test]
+    fn test_masked_token_shows_workspace_prefix_and_project() {
+        assert_eq!(
+            AuthMethod::WorkspaceToken.masked_token("qltcw_1234567890/my-project"),
+            Some("qltcw_…/my-project".to_string())
+        );
+    }
+
+    #[test]
+    fn test_masked_token_shows_only_workspace_prefix_without_project() {
+        assert_eq!(
+            AuthMethod::WorkspaceToken.masked_token("qltcw_1234567890"),
+            Some("qltcw_…".to_string())
+        );
+    }
+
+    #[test]
+    fn test_masked_token_shows_only_project_prefix() {
+        assert_eq!(
+            AuthMethod::ProjectToken.masked_token("qltcp_1234567890"),
+            Some("qltcp_…".to_string())
+        );
+    }
+
+    #[test]
+    fn test_masked_token_omits_oidc_token() {
+        assert_eq!(
+            AuthMethod::Oidc.masked_token("eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJyZXBvIn0.c2lnbmF0dXJl"),
+            None
+        );
+    }
+
+    #[test]
+    fn test_masked_token_omits_unknown_token() {
+        assert_eq!(AuthMethod::Unknown.masked_token("123"), None);
+    }
+
+    #[test]
+    fn test_masked_token_marks_empty_token() {
+        assert_eq!(
+            AuthMethod::Unknown.masked_token(""),
+            Some("(empty)".to_string())
+        );
     }
 
     #[test]
