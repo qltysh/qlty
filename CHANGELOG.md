@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.669.0 (2026-11-13)
+
+### New
+
+- Add `qlty coverage skip`, which tells Qlty Cloud that coverage for a `--tag` was intentionally not run on the current commit so its statuses can pass, with an optional `--reason` (#3016)
+
 ## v0.668.0 (2026-11-06)
 
 ### Fixed
