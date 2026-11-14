@@ -19,10 +19,46 @@ use std::collections::HashMap;
 use std::env::split_paths;
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
-use tracing::{debug, warn};
+use tracing::{debug, info, warn};
 
 const UNKNOWN_SYSTEM_PHP_VERSION: &str = "unknown";
 const RUNNER_PHP_FALLBACK_VERSION: &str = "8.3";
+
+// Where each minor line first has the fix for CVE-2026-109618 and CVE-2026-109619
+enum Php2ShellFix {
+    Release {
+        line: &'static str,
+        patch: u32,
+    },
+    // No upstream release of the line has the fix, only this package backports it
+    Package {
+        line: &'static str,
+        revision: &'static str,
+    },
+}
+
+const PHP2SHELL_FIXES: [Php2ShellFix; 5] = [
+    Php2ShellFix::Package {
+        line: "8.1",
+        revision: "8.1.34-9",
+    },
+    Php2ShellFix::Release {
+        line: "8.2",
+        patch: 35,
+    },
+    Php2ShellFix::Release {
+        line: "8.3",
+        patch: 36,
+    },
+    Php2ShellFix::Release {
+        line: "8.4",
+        patch: 27,
+    },
+    Php2ShellFix::Release {
+        line: "8.5",
+        patch: 12,
+    },
+];
 
 static SYSTEM_PHP_MINOR_VERSION: OnceCell<String> = OnceCell::new();
 
@@ -170,7 +206,44 @@ impl Php {
                 self.version, installed
             );
         }
+        if let Some(fix) = self.php2shell_fix() {
+            warn!(
+                "Requested PHP {:?} is affected by CVE-2026-109618 and CVE-2026-109619, fixed in {}; this build runs PHP {}",
+                self.version, fix, installed
+            );
+        }
+        match std::fs::read_to_string(directory.join("debian-version")) {
+            Ok(revision) => info!(
+                "Using PHP {} (package {}) from {}",
+                installed,
+                revision.trim(),
+                directory.display()
+            ),
+            Err(error) => info!(
+                "Using PHP {} from {} (package revision unavailable: {})",
+                installed,
+                directory.display(),
+                error
+            ),
+        }
         Ok(())
+    }
+
+    fn php2shell_fix(&self) -> Option<String> {
+        let (minor, patch) = self.version.rsplit_once('.')?;
+        if !patch.bytes().all(|byte| byte.is_ascii_digit()) {
+            return None;
+        }
+        let patch: u32 = patch.parse().ok()?;
+        PHP2SHELL_FIXES.iter().find_map(|fix| match fix {
+            Php2ShellFix::Release { line, patch: fixed } if *line == minor && patch < *fixed => {
+                Some(format!("PHP {line}.{fixed}"))
+            }
+            Php2ShellFix::Package { line, revision } if *line == minor => {
+                Some(format!("package {revision}"))
+            }
+            _ => None,
+        })
     }
 
     fn verify_installation(&self, env: HashMap<String, String>) -> Result<()> {
@@ -453,11 +526,21 @@ pub mod test {
         assert_eq!(Php::minor_version_from_output("PHP 8.4.8 (cli)"), None);
     }
 
-    fn baked_php_fixture(root: &std::path::Path, requested: &str) -> Php {
-        let directory = root.join("8.3");
+    fn baked_php_line(root: &std::path::Path, minor: &str, version: &str, revision: &str) {
+        let directory = root.join(minor);
         std::fs::create_dir_all(directory.join("bin")).unwrap();
         std::fs::write(directory.join("bin/php"), "fixture").unwrap();
-        std::fs::write(directory.join("version"), "8.3.36").unwrap();
+        std::fs::write(directory.join("version"), format!("{version}\n")).unwrap();
+        std::fs::write(directory.join("debian-version"), format!("{revision}\n")).unwrap();
+    }
+
+    fn baked_php_fixture(root: &std::path::Path, requested: &str) -> Php {
+        baked_php_line(
+            root,
+            "8.3",
+            "8.3.36",
+            "8.3.36-1+ubuntu24.04.1+deb.sury.org+1",
+        );
         Php {
             version: requested.into(),
             php_runtimes_dir: Some(root.to_path_buf()),
@@ -510,6 +593,68 @@ pub mod test {
     fn baked_php_does_not_warn_for_a_matching_patch() {
         assert_baked_php_selection("8.3.36");
         assert!(!logs_contain("Requested PHP"));
+    }
+
+    #[test]
+    #[tracing_test::traced_test]
+    fn baked_php_logs_the_selected_version_and_package() {
+        assert_baked_php_selection("8.3");
+        assert!(logs_contain(
+            "Using PHP 8.3.36 (package 8.3.36-1+ubuntu24.04.1+deb.sury.org+1)"
+        ));
+    }
+
+    #[test]
+    #[tracing_test::traced_test]
+    fn baked_php_warns_about_php2shell_for_a_patch_below_the_fix() {
+        assert_baked_php_selection("8.3.35");
+        assert!(logs_contain(
+            "Requested PHP \"8.3.35\" is affected by CVE-2026-109618 and CVE-2026-109619, fixed in PHP 8.3.36; this build runs PHP 8.3.36"
+        ));
+    }
+
+    #[test]
+    #[tracing_test::traced_test]
+    fn baked_php_does_not_warn_about_php2shell_for_a_fixed_patch_in_another_line() {
+        let root = tempdir().unwrap();
+        baked_php_line(
+            root.path(),
+            "8.4",
+            "8.4.27",
+            "8.4.27-1+ubuntu24.04.1+deb.sury.org+1",
+        );
+        let runtime = Php {
+            version: "8.4.27".into(),
+            php_runtimes_dir: Some(root.path().to_path_buf()),
+        };
+        runtime.verify_runner_version().unwrap();
+        assert!(!logs_contain("CVE-2026-109618"));
+    }
+
+    #[test]
+    #[tracing_test::traced_test]
+    fn baked_php_names_the_backported_package_for_php_8_1() {
+        let root = tempdir().unwrap();
+        baked_php_line(root.path(), "8.1", "8.1.34", "8.1.34-9");
+        let runtime = Php {
+            version: "8.1.34".into(),
+            php_runtimes_dir: Some(root.path().to_path_buf()),
+        };
+        runtime.verify_runner_version().unwrap();
+        assert!(logs_contain(
+            "Requested PHP \"8.1.34\" is affected by CVE-2026-109618 and CVE-2026-109619, fixed in package 8.1.34-9; this build runs PHP 8.1.34"
+        ));
+    }
+
+    #[test]
+    #[tracing_test::traced_test]
+    fn baked_php_names_the_requested_line_fix_when_falling_back_to_8_3() {
+        let root = tempdir().unwrap();
+        let runtime = baked_php_fixture(root.path(), "8.2.30");
+        runtime.verify_runner_version().unwrap();
+        assert!(logs_contain(
+            "Requested PHP \"8.2.30\" is affected by CVE-2026-109618 and CVE-2026-109619, fixed in PHP 8.2.35; this build runs PHP 8.3.36"
+        ));
     }
 
     #[test]

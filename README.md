@@ -364,7 +364,14 @@ system packages or contacting APT during a run. `8.3`, `8.3.7`, and `8.3.x` all 
 the image's baked 8.3 patch. Patch numbers select their minor line rather than
 requiring that historical patch. If an exact patch request differs from the baked
 version, Qlty logs a warning during installation with the requested and selected
-versions. Each interpreter uses its own configuration and extensions.
+versions. Each interpreter uses its own configuration and extensions. Installation
+also logs the selected interpreter's version and package revision.
+
+Qlty Cloud runner images include the fix for CVE-2026-109618 and CVE-2026-109619 in
+every PHP line: PHP 8.2.35, 8.3.36, 8.4.27, and 8.5.12, and for PHP 8.1, which has no
+upstream fix, package 8.1.34-9. An exact patch request below its line's fix, or any
+exact 8.1 patch, still runs the image's fixed interpreter, and Qlty logs a warning that
+names the CVEs and the fix.
 
 Previously, PHP runtime configuration was ignored. To preserve working builds,
 unsupported or unrecognized values such as `7.4`, `8.0`, `8`, `^8.3`, and `latest`
