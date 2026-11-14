@@ -1,0 +1,10 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.3.1
+        with:
+          persist-credentials: false
+      - uses: docker/login-action@v3.4.0
