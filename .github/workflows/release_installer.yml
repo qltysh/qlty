@@ -20,18 +20,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@v5.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
       - name: Generate attestations for installer scripts
-        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a
+        uses: actions/attest-build-provenance@v3.0.0
         with:
           subject-path: |
             installer/install.sh
             installer/install.ps1
       - name: Setup AWS CLI
-        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838
+        uses: aws-actions/configure-aws-credentials@v5.0.0
         with:
           role-to-assume: ${{ secrets.QLTY_RELEASE_AWS_ROLE_ARN }}
           role-session-name: ${{ vars.QLTY_RELEASE_AWS_ROLE_SESSION_NAME }}

@@ -56,6 +56,13 @@ Compile a constant pattern once, in a static, not on every call.
 - Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) format for commit messages
 - Also use Conventional Commits format for PR titles and descriptions
 
+## GitHub Actions workflows
+
+- Name each action by its full release tag, such as `actions/checkout@v5.0.0`; `.github/workflows/actions.lock` locks each one to a commit
+- After adding a workflow or changing a `uses:` line, run `gh actions-lock` and commit `actions.lock` with the change
+- Never edit `actions.lock` by hand
+- Install the tool with `gh extension install github/gh-actions-lock --pin v0.4.1`, the version `verify-lockfile.yml` pins
+
 ## Pull requests and AI review
 
 Keep a pull request in draft while you iterate, and mark it ready when it's done. Marking it ready, and every push
