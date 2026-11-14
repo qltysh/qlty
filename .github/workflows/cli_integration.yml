@@ -43,7 +43,7 @@ jobs:
         run: cargo build --release
 
       - name: Archive CLI
-        uses: actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: qlty
           path: target/release/qlty
