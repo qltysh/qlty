@@ -1,0 +1,43 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=zizmor fixture=lockfile version=1.32.0 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_VULNERABILITY",
+      "documentationUrl": "https://docs.zizmor.sh/audits/#excessive-permissions",
+      "level": "LEVEL_MEDIUM",
+      "location": {
+        "path": ".github/workflows/ci.yml",
+        "range": {
+          "endColumn": 1,
+          "endLine": 11,
+          "startColumn": 3,
+          "startLine": 4,
+        },
+      },
+      "message": "overly broad permissions: default permissions used due to no permissions: block",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "zizmor/excessive-permissions",
+      "snippet": "  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.3.1
+        with:
+          persist-credentials: false
+      - uses: docker/login-action@v3.4.0",
+      "snippetWithContext": "on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.3.1
+        with:
+          persist-credentials: false
+      - uses: docker/login-action@v3.4.0",
+      "tool": "zizmor",
+    },
+  ],
+}
+`;
