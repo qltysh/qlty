@@ -99,7 +99,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup AWS CLI
-        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838
+        uses: aws-actions/configure-aws-credentials@v5.0.0
         with:
           role-to-assume: ${{ secrets.QLTY_RELEASE_AWS_ROLE_ARN }}
           role-session-name: ${{ vars.QLTY_RELEASE_AWS_ROLE_SESSION_NAME }}
@@ -123,7 +123,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: qlty-releases
     steps:
-      - uses: actions/create-github-app-token@7e473efe3cb98aa54f8d4bac15400b15fad77d94 # v2
+      - uses: actions/create-github-app-token@v2.2.0
         id: app-token
         with:
           app-id: ${{ vars.QLTY_APP_ID }}
@@ -151,7 +151,7 @@ jobs:
         run: gh release download "v${RESOLVED_VERSION#v}" --repo "$GITHUB_REPOSITORY" --pattern qlty.rb --dir formula
 
       - name: Checkout tap
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@v5.0.0
         with:
           repository: ${{ github.repository_owner }}/homebrew-tap
           token: ${{ steps.app-token.outputs.token }}
@@ -185,7 +185,7 @@ jobs:
     timeout-minutes: 60
     environment: qlty-releases
     steps:
-      - uses: actions/create-github-app-token@7e473efe3cb98aa54f8d4bac15400b15fad77d94 # v2
+      - uses: actions/create-github-app-token@v2.2.0
         id: app-token
         with:
           app-id: ${{ vars.QLTY_APP_ID }}

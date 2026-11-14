@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: qlty-releases
     steps:
-      - uses: actions/create-github-app-token@7e473efe3cb98aa54f8d4bac15400b15fad77d94 # v2
+      - uses: actions/create-github-app-token@v2.2.0
         id: app-token
         with:
           app-id: ${{ vars.QLTY_APP_ID }}
@@ -42,12 +42,12 @@ jobs:
           git config --global core.longpaths true
           git config --global core.autocrlf false
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@v5.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
       - name: Install cargo-release
-        uses: jaxxstorm/action-install-gh-release@6096f2a2bbfee498ced520b6922ac2c06e990ed2
+        uses: jaxxstorm/action-install-gh-release@v2.1.0
         with:
           repo: crate-ci/cargo-release
           tag: v0.25.17
@@ -68,7 +68,7 @@ jobs:
         env:
           RELEASE_VERSION: ${{ inputs.increment == 'version' && inputs.version || inputs.increment || 'minor' }}
       - name: Draft changelog entry
-        uses: anthropics/claude-code-action@493279a9d94b7cc5d07a98e5e66cb03313805350 # version 1.0.166
+        uses: anthropics/claude-code-action@f87768c6d25f92ae6efa7175e223ef77d4cbf97f # v1.0.166
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         with:
@@ -120,7 +120,7 @@ jobs:
             cat "$RUNNER_TEMP/changelog_entry.txt"
           } > "$RUNNER_TEMP/pr_body.md"
       - name: Commit changes
-        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
+        uses: peter-evans/create-pull-request@v7.0.8
         with:
           token: ${{ steps.app-token.outputs.token }}
           title: Release ${{ steps.version.outputs.version }}
