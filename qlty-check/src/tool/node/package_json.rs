@@ -66,31 +66,35 @@ impl PackageJson {
 
         let mut lock_file_staged = false;
 
-        if self.plugin.package_filters.is_empty() {
-            if let Some(package_file) = &self.plugin.package_file {
-                let package_file_path = PathBuf::from(package_file);
-                if let Some(parent_path) = package_file_path.parent() {
-                    let lock_file = parent_path.join("package-lock.json");
+        if let Some(lock_file) = self.lock_file_to_stage() {
+            let staged_file_parent = staged_file.parent().unwrap();
+            let staging_lock_file = staged_file_parent.join("package-lock.json");
 
-                    if lock_file.exists() {
-                        let staged_file_parent = staged_file.parent().unwrap();
-                        let staging_lock_file = staged_file_parent.join("package-lock.json");
-
-                        debug!(
-                            "Copying lock file from {} to {}",
-                            lock_file.display(),
-                            staging_lock_file.display()
-                        );
-                        std::fs::copy(lock_file, staging_lock_file)?;
-                        lock_file_staged = true;
-                    }
-                }
-            }
+            debug!(
+                "Copying lock file from {} to {}",
+                lock_file.display(),
+                staging_lock_file.display()
+            );
+            std::fs::copy(lock_file, staging_lock_file)?;
+            lock_file_staged = true;
         }
 
         std::fs::write(staged_file, final_package_file)?;
 
         Ok(lock_file_staged)
+    }
+
+    // Filters keep only a subset of the dependencies, so the lock file is
+    // staged only without them
+    pub fn lock_file_to_stage(&self) -> Option<PathBuf> {
+        if !self.plugin.package_filters.is_empty() {
+            return None;
+        }
+
+        PathBuf::from(self.plugin.package_file.as_ref()?)
+            .parent()
+            .map(|parent_path| parent_path.join("package-lock.json"))
+            .filter(|lock_file| lock_file.exists())
     }
 
     // Filter out any dependencies that don't seem related to the plugin
