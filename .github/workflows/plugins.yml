@@ -52,35 +52,35 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@v5.0.0
         with:
           persist-credentials: false
 
       - name: Use Node.js
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        uses: actions/setup-node@v5.0.0
         with:
           cache: "npm"
           cache-dependency-path: plugins/package-lock.json
 
       - name: Setup PHP with PECL extension
-        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        uses: shivammathur/setup-php@2.40.0
         if: contains(matrix.os, 'macos')
 
       - name: Setup Ruby
-        uses: ruby/setup-ruby@44511735964dcb71245e7e55f72539531f7bc0eb
+        uses: ruby/setup-ruby@v1.257.0
         with:
           ruby-version: 3.3.7
         if: contains(matrix.os, 'windows')
 
       - name: Install Rust toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@2fcdc490d667999e01ddbbf0f2823181beef6b39
+        uses: actions-rust-lang/setup-rust-toolchain@v1.15.0
         with:
           # The toolchain action runs its own rust-cache restore with the
           # default key; the Cache Rust step below is the only one wanted.
           cache: false
 
       - name: Cache Rust
-        uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0
+        uses: Swatinem/rust-cache@v2.8.0
         with:
           # The cli workflow's job is also named "test" and builds under
           # cargo llvm-cov, so without this both jobs share one cache entry.
