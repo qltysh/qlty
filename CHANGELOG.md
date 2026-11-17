@@ -1,6 +1,14 @@
 # Changelog
 
-## Unreleased
+## v0.670.0 (2026-11-17)
+
+### Improved
+
+- Upgrade the `zizmor` plugin to 1.32.0, which counts actions locked in `.github/workflows/actions.lock` as pinned (#3022)
+
+### Fixed
+
+- Reinstall a Node `package_file` tool when its `package-lock.json` changes (#3010)
 
 ### Security
 
