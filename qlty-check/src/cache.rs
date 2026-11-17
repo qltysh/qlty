@@ -12,7 +12,11 @@ use qlty_config::version::QLTY_VERSION;
 use qlty_config::Workspace;
 use qlty_types::analysis::v1::Issue;
 use std::sync::{Arc, OnceLock};
-use std::{collections::HashMap, fmt::Debug, path::PathBuf};
+use std::{
+    collections::HashMap,
+    fmt::Debug,
+    path::{Path, PathBuf},
+};
 use tracing::trace;
 
 #[derive(Debug, Clone)]
@@ -336,14 +340,15 @@ impl IssuesCacheKey {
         driver_name: String,
         check_filters: CheckFilters,
         configs: Arc<Vec<PluginConfigFile>>,
-        affects_cache: Vec<String>,
+        workspace_root: &Path,
         repository: Arc<RepositoryState>,
     ) -> Self {
         let mut cache_busters = HashMap::new();
 
-        for affect_cache in affects_cache.iter().sorted() {
+        for affect_cache in plugin.affects_cache.iter().sorted() {
             let path = PathBuf::from(affect_cache);
-            let contents = std::fs::read_to_string(&path).unwrap_or("".to_string());
+            let contents =
+                std::fs::read_to_string(workspace_root.join(&path)).unwrap_or("".to_string());
             cache_busters.insert(path, contents);
         }
 
@@ -556,6 +561,33 @@ mod test {
         assert_eq!(
             digest.parts.get("plugin.driver.batch_by"),
             Some(&"cargo_edition\n".to_string())
+        );
+    }
+
+    #[test]
+    fn test_affects_cache_is_read_from_workspace_root() {
+        let workspace = tempfile::tempdir().unwrap();
+        let workflows = workspace.path().join(".github/workflows");
+        std::fs::create_dir_all(&workflows).unwrap();
+        std::fs::write(workflows.join("actions.lock"), "version: 'v0.0.3'\n").unwrap();
+
+        let key = IssuesCacheKey::new(
+            Box::new(NullTool::default()),
+            Arc::new(PluginDef {
+                affects_cache: vec![".github/workflows/actions.lock".to_string()],
+                drivers: HashMap::from([("lint".to_string(), DriverDef::default())]),
+                ..Default::default()
+            }),
+            "lint".to_string(),
+            CheckFilters::default(),
+            Arc::new(vec![]),
+            workspace.path(),
+            Arc::new(RepositoryState::default()),
+        );
+
+        assert_eq!(
+            key.digest.parts.get(".github/workflows/actions.lock"),
+            Some(&"version: 'v0.0.3'\n".to_string())
         );
     }
 }
