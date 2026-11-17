@@ -165,7 +165,7 @@ impl DriverPlanner {
             self.driver_name.clone(),
             self.settings.check_filters.clone(),
             Arc::new(self.plugin_configs.clone()),
-            self.plugin.affects_cache.clone(),
+            &self.workspace.root,
             self.issue_cache.repository(),
         );
 
