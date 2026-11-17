@@ -8,6 +8,7 @@ latest_version = "1.32.0"
 known_good_version = "1.32.0"
 version_command = "zizmor --version"
 config_files = ["zizmor.yml"]
+affects_cache = [".github/workflows/actions.lock"]
 description = "Static analysis tool for GitHub Actions"
 security = true
 
