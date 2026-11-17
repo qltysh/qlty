@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.671.0 (2026-11-17)
+
+### Fixed
+
+- Refresh cached `zizmor` results when `.github/workflows/actions.lock` changes (#3027)
+- Refresh cached results when a plugin's `affects_cache` files change while running `qlty check` from a subdirectory (#3027)
+
 ## v0.670.0 (2026-11-17)
 
 ### Improved
