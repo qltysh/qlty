@@ -117,9 +117,36 @@ jobs:
           RESOLVED_VERSION: ${{ needs.resolve.outputs.version }}
           INPUTS_CHANNEL: ${{ inputs.channel }}
           VARS_QLTY_RELEASE_AWS_S3_DESTINATION: ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}
+  homebrew-test:
+    name: Homebrew on ${{ matrix.os }}
+    if: inputs.channel == 'latest'
+    needs: resolve
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15-intel, macos-15]
+    steps:
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@2026.11.02.1
+
+      - name: Download Homebrew formula from the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESOLVED_VERSION: ${{ needs.resolve.outputs.version }}
+        run: gh release download "v${RESOLVED_VERSION#v}" --repo "$GITHUB_REPOSITORY" --pattern qlty.rb --dir "$RUNNER_TEMP/formula"
+
+      - name: Install and test the formula from the tap
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+        run: |
+          brew tap qltysh/tap
+          cp "$RUNNER_TEMP/formula/qlty.rb" "$(brew --repository qltysh/tap)/Formula/qlty.rb"
+          brew install qltysh/tap/qlty
+          brew test qltysh/tap/qlty
   homebrew-tap:
     if: inputs.channel == 'latest'
-    needs: [resolve, promote]
+    needs: [resolve, promote, homebrew-test]
     runs-on: ubuntu-latest
     environment: qlty-releases
     steps:
