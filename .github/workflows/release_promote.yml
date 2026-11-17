@@ -117,9 +117,36 @@ jobs:
           RESOLVED_VERSION: ${{ needs.resolve.outputs.version }}
           INPUTS_CHANNEL: ${{ inputs.channel }}
           VARS_QLTY_RELEASE_AWS_S3_DESTINATION: ${{ vars.QLTY_RELEASE_AWS_S3_DESTINATION }}
+  homebrew-test:
+    name: Homebrew on ${{ matrix.os }}
+    if: inputs.channel == 'latest'
+    needs: resolve
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15-intel, macos-15]
+    steps:
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@2026.11.02.1
+
+      - name: Download Homebrew formula from the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESOLVED_VERSION: ${{ needs.resolve.outputs.version }}
+        run: gh release download "v${RESOLVED_VERSION#v}" --repo "$GITHUB_REPOSITORY" --pattern qlty.rb --dir "$RUNNER_TEMP/formula"
+
+      - name: Install and test the formula from the tap
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+        run: |
+          brew tap qltysh/tap
+          cp "$RUNNER_TEMP/formula/qlty.rb" "$(brew --repository qltysh/tap)/Formula/qlty.rb"
+          brew install qltysh/tap/qlty
+          brew test qltysh/tap/qlty
   homebrew-tap:
     if: inputs.channel == 'latest'
-    needs: [resolve, promote]
+    needs: [resolve, promote, homebrew-test]
     runs-on: ubuntu-latest
     environment: qlty-releases
     steps:
@@ -137,13 +164,6 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: test "$(gh api /installation/repositories --jq .total_count)" = 1
 
-      - name: Get GitHub App User ID
-        id: get-user-id
-        run: echo "user-id=$(gh api "/users/${STEPS_APP_TOKEN_OUTPUTS_APP_SLUG}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          STEPS_APP_TOKEN_OUTPUTS_APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
-
       - name: Download Homebrew formula from the release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -160,9 +180,8 @@ jobs:
       - name: Publish formula
         working-directory: homebrew-tap
         env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           RESOLVED_VERSION: ${{ needs.resolve.outputs.version }}
-          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
-          APP_USER_ID: ${{ steps.get-user-id.outputs.user-id }}
         run: |
           VERSION="${RESOLVED_VERSION#v}"
           grep -q "version \"${VERSION}\"" ../formula/qlty.rb
@@ -173,11 +192,22 @@ jobs:
             exit 0
           fi
 
-          git config user.name "${APP_SLUG}[bot]"
-          git config user.email "${APP_USER_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
-          git add Formula/qlty.rb
-          git commit -m "qlty ${VERSION}"
-          git push origin HEAD:main
+          # createCommitOnBranch produces a commit signed by the GitHub App; a git push would be unsigned
+          gh api graphql \
+            -f query='
+              mutation($repo: String!, $branch: String!, $head: GitObjectID!, $message: String!, $formula: Base64String!) {
+                createCommitOnBranch(input: {
+                  branch: {repositoryNameWithOwner: $repo, branchName: $branch},
+                  expectedHeadOid: $head,
+                  message: {headline: $message},
+                  fileChanges: {additions: [{path: "Formula/qlty.rb", contents: $formula}]}
+                }) { commit { oid url } }
+              }' \
+            -f repo="${GITHUB_REPOSITORY_OWNER}/homebrew-tap" \
+            -f branch=main \
+            -f head="$(git rev-parse HEAD)" \
+            -f message="qlty ${VERSION}" \
+            -f formula="$(base64 -w0 Formula/qlty.rb)"
   cli-docs:
     if: inputs.channel == 'latest'
     needs: promote
