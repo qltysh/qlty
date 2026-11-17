@@ -1,0 +1,43 @@
+name: TEMPORARY homebrew-test check
+on:
+  pull_request:
+    paths:
+      - .github/workflows/tmp_homebrew_test.yml
+permissions:
+  contents: read
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+    steps:
+      - id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "version=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName)" >> "$GITHUB_OUTPUT"
+  homebrew-test:
+    name: Homebrew on ${{ matrix.os }}
+    needs: resolve
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15-intel, macos-15]
+    steps:
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@2026.11.02.1
+
+      - name: Download Homebrew formula from the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESOLVED_VERSION: ${{ needs.resolve.outputs.version }}
+        run: gh release download "v${RESOLVED_VERSION#v}" --repo "$GITHUB_REPOSITORY" --pattern qlty.rb --dir "$RUNNER_TEMP/formula"
+
+      - name: Install and test the formula from the tap
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+        run: |
+          brew tap qltysh/tap
+          cp "$RUNNER_TEMP/formula/qlty.rb" "$(brew --repository qltysh/tap)/Formula/qlty.rb"
+          brew install qltysh/tap/qlty
+          brew test qltysh/tap/qlty
