@@ -103,7 +103,7 @@ jobs:
 
           run_case() {
             local bin="$1" label="$2" name="$3" repo="$4" refkey="$5" refval="$6" gitconfig="$7"
-            local dir="$tmp/smoke/$label/$name"
+            local dir="$tmp/smoke/$label-$round/$name"
             local home="$dir/home" ws="$dir/ws"
             mkdir -p "$home" "$ws/.qlty"
             cp -R ~/.ssh "$home/.ssh"
@@ -116,8 +116,8 @@ jobs:
             checkout=$(echo "$home"/.qlty/cache/sources/*/"$refval")
             origin=$(git -C "$checkout" remote get-url origin 2>&1)
             printf '%-8s %-16s first=%s second=%s origin=%s files=[%s]\n' "$label" "$name" "$first" "$second" "$origin" "$(ls "$checkout" 2>/dev/null | head -3 | tr '\n' ' ')"
-            [ "$first" -ne 0 ] && printf '%s\n' "$out1" | tail -5 | sed 's/^/    /'
-            [ "$second" -ne 0 ] && printf '%s\n' "$out2" | tail -5 | sed 's/^/    /'
+            [ "$first" -ne 0 ] && printf '%s\n' "$out1" | sed -n '1,/[Bb]acktrace/p' | head -25 | sed 's/^/    /'
+            [ "$second" -ne 0 ] && printf '%s\n' "$out2" | sed -n '1,/[Bb]acktrace/p' | head -25 | sed 's/^/    /'
             [ "$first" -eq 0 ] && [ "$second" -eq 0 ]
           }
 
@@ -135,5 +135,10 @@ jobs:
             return $failed
           }
 
-          run_all "$base" baseline || echo "::warning::baseline v0.671.0 failed a case"
-          run_all "$new" new
+          failed=0
+          for round in 1 2 3; do
+            echo "--- round $round"
+            run_all "$base" baseline || echo "::warning::baseline v0.671.0 failed a case in round $round"
+            run_all "$new" new || failed=1
+          done
+          exit $failed
