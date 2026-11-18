@@ -1,0 +1,95 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=biome fixture=nested_root version=2.3.15 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "root.ts",
+        "range": {
+          "endColumn": 10,
+          "endLine": 1,
+          "startColumn": 1,
+          "startLine": 1,
+        },
+      },
+      "message": "This is an unexpected use of the debugger statement.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "lint/suspicious/noDebugger",
+      "snippet": "debugger;",
+      "snippetWithContext": "debugger;",
+      "suggestions": [
+        {
+          "patch": "--- original
++++ modified
+@@ -1 +1 @@
+-debugger;
++
+",
+          "replacements": [
+            {
+              "location": {
+                "range": {
+                  "endColumn": 10,
+                  "endLine": 1,
+                  "startColumn": 1,
+                  "startLine": 1,
+                },
+              },
+            },
+          ],
+          "source": "SUGGESTION_SOURCE_TOOL",
+        },
+      ],
+      "tool": "biome",
+    },
+    {
+      "category": "CATEGORY_LINT",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "pkg/index.ts",
+        "range": {
+          "endColumn": 41,
+          "endLine": 2,
+          "startColumn": 39,
+          "startLine": 2,
+        },
+      },
+      "message": "Using == may be unsafe if you are relying on type coercion.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "lint/suspicious/noDoubleEquals",
+      "snippet": "export const isOne = (a: number) => a == 1;",
+      "snippetWithContext": "debugger;
+export const isOne = (a: number) => a == 1;",
+      "suggestions": [
+        {
+          "patch": "--- original
++++ modified
+@@ -1,2 +1,2 @@
+ debugger;
+-export const isOne = (a: number) => a == 1;
++export const isOne = (a: number) => a === 1;
+",
+          "replacements": [
+            {
+              "data": "=",
+              "location": {
+                "range": {
+                  "endColumn": 39,
+                  "endLine": 2,
+                  "startColumn": 39,
+                  "startLine": 2,
+                },
+              },
+            },
+          ],
+          "source": "SUGGESTION_SOURCE_TOOL",
+        },
+      ],
+      "tool": "biome",
+    },
+  ],
+}
+`;

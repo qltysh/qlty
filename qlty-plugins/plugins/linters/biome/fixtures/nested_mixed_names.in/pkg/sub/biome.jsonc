@@ -1,0 +1,4 @@
+{
+	"root": false,
+	"linter": { "rules": { "suspicious": { "noDoubleEquals": "off" } } }
+}

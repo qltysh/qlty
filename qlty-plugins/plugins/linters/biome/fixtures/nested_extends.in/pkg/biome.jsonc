@@ -1,0 +1,5 @@
+{
+	"root": false,
+	"extends": "//",
+	"linter": { "rules": { "suspicious": { "noDebugger": "off" } } }
+}

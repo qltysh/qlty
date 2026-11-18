@@ -412,7 +412,14 @@ impl Driver {
         issue.suggestions.iter_mut().for_each(|suggestion| {
             suggestion.replacements.iter_mut().for_each(|replacement| {
                 let location = replacement.location.as_mut().unwrap();
-                location.path = location.relative_path(&plan.target_root);
+                if PathBuf::from(&location.path).is_absolute() {
+                    location.path = location.relative_path(&plan.target_root);
+                } else if !location.path.is_empty() {
+                    if let Some(path_prefix) = path_prefix {
+                        location.path =
+                            format!("{}/{}", path_to_string(path_prefix), location.path);
+                    }
+                }
                 replacement.location = Some(location.clone());
             });
         });
@@ -579,7 +586,7 @@ pub mod test {
         },
         Workspace,
     };
-    use qlty_types::analysis::v1::{ExecutionVerb, Location, Range};
+    use qlty_types::analysis::v1::{ExecutionVerb, Location, Range, Replacement, Suggestion};
     use std::{path::PathBuf, sync::Arc, time::SystemTime};
 
     pub fn build_driver(success_codes: Vec<i64>, error_codes: Vec<i64>) -> Driver {
@@ -798,6 +805,81 @@ pub mod test {
         let driver = build_driver(vec![], vec![]);
         let fixed_issue = driver.fix_issue_path(issue, &plan, &None);
         assert_eq!(fixed_issue.location.unwrap().path, "prefix/basic.py");
+    }
+
+    fn build_issue_with_replacement(issue_path: &str, replacement_path: &str) -> Issue {
+        Issue {
+            location: Some(Location {
+                path: issue_path.to_string(),
+                range: Some(Range::default()),
+            }),
+            suggestions: vec![Suggestion {
+                replacements: vec![Replacement {
+                    data: "".to_string(),
+                    location: Some(Location {
+                        path: replacement_path.to_string(),
+                        range: Some(Range::default()),
+                    }),
+                }],
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+    }
+
+    fn replacement_path(issue: &Issue) -> String {
+        issue.suggestions[0].replacements[0]
+            .location
+            .as_ref()
+            .unwrap()
+            .path
+            .clone()
+    }
+
+    #[test]
+    fn test_fix_issue_path_adds_path_prefix_to_relative_replacements() {
+        let plan = build_plan_with_directories(
+            PathBuf::from("/var/root"),
+            PathBuf::from("/var/root"),
+            InvocationDirectoryType::Root,
+        );
+        let issue = build_issue_with_replacement("index.ts", "index.ts");
+
+        let driver = build_driver(vec![], vec![]);
+        let fixed_issue = driver.fix_issue_path(issue, &plan, &Some(PathBuf::from("pkg")));
+
+        assert_eq!(replacement_path(&fixed_issue), "pkg/index.ts");
+    }
+
+    #[test]
+    fn test_fix_issue_path_does_not_prefix_absolute_replacements() {
+        let root = std::env::temp_dir().join("root");
+        let absolute_path = path_to_string(root.join("pkg").join("index.ts"));
+        let plan = build_plan_with_directories(root.clone(), root, InvocationDirectoryType::Root);
+        let issue = build_issue_with_replacement(&absolute_path, &absolute_path);
+
+        let driver = build_driver(vec![], vec![]);
+        let fixed_issue = driver.fix_issue_path(issue, &plan, &Some(PathBuf::from("pkg")));
+
+        assert_eq!(
+            path_to_string(replacement_path(&fixed_issue)),
+            "pkg/index.ts"
+        );
+    }
+
+    #[test]
+    fn test_fix_issue_path_keeps_empty_replacement_paths() {
+        let plan = build_plan_with_directories(
+            PathBuf::from("/var/root"),
+            PathBuf::from("/var/root"),
+            InvocationDirectoryType::Root,
+        );
+        let issue = build_issue_with_replacement("index.ts", "");
+
+        let driver = build_driver(vec![], vec![]);
+        let fixed_issue = driver.fix_issue_path(issue, &plan, &Some(PathBuf::from("pkg")));
+
+        assert_eq!(replacement_path(&fixed_issue), "");
     }
 
     #[test]
