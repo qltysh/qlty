@@ -89,7 +89,12 @@ jobs:
           test -s archives.txt
           while read -r archive; do
             curl -fsSL -o "$archive" "https://qlty-releases.s3.amazonaws.com/qlty/${TAG}/${archive}"
-            gh attestation verify "$archive" --owner qltysh --hostname github.com
+            # The exact signer qltysh/qlty-action accepts: build.yml on refs/heads/main
+            gh attestation verify "$archive" \
+              --repo qltysh/qlty \
+              --cert-identity https://github.com/qltysh/qlty/.github/workflows/build.yml@refs/heads/main \
+              --predicate-type https://slsa.dev/provenance/v1 \
+              --hostname github.com
           done < archives.txt
   promote:
     permissions:
