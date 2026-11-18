@@ -1,0 +1,70 @@
+# qltysh/qlty-action and release_promote.yml accept a Qlty CLI archive only if it was attested by
+# https://github.com/qltysh/qlty/.github/workflows/build.yml@refs/heads/main. This check lives outside build.yml so it
+# still runs when build.yml is renamed or deleted.
+name: Attestation signer
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/**
+  pull_request:
+    paths:
+      - .github/workflows/**
+permissions:
+  contents: read
+jobs:
+  check:
+    name: Check the CLI attestation signer
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5.0.0
+        with:
+          persist-credentials: false
+
+      - name: Check build.yml still attests the CLI on main
+        run: |
+          set -euo pipefail
+          BUILD=.github/workflows/build.yml
+
+          fail() {
+            echo "::error file=${BUILD}::$1"
+            echo
+            echo "qltysh/qlty-action and the release promote job (.github/workflows/release_promote.yml) pin"
+            echo "  https://github.com/qltysh/qlty/.github/workflows/build.yml@refs/heads/main"
+            echo "as the Qlty CLI's attestation signer, and reject any archive that build.yml did not attest on main."
+            echo "Renaming build.yml, moving its actions/attest-build-provenance step into a reusable workflow, or"
+            echo "attesting on another branch or a tag would break every qlty-action user at the next release."
+            echo "Change qlty-action, the CLI upgrade check (qlty-cli/src/attestation.rs) and the promote job first,"
+            echo "then update this check."
+            exit 1
+          }
+
+          [ -f "$BUILD" ] || fail "${BUILD} is missing"
+
+          # Jobs whose own steps call the attest action. A job that calls a reusable workflow has no steps, and an
+          # attestation made there is signed by the reusable workflow's path instead of build.yml's.
+          ATTEST_JOBS="$(yq '.jobs | to_entries | .[]
+            | select(.value.steps // [] | any_c(.uses // "" | test("(?i)^actions/attest-build-provenance@")))
+            | .key' "$BUILD")"
+          [ -n "$ATTEST_JOBS" ] || fail "No job in ${BUILD} calls actions/attest-build-provenance in its own steps"
+
+          [ "$(yq '.on | tag' "$BUILD")" = "!!map" ] || fail "${BUILD} must list its triggers as a map"
+          EXTRA_TRIGGERS="$(yq '.on | keys | .[] | select(. != "push" and . != "pull_request" and . != "workflow_dispatch")' "$BUILD")"
+          [ -z "$EXTRA_TRIGGERS" ] || fail "${BUILD} has triggers other than push, pull_request and workflow_dispatch: ${EXTRA_TRIGGERS//$'\n'/, }"
+          [ "$(yq -o=json -I=0 '.on.push.branches' "$BUILD")" = '["main"]' ] || fail "${BUILD} must run on push to main only (on.push.branches: [main])"
+          [ "$(yq '.on.push | has("tags") or has("tags-ignore") or has("branches-ignore")' "$BUILD")" = "false" ] \
+            || fail "${BUILD} must not run on push to tags (on.push.tags, tags-ignore or branches-ignore)"
+
+          # github.event.commits is only set on push events, so with push limited to main the attesting job is skipped
+          # on pull_request and workflow_dispatch runs.
+          for JOB in $ATTEST_JOBS; do
+            CONDITION="$(JOB="$JOB" yq '.jobs[strenv(JOB)].if // ""' "$BUILD")"
+            case "$CONDITION" in
+              *"||"*) fail "The if: of job '${JOB}' in ${BUILD} must not contain ||: ${CONDITION}" ;;
+              *github.event.commits*) ;;
+              *) fail "Job '${JOB}' in ${BUILD} attests without the if: that limits it to push events (github.event.commits)" ;;
+            esac
+          done
+
+          echo "${BUILD} attests in job(s) ${ATTEST_JOBS//$'\n'/, } on push to main only"

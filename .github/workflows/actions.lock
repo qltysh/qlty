@@ -3,6 +3,8 @@
 # Docs: https://gh.io/actions-lockfile
 version: 'v0.0.3'
 workflows:
+    '.github/workflows/attestation_signer.yml':
+        - 'actions/checkout@v5.0.0'
     '.github/workflows/build.yml':
         - 'actions-rust-lang/setup-rust-toolchain@v1.15.0'
         - 'actions/attest-build-provenance@v3.0.0'
