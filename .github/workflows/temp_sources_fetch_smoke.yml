@@ -1,0 +1,139 @@
+name: Temp sources fetch smoke test
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            asset: qlty-x86_64-unknown-linux-gnu.tar.xz
+          - os: windows-2022
+            asset: qlty-x86_64-pc-windows-msvc.zip
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - run: git config --global core.autocrlf false
+
+      - name: Checkout qlty
+        uses: actions/checkout@v5.0.0
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1.15.0
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2.8.0
+
+      - name: Build CLI
+        run: cargo build -p qlty
+
+      - name: Download released CLI v0.671.0 (libgit2 1.8.1)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ASSET: ${{ matrix.asset }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/release"
+          cd "$RUNNER_TEMP/release"
+          gh release download v0.671.0 --repo qltysh/qlty --pattern "$ASSET"
+          case "$ASSET" in
+            *.zip) unzip -q "$ASSET" ;;
+            *) tar xJf "$ASSET" ;;
+          esac
+
+      - name: Create SSH key and source repository
+        shell: bash
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keygen -q -t rsa -b 3072 -m PEM -N '' -f ~/.ssh/id_rsa
+          cp ~/.ssh/id_rsa.pub ~/.ssh/authorized_keys
+          chmod 600 ~/.ssh/authorized_keys
+          git clone -q --bare https://github.com/octocat/Hello-World ~/src.git
+
+      - name: Start sshd (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          command -v sshd || (sudo apt-get update -q && sudo apt-get install -y -q openssh-server)
+          chmod go-w ~
+          sudo systemctl start ssh
+
+      - name: Start sshd (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (-not (Get-Service sshd -ErrorAction SilentlyContinue)) {
+            Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+          }
+          New-Item -Path HKLM:\SOFTWARE\OpenSSH -Force | Out-Null
+          New-ItemProperty -Path HKLM:\SOFTWARE\OpenSSH -Name DefaultShell -Value 'C:\Program Files\Git\bin\bash.exe' -PropertyType String -Force | Out-Null
+          New-ItemProperty -Path HKLM:\SOFTWARE\OpenSSH -Name DefaultShellCommandOption -Value '-c' -PropertyType String -Force | Out-Null
+          Start-Service sshd
+          $keys = "$env:ProgramData\ssh\administrators_authorized_keys"
+          Get-Content "$env:USERPROFILE\.ssh\id_rsa.pub" | Set-Content -Encoding ascii $keys
+          icacls $keys /inheritance:r /grant 'Administrators:F' /grant 'SYSTEM:F'
+
+      - name: Check SSH
+        shell: bash
+        run: |
+          ssh-keyscan localhost >> ~/.ssh/known_hosts
+          ssh -o BatchMode=yes localhost 'command -v git-upload-pack'
+
+      - name: Smoke test qlty sources fetch
+        shell: bash
+        run: |
+          set +e -u
+          winpath() { if command -v cygpath >/dev/null; then cygpath -m "$1"; else echo "$1"; fi; }
+          posixpath() { if command -v cygpath >/dev/null; then cygpath -u "$1"; else echo "$1"; fi; }
+          tmp="$(posixpath "$RUNNER_TEMP")"
+          new="$(pwd)/target/debug/qlty"
+          base="$(find "$tmp/release" -type f \( -name qlty -o -name qlty.exe \) | head -1)"
+          user="${USER:-$USERNAME}"
+          src="$HOME/src.git"
+
+          run_case() {
+            local bin="$1" label="$2" name="$3" repo="$4" refkey="$5" refval="$6" gitconfig="$7"
+            local dir="$tmp/smoke/$label/$name"
+            local home="$dir/home" ws="$dir/ws"
+            mkdir -p "$home" "$ws/.qlty"
+            cp -R ~/.ssh "$home/.ssh"
+            printf '%s' "$gitconfig" > "$home/.gitconfig"
+            git -C "$ws" init -q
+            printf 'config_version = "0"\n\n[[source]]\nname = "smoke"\nrepository = "%s"\n%s = "%s"\n' "$repo" "$refkey" "$refval" > "$ws/.qlty/qlty.toml"
+            local first second out1 out2 checkout origin
+            out1=$(cd "$ws" && HOME="$(winpath "$home")" "$bin" sources fetch 2>&1); first=$?
+            out2=$(cd "$ws" && HOME="$(winpath "$home")" "$bin" sources fetch 2>&1); second=$?
+            checkout=$(echo "$home"/.qlty/cache/sources/*/"$refval")
+            origin=$(git -C "$checkout" remote get-url origin 2>&1)
+            printf '%-8s %-16s first=%s second=%s origin=%s files=[%s]\n' "$label" "$name" "$first" "$second" "$origin" "$(ls "$checkout" 2>/dev/null | head -3 | tr '\n' ' ')"
+            [ "$first" -ne 0 ] && printf '%s\n' "$out1" | tail -5 | sed 's/^/    /'
+            [ "$second" -ne 0 ] && printf '%s\n' "$out2" | tail -5 | sed 's/^/    /'
+            [ "$first" -eq 0 ] && [ "$second" -eq 0 ]
+          }
+
+          run_all() {
+            local bin="$1" label="$2" failed=0
+            "$bin" version --no-upgrade-check
+            run_case "$bin" "$label" https-branch "https://github.com/octocat/Hello-World" branch master "" || failed=1
+            run_case "$bin" "$label" https-tag "https://github.com/qltysh/qlty-action" tag v2.7.0 "" || failed=1
+            run_case "$bin" "$label" ssh-scp "$user@localhost:$src" branch master "" || failed=1
+            run_case "$bin" "$label" ssh-url "ssh://$user@localhost$src" branch master "" || failed=1
+            run_case "$bin" "$label" insteadof-https "https://gh.invalid/octocat/Hello-World" branch master \
+              $'[url "https://github.com/"]\n\tinsteadOf = https://gh.invalid/\n' || failed=1
+            run_case "$bin" "$label" insteadof-ssh "https://ssh.invalid/src.git" branch master \
+              "$(printf '[url "ssh://%s@localhost%s/"]\n\tinsteadOf = https://ssh.invalid/\n' "$user" "$HOME")" || failed=1
+            return $failed
+          }
+
+          run_all "$base" baseline || echo "::warning::baseline v0.671.0 failed a case"
+          run_all "$new" new
