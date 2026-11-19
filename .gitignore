@@ -7,3 +7,4 @@ flamegraph.svg
 /.rustfmt.toml
 /.yamllint.yaml
 tmp/
+**/.claude/settings.local.json
