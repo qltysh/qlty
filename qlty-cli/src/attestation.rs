@@ -2,7 +2,12 @@ use anyhow::{bail, Context, Result};
 use std::path::Path;
 use std::process::Command;
 
-const QLTY_OWNER: &str = "qltysh";
+// The only signer that qltysh/qlty-action and .github/workflows/release_promote.yml accept for a Qlty CLI archive.
+// --cert-identity matches it exactly; --signer-workflow would treat it as an unanchored regex. If the release ever
+// moves off build.yml on main, change qlty-action, the promote job and this check together, before that release.
+// .github/workflows/attestation_signer.yml fails CI on changes to build.yml that would break this.
+const SIGNER_IDENTITY: &str =
+    "https://github.com/qltysh/qlty/.github/workflows/build.yml@refs/heads/main";
 
 // gh 2.49.0 through 2.66.x can exit 0 when no attestation matches (CVE-2025-25204).
 const MINIMUM_GH_VERSION: (u32, u32, u32) = (2, 67, 0);
@@ -13,15 +18,7 @@ pub fn verify_attestation(archive_path: &Path) -> Result<()> {
     eprintln!("Verifying provenance...");
 
     let output = Command::new("gh")
-        .args([
-            "attestation",
-            "verify",
-            &archive_path.to_string_lossy(),
-            "--owner",
-            QLTY_OWNER,
-            "--hostname",
-            "github.com",
-        ])
+        .args(verify_args(archive_path))
         .output()
         .context("Failed to run gh attestation verify")?;
 
@@ -32,11 +29,29 @@ pub fn verify_attestation(archive_path: &Path) -> Result<()> {
     )?;
 
     eprintln!(
-        "  {} Verified SLSA provenance from github.com/{}",
+        "  {} Verified SLSA provenance signed by {}",
         console::style("OK").green().bold(),
-        QLTY_OWNER
+        SIGNER_IDENTITY
     );
     Ok(())
+}
+
+fn verify_args(archive_path: &Path) -> Vec<String> {
+    [
+        "attestation",
+        "verify",
+        &archive_path.to_string_lossy(),
+        "--repo",
+        "qltysh/qlty",
+        "--cert-identity",
+        SIGNER_IDENTITY,
+        "--predicate-type",
+        "https://slsa.dev/provenance/v1",
+        "--hostname",
+        "github.com",
+    ]
+    .map(String::from)
+    .to_vec()
 }
 
 fn gh_version_output() -> Option<String> {
@@ -103,8 +118,31 @@ mod tests {
     use super::*;
 
     #[test]
-    fn owner_constant_is_set() {
-        assert_eq!(QLTY_OWNER, "qltysh");
+    fn verify_args_pin_build_workflow_on_main() {
+        assert_eq!(
+            verify_args(Path::new("/tmp/qlty-x86_64-unknown-linux-gnu.tar.xz")),
+            [
+                "attestation",
+                "verify",
+                "/tmp/qlty-x86_64-unknown-linux-gnu.tar.xz",
+                "--repo",
+                "qltysh/qlty",
+                "--cert-identity",
+                "https://github.com/qltysh/qlty/.github/workflows/build.yml@refs/heads/main",
+                "--predicate-type",
+                "https://slsa.dev/provenance/v1",
+                "--hostname",
+                "github.com",
+            ]
+        );
+    }
+
+    #[test]
+    fn verify_args_do_not_use_owner_or_signer_workflow() {
+        let args = verify_args(Path::new("qlty.tar.xz"));
+        assert!(!args
+            .iter()
+            .any(|arg| arg == "--owner" || arg == "--signer-workflow"));
     }
 
     #[test]
