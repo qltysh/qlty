@@ -30,6 +30,7 @@ use crate::logging::init_logs;
 use clap::Parser;
 use console::style;
 use qlty_config::Workspace;
+use qlty_coverage::token::redact_command;
 use std::panic;
 use std::time::Instant;
 use tracing::{debug, error, info, trace};
@@ -51,11 +52,10 @@ pub fn run_command_line() {
     let _guards = init_logs(repository_path.clone());
     trace!("Repository path: {:?}", repository_path);
 
-    let command = std::env::args().collect::<Vec<String>>().join(" ");
+    let command = redact_command(std::env::args());
     info!("Executing command: {}", command);
 
     let arguments = Arguments::parse();
-    debug!("Arguments: {:?}", arguments);
 
     let telemetry = Telemetry::new(&command, start_time, repository_path.clone());
     setup_panic_hook(telemetry.clone());
