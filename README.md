@@ -99,6 +99,22 @@ We also package the CLI as a [Docker image](https://github.com/qltysh/qlty/pkgs/
 > [!NOTE]
 > The Qlty CLI does _not_ use Docker to run linters. By running linters natively, we achieve maximum performance. The Docker image is provided for situations where running the CLI as a containers is preferred over running it as a native binary.
 
+#### Nix and Home Manager
+
+If [Home Manager](https://github.com/nix-community/home-manager) manages your shell configuration, files like `~/.zshrc` are read-only links into the Nix store, so the installer can't add Qlty to your `PATH`. Set `QLTY_NO_MODIFY_PATH` to skip that step:
+
+```bash
+curl https://qlty.sh | QLTY_NO_MODIFY_PATH=1 bash
+```
+
+Then add the install directory to your Home Manager configuration:
+
+```nix
+home.sessionPath = [ "$HOME/.qlty/bin" ];
+```
+
+Apply the change (for example, with `home-manager switch`), then log out and back in. Home Manager loads session variables once per login session, so opening a new terminal may not be enough.
+
 ### Setting up Qlty in a new repository
 
 Setup Qlty within a Git repository:
