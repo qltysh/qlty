@@ -1,4 +1,5 @@
-# qltysh/qlty-action and release_promote.yml accept a Qlty CLI archive only if it was attested by
+# qltysh/qlty-action, release_promote.yml and `qlty upgrade --verify-attestations` (qlty-cli/src/attestation.rs)
+# accept a Qlty CLI archive only if it was attested by
 # https://github.com/qltysh/qlty/.github/workflows/build.yml@refs/heads/main. Don't rename this file, move the attest
 # step in the compile job into a reusable workflow, or let that job attest on another branch or a tag without first
 # changing qlty-action, the CLI upgrade check and the promote job. attestation_signer.yml fails CI on those changes.
@@ -125,7 +126,8 @@ jobs:
       - name: Generate SHA256 signature
         run: sha256sum ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }} > ${{ env.BINARY_NAME }}-${{ matrix.target }}.${{ matrix.archive_format }}.sha256
 
-      # Signed as build.yml@refs/heads/main, the only signer qlty-action accepts; see the comment at the top
+      # Signed as build.yml@refs/heads/main, the only signer qlty-action, the promote job and the CLI upgrade
+      # accept; see the comment at the top
       - name: Generate binary attestation
         uses: actions/attest-build-provenance@v3.0.0
         with:

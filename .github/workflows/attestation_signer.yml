@@ -1,4 +1,5 @@
-# qltysh/qlty-action and release_promote.yml accept a Qlty CLI archive only if it was attested by
+# qltysh/qlty-action, release_promote.yml and `qlty upgrade --verify-attestations` (qlty-cli/src/attestation.rs)
+# accept a Qlty CLI archive only if it was attested by
 # https://github.com/qltysh/qlty/.github/workflows/build.yml@refs/heads/main. This check lives outside build.yml so it
 # still runs when build.yml is renamed or deleted.
 name: Attestation signer
@@ -30,11 +31,13 @@ jobs:
           fail() {
             echo "::error file=${BUILD}::$1"
             echo
-            echo "qltysh/qlty-action and the release promote job (.github/workflows/release_promote.yml) pin"
+            echo "qltysh/qlty-action, the release promote job (.github/workflows/release_promote.yml) and"
+            echo "qlty upgrade --verify-attestations (qlty-cli/src/attestation.rs) pin"
             echo "  https://github.com/qltysh/qlty/.github/workflows/build.yml@refs/heads/main"
             echo "as the Qlty CLI's attestation signer, and reject any archive that build.yml did not attest on main."
             echo "Renaming build.yml, moving its actions/attest-build-provenance step into a reusable workflow, or"
-            echo "attesting on another branch or a tag would break every qlty-action user at the next release."
+            echo "attesting on another branch or a tag would break every qlty-action user and verified CLI upgrade"
+            echo "at the next release."
             echo "Change qlty-action, the CLI upgrade check (qlty-cli/src/attestation.rs) and the promote job first,"
             echo "then update this check."
             exit 1
