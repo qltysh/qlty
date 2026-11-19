@@ -8,9 +8,9 @@ on:
     branches: [main]
     paths:
       - .github/workflows/**
+  # No paths filter: a ruleset on main requires this check, and a required check whose workflow is skipped by a
+  # paths filter never reports, which blocks the pull request.
   pull_request:
-    paths:
-      - .github/workflows/**
 permissions:
   contents: read
 jobs:
