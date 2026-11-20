@@ -136,7 +136,7 @@ impl RuntimeTool for RubySource {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, unix))]
 mod test {
     use super::RubySource;
     use crate::tool::RuntimeTool;
