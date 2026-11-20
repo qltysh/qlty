@@ -1,7 +1,10 @@
 use crate::Tool;
 use anyhow::{Context, Result};
 use qlty_analysis::{utils::fs::path_to_native_string, WorkspaceEntry};
-use qlty_config::config::{DriverDef, InvocationDirectoryType, PluginDef};
+use qlty_config::{
+    config::{DriverDef, InvocationDirectoryType, PluginDef},
+    Library,
+};
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone)]
@@ -27,6 +30,7 @@ impl InvocationDirectoryPlanner {
 
                 self.find_parent_folder_with(&target_directory, search_target)
             }
+            InvocationDirectoryType::RootOrOutermostConfig => self.root_or_outermost_config(target),
             InvocationDirectoryType::ToolDir => Ok(PathBuf::from(self.tool.directory())),
         }
     }
@@ -109,6 +113,61 @@ impl InvocationDirectoryPlanner {
 
         Ok(self.target_root.clone())
     }
+
+    fn root_or_outermost_config(&self, target: &WorkspaceEntry) -> Result<PathBuf> {
+        let config_file_names = self.config_file_names();
+
+        if self.root_has_config_added_at_run_time(&config_file_names)? {
+            return Ok(self.target_root.clone());
+        }
+
+        let mut current_path = self.target_directory(target)?;
+        let mut outermost_path = self.target_root.clone();
+
+        loop {
+            if config_file_names
+                .iter()
+                .any(|name| std::fs::metadata(current_path.join(name)).is_ok())
+            {
+                outermost_path = current_path.clone();
+            }
+
+            if current_path == self.target_root || !current_path.pop() {
+                break;
+            }
+        }
+
+        Ok(outermost_path)
+    }
+
+    // Qlty places these at the root only when it runs, after planning, so the
+    // directory walk can't see them.
+    fn root_has_config_added_at_run_time(&self, config_file_names: &[&str]) -> Result<bool> {
+        let configs_dir = Library::new(&self.workspace_root)?.configs_dir();
+
+        Ok(config_file_names.iter().any(|name| {
+            configs_dir.join(name).exists()
+                || self
+                    .plugin
+                    .exported_config_paths
+                    .iter()
+                    .any(|path| path.file_name().and_then(|n| n.to_str()) == Some(*name))
+                || self.plugin.fetch.iter().any(|fetch| {
+                    Path::new(&fetch.path)
+                        .strip_prefix(".")
+                        .unwrap_or(Path::new(&fetch.path))
+                        == Path::new(name)
+                })
+        }))
+    }
+
+    fn config_file_names(&self) -> Vec<&str> {
+        self.plugin
+            .config_files
+            .iter()
+            .filter_map(|config_file| config_file.file_name().and_then(|name| name.to_str()))
+            .collect()
+    }
 }
 
 #[cfg(test)]
@@ -116,7 +175,7 @@ mod test {
     use super::*;
     use crate::{planner::target::Target, tool::null_tool::NullTool};
     use qlty_analysis::{utils::fs::path_to_string, WorkspaceEntryKind};
-    use qlty_config::config::InvocationDirectoryDef;
+    use qlty_config::config::{InvocationDirectoryDef, PluginFetch};
     use qlty_test_utilities::git::sample_repo;
     use std::{fs::File, time::SystemTime};
     use tempfile::tempdir;
@@ -337,5 +396,95 @@ mod test {
             let invocation_directory = planner.compute(&target).unwrap();
             assert_eq!(invocation_directory, result);
         }
+    }
+
+    fn outermost_config_planner(temp_dir: &Path) -> InvocationDirectoryPlanner {
+        let mut planner = build_planner(
+            temp_dir,
+            InvocationDirectoryDef {
+                kind: InvocationDirectoryType::RootOrOutermostConfig,
+                path: None,
+            },
+        );
+        planner.plugin.config_files = vec!["biome.json".into(), "biome.jsonc".into()];
+        planner
+    }
+
+    #[test]
+    fn test_root_or_outermost_config_uses_config_directory() {
+        let (temp_dir, _) = sample_repo();
+        let planner = outermost_config_planner(temp_dir.path());
+        File::create(temp_dir.path().join("lib/tasks/biome.jsonc")).unwrap();
+
+        let invocation_directory = planner.compute(&target_files("lib/tasks/some.rb")).unwrap();
+        assert_eq!(invocation_directory, temp_dir.path().join("lib/tasks"));
+    }
+
+    #[test]
+    fn test_root_or_outermost_config_uses_highest_config_directory() {
+        let (temp_dir, _) = sample_repo();
+        let planner = outermost_config_planner(temp_dir.path());
+        File::create(temp_dir.path().join("lib/biome.json")).unwrap();
+        File::create(temp_dir.path().join("lib/tasks/biome.jsonc")).unwrap();
+
+        let invocation_directory = planner.compute(&target_files("lib/tasks/some.rb")).unwrap();
+        assert_eq!(invocation_directory, temp_dir.path().join("lib"));
+    }
+
+    #[test]
+    fn test_root_or_outermost_config_uses_root_with_root_config() {
+        let (temp_dir, _) = sample_repo();
+        let planner = outermost_config_planner(temp_dir.path());
+        File::create(temp_dir.path().join("biome.json")).unwrap();
+        File::create(temp_dir.path().join("lib/biome.json")).unwrap();
+
+        let invocation_directory = planner.compute(&target_files("lib/tasks/some.rb")).unwrap();
+        assert_eq!(invocation_directory, temp_dir.path());
+    }
+
+    #[test]
+    fn test_root_or_outermost_config_uses_root_with_qlty_configs_config() {
+        let (temp_dir, _) = sample_repo();
+        let planner = outermost_config_planner(temp_dir.path());
+        std::fs::create_dir_all(temp_dir.path().join(".qlty/configs")).unwrap();
+        File::create(temp_dir.path().join(".qlty/configs/biome.json")).unwrap();
+        File::create(temp_dir.path().join("lib/biome.json")).unwrap();
+
+        let invocation_directory = planner.compute(&target_files("lib/tasks/some.rb")).unwrap();
+        assert_eq!(invocation_directory, temp_dir.path());
+    }
+
+    #[test]
+    fn test_root_or_outermost_config_uses_root_with_exported_config() {
+        let (temp_dir, _) = sample_repo();
+        let mut planner = outermost_config_planner(temp_dir.path());
+        planner.plugin.exported_config_paths = vec!["/sources/default/biome.json".into()];
+        File::create(temp_dir.path().join("lib/biome.json")).unwrap();
+
+        let invocation_directory = planner.compute(&target_files("lib/tasks/some.rb")).unwrap();
+        assert_eq!(invocation_directory, temp_dir.path());
+    }
+
+    #[test]
+    fn test_root_or_outermost_config_falls_back_to_root() {
+        let (temp_dir, _) = sample_repo();
+        let planner = outermost_config_planner(temp_dir.path());
+
+        let invocation_directory = planner.compute(&target_files("lib/tasks/some.rb")).unwrap();
+        assert_eq!(invocation_directory, temp_dir.path());
+    }
+
+    #[test]
+    fn test_root_or_outermost_config_uses_root_with_fetched_config() {
+        let (temp_dir, _) = sample_repo();
+        let mut planner = outermost_config_planner(temp_dir.path());
+        planner.plugin.fetch = vec![PluginFetch {
+            url: "https://example.com/biome.json".to_string(),
+            path: "./biome.json".to_string(),
+        }];
+        File::create(temp_dir.path().join("lib/biome.json")).unwrap();
+
+        let invocation_directory = planner.compute(&target_files("lib/tasks/some.rb")).unwrap();
+        assert_eq!(invocation_directory, temp_dir.path());
     }
 }

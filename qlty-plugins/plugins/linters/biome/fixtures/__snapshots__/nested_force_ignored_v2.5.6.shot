@@ -1,0 +1,53 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linter=biome fixture=nested_force_ignored version=2.5.6 1`] = `
+{
+  "issues": [
+    {
+      "category": "CATEGORY_LINT",
+      "documentationUrl": "https://biomejs.dev/linter/rules/no-debugger",
+      "level": "LEVEL_HIGH",
+      "location": {
+        "path": "root.ts",
+        "range": {
+          "endColumn": 10,
+          "endLine": 1,
+          "startColumn": 1,
+          "startLine": 1,
+        },
+      },
+      "message": "This is an unexpected use of the debugger statement.",
+      "mode": "MODE_BLOCK",
+      "ruleKey": "lint/suspicious/noDebugger",
+      "snippet": "debugger;",
+      "snippetWithContext": "debugger;",
+      "suggestions": [
+        {
+          "patch": "--- original
++++ modified
+@@ -1 +1 @@
+-debugger;
++
+",
+          "replacements": [
+            {
+              "location": {
+                "path": "root.ts",
+                "range": {
+                  "endColumn": 10,
+                  "endLine": 1,
+                  "startColumn": 1,
+                  "startLine": 1,
+                },
+              },
+            },
+          ],
+          "source": "SUGGESTION_SOURCE_TOOL",
+          "unsafe": true,
+        },
+      ],
+      "tool": "biome",
+    },
+  ],
+}
+`;
