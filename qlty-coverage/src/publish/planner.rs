@@ -2,6 +2,7 @@ use crate::ci::CI;
 use crate::git::retrieve_commit_metadata;
 use crate::publish::Plan;
 use crate::publish::Settings;
+use crate::token::redact_command;
 use crate::transformer::AddPrefix;
 use crate::transformer::AppendMetadata;
 use crate::transformer::ComputeSummary;
@@ -245,7 +246,7 @@ impl MetadataPlanner {
         } else {
             CoverageMetadata {
                 ci: "unknown".to_string(),
-                publish_command: std::env::args().collect::<Vec<String>>().join(" "),
+                publish_command: redact_command(std::env::args()),
                 ..CoverageMetadata::default()
             }
         };

@@ -1,0 +1,30 @@
+args = [
+  "coverage",
+  "publish",
+  "--dry-run",
+  "--print",
+  "--json",
+  "--override-commit-sha",
+  "2ca1bc45a94e37c8dbae6fd9e19fc069ba64bd67",
+  "--add-prefix",
+  "rails/",
+  "--tag",
+  "rails",
+  "--no-validate",
+  "--token",
+  "qltcp_FAKESECRET1234567890",
+  "lcov.info"
+]
+bin.name = "qlty"
+
+[env.add]
+GITHUB_ACTIONS = "true"
+GITHUB_HEAD_REF = ""
+GITHUB_REF = ""
+GITHUB_REF_NAME = "feature-branch-1"
+GITHUB_REF_TYPE = "branch"
+GITHUB_RUN_ATTEMPT = "2"
+GITHUB_RUN_ID = "42"
+GITHUB_SHA = "77948d72a8b5ea21bb335e8e674bad99413da7a2"
+QLTY_CI_UPLOADER_TOOL = "qltysh/qlty-action-coverage"
+QLTY_CI_UPLOADER_TOOL_VERSION = "v1.0.0"

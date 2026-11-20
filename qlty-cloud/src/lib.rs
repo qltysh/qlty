@@ -44,19 +44,19 @@ impl Client {
 
     pub fn post(&self, path: &str) -> Result<Request> {
         let url = self.build_url(path);
-        Ok(self.build_request(http::post(&url)?))
+        self.build_request(http::post(&url)?)
     }
 
     pub fn get(&self, path: &str) -> Result<Request> {
         let url = self.build_url(path);
-        Ok(self.build_request(http::get(&url)?))
+        self.build_request(http::get(&url)?)
     }
 
     fn build_url(&self, path: &str) -> String {
         format!("{}{}", self.base_url, path)
     }
 
-    fn build_request(&self, request: Request) -> Request {
+    fn build_request(&self, request: Request) -> Result<Request> {
         let mut request = request;
 
         request = request.set(
@@ -64,15 +64,28 @@ impl Client {
             &format!("{}/{}", USER_AGENT_PREFIX, QLTY_VERSION),
         );
 
-        if let Some(header_value) = self.authorization_header() {
+        if let Some(header_value) = self.authorization_header()? {
             request = request.set("Authorization", &header_value);
         }
 
-        request
+        Ok(request)
     }
 
-    fn authorization_header(&self) -> Option<String> {
-        self.token.as_ref().map(|token| format!("Bearer {}", token))
+    // The bytes ureq accepts in a header value.
+    fn authorization_header(&self) -> Result<Option<String>> {
+        match &self.token {
+            Some(token)
+                if !token
+                    .bytes()
+                    .all(|byte| matches!(byte, b' ' | b'\t' | 0x21..=0x7E)) =>
+            {
+                bail!(
+                    "The token contains a character that can't be sent in an HTTP header, such as a line break or a non-ASCII character."
+                )
+            }
+            Some(token) => Ok(Some(format!("Bearer {}", token))),
+            None => Ok(None),
+        }
     }
 
     pub fn post_coverage_metadata(&self, url: &str, metadata: &CoverageMetadata) -> Result<Value> {
@@ -121,5 +134,39 @@ impl Client {
                 bail!("Transport Error: {}: {:?}", self.base_url, transport_error)
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rejects_token_with_line_break() {
+        let client = Client::new(None, Some("qltcp_SECRET\n".to_string()));
+        assert!(!client
+            .authorization_header()
+            .unwrap_err()
+            .to_string()
+            .contains("SECRET"));
+    }
+
+    #[test]
+    fn rejects_token_with_non_ascii_project() {
+        let client = Client::new(None, Some("qltcw_SECRET/café".to_string()));
+        assert!(!client
+            .authorization_header()
+            .unwrap_err()
+            .to_string()
+            .contains("SECRET"));
+    }
+
+    #[test]
+    fn builds_bearer_authorization_header() {
+        let client = Client::new(None, Some("qltcp_123".to_string()));
+        assert_eq!(
+            client.authorization_header().unwrap(),
+            Some("Bearer qltcp_123".to_string())
+        );
     }
 }

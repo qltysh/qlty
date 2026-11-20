@@ -261,4 +261,20 @@ mod test {
             )
         );
     }
+
+    #[test]
+    fn sanitize_redacted_attached_short_token() {
+        assert_eq!(
+            sanitize_command(&qlty_coverage::token::redact_command(
+                "qlty coverage publish -tqltcp_SECRET lcov.info"
+                    .split(' ')
+                    .map(String::from)
+            )),
+            (
+                "qlty".to_owned(),
+                "coverage publish".to_owned(),
+                "-t[REDACTED] VALUE".to_owned()
+            )
+        );
+    }
 }
