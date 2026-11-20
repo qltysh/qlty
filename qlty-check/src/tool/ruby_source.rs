@@ -9,6 +9,7 @@ use anyhow::Result;
 use duct::cmd;
 use qlty_analysis::join_path_string;
 use qlty_config::config::{Cpu, DownloadDef, OperatingSystem, PluginDef, System};
+use sha2::Digest;
 
 // This version of the Ruby tool performs a from-source installation using ruby-build.
 // It is activated when QLTY_FEATURE_RUBY_BINARY_INSTALL is falsey (`/false/i`, `/off/i` or `0`).
@@ -28,6 +29,7 @@ impl Tool for RubySource {
 
     fn update_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
         self.download().update_hash(sha, &self.name())?;
+        sha.update(&self.version);
         Ok(())
     }
 
@@ -82,34 +84,36 @@ impl Tool for RubySource {
 }
 
 impl RubySource {
+    // ruby-build v20261119, pinned by commit so moving the tag can't change
+    // what's downloaded.
     fn download(&self) -> Download {
         Download::new(
             &DownloadDef {
                 systems: vec![
                     System {
                         url:
-                            "https://github.com/rbenv/ruby-build/archive/refs/tags/v20250215.tar.gz"
+                            "https://github.com/rbenv/ruby-build/archive/b91ffe95bf6350b8fce3170585c442f20b62619f.tar.gz"
                                 .to_string(),
                         cpu: Cpu::Aarch64,
                         os: OperatingSystem::MacOS,
                     },
                     System {
                         url:
-                            "https://github.com/rbenv/ruby-build/archive/refs/tags/v20250215.tar.gz"
+                            "https://github.com/rbenv/ruby-build/archive/b91ffe95bf6350b8fce3170585c442f20b62619f.tar.gz"
                                 .to_string(),
                         cpu: Cpu::X86_64,
                         os: OperatingSystem::MacOS,
                     },
                     System {
                         url:
-                            "https://github.com/rbenv/ruby-build/archive/refs/tags/v20250215.tar.gz"
+                            "https://github.com/rbenv/ruby-build/archive/b91ffe95bf6350b8fce3170585c442f20b62619f.tar.gz"
                                 .to_string(),
                         cpu: Cpu::Aarch64,
                         os: OperatingSystem::Linux,
                     },
                     System {
                         url:
-                            "https://github.com/rbenv/ruby-build/archive/refs/tags/v20250215.tar.gz"
+                            "https://github.com/rbenv/ruby-build/archive/b91ffe95bf6350b8fce3170585c442f20b62619f.tar.gz"
                                 .to_string(),
                         cpu: Cpu::X86_64,
                         os: OperatingSystem::Linux,
@@ -131,5 +135,26 @@ impl RuntimeTool for RubySource {
             runtime: self.clone_box(),
             cmd: default_command_builder(),
         })
+    }
+}
+
+#[cfg(all(test, unix))]
+mod test {
+    use super::RubySource;
+    use crate::tool::RuntimeTool;
+    use qlty_config::config::PluginDef;
+
+    #[test]
+    fn test_package_fingerprint_changes_with_ruby_version() {
+        let plugin = PluginDef::default();
+        let old = RubySource {
+            version: "3.3.7".to_string(),
+        }
+        .package_tool("rubocop", &plugin);
+        let new = RubySource {
+            version: "3.3.14".to_string(),
+        }
+        .package_tool("rubocop", &plugin);
+        assert_ne!(old.fingerprint(), new.fingerprint());
     }
 }
