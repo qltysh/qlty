@@ -16,6 +16,7 @@ All types of contributions are encouraged and valued. See the [Table of Contents
 - [Code of Conduct](#code-of-conduct)
 - [I Have a Question](#i-have-a-question)
 - [I Want To Contribute](#i-want-to-contribute)
+- [Signed Commits](#signed-commits)
 - [Reporting Bugs](#reporting-bugs)
 - [Suggesting Enhancements](#suggesting-enhancements)
 
@@ -49,6 +50,12 @@ The community will be able to reply right away, and the Qlty team aims to reply 
 > When contributing to this project, you must agree that you have authored 100% of the content, that you have the necessary rights to the content and that the content you contribute may be provided under the project license.
 >
 > Contributions require agreeing to our [Contributor License Agreement](https://gist.github.com/brynary/00d59e41ffd852636a2f8a8f5f5aa69b) (CLA).
+
+### Signed Commits
+
+Every branch in this repository requires signed commits. GitHub rejects a push to `qltysh/qlty` that contains a commit without a [verified signature](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification). To set up signing, follow GitHub's guide to [signing commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
+
+Pull requests from forks don't need signed commits. We squash-merge pull requests, and GitHub signs the squashed commit.
 
 ### Reporting Bugs
 
