@@ -84,34 +84,36 @@ impl Tool for RubySource {
 }
 
 impl RubySource {
+    // ruby-build v20261119, pinned by commit so moving the tag can't change
+    // what's downloaded.
     fn download(&self) -> Download {
         Download::new(
             &DownloadDef {
                 systems: vec![
                     System {
                         url:
-                            "https://github.com/rbenv/ruby-build/archive/refs/tags/v20261119.tar.gz"
+                            "https://github.com/rbenv/ruby-build/archive/b91ffe95bf6350b8fce3170585c442f20b62619f.tar.gz"
                                 .to_string(),
                         cpu: Cpu::Aarch64,
                         os: OperatingSystem::MacOS,
                     },
                     System {
                         url:
-                            "https://github.com/rbenv/ruby-build/archive/refs/tags/v20261119.tar.gz"
+                            "https://github.com/rbenv/ruby-build/archive/b91ffe95bf6350b8fce3170585c442f20b62619f.tar.gz"
                                 .to_string(),
                         cpu: Cpu::X86_64,
                         os: OperatingSystem::MacOS,
                     },
                     System {
                         url:
-                            "https://github.com/rbenv/ruby-build/archive/refs/tags/v20261119.tar.gz"
+                            "https://github.com/rbenv/ruby-build/archive/b91ffe95bf6350b8fce3170585c442f20b62619f.tar.gz"
                                 .to_string(),
                         cpu: Cpu::Aarch64,
                         os: OperatingSystem::Linux,
                     },
                     System {
                         url:
-                            "https://github.com/rbenv/ruby-build/archive/refs/tags/v20261119.tar.gz"
+                            "https://github.com/rbenv/ruby-build/archive/b91ffe95bf6350b8fce3170585c442f20b62619f.tar.gz"
                                 .to_string(),
                         cpu: Cpu::X86_64,
                         os: OperatingSystem::Linux,
