@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.672.0 (2026-11-19)
+
+### Fixed
+
+- Accept only archives attested by `build.yml` on `main` in `qlty upgrade --verify-attestations` (#3032)
+- Update libgit2 to 1.9.7 to fix its July and August 2026 security advisories (#3029)
+
 ## v0.671.0 (2026-11-17)
 
 ### Fixed
