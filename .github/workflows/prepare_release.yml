@@ -68,7 +68,7 @@ jobs:
         env:
           RELEASE_VERSION: ${{ inputs.increment == 'version' && inputs.version || inputs.increment || 'minor' }}
       - name: Draft changelog entry
-        uses: anthropics/claude-code-action@v1.0.275
+        uses: anthropics/claude-code-action@v1.0.278
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         with:
