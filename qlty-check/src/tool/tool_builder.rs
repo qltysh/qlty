@@ -148,7 +148,7 @@ impl ToolBuilder<'_> {
             Runtime::Go => Some("1.22.0".to_owned()),
             Runtime::Node => Some("22.23.4".to_owned()),
             Runtime::Python => Some("3.11.17".to_owned()),
-            Runtime::Ruby => Some("3.3.7".to_owned()),
+            Runtime::Ruby => Some("3.3.14".to_owned()),
             Runtime::Rust => Some("1.77.2".to_owned()),
             Runtime::Java => Some("25.0.5+8".to_owned()),
             Runtime::Php => Some("8.3".to_owned()),

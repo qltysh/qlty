@@ -1,7 +1,7 @@
 config_version = "0"
 
 [runtimes.enabled]
-ruby = "3.4.7"
+ruby = "3.4.13"
 
 [[plugin]]
 name = "rubocop"

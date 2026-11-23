@@ -7,7 +7,6 @@ use crate::{
     Tool,
 };
 use anyhow::{bail, Result};
-use duct::cmd;
 use indoc::formatdoc;
 use itertools::Itertools;
 use qlty_analysis::{join_path_string, utils::fs::path_to_string};
@@ -19,6 +18,13 @@ use tracing::debug;
 const ARCH: &str = "x64";
 #[cfg(target_arch = "aarch64")]
 const ARCH: &str = "arm64";
+
+// The Homebrew OpenSSL that ruby-builder's macOS build of the default Ruby
+// links. The unversioned `openssl` alias points elsewhere on older Homebrew.
+#[cfg(target_arch = "x86_64")]
+const OPENSSL_FORMULA: &str = "openssl@3";
+#[cfg(target_arch = "aarch64")]
+const OPENSSL_FORMULA: &str = "openssl@4";
 
 #[cfg(target_arch = "x86_64")]
 const HOMEBREW_PATH: &str = "/usr/local/bin";
@@ -36,10 +42,15 @@ impl PlatformRuby for RubyMacos {
 
         // TODO(loren): If we can get prompting in this code path we should just
         // request permission to install these libs directly.
-        let libs = vec!["gmp", "openssl", "libyaml"];
+        let libs = vec!["gmp", OPENSSL_FORMULA, "libyaml"];
         let missing_libs = libs
             .par_iter()
-            .filter(|lib| cmd!(brew.clone(), "list", lib).read().is_err())
+            .filter(|lib| {
+                self.cmd_builder
+                    .build(&brew, vec!["list", lib])
+                    .read()
+                    .is_err()
+            })
             .cloned()
             .collect::<Vec<_>>();
 
@@ -162,7 +173,11 @@ mod test {
     use crate::tool::ruby::sys::macos::RubyMacos;
     use crate::tool::ruby::PlatformRuby;
     use crate::{
-        tool::{command_builder::test::stub_cmd, ruby::sys::macos::ARCH, ToolType},
+        tool::{
+            command_builder::test::stub_cmd,
+            ruby::sys::macos::{ARCH, HOMEBREW_PATH, OPENSSL_FORMULA},
+            ToolType,
+        },
         Progress, Tool,
     };
     use qlty_analysis::utils::fs::path_to_string;
@@ -266,6 +281,28 @@ mod test {
             ]]
         );
         drop(tempdir);
+    }
+
+    #[test]
+    fn test_pre_install_checks_versioned_openssl_formula() {
+        let list = Arc::new(Mutex::new(vec![]));
+        let runtime = RubyMacos {
+            cmd_builder: stub_cmd(list.clone()),
+        };
+        let task = Progress::new(false, 1).task("", "");
+        runtime.pre_install(&TestTool::default(), &task).unwrap();
+
+        let mut commands = list.lock().unwrap().clone();
+        commands.sort();
+        let brew = format!("{HOMEBREW_PATH}/brew");
+        assert_eq!(
+            commands,
+            [
+                [brew.as_str(), "list", "gmp"],
+                [brew.as_str(), "list", "libyaml"],
+                [brew.as_str(), "list", OPENSSL_FORMULA],
+            ]
+        );
     }
 
     #[test]
