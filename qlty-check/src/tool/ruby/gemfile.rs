@@ -110,7 +110,7 @@ impl RubyGemfile {
         std::fs::write(new_package_file_path, new_package_file_contents)?;
 
         if let Some(lock_file) = self.lock_file_to_stage() {
-            let staging_lock_file = join_path_string!(self.directory(), "Gemfile.lock");
+            let staging_lock_file = join_path_string!(self.directory(), self.lock_file_name());
 
             debug!(
                 "Copying lock file from {} to {}",
@@ -118,7 +118,8 @@ impl RubyGemfile {
                 staging_lock_file
             );
 
-            std::fs::copy(lock_file, staging_lock_file)?;
+            std::fs::copy(&lock_file, staging_lock_file)
+                .with_context(|| format!("Failed to copy lock file {}", lock_file.display()))?;
         }
 
         Ok(())
@@ -133,25 +134,36 @@ impl RubyGemfile {
 
         PathBuf::from(self.plugin.package_file.as_ref()?)
             .parent()
-            .map(|parent_dir| parent_dir.join("Gemfile.lock"))
+            .map(|parent_dir| parent_dir.join(self.lock_file_name()))
             .filter(|lock_file| lock_file.exists())
     }
 
-    // The lock file decides the installed versions only when a filtered
-    // install stages it, so only then does a change to it install again.
-    pub fn update_lock_file_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
-        let lock_file = self
-            .lock_file_to_stage()
-            .filter(|_| self.filtered_install_uses_lock_file());
-
-        if let Some(lock_file) = lock_file {
-            sha.update(
-                std::fs::read(&lock_file)
-                    .with_context(|| format!("Failed to read lock file {}", lock_file.display()))?,
-            );
+    // Bundler names the lock file after the Gemfile it is given. Without
+    // filters the name stays `Gemfile.lock`, as before.
+    fn lock_file_name(&self) -> String {
+        if !self.filtered_install_uses_lock_file() {
+            return "Gemfile.lock".to_string();
         }
 
-        Ok(())
+        match self.package_file_name().as_str() {
+            "gems.rb" => "gems.locked".to_string(),
+            package_file_name => format!("{package_file_name}.lock"),
+        }
+    }
+
+    // The lock file decides the installed versions only when a filtered
+    // install stages it, so only then does a change to it install again. A
+    // lock file that can't be read is left out, and staging it reports the
+    // error.
+    pub fn update_lock_file_hash(&self, sha: &mut sha2::Sha256) {
+        let lock_file_contents = self
+            .lock_file_to_stage()
+            .filter(|_| self.filtered_install_uses_lock_file())
+            .and_then(|lock_file| std::fs::read(lock_file).ok());
+
+        if let Some(lock_file_contents) = lock_file_contents {
+            sha.update(lock_file_contents);
+        }
     }
 
     pub fn filtered_install_uses_lock_file(&self) -> bool {
@@ -348,7 +360,6 @@ mod test {
         utils::fs::{path_to_native_string, path_to_string},
     };
     use qlty_config::config::PluginEnvironment;
-    use sha2::Digest;
     use std::{env::split_paths, fs::create_dir_all, path::Path};
     use tempfile::TempDir;
 
@@ -820,19 +831,63 @@ mod test {
     }
 
     #[test]
-    fn test_update_lock_file_hash_errors_on_unreadable_lock_file() {
+    fn test_copy_package_file_errors_on_unreadable_lock_file() {
         with_rubygems_package(|pkg, temp_path, _| {
             write_filtered_gemfile_with_lock(pkg, temp_path);
             pkg.plugin.environment = vec![lock_file_feature_env("true")];
             let lock_file = temp_path.path().join("Gemfile.lock");
             std::fs::remove_file(&lock_file).unwrap();
             create_dir_all(&lock_file).unwrap();
+            reroute_tools_root(temp_path, pkg);
+            create_dir_all(pkg.directory()).unwrap();
 
-            let error = pkg
-                .update_lock_file_hash(&mut sha2::Sha256::new())
-                .unwrap_err();
+            let error = pkg.copy_package_file(&new_task()).unwrap_err();
 
-            assert!(error.to_string().starts_with("Failed to read lock file"));
+            assert!(error.to_string().starts_with("Failed to copy lock file"));
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_lock_file_named_after_package_file_with_feature_env() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            write_filtered_gemfile_with_lock(pkg, temp_path);
+            let req_file = temp_path.path().join("Gemfile.qlty");
+            std::fs::write(&req_file, "source 'https://rubygems.org'\ngem 'tool'").unwrap();
+            std::fs::write(
+                temp_path.path().join("Gemfile.qlty.lock"),
+                "GEM\n  specs:\n    tool (2.0.0)",
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            pkg.plugin.environment = vec![lock_file_feature_env("true")];
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile.qlty.lock"))
+                    .unwrap(),
+                "GEM\n  specs:\n    tool (2.0.0)"
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_lock_file_for_gems_rb_with_feature_env() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("gems.rb");
+            std::fs::write(&req_file, "source 'https://rubygems.org'\ngem 'tool'").unwrap();
+            std::fs::write(temp_path.path().join("gems.locked"), "GEM").unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            pkg.plugin.package_filters = vec!["tool".to_string()];
+            pkg.plugin.environment = vec![lock_file_feature_env("true")];
+
+            assert_eq!(
+                pkg.lock_file_to_stage(),
+                Some(temp_path.path().join("gems.locked"))
+            );
             Ok(())
         });
     }

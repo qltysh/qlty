@@ -346,7 +346,7 @@ impl Tool for RubygemsPackage {
                 sha.update(&env.value);
             }
 
-            self.update_lock_file_hash(sha)?;
+            self.update_lock_file_hash(sha);
         }
 
         Ok(())
