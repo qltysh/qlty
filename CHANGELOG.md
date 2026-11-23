@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.673.0 (2026-11-23)
+
+### Fixed
+
+- Upgrade the default Ruby runtime to 3.3.14 to fix CVE-2026-132825 and the other November 2026 Ruby security advisories (#3039)
+- Reinstall Ruby plugins when the Ruby version changes on platforms that build Ruby from source (#3039)
+
 ## v0.672.0 (2026-11-19)
 
 ### Fixed
