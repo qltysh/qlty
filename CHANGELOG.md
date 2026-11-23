@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Security
+
+- Check for an older Ruby after upgrading to v0.673.0 or later, which runs Ruby plugins on Ruby 3.3.14 by default on Linux and macOS (#3039) and so fixes CVE-2026-132825 ("Ruby2Shell"). On Linux and macOS, a Ruby pin under `[runtimes.enabled]` in `qlty.toml` or in a plugin source overrides that default, and `qlty config show` lists it: remove the pin, or move it to 3.3.14, 3.4.13 or 4.0.10. If the pin comes from a plugin source, set one of those versions in your own `qlty.toml`, which overrides the source, and remove it once you update `[[source]]` to a release with a fixed pin. On Windows, Qlty ignores pins and runs the Ruby on your `PATH`: update it to 3.3.14, 3.4.13, 4.0.10 or later, and if that moves it to another line (for example 3.3 to 3.4 or 4.0), delete your Ruby plugins' folders under `~/.qlty/cache/tools/`, such as `rubocop`, so they reinstall. On Linux and macOS, `qlty cache clean` does not remove Rubies Qlty no longer uses: delete the folders under `~/.qlty/cache/tools/ruby/` whose names start with an older version, such as `3.3.7-` (#3042)
+
 ## v0.673.0 (2026-11-23)
 
 ### Fixed
