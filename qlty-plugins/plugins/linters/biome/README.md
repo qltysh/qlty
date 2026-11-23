@@ -33,9 +33,12 @@ Biome analyzes: TypeScript (`.ts`, `.tsx`), JavaScript (`.js`, `.jsx`), JSON (`.
 
 ## Configuration files
 
-- [`biome.json`](https://biomejs.dev/reference/configuration/)
+- [`biome.json` or `biome.jsonc`](https://biomejs.dev/reference/configuration/)
+- `.biome.json` or `.biome.jsonc` (Biome 2.4.0 and later)
 
 To keep your project tidy, you can move configuration files into `.qlty/configs` and Qlty will find and use them when running Biome.
+
+With Biome 2, Qlty runs `biome lint` from the outermost directory that has a Biome configuration file, or from the repository root if there is none. A repository with a root configuration file runs from the root, and nested configurations apply as Biome's own rules describe.
 
 ## Troubleshooting
 

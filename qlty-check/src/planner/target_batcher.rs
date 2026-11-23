@@ -286,7 +286,7 @@ fn is_workspace_config(config: &PluginConfigFile, workspace_config_path: &Path) 
 }
 
 // Helper to normalize config path
-fn normalize_config_path(
+pub(crate) fn normalize_config_path(
     config: &PluginConfigFile,
     workspace_root: &Path,
     workspace_config_path: &Path,
@@ -357,6 +357,7 @@ mod test {
                 }),
                 target_root: PathBuf::from("/User/test/project_root/"),
                 workspace_root: PathBuf::from("/User/test/project_root/"),
+                plugin_configs: vec![],
             },
             plugin_configs: vec![
                 plugin_config_file("/User/test/project_root/config1"),
@@ -631,6 +632,7 @@ mod test {
                 }),
                 target_root: temp_path.clone(),
                 workspace_root: temp_path.clone(),
+                plugin_configs: vec![],
             },
             plugin_configs: vec![],
             current_prefix: None,

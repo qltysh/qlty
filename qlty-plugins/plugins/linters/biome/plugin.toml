@@ -13,6 +13,20 @@ description = "A static analyzer for web projects"
 package_file_candidate = "package.json"
 package_file_candidate_filters = ["biome"]
 
+# Biome 1.x reads one config per run and doesn't fail on nested ones, so it
+# keeps running from the root as before.
+# The first matching entry wins, so this one must stay before "<2.4.0".
+[[plugins.definitions.biome.drivers.lint.version]]
+version_matcher = "<2.0.0"
+script = "biome lint --reporter=json ${target}"
+success_codes = [0, 1]
+output = "stdout"
+output_format = "biome"
+batch = true
+cache_results = true
+suggested = "config"
+output_missing = "parse"
+
 # Biome's unstable `json` reporter changed shape in 2.4.0; the stable
 # `rdjson` reporter (added in 2.x) also carries fix data, which `json`
 # dropped in 2.4.0.
@@ -26,9 +40,13 @@ batch = true
 cache_results = true
 suggested = "config"
 output_missing = "parse"
+runs_from = { type = "root_or_outermost_config" }
+batch_by = "invocation_directory"
 
 [[plugins.definitions.biome.drivers.lint.version]]
 version_matcher = ">=2.4.0"
+# Biome 2.4.0 added the hidden config names.
+config_files = [".biome.json", ".biome.jsonc"]
 script = "biome lint --reporter=rdjson ${target}"
 success_codes = [0, 1]
 output = "stdout"
@@ -37,6 +55,8 @@ batch = true
 cache_results = true
 suggested = "config"
 output_missing = "parse"
+runs_from = { type = "root_or_outermost_config" }
+batch_by = "invocation_directory"
 
 [plugins.definitions.biome.drivers.format]
 script = "biome format --write ${target}"
