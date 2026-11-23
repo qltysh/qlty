@@ -4,9 +4,10 @@ use crate::{
     tool::{interpolate_env_variables, Tool},
     ui::ProgressTask,
 };
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use itertools::Itertools;
 use qlty_analysis::{join_path_string, utils::fs::path_to_native_string};
+use sha2::Digest;
 use std::{collections::HashMap, path::PathBuf};
 use tracing::debug;
 
@@ -134,6 +135,23 @@ impl RubyGemfile {
             .parent()
             .map(|parent_dir| parent_dir.join("Gemfile.lock"))
             .filter(|lock_file| lock_file.exists())
+    }
+
+    // The lock file decides the installed versions only when a filtered
+    // install stages it, so only then does a change to it install again.
+    pub fn update_lock_file_hash(&self, sha: &mut sha2::Sha256) -> Result<()> {
+        let lock_file = self
+            .lock_file_to_stage()
+            .filter(|_| self.filtered_install_uses_lock_file());
+
+        if let Some(lock_file) = lock_file {
+            sha.update(
+                std::fs::read(&lock_file)
+                    .with_context(|| format!("Failed to read lock file {}", lock_file.display()))?,
+            );
+        }
+
+        Ok(())
     }
 
     pub fn filtered_install_uses_lock_file(&self) -> bool {
