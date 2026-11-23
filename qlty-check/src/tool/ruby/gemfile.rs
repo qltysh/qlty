@@ -348,6 +348,7 @@ mod test {
         utils::fs::{path_to_native_string, path_to_string},
     };
     use qlty_config::config::PluginEnvironment;
+    use sha2::Digest;
     use std::{env::split_paths, fs::create_dir_all, path::Path};
     use tempfile::TempDir;
 
@@ -814,6 +815,24 @@ mod test {
             .unwrap();
 
             assert_ne!(pkg.fingerprint(), fingerprint);
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_update_lock_file_hash_errors_on_unreadable_lock_file() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            write_filtered_gemfile_with_lock(pkg, temp_path);
+            pkg.plugin.environment = vec![lock_file_feature_env("true")];
+            let lock_file = temp_path.path().join("Gemfile.lock");
+            std::fs::remove_file(&lock_file).unwrap();
+            create_dir_all(&lock_file).unwrap();
+
+            let error = pkg
+                .update_lock_file_hash(&mut sha2::Sha256::new())
+                .unwrap_err();
+
+            assert!(error.to_string().starts_with("Failed to read lock file"));
             Ok(())
         });
     }
