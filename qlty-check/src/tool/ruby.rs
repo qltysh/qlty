@@ -345,6 +345,14 @@ impl Tool for RubygemsPackage {
                 sha.update(&env.name);
                 sha.update(&env.value);
             }
+
+            if self.filtered_install_uses_lock_file() {
+                if let Some(lock_file) = self.lock_file_to_stage() {
+                    sha.update(fs::read(&lock_file).with_context(|| {
+                        format!("Failed to read lock file {}", lock_file.display())
+                    })?);
+                }
+            }
         }
 
         Ok(())
