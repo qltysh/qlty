@@ -89,12 +89,9 @@ impl PlatformRuby for RubyMacos {
                         major_version
                     )
                     .as_str(),
-                    join_path_string!(
-                        tool.directory(),
-                        "lib",
-                        format!("libruby.{}.dylib", major_version)
-                    )
-                    .as_str(),
+                    // Some builds have under 100 bytes of free Mach-O header space,
+                    // too little for an absolute path under a long $HOME.
+                    format!("@executable_path/../lib/libruby.{major_version}.dylib").as_str(),
                     join_path_string!(tool.directory(), "bin", "ruby").as_str(),
                 ],
             )
@@ -272,15 +269,31 @@ mod test {
                     ARCH
                 )
                 .as_str(),
-                format!(
-                    "{}/lib/libruby.128.128.dylib",
-                    path_to_string(tempdir.path())
-                )
-                .as_str(),
+                "@executable_path/../lib/libruby.128.128.dylib",
                 format!("{}/bin/ruby", path_to_string(tempdir.path())).as_str()
             ]]
         );
         drop(tempdir);
+    }
+
+    #[test]
+    fn test_post_install_libruby_path_does_not_grow_with_long_directory() {
+        let tempdir = TempDir::new().unwrap();
+        let directory = tempdir.path().join("x".repeat(200));
+        std::fs::create_dir_all(directory.join("bin")).unwrap();
+        let tool = TestTool {
+            directory,
+            version: "3.3.14".to_string(),
+        };
+        let list = Arc::new(Mutex::new(vec![]));
+        let runtime = RubyMacos {
+            cmd_builder: stub_cmd(list.clone()),
+        };
+        let task = Progress::new(false, 1).task("", "");
+        runtime.post_install(&tool, &task).unwrap();
+
+        let command = list.lock().unwrap()[0].clone();
+        assert!(command[3].len() <= command[2].len());
     }
 
     #[test]
