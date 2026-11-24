@@ -52,7 +52,7 @@ pub fn run_command_line() {
     let _guards = init_logs(repository_path.clone());
     trace!("Repository path: {:?}", repository_path);
 
-    let command = redact_command(std::env::args());
+    let command = redact_command(std::env::args_os());
     info!("Executing command: {}", command);
 
     let arguments = Arguments::parse();

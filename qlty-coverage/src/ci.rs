@@ -75,7 +75,7 @@ pub trait CI {
             git_tag: self.git_tag(),
             uploader_tool: std::env::var(QLTY_CI_UPLOADER_TOOL).ok(),
             uploader_tool_version: std::env::var(QLTY_CI_UPLOADER_TOOL_VERSION).ok(),
-            publish_command: redact_command(std::env::args()),
+            publish_command: redact_command(std::env::args_os()),
             ..Default::default()
         }
     }

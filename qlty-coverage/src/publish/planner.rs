@@ -246,7 +246,7 @@ impl MetadataPlanner {
         } else {
             CoverageMetadata {
                 ci: "unknown".to_string(),
-                publish_command: redact_command(std::env::args()),
+                publish_command: redact_command(std::env::args_os()),
                 ..CoverageMetadata::default()
             }
         };

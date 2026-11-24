@@ -3,6 +3,7 @@ use qlty_config::http;
 use qlty_config::version::QLTY_VERSION;
 use qlty_types::tests::v1::CoverageMetadata;
 use serde_json::Value;
+use thiserror::Error;
 use ureq::{json, serde_json, Error, Request};
 
 const ENV_QLTY_API_URL: &str = "QLTY_API_URL";
@@ -17,6 +18,26 @@ pub fn get_legacy_api_url() -> String {
     std::env::var(ENV_QLTY_API_URL).unwrap_or_else(|_| LEGACY_API_URL.to_string())
 }
 const USER_AGENT_PREFIX: &str = "qlty";
+
+#[derive(Debug, Error)]
+#[error(
+    "The token contains a character that can't be sent in an HTTP header, such as a line break or a non-ASCII character."
+)]
+pub struct InvalidTokenCharacterError;
+
+/// Builds a bearer `Authorization` header value. A token with a byte ureq rejects in a header
+/// value is refused here, because ureq's own error would include the whole header line.
+pub fn bearer_authorization_header(token: &str) -> Result<String> {
+    // The bytes ureq accepts in a header value.
+    if token
+        .bytes()
+        .all(|byte| matches!(byte, b' ' | b'\t' | 0x21..=0x7E))
+    {
+        Ok(format!("Bearer {}", token))
+    } else {
+        Err(InvalidTokenCharacterError.into())
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct Client {
@@ -71,21 +92,11 @@ impl Client {
         Ok(request)
     }
 
-    // The bytes ureq accepts in a header value.
     fn authorization_header(&self) -> Result<Option<String>> {
-        match &self.token {
-            Some(token)
-                if !token
-                    .bytes()
-                    .all(|byte| matches!(byte, b' ' | b'\t' | 0x21..=0x7E)) =>
-            {
-                bail!(
-                    "The token contains a character that can't be sent in an HTTP header, such as a line break or a non-ASCII character."
-                )
-            }
-            Some(token) => Ok(Some(format!("Bearer {}", token))),
-            None => Ok(None),
-        }
+        self.token
+            .as_deref()
+            .map(bearer_authorization_header)
+            .transpose()
     }
 
     pub fn post_coverage_metadata(&self, url: &str, metadata: &CoverageMetadata) -> Result<Value> {

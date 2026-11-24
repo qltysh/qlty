@@ -5,9 +5,10 @@ use crate::{
     ui::{ProgressBar as _, ProgressTask},
     Tool,
 };
-use anyhow::Result;
+use anyhow::{Context, Result};
 use chrono::Utc;
 use once_cell::sync::OnceCell;
+use qlty_cloud::bearer_authorization_header;
 use qlty_config::config::{Cpu, DownloadDef, OperatingSystem, PluginDef, ReleaseDef, System};
 use qlty_config::http;
 use qlty_config::version::QLTY_VERSION;
@@ -453,7 +454,10 @@ impl GitHubReleaseTool {
             .set("X-GitHub-Api-Version", GITHUB_API_VERSION);
 
         if let Some(token) = github_token {
-            request = request.set("Authorization", &format!("Bearer {}", token));
+            let header = bearer_authorization_header(token).context(
+                "QLTY_GITHUB_TOKEN contains a character that can't be sent in an HTTP header, such as a line break or a non-ASCII character.",
+            )?;
+            request = request.set("Authorization", &header);
         }
 
         let mut installation = initialize_installation(self)?;
@@ -477,7 +481,9 @@ fn user_github_token() -> Option<String> {
 }
 
 fn non_empty_token(token: Option<String>) -> Option<String> {
-    token.filter(|t| !t.trim().is_empty())
+    token
+        .map(|t| t.trim().to_string())
+        .filter(|t| !t.is_empty())
 }
 
 fn finalize_installation_from_assets_fetch(
@@ -508,6 +514,14 @@ mod test {
         assert_eq!(non_empty_token(Some("".into())), None);
         assert_eq!(non_empty_token(Some("  \n".into())), None);
         assert_eq!(non_empty_token(Some("ghp_x".into())), Some("ghp_x".into()));
+    }
+
+    #[test]
+    fn test_github_token_is_trimmed() {
+        assert_eq!(
+            non_empty_token(Some(" ghp_x\r\n".into())),
+            Some("ghp_x".into())
+        );
     }
 
     #[test]
