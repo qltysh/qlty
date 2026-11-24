@@ -52,7 +52,7 @@ workflows:
     '.github/workflows/prepare_release.yml':
         - 'actions/checkout@v5.0.0'
         - 'actions/create-github-app-token@v2.2.0'
-        - 'anthropics/claude-code-action@v1.0.275'
+        - 'anthropics/claude-code-action@v1.0.278'
         - 'jaxxstorm/action-install-gh-release@v2.1.0'
         - 'peter-evans/create-pull-request@v7.0.8'
     '.github/workflows/release.yml':
@@ -140,9 +140,9 @@ dependencies:
         commit: 'sha1-ea165f8d65b6e75b540449e92b4886f43607fa02'
         owner_id: 44036562
         repo_id: 192625955
-    'anthropics/claude-code-action@v1.0.275':
-        ref: 'v1.0.275'
-        commit: 'sha1-4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8'
+    'anthropics/claude-code-action@v1.0.278':
+        ref: 'v1.0.278'
+        commit: 'sha1-cc98b3ae241b0fcfb6a42a2690751afffecb4452'
         owner_id: 76263028
         repo_id: 986421638
         uses:
