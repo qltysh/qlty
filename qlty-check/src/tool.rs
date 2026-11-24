@@ -117,7 +117,7 @@ pub fn global_tools_root() -> String {
 
 static ENV_VARIABLE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\$\{env\.(.+?)\}").unwrap());
 
-fn interpolate_env_variables(value: &str) -> String {
+pub(crate) fn interpolate_env_variables(value: &str) -> String {
     ENV_VARIABLE
         .replace_all(value, |caps: &regex::Captures| {
             let key = caps.get(1).unwrap().as_str();

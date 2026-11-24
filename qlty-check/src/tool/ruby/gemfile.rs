@@ -1,13 +1,21 @@
 use super::RubygemsPackage;
 use crate::ui::ProgressBar;
-use crate::{tool::Tool, ui::ProgressTask};
-use anyhow::{bail, Result};
+use crate::{
+    tool::{interpolate_env_variables, Tool},
+    ui::ProgressTask,
+};
+use anyhow::{bail, Context, Result};
 use itertools::Itertools;
 use qlty_analysis::{join_path_string, utils::fs::path_to_native_string};
+use sha2::Digest;
 use std::{collections::HashMap, path::PathBuf};
 use tracing::debug;
 
 pub type RubyGemfile = RubygemsPackage;
+
+// Set in the plugin's `environment`, not in Qlty's own environment, so that
+// everyone who runs the repository's config installs the same versions.
+const LOCK_FILE_FEATURE_ENV: &str = "QLTY_FEATURE_RUBY_LOCK_FILE";
 
 const SOURCE_PREAMBLE: &str = r#"source "https://rubygems.org"
 
@@ -101,25 +109,74 @@ impl RubyGemfile {
         let new_package_file_path = join_path_string!(self.directory(), package_file_name);
         std::fs::write(new_package_file_path, new_package_file_contents)?;
 
-        if self.plugin.package_filters.is_empty() {
-            let package_file_path = PathBuf::from(package_file);
-            if let Some(parent_dir) = package_file_path.parent() {
-                let lock_file = parent_dir.join("Gemfile.lock");
-                if lock_file.exists() {
-                    let staging_lock_file = join_path_string!(self.directory(), "Gemfile.lock");
+        if let Some(lock_file) = self.lock_file_to_stage() {
+            let staging_lock_file = join_path_string!(self.directory(), self.lock_file_name());
 
-                    debug!(
-                        "Copying lock file from {} to {}",
-                        lock_file.display(),
-                        staging_lock_file
-                    );
+            debug!(
+                "Copying lock file from {} to {}",
+                lock_file.display(),
+                staging_lock_file
+            );
 
-                    std::fs::copy(lock_file, staging_lock_file)?;
-                }
-            }
+            std::fs::copy(&lock_file, staging_lock_file)
+                .with_context(|| format!("Failed to copy lock file {}", lock_file.display()))?;
         }
 
         Ok(())
+    }
+
+    // Filters keep only a subset of the gems, so the lock file is staged with
+    // them only when the plugin's environment turns that on.
+    pub fn lock_file_to_stage(&self) -> Option<PathBuf> {
+        if !self.plugin.package_filters.is_empty() && !self.filtered_install_uses_lock_file() {
+            return None;
+        }
+
+        PathBuf::from(self.plugin.package_file.as_ref()?)
+            .parent()
+            .map(|parent_dir| parent_dir.join(self.lock_file_name()))
+            .filter(|lock_file| lock_file.exists())
+    }
+
+    // Bundler names the lock file after the Gemfile it is given. Without
+    // filters the name stays `Gemfile.lock`, as before.
+    fn lock_file_name(&self) -> String {
+        if !self.filtered_install_uses_lock_file() {
+            return "Gemfile.lock".to_string();
+        }
+
+        match self.package_file_name().as_str() {
+            "gems.rb" => "gems.locked".to_string(),
+            package_file_name => format!("{package_file_name}.lock"),
+        }
+    }
+
+    // The lock file decides the installed versions only when a filtered
+    // install stages it, so only then does a change to it install again. A
+    // lock file that can't be read is left out, and staging it reports the
+    // error.
+    pub fn update_lock_file_hash(&self, sha: &mut sha2::Sha256) {
+        let lock_file_contents = self
+            .lock_file_to_stage()
+            .filter(|_| self.filtered_install_uses_lock_file())
+            .and_then(|lock_file| std::fs::read(lock_file).ok());
+
+        if let Some(lock_file_contents) = lock_file_contents {
+            sha.update(lock_file_contents);
+        }
+    }
+
+    pub fn filtered_install_uses_lock_file(&self) -> bool {
+        !self.plugin.package_filters.is_empty()
+            && self.plugin.environment.iter().any(|env| {
+                env.name == LOCK_FILE_FEATURE_ENV
+                    && ["true", "on", "1"].contains(
+                        &interpolate_env_variables(&env.value)
+                            .trim()
+                            .to_ascii_lowercase()
+                            .as_str(),
+                    )
+            })
     }
 
     // Only the gems the filters select and any `gemspec` line are kept, all
@@ -232,6 +289,17 @@ impl RubyGemfile {
         env.insert("BUNDLE_JOBS".to_string(), "4".to_string());
         env.insert("BUNDLE_RETRY".to_string(), "3".to_string());
 
+        if self.filtered_install_uses_lock_file() {
+            // The filtered Gemfile lists fewer gems than the lock file, so
+            // Bundler has to be free to rewrite the staged copy, whatever
+            // ~/.bundle/config says.
+            env.insert("BUNDLE_FROZEN".to_string(), "false".to_string());
+            env.insert("BUNDLE_DEPLOYMENT".to_string(), "false".to_string());
+            // Keeps Bundler from downloading the version in BUNDLED WITH and
+            // restarting with it.
+            env.insert("BUNDLE_VERSION".to_string(), "system".to_string());
+        }
+
         Ok(())
     }
 
@@ -274,11 +342,14 @@ fn blank_global_directives(contents: &str) -> String {
 
 #[cfg(test)]
 mod test {
-    use super::{blank_global_directives, SOURCE_PREAMBLE};
+    use super::{blank_global_directives, LOCK_FILE_FEATURE_ENV, SOURCE_PREAMBLE};
     use crate::{
         tool::{
             command_builder::test::reroute_tools_root,
-            ruby::test::{new_task, with_rubygems_package},
+            ruby::{
+                test::{new_task, with_rubygems_package},
+                RubygemsPackage,
+            },
         },
         Tool,
     };
@@ -288,7 +359,30 @@ mod test {
         join_path_string,
         utils::fs::{path_to_native_string, path_to_string},
     };
+    use qlty_config::config::PluginEnvironment;
     use std::{env::split_paths, fs::create_dir_all, path::Path};
+    use tempfile::TempDir;
+
+    fn lock_file_feature_env(value: &str) -> PluginEnvironment {
+        PluginEnvironment {
+            name: LOCK_FILE_FEATURE_ENV.into(),
+            value: value.into(),
+            ..Default::default()
+        }
+    }
+
+    fn write_filtered_gemfile_with_lock(pkg: &mut RubygemsPackage, temp_path: &TempDir) {
+        let req_file = temp_path.path().join("Gemfile");
+        std::fs::write(&req_file, "source 'https://rubygems.org'\ngem 'tool'").unwrap();
+        std::fs::write(
+            temp_path.path().join("Gemfile.lock"),
+            "GEM\n  specs:\n    tool (1.0.0)",
+        )
+        .unwrap();
+
+        pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+        pkg.plugin.package_filters = vec!["tool".to_string()];
+    }
 
     #[test]
     fn test_package_file_install_and_validate() {
@@ -613,6 +707,204 @@ mod test {
                 "Expected lock file NOT to be copied"
             );
 
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_lock_file_copied_with_filters_and_feature_env() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            write_filtered_gemfile_with_lock(pkg, temp_path);
+            pkg.plugin.environment = vec![lock_file_feature_env("true")];
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile.lock")).unwrap(),
+                "GEM\n  specs:\n    tool (1.0.0)"
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_lock_file_not_copied_with_filters_and_feature_env_off() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            write_filtered_gemfile_with_lock(pkg, temp_path);
+            pkg.plugin.environment = vec![lock_file_feature_env("false")];
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert!(!Path::new(&pkg.directory()).join("Gemfile.lock").exists());
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_filtered_install_uses_lock_file_ignores_feature_env_without_filters() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            write_filtered_gemfile_with_lock(pkg, temp_path);
+            pkg.plugin.package_filters = vec![];
+            pkg.plugin.environment = vec![lock_file_feature_env("true")];
+
+            assert!(!pkg.filtered_install_uses_lock_file());
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_package_file_envs_let_bundler_rewrite_lock_file_with_feature_env() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            write_filtered_gemfile_with_lock(pkg, temp_path);
+            pkg.plugin.environment = vec![lock_file_feature_env("1")];
+
+            let env = pkg.env().unwrap();
+            assert_eq!(
+                (
+                    env.get("BUNDLE_FROZEN").map(String::as_str),
+                    env.get("BUNDLE_DEPLOYMENT").map(String::as_str),
+                    env.get("BUNDLE_VERSION").map(String::as_str),
+                ),
+                (Some("false"), Some("false"), Some("system"))
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_package_file_envs_leave_bundler_settings_without_feature_env() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            write_filtered_gemfile_with_lock(pkg, temp_path);
+
+            let env = pkg.env().unwrap();
+            assert_eq!(
+                (
+                    env.get("BUNDLE_FROZEN"),
+                    env.get("BUNDLE_DEPLOYMENT"),
+                    env.get("BUNDLE_VERSION"),
+                ),
+                (None, None, None)
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_package_file_envs_keep_plugin_bundle_version_with_feature_env() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            write_filtered_gemfile_with_lock(pkg, temp_path);
+            pkg.plugin.environment = vec![
+                lock_file_feature_env("on"),
+                PluginEnvironment {
+                    name: "BUNDLE_VERSION".into(),
+                    value: "lockfile".into(),
+                    ..Default::default()
+                },
+            ];
+
+            assert_eq!(
+                pkg.env().unwrap().get("BUNDLE_VERSION").unwrap(),
+                "lockfile"
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_fingerprint_changes_with_lock_file_with_feature_env() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            write_filtered_gemfile_with_lock(pkg, temp_path);
+            pkg.plugin.environment = vec![lock_file_feature_env("true")];
+            let fingerprint = pkg.fingerprint();
+
+            std::fs::write(
+                temp_path.path().join("Gemfile.lock"),
+                "GEM\n  specs:\n    tool (1.0.1)",
+            )
+            .unwrap();
+
+            assert_ne!(pkg.fingerprint(), fingerprint);
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_copy_package_file_errors_on_unreadable_lock_file() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            write_filtered_gemfile_with_lock(pkg, temp_path);
+            pkg.plugin.environment = vec![lock_file_feature_env("true")];
+            let lock_file = temp_path.path().join("Gemfile.lock");
+            std::fs::remove_file(&lock_file).unwrap();
+            create_dir_all(&lock_file).unwrap();
+            reroute_tools_root(temp_path, pkg);
+            create_dir_all(pkg.directory()).unwrap();
+
+            let error = pkg.copy_package_file(&new_task()).unwrap_err();
+
+            assert!(error.to_string().starts_with("Failed to copy lock file"));
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_lock_file_named_after_package_file_with_feature_env() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            write_filtered_gemfile_with_lock(pkg, temp_path);
+            let req_file = temp_path.path().join("Gemfile.qlty");
+            std::fs::write(&req_file, "source 'https://rubygems.org'\ngem 'tool'").unwrap();
+            std::fs::write(
+                temp_path.path().join("Gemfile.qlty.lock"),
+                "GEM\n  specs:\n    tool (2.0.0)",
+            )
+            .unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            pkg.plugin.environment = vec![lock_file_feature_env("true")];
+            reroute_tools_root(temp_path, pkg);
+
+            pkg.copy_package_file(&new_task()).unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(Path::new(&pkg.directory()).join("Gemfile.qlty.lock"))
+                    .unwrap(),
+                "GEM\n  specs:\n    tool (2.0.0)"
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_lock_file_for_gems_rb_with_feature_env() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            let req_file = temp_path.path().join("gems.rb");
+            std::fs::write(&req_file, "source 'https://rubygems.org'\ngem 'tool'").unwrap();
+            std::fs::write(temp_path.path().join("gems.locked"), "GEM").unwrap();
+            pkg.plugin.package_file = Some(req_file.to_str().unwrap().into());
+            pkg.plugin.package_filters = vec!["tool".to_string()];
+            pkg.plugin.environment = vec![lock_file_feature_env("true")];
+
+            assert_eq!(
+                pkg.lock_file_to_stage(),
+                Some(temp_path.path().join("gems.locked"))
+            );
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_fingerprint_ignores_lock_file_without_feature_env() {
+        with_rubygems_package(|pkg, temp_path, _| {
+            write_filtered_gemfile_with_lock(pkg, temp_path);
+            let fingerprint = pkg.fingerprint();
+
+            std::fs::write(
+                temp_path.path().join("Gemfile.lock"),
+                "GEM\n  specs:\n    tool (1.0.1)",
+            )
+            .unwrap();
+
+            assert_eq!(pkg.fingerprint(), fingerprint);
             Ok(())
         });
     }
