@@ -1,6 +1,14 @@
 # Changelog
 
-## Unreleased
+## v0.674.0 (2026-11-24)
+
+### New
+
+- Add an opt-in `QLTY_FEATURE_RUBY_LOCK_FILE` plugin `environment` flag that installs the `Gemfile.lock` versions for Ruby plugins with `package_filters` (#3045)
+
+### Fixed
+
+- Prefix relative replacement paths in suggestions with the subdirectory a plugin runs from, and write them with forward slashes (#3041)
 
 ### Security
 
