@@ -11,6 +11,134 @@ permissions:
   issues: write
 
 jobs:
+  check-runtime-versions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: check-runtime-versions
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v5.0.0
+        with:
+          persist-credentials: false
+
+      - name: 📦 Use Node.js
+        uses: actions/setup-node@v5.0.0
+        with:
+          cache: "npm"
+          cache-dependency-path: qlty-plugins/plugins/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: qlty-plugins/plugins
+        run: npm ci --ignore-scripts
+
+      - name: Check runtime defaults against upstream releases
+        id: check
+        working-directory: qlty-plugins/plugins
+        run: npx ts-node scripts/checkRuntimeVersions.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Runs after a failed lookup too, to file what the other lookups found.
+      - name: Open an issue for each new finding
+        if: ${{ !cancelled() && hashFiles('qlty-plugins/plugins/runtime_issues.json') != '' }}
+        uses: actions/github-script@v8.0.0
+        env:
+          CHECK_SUCCEEDED: ${{ steps.check.outcome == 'success' }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const filePath = path.join(process.env.GITHUB_WORKSPACE, 'qlty-plugins/plugins/runtime_issues.json');
+            const findings = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+            await github.rest.issues.createLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'runtime-versions',
+              color: 'B60205',
+              description: 'A default runtime is behind upstream releases',
+            }).catch((error) => { if (error.status !== 422) throw error; });
+
+            // An issue closed as not planned records a decision about that exact
+            // release, so it isn't reopened. One closed as completed is reopened
+            // if the finding comes back, such as after a reverted bump. A newer
+            // release gets a new title and closes the open issue it replaces.
+            const existing = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              labels: 'runtime-versions',
+              per_page: 100,
+            });
+            const marker = (key) => `<!-- runtime-check: ${key} -->`;
+
+            for (const { key, title, body } of findings) {
+              const filed = existing.find((issue) => issue.title === title);
+              let number = filed?.number;
+              if (filed?.state === 'closed' && filed.state_reason === 'completed') {
+                console.log(`Reopening: ${title}`);
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: number,
+                  state: 'open',
+                });
+              } else if (filed) {
+                console.log(`Already filed: ${title}`);
+              } else {
+                console.log(`Opening: ${title}`);
+                const { data: created } = await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title,
+                  body: `${body}\n\n${marker(key)}`,
+                  labels: ['runtime-versions', 'security'],
+                });
+                number = created.number;
+              }
+
+              const superseded = existing.filter((issue) =>
+                issue.state === 'open' && !issue.pull_request && issue.title !== title &&
+                (issue.body || '').includes(marker(key)));
+              for (const issue of superseded) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `Superseded by #${number}.`,
+                });
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed',
+                  state_reason: 'not_planned',
+                });
+              }
+            }
+
+            // A default that's no longer behind closes its issue, but only after
+            // every lookup succeeded, since a failed one leaves its key out.
+            if (process.env.CHECK_SUCCEEDED !== 'true') return;
+            const currentKeys = new Set(findings.map((finding) => finding.key));
+            for (const issue of existing) {
+              const key = (issue.body || '').match(/<!-- runtime-check: (\S+) -->/)?.[1];
+              if (issue.state !== 'open' || issue.pull_request || !key || currentKeys.has(key)) continue;
+              console.log(`Resolved: ${issue.title}`);
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed',
+                state_reason: 'completed',
+              });
+            }
+
   update-linter-versions:
     runs-on: ubuntu-latest
     steps:
