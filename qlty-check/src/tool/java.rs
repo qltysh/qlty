@@ -47,7 +47,7 @@ impl Tool for Java {
     }
 
     fn version_regex(&self) -> String {
-        r"(\d+\.\d+\.\d+\+\d+)".to_string()
+        r"(\d+(?:\.\d+)+\+\d+)".to_string()
     }
 
     fn clone_box(&self) -> Box<dyn Tool> {
@@ -174,3 +174,35 @@ impl Tool for JavaPackage {
 }
 
 impl RunnableArchive for JavaPackage {}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use regex::Regex;
+
+    #[test]
+    fn installed_version_regex_captures_four_part_version() {
+        let java = Java {
+            version: "25.0.5.1+2".to_string(),
+        };
+        let output = "openjdk 25.0.5.1 2026-11-17 LTS\nOpenJDK Runtime Environment Temurin-25.0.5.1+2 (build 25.0.5.1+2-LTS)";
+        let captures = Regex::new(&java.version_regex())
+            .unwrap()
+            .captures(output)
+            .unwrap();
+
+        assert_eq!(&captures[1], "25.0.5.1+2");
+    }
+
+    #[test]
+    fn expected_version_keeps_four_part_version() {
+        let java = Java {
+            version: "25.0.5.1+2".to_string(),
+        };
+
+        assert_eq!(
+            java.expected_version().unwrap(),
+            Some("25.0.5.1+2".to_string())
+        );
+    }
+}
