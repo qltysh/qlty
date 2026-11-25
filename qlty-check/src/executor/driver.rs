@@ -1,4 +1,5 @@
 use super::compute_invocation_script;
+use super::invocation_result::insecure_flag_enabled;
 use super::invocation_result::FileResult;
 use crate::parser::actionlint::Actionlint;
 use crate::parser::ast_grep::AstGrep;
@@ -49,6 +50,7 @@ use qlty_config::config::DriverDef;
 use qlty_config::config::InvocationDirectoryType;
 use qlty_config::config::OutputFormat;
 use qlty_config::config::TargetType;
+use qlty_types::analysis::v1::Category;
 use qlty_types::analysis::v1::ExitResult;
 use qlty_types::analysis::v1::Issue;
 use std::ops::{Deref, DerefMut};
@@ -56,6 +58,7 @@ use std::path::PathBuf;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
+use std::sync::Once;
 use std::thread;
 use std::time::Duration;
 use std::time::Instant;
@@ -65,6 +68,8 @@ use tracing::{debug, error, info};
 
 const DEFAULT_SUCCESS_EXIT_CODE: i64 = 0;
 const MAX_OUTPUT_SIZE_BYTES: usize = 1024 * 1024 * 100; // 100 MB
+const DISABLE_SECRET_REDACTION_VAR: &str = "QLTY_INSECURE_DISABLE_SECRET_REDACTION";
+static DISABLED_REDACTION_WARNING: Once = Once::new();
 
 #[derive(Debug, Clone)]
 pub struct Driver {
@@ -427,6 +432,30 @@ impl Driver {
         });
 
         issue
+    }
+
+    pub fn redact_output(&self, output: &str) -> String {
+        let redact: fn(&str) -> String = match (self.output_format, self.output_category) {
+            (OutputFormat::Trufflehog, _) => Trufflehog::redact,
+            (OutputFormat::Sarif, Some(category))
+                if Category::from(category) == Category::Secret =>
+            {
+                Sarif::redact_snippets
+            }
+            _ => return output.to_string(),
+        };
+
+        if insecure_flag_enabled(DISABLE_SECRET_REDACTION_VAR) {
+            DISABLED_REDACTION_WARNING.call_once(|| {
+                warn!("{DISABLE_SECRET_REDACTION_VAR} is set: storing secret scanner output unredacted");
+                eprintln!(
+                    "WARNING: {DISABLE_SECRET_REDACTION_VAR} is set. Qlty is storing the secrets that secret scanners find, unredacted, in .qlty/out, logs and build results. Make sure nobody else can read them."
+                );
+            });
+            return output.to_string();
+        }
+
+        redact(output)
     }
 
     fn parser(&self) -> Box<dyn Parser> {

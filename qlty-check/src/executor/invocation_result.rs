@@ -43,7 +43,7 @@ pub enum InvocationStatus {
 }
 
 fn keys_only_env(env: HashMap<String, String>) -> HashMap<String, String> {
-    if env_scrubbing_disabled() {
+    if insecure_flag_enabled("QLTY_INSECURE_KEEP_INVOCATION_ENV") {
         return env;
     }
 
@@ -54,8 +54,8 @@ fn scrub_env_values(env: HashMap<String, String>) -> HashMap<String, String> {
     env.into_keys().map(|key| (key, String::new())).collect()
 }
 
-fn env_scrubbing_disabled() -> bool {
-    match std::env::var("QLTY_INSECURE_KEEP_INVOCATION_ENV") {
+pub(crate) fn insecure_flag_enabled(name: &str) -> bool {
+    match std::env::var(name) {
         Ok(value) => {
             let normalized = value.trim().to_ascii_lowercase();
             normalized == "1" || normalized == "true"
@@ -118,8 +118,14 @@ impl InvocationResult {
                 started_at: Some(start_time.into()),
                 duration_secs: duration as f32,
                 exit_code: exec_result.exit_code,
-                stdout: exec_result.stdout.clone(),
-                stderr: exec_result.stderr.clone(),
+                stdout: match plan.driver.output {
+                    OutputDestination::Stdout => plan.driver.redact_output(&exec_result.stdout),
+                    _ => exec_result.stdout.clone(),
+                },
+                stderr: match plan.driver.output {
+                    OutputDestination::Stderr => plan.driver.redact_output(&exec_result.stderr),
+                    _ => exec_result.stderr.clone(),
+                },
                 tmpfile_path: if plan.uses_tmpfile() {
                     Some(plan.tmpfile_path())
                 } else {
@@ -145,6 +151,12 @@ impl InvocationResult {
             formatted: Default::default(),
         };
 
+        if plan.uses_tmpfile() {
+            let tmpfile_contents = invocation.read_tmpfile();
+            if invocation.invocation.exit_result == ExitResult::Success as i32 {
+                invocation.invocation.tmpfile_contents = tmpfile_contents;
+            }
+        }
         invocation.process_results()?;
         invocation.write_out_file()?;
 
@@ -271,10 +283,6 @@ impl InvocationResult {
     }
 
     fn handle_success_case(&mut self) -> Result<()> {
-        if self.plan.uses_tmpfile() {
-            self.handle_tmpfile()?;
-        }
-
         if self.plan.driver.output == OutputDestination::Rewrite {
             if self.invocation.verb == ExecutionVerb::Check as i32 {
                 self.file_results = Some(self.create_file_result_for_autofmts()?);
@@ -306,12 +314,25 @@ impl InvocationResult {
         }
     }
 
-    fn handle_tmpfile(&mut self) -> Result<()> {
+    /// Reads the tool's tmpfile once, redacts it, and replaces the file with the redacted text.
+    fn read_tmpfile(&self) -> Option<String> {
         let tmpfile_path = self.invocation.tmpfile_path.as_ref().unwrap();
-        let read_result = std::fs::read_to_string(tmpfile_path)
-            .with_context(|| format!("Failed to read tmpfile contents from {}", tmpfile_path));
-        self.invocation.tmpfile_contents = read_result.ok();
-        Ok(())
+        let contents = std::fs::read_to_string(tmpfile_path)
+            .with_context(|| format!("Failed to read tmpfile contents from {}", tmpfile_path))
+            .ok()?;
+
+        let redacted = self.plan.driver.redact_output(&contents);
+        if redacted != contents && std::fs::write(tmpfile_path, &redacted).is_err() {
+            error!(
+                "Failed to write redacted output to {}, removing it",
+                tmpfile_path
+            );
+            if std::fs::remove_file(tmpfile_path).is_err() {
+                error!("Failed to remove {}", tmpfile_path);
+            }
+        }
+
+        Some(redacted)
     }
 
     fn handle_output_rewrite(&mut self) -> Result<()> {
@@ -582,6 +603,14 @@ impl InvocationResult {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::executor::driver::Driver;
+    use crate::{executor::driver::test::build_driver, tool::ruby::Ruby};
+    use qlty_analysis::{WorkspaceEntry, WorkspaceEntryKind};
+    use qlty_config::{
+        config::{InvocationDirectoryDef, OutputFormat, PluginDef},
+        Workspace,
+    };
+    use std::{path::Path, process::ExitStatus, time::SystemTime};
 
     #[test]
     fn scrub_env_values_drops_values() {
@@ -606,5 +635,107 @@ mod test {
         assert_eq!(scrubbed.len(), 2);
         assert!(scrubbed.contains_key("SECRET_TOKEN"));
         assert!(scrubbed.contains_key("PATH"));
+    }
+
+    const TRUFFLEHOG_FINDING: &str = r#"{"SourceMetadata":{"Data":{"Filesystem":{"file":"secrets.py","line":7}}},"DetectorName":"URI","Raw":"https://admin:admin@example.com","RawV2":"https://admin:admin@example.com/basic_auth","Redacted":"https://admin:********@example.com"}"#;
+
+    fn build_trufflehog_plan(
+        invocation_id: &str,
+        workspace_dir: &Path,
+        driver: Driver,
+    ) -> InvocationPlan {
+        InvocationPlan {
+            invocation_id: invocation_id.to_string(),
+            verb: ExecutionVerb::Check,
+            settings: Default::default(),
+            workspace: Workspace::for_root(workspace_dir).unwrap(),
+            runtime: None,
+            runtime_version: None,
+            plugin_name: "trufflehog".to_string(),
+            plugin: PluginDef::default(),
+            tool: Ruby::new_tool(""),
+            driver_name: "lint".to_string(),
+            driver,
+            plugin_configs: vec![],
+            target_root: workspace_dir.to_path_buf(),
+            workspace_entries: Arc::new(vec![WorkspaceEntry {
+                path: PathBuf::from("secrets.py"),
+                content_modified: SystemTime::now(),
+                language_name: None,
+                contents_size: 0,
+                kind: WorkspaceEntryKind::File,
+            }]),
+            targets: vec![],
+            invocation_directory: workspace_dir.to_path_buf(),
+            invocation_directory_def: InvocationDirectoryDef::default(),
+            edition: None,
+        }
+    }
+
+    #[test]
+    fn from_command_output_redacts_trufflehog_secrets() {
+        let workspace_dir = tempfile::tempdir().unwrap();
+        let mut driver = build_driver(vec![0], vec![]);
+        driver.output_format = OutputFormat::Trufflehog;
+        let plan = build_trufflehog_plan("abcdef", workspace_dir.path(), driver);
+        let output = Output {
+            status: ExitStatus::default(),
+            stdout: TRUFFLEHOG_FINDING.as_bytes().to_vec(),
+            stderr: vec![],
+        };
+
+        let result =
+            InvocationResult::from_command_output(&plan, "trufflehog", &output, 1.0).unwrap();
+
+        assert_eq!(result.invocation.issues_count, 1);
+        assert!(!std::fs::read_to_string(result.outfile_path())
+            .unwrap()
+            .contains("admin:admin@"));
+    }
+
+    #[test]
+    fn from_command_output_keeps_findings_when_tmpfile_rewrite_fails() {
+        let workspace_dir = tempfile::tempdir().unwrap();
+        let mut driver = build_driver(vec![0], vec![]);
+        driver.output_format = OutputFormat::Trufflehog;
+        driver.output = OutputDestination::Tmpfile;
+        let plan = build_trufflehog_plan("rdonly", workspace_dir.path(), driver);
+        std::fs::write(plan.tmpfile_path(), TRUFFLEHOG_FINDING).unwrap();
+        let mut permissions = std::fs::metadata(plan.tmpfile_path())
+            .unwrap()
+            .permissions();
+        permissions.set_readonly(true);
+        std::fs::set_permissions(plan.tmpfile_path(), permissions).unwrap();
+        let output = Output {
+            status: ExitStatus::default(),
+            stdout: vec![],
+            stderr: vec![],
+        };
+
+        let result =
+            InvocationResult::from_command_output(&plan, "trufflehog", &output, 1.0).unwrap();
+
+        assert_eq!(result.invocation.issues_count, 1);
+    }
+
+    #[test]
+    fn from_command_output_redacts_tmpfile_of_failed_run() {
+        let workspace_dir = tempfile::tempdir().unwrap();
+        let mut driver = build_driver(vec![101], vec![]);
+        driver.output_format = OutputFormat::Trufflehog;
+        driver.output = OutputDestination::Tmpfile;
+        let plan = build_trufflehog_plan("tmpred", workspace_dir.path(), driver);
+        std::fs::write(plan.tmpfile_path(), TRUFFLEHOG_FINDING).unwrap();
+        let output = Output {
+            status: ExitStatus::default(),
+            stdout: vec![],
+            stderr: vec![],
+        };
+
+        InvocationResult::from_command_output(&plan, "trufflehog", &output, 1.0).unwrap();
+
+        assert!(!std::fs::read_to_string(plan.tmpfile_path())
+            .unwrap()
+            .contains("admin:admin@"));
     }
 }

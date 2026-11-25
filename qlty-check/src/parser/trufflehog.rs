@@ -2,6 +2,22 @@ use super::Parser;
 use anyhow::Result;
 use qlty_types::analysis::v1::{Category, Issue, Level, Location, Range};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
+
+const KEPT_FIELDS: [&str; 11] = [
+    "SourceMetadata",
+    "SourceID",
+    "SourceType",
+    "SourceName",
+    "DetectorType",
+    "DetectorName",
+    "DetectorDescription",
+    "DecoderName",
+    "Verified",
+    "VerificationFromCache",
+    "Redacted",
+];
+const REDACTED: &str = "REDACTED";
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
@@ -31,6 +47,29 @@ struct FilesystemData {
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct Trufflehog {}
+
+impl Trufflehog {
+    /// Replaces every field the parser doesn't need, which is where trufflehog prints secrets,
+    /// and any line it can't read as a finding.
+    pub fn redact(output: &str) -> String {
+        output
+            .lines()
+            .map(|line| match serde_json::from_str::<Value>(line) {
+                Ok(Value::Object(mut finding)) => {
+                    for (field, value) in finding.iter_mut() {
+                        if !KEPT_FIELDS.contains(&field.as_str()) {
+                            *value = Value::String(REDACTED.to_string());
+                        }
+                    }
+                    Value::Object(finding).to_string()
+                }
+                _ if line.trim().is_empty() => line.to_string(),
+                _ => REDACTED.to_string(),
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
+}
 
 impl Parser for Trufflehog {
     fn parse(&self, _plugin_name: &str, output: &str) -> Result<Vec<Issue>> {
@@ -110,5 +149,30 @@ mod test {
           location:
             path: thrid.in.py
         "###);
+    }
+
+    #[test]
+    fn redact() {
+        let input = r###"{"SourceMetadata":{"Data":{"Filesystem":{"file":"secrets.in.py","line":7}}},"SourceID":1,"SourceType":15,"SourceName":"trufflehog - filesystem","DetectorType":17,"DetectorName":"URI","DecoderName":"PLAIN","Verified":true,"Raw":"https://admin:admin@the-internet.herokuapp.com","RawV2":"https://admin:admin@the-internet.herokuapp.com/basic_auth","Redacted":"https://admin:********@the-internet.herokuapp.com","ExtraData":null,"StructuredData":null}
+time=2026-11-23 "Raw":"https://admin:admin@the-internet.herokuapp.com"
+
+"###;
+
+        insta::assert_snapshot!(Trufflehog::redact(input), @r###"
+        {"SourceMetadata":{"Data":{"Filesystem":{"file":"secrets.in.py","line":7}}},"SourceID":1,"SourceType":15,"SourceName":"trufflehog - filesystem","DetectorType":17,"DetectorName":"URI","DecoderName":"PLAIN","Verified":true,"Raw":"REDACTED","RawV2":"REDACTED","Redacted":"https://admin:********@the-internet.herokuapp.com","ExtraData":"REDACTED","StructuredData":"REDACTED"}
+        REDACTED
+        "###);
+    }
+
+    #[test]
+    fn parse_redacted_output() {
+        let input = r###"{"SourceMetadata":{"Data":{"Filesystem":{"file":"secrets.in.py","line":7}}},"SourceID":1,"SourceType":15,"SourceName":"trufflehog - filesystem","DetectorType":17,"DetectorName":"URI","DecoderName":"PLAIN","Verified":true,"Raw":"https://admin:admin@the-internet.herokuapp.com","RawV2":"https://admin:admin@the-internet.herokuapp.com/basic_auth","Redacted":"https://admin:********@the-internet.herokuapp.com","ExtraData":null,"StructuredData":null}"###;
+
+        assert_eq!(
+            Trufflehog::default()
+                .parse("trufflehog", &Trufflehog::redact(input))
+                .unwrap(),
+            Trufflehog::default().parse("trufflehog", input).unwrap()
+        );
     }
 }

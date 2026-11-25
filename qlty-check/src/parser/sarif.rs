@@ -4,6 +4,7 @@ use path_absolutize::Absolutize;
 use qlty_analysis::utils::fs::path_to_string;
 use qlty_types::analysis::v1::{Category, Issue, Level, Location, Range};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::{collections::HashMap, path::Path};
 use tracing::info;
 
@@ -220,6 +221,41 @@ impl Sarif {
         } else {
             false
         }
+    }
+}
+
+impl Sarif {
+    /// Replaces the text of every snippet, which secret scanners fill with the secret they found.
+    pub fn redact_snippets(output: &str) -> String {
+        if output.trim().is_empty() {
+            return output.to_string();
+        }
+
+        match serde_json::from_str::<Value>(output) {
+            Ok(mut sarif) => {
+                redact_snippet_values(&mut sarif);
+                sarif.to_string()
+            }
+            Err(_) => REDACTED.to_string(),
+        }
+    }
+}
+
+const REDACTED: &str = "REDACTED";
+
+fn redact_snippet_values(value: &mut Value) {
+    match value {
+        Value::Object(object) => {
+            for (key, child) in object.iter_mut() {
+                if key == "snippet" {
+                    *child = serde_json::json!({ "text": REDACTED });
+                } else {
+                    redact_snippet_values(child);
+                }
+            }
+        }
+        Value::Array(items) => items.iter_mut().for_each(redact_snippet_values),
+        _ => {}
     }
 }
 
@@ -1148,5 +1184,52 @@ mod test {
               endLine: 3
               endColumn: 1
         "###);
+    }
+
+    #[test]
+    fn redact_snippets() {
+        let input = r###"{"runs":[{"tool":{"driver":{"name":"gitleaks","rules":[{"id":"aws-access-token"}]}},"results":[{"message":{"text":"aws-access-token has detected secret for file basic.py."},"ruleId":"aws-access-token","locations":[{"physicalLocation":{"artifactLocation":{"uri":"basic.py"},"region":{"startLine":1,"startColumn":15,"endLine":1,"endColumn":34,"snippet":{"text":"AKIALALEMEL33243OLIA"}},"contextRegion":{"startLine":1,"snippet":{"text":"aws_secret = \"AKIALALEMEL33243OLIA\""}}}}]}]}]}"###;
+
+        let redacted: serde_json::Value =
+            serde_json::from_str(&Sarif::redact_snippets(input)).unwrap();
+
+        assert_eq!(
+            redacted["runs"][0]["results"][0]["locations"][0]["physicalLocation"],
+            serde_json::json!({
+                "artifactLocation": { "uri": "basic.py" },
+                "region": {
+                    "startLine": 1,
+                    "startColumn": 15,
+                    "endLine": 1,
+                    "endColumn": 34,
+                    "snippet": { "text": "REDACTED" }
+                },
+                "contextRegion": {
+                    "startLine": 1,
+                    "snippet": { "text": "REDACTED" }
+                }
+            })
+        );
+    }
+
+    #[test]
+    fn parse_redacted_snippets() {
+        let input = r###"{"runs":[{"tool":{"driver":{"name":"gitleaks","rules":[{"id":"aws-access-token"}]}},"results":[{"message":{"text":"aws-access-token has detected secret for file basic.py."},"ruleId":"aws-access-token","locations":[{"physicalLocation":{"artifactLocation":{"uri":"basic.py"},"region":{"startLine":1,"startColumn":15,"endLine":1,"endColumn":34,"snippet":{"text":"AKIALALEMEL33243OLIA"}},"contextRegion":{"startLine":1,"snippet":{"text":"aws_secret = \"AKIALALEMEL33243OLIA\""}}}}]}]}]}"###;
+        let sarif = Sarif::new(None, Some(Category::Secret));
+
+        assert_eq!(
+            sarif
+                .parse("gitleaks", &Sarif::redact_snippets(input))
+                .unwrap(),
+            sarif.parse("gitleaks", input).unwrap()
+        );
+    }
+
+    #[test]
+    fn redact_snippets_replaces_unreadable_output() {
+        assert_eq!(
+            Sarif::redact_snippets("{\"snippet\":{\"text\":\"AKIA"),
+            "REDACTED"
+        );
     }
 }
