@@ -56,6 +56,7 @@ impl DriverPlanner {
             tool: plugin_planner.tool.clone(),
             target_root: Self::compute_target_root(&driver, plugin_planner),
             workspace_root: plugin_planner.workspace.root.clone(),
+            plugin_configs: plugin_planner.plugin_configs.clone(),
         };
 
         Self {

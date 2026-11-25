@@ -194,6 +194,12 @@ pub enum InvocationDirectoryType {
     #[serde(rename = "root_or_parent_with_any_config")]
     RootOrParentWithAnyConfig,
 
+    /// The highest directory, from the target up to the root, that has any of
+    /// the plugin's config files, or the root if none does. A config that Qlty
+    /// places at the root when it runs counts as a root config.
+    #[serde(rename = "root_or_outermost_config")]
+    RootOrOutermostConfig,
+
     #[serde(rename = "root_or_parent_with")]
     RootOrParentWith,
 
