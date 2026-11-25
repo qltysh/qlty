@@ -18,6 +18,7 @@ qlty-config.workspace = true
 ureq.workspace = true
 qlty-types.workspace = true
 anyhow.workspace = true
+thiserror.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true

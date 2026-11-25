@@ -35,6 +35,20 @@ fn command_output(output: &Output) -> String {
     )
 }
 
+#[cfg(unix)]
+#[test]
+fn non_unicode_argument_does_not_panic() {
+    use std::os::unix::ffi::OsStrExt;
+
+    let output = Command::new(env!("CARGO_BIN_EXE_qlty"))
+        .env("QLTY_TELEMETRY", "off")
+        .arg(std::ffi::OsStr::from_bytes(b"caf\xe9.rs"))
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(2));
+}
+
 #[test]
 fn version_tests() {
     TestCases::new().case("tests/cmd/version/**/*.toml");

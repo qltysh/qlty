@@ -3343,6 +3343,7 @@ dependencies = [
  "qlty-config",
  "qlty-types",
  "tempfile",
+ "thiserror 2.0.16",
  "ureq",
 ]
 

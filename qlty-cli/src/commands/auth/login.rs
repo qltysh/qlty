@@ -25,19 +25,40 @@ impl Login {
                 token = Input::<String>::new()
                     .with_prompt("Token")
                     .interact_text()
-                    .map(|line| line.trim().to_string())
                     .with_context(|| "Invalid input")?;
             }
 
-            if !token.starts_with("qltyp_") || token.len() < 32 {
-                return Err(CommandError::new("Token is invalid"));
-            }
-
-            store_auth_token(&token)?;
+            store_auth_token(checked_token(&token)?)?;
             eprintln!("{}", style("Token saved successfully.").green());
             return CommandSuccess::ok();
         }
         load_or_retrieve_auth_token()?;
         CommandSuccess::ok()
+    }
+}
+
+fn checked_token(token: &str) -> Result<&str, CommandError> {
+    let token = token.trim();
+    if !token.starts_with("qltyp_") || token.len() < 32 {
+        return Err(CommandError::new("Token is invalid"));
+    }
+    Ok(token)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn checked_token_trims_line_endings() {
+        assert_eq!(
+            checked_token("qltyp_0123456789abcdefghijklmnop\r\n").unwrap(),
+            "qltyp_0123456789abcdefghijklmnop"
+        );
+    }
+
+    #[test]
+    fn checked_token_rejects_short_token_padded_with_whitespace() {
+        assert!(checked_token("qltyp_0123456789          \n").is_err());
     }
 }

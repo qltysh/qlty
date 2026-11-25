@@ -237,6 +237,5 @@ impl Arguments {
 
 pub fn is_subcommand(subcommand: &str) -> bool {
     // Don't track telemetry commands, otherwise it will create an infinite loop
-    let args = std::env::args().collect::<Vec<String>>();
-    args.iter().any(|arg| arg == subcommand)
+    std::env::args_os().any(|arg| arg == subcommand)
 }

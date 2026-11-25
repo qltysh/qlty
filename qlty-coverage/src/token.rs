@@ -1,3 +1,5 @@
+use std::ffi::OsString;
+
 use crate::ci::{GitHub, CI};
 use anyhow::{bail, Result};
 use git2::Repository;
@@ -22,11 +24,13 @@ pub fn load_auth_token(token: &Option<String>, project: Option<&str>) -> Result<
 }
 
 /// Joins the command-line arguments with the value of `--token` or `-t` replaced.
-pub fn redact_command(args: impl IntoIterator<Item = String>) -> String {
+/// Arguments that aren't valid Unicode are converted lossily.
+pub fn redact_command(args: impl IntoIterator<Item = impl Into<OsString>>) -> String {
     let mut value_is_next = false;
     let mut redacted = vec![];
 
     for arg in args {
+        let arg = arg.into().to_string_lossy().into_owned();
         redacted.push(if std::mem::take(&mut value_is_next) {
             REDACTED.to_string()
         } else if arg == "--token" {
@@ -97,15 +101,17 @@ fn find_repository_name_from_repository() -> Result<String> {
     let root = Workspace::assert_within_git_directory()?;
     let repo = Repository::open(root)?;
     let remote = repo.find_remote("origin")?;
-    if let Some(name) = extract_repository_name(remote.url().unwrap_or_default()) {
-        Ok(name)
-    } else {
-        bail!(
-            "Could not find repository name from git remote: {:?}",
-            remote.url()
-        )
+    repository_name_from_remote_url(remote.url().unwrap_or_default())
+}
+
+// The URL is left out of the error because an https remote can carry a credential.
+fn repository_name_from_remote_url(url: &str) -> Result<String> {
+    match extract_repository_name(url) {
+        Some(name) => Ok(name),
+        None => bail!("Could not find repository name from the origin remote URL"),
     }
 }
+
 fn extract_repository_name(value: &str) -> Option<String> {
     value
         .split('/')
@@ -181,6 +187,30 @@ mod tests {
     fn test_load_auth_token_trims_line_endings() {
         let token = load_auth_token(&Some("qltcp_123\r\n".to_string()), None).unwrap();
         assert_eq!(token, "qltcp_123");
+    }
+
+    #[test]
+    fn test_remote_url_error_omits_credential() {
+        assert!(!repository_name_from_remote_url(
+            "https://gitlab-ci-token:SECRET@gitlab.example.com/a/b/"
+        )
+        .unwrap_err()
+        .to_string()
+        .contains("SECRET"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_redact_command_non_unicode_argument() {
+        use std::os::unix::ffi::OsStringExt;
+
+        assert_eq!(
+            redact_command([
+                OsString::from("qlty"),
+                OsString::from_vec(b"caf\xe9.rs".to_vec())
+            ]),
+            "qlty caf\u{FFFD}.rs"
+        );
     }
 
     fn args(command: &str) -> Vec<String> {
