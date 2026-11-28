@@ -114,7 +114,7 @@ impl InvocationDirectoryPlanner {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{planner::target::Target, tool::null_tool::NullTool};
+    use crate::{planner::target::Target, tool::shell_tool::ShellTool};
     use qlty_analysis::{utils::fs::path_to_string, WorkspaceEntryKind};
     use qlty_config::config::InvocationDirectoryDef;
     use qlty_test_utilities::git::sample_repo;
@@ -144,13 +144,13 @@ mod test {
                 config_files: vec!["config_file.json".into()],
                 ..Default::default()
             },
-            tool: Box::new(NullTool {
+            tool: Box::new(ShellTool {
                 parent_directory: temp_dir
                     .to_path_buf()
                     .join(".qlty")
                     .join("cache")
                     .join("tools")
-                    .join("null_tool"),
+                    .join("shell_tool"),
                 plugin_name: "mock_plugin".to_string(),
                 plugin: Default::default(),
             }),
@@ -304,13 +304,13 @@ mod test {
                 config_files: vec!["config_file.json".into()],
                 ..Default::default()
             },
-            tool: Box::new(NullTool {
+            tool: Box::new(ShellTool {
                 parent_directory: temp_dir_path
                     .to_path_buf()
                     .join(".qlty")
                     .join("cache")
                     .join("tools")
-                    .join("null_tool"),
+                    .join("shell_tool"),
                 plugin_name: "mock_plugin".to_string(),
                 plugin: Default::default(),
             }),
