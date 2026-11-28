@@ -1,0 +1,54 @@
+config_version = "0"
+
+# jscpd publishes prebuilt Rust binaries as tarballs on GitHub Releases. The asset
+# names (`-x64-gnu`, `-x64-musl`, `-arm64-gnu`, ...) do not match the release
+# heuristic, so each system is declared explicitly.
+[plugins.downloads.jscpd]
+strip_components = 0
+
+[[plugins.downloads.jscpd.system]]
+cpu = "x86_64"
+os = "linux"
+url = "https://github.com/kucherenko/jscpd/releases/download/v${version}/jscpd-linux-x64-gnu.tar.gz"
+
+[[plugins.downloads.jscpd.system]]
+cpu = "aarch64"
+os = "linux"
+url = "https://github.com/kucherenko/jscpd/releases/download/v${version}/jscpd-linux-arm64-gnu.tar.gz"
+
+[[plugins.downloads.jscpd.system]]
+cpu = "x86_64"
+os = "macos"
+url = "https://github.com/kucherenko/jscpd/releases/download/v${version}/jscpd-darwin-x64.tar.gz"
+
+[[plugins.downloads.jscpd.system]]
+cpu = "aarch64"
+os = "macos"
+url = "https://github.com/kucherenko/jscpd/releases/download/v${version}/jscpd-darwin-arm64.tar.gz"
+
+[plugins.definitions.jscpd]
+downloads = ["jscpd"]
+file_types = ["ALL"]
+config_files = [".jscpd.json"]
+latest_version = "5.4.1"
+known_good_version = "5.4.1"
+version_command = "jscpd --version"
+description = "Copy/paste detector for 220+ languages and formats, including renamed and near-miss clones"
+# The driver script moves the SARIF report into place with `mv`.
+supported_platforms = ["linux", "macos"]
+
+[plugins.definitions.jscpd.drivers.lint]
+# Duplicates are cross-file, so jscpd must see the whole tree in one invocation.
+# The SARIF reporter always writes `<output>/<report-name>.sarif`, so the report is
+# written next to the tmpfile and then moved onto it.
+script = "jscpd ${target} --reporters sarif --silent --no-tips --output ${tmpfile}.jscpd --report-name report && mv ${tmpfile}.jscpd/report.sarif ${tmpfile} && rmdir ${tmpfile}.jscpd"
+success_codes = [0]
+target = { type = "literal", path = "." }
+runs_from = { type = "root_or_parent_with_any_config" }
+output = "tmpfile"
+output_format = "sarif"
+output_category = "duplication"
+cache_results = true
+batch = false
+suggested = "config"
+output_missing = "parse"
